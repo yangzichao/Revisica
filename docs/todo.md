@@ -113,27 +113,22 @@ Spec: `docs/specs/desktop-app.md`
 
 Electron + React + renderer。API server 已就绪。
 
-### Electron Shell
+### Electron Shell ✅
 
-- [ ] **Electron main process** — 启动时 spawn Python sidecar（dev: `python -m revisica.api`；prod: PyInstaller binary）。轮询 `/api/health` 等待就绪。退出时 SIGTERM → 5s 后 SIGKILL。
+- [x] **Electron main process** — spawn Python sidecar, poll /api/health, auto-detect venv Python in dev mode, SIGTERM on quit. electron-vite build 编译通过。
 
 ### React Frontend
 
-- [ ] **Home 页** — 拖放文件 / 文件选择器（PDF/.tex）、mode 选择器（Polish/Review）、venue profile 下拉、provider 状态 badge、custom instructions 输入框、Start 按钮。
-
-- [ ] **Progress 页** — 轮询 `/api/status`（或 SSE），显示每个 lane/task 的实时状态（pending/running/done/failed），完成后自动跳转 Results。
-
-- [ ] **Results 页** — 渲染论文 HTML（左侧主体 + 右侧批注栏）。Tab 切换 Summary/Writing/Math。Findings 作为 margin notes 锚定到 section。每个 section 有 "深挖" 按钮触发 Focus。
-
-- [ ] **Settings 页** — Provider 列表（状态 + 配置）、API key 输入（遮掩显示）、Mathpix key 配置、"Test Connection" 按钮、版本信息。
+- [x] **Home 页** — 文件拖放 + 路径输入、venue profile、provider badges、Start Review
+- [x] **Progress 页** — 轮询 /api/status、task list 状态图标、完成后跳转 Results
+- [x] **Results 页** — Tab 切换 Summary/Writing/Math、react-markdown 渲染
+- [ ] **Settings 页** — Provider 配置 + API key 输入 + Test Connection（待后续迭代）
 
 ### Renderer (`desktop/src/renderer/`)
 
-- [ ] **论文渲染组件** — `RevisicaDocument.markdown` → HTML：用 `react-markdown` + `remark-math` + MathJax（或 `mathpix-markdown-it`）。数学公式继承衬线字体。
-
-- [ ] **Design theme** — Claude Code 暖色调 + 复古论文风格。背景 `#FAF6F0`（温暖羊皮纸色）、文字 `#2C2825`（暖炭色）、衬线字体 Source Serif 4、Findings 用 amber/orange/red 分级。Dark mode 自动跟随系统。
-
-- [ ] **批注系统** — Findings 作为右侧 margin notes 显示。点击高亮对应文本。颜色编码：amber（建议）、deep orange（警告）、warm red（错误）、muted green（已验证）。
+- [x] **Design theme CSS** — Academic Revision 主题（416 行）。Paper #FAF6F0、Source Serif 4、Dark mode。
+- [ ] **论文渲染组件** — RevisicaDocument → HTML + MathJax 数学公式（待后续迭代）
+- [ ] **批注系统** — Findings margin notes + 点击高亮 + "深挖"按钮（待后续迭代）
 
 ### Packaging
 
