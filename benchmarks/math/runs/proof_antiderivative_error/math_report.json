@@ -1,0 +1,147 @@
+{
+  "source": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/proof_antiderivative_error.tex",
+  "generated_at": "2026-04-06T21:59:57",
+  "functions": [],
+  "claims": [
+    {
+      "kind": "integral_equality",
+      "line_number": 11,
+      "snippet": "\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]",
+      "details": {
+        "a": "0",
+        "b": "1",
+        "integrand": "x^2",
+        "variable": "x",
+        "rhs": "\\frac{1}{2}."
+      }
+    },
+    {
+      "kind": "integral_equality",
+      "line_number": 19,
+      "snippet": "\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]",
+      "details": {
+        "a": "0",
+        "b": "1",
+        "integrand": "x^2",
+        "variable": "x",
+        "rhs": "\\frac{1}{2}."
+      }
+    }
+  ],
+  "theorems": [
+    {
+      "env_name": "theorem",
+      "line_number": 9,
+      "title": null,
+      "statement": "We have\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]",
+      "snippet": "\\begin{theorem}\nWe have\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]\n\\end{theorem}"
+    }
+  ],
+  "proofs": [
+    {
+      "line_number": 16,
+      "title": null,
+      "body": "Clearly, the antiderivative of $x^2$ is $x^2/2$.\nTherefore\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]\nThus the theorem follows.",
+      "snippet": "\\begin{proof}\nClearly, the antiderivative of $x^2$ is $x^2/2$.\nTherefore\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]\nThus the theorem follows.\n\\end{proof}"
+    }
+  ],
+  "blueprints": [
+    {
+      "theorem": {
+        "env_name": "theorem",
+        "line_number": 9,
+        "title": null,
+        "statement": "We have\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]",
+        "snippet": "\\begin{theorem}\nWe have\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]\n\\end{theorem}"
+      },
+      "proof": {
+        "line_number": 16,
+        "title": null,
+        "body": "Clearly, the antiderivative of $x^2$ is $x^2/2$.\nTherefore\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]\nThus the theorem follows.",
+        "snippet": "\\begin{proof}\nClearly, the antiderivative of $x^2$ is $x^2/2$.\nTherefore\n\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]\nThus the theorem follows.\n\\end{proof}"
+      },
+      "obligations": [
+        {
+          "theorem_env": "theorem",
+          "theorem_line_number": 9,
+          "proof_line_number": 16,
+          "step_index": 1,
+          "text": "Clearly, the antiderivative of $x^2$ is $x^2/2$.",
+          "obligation_type": "assertion"
+        },
+        {
+          "theorem_env": "theorem",
+          "theorem_line_number": 9,
+          "proof_line_number": 16,
+          "step_index": 2,
+          "text": "Therefore \\int_0^1 x^2 \\, dx = \\frac{1}{2}.",
+          "obligation_type": "inference"
+        },
+        {
+          "theorem_env": "theorem",
+          "theorem_line_number": 9,
+          "proof_line_number": 16,
+          "step_index": 3,
+          "text": "Thus the theorem follows.",
+          "obligation_type": "inference"
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "line_number": 11,
+      "status": "machine-refuted",
+      "severity": "critical",
+      "title": "Incorrect definite integral",
+      "snippet": "\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]",
+      "explanation": "The stated value of the definite integral does not match the symbolic computation.",
+      "fix": "Replace the stated value with `\\frac{1}{3}` and show the derivation explicitly.",
+      "evidence": "SymPy computed \\frac{1}{3} while the draft states \\frac{1}{2}."
+    },
+    {
+      "line_number": 19,
+      "status": "machine-refuted",
+      "severity": "critical",
+      "title": "Incorrect definite integral",
+      "snippet": "\\[\n\\int_0^1 x^2 \\, dx = \\frac{1}{2}.\n\\]",
+      "explanation": "The stated value of the definite integral does not match the symbolic computation.",
+      "fix": "Replace the stated value with `\\frac{1}{3}` and show the derivation explicitly.",
+      "evidence": "SymPy computed \\frac{1}{3} while the draft states \\frac{1}{2}."
+    },
+    {
+      "line_number": 16,
+      "status": "needs-human-check",
+      "severity": "major",
+      "title": "Weakly justified proof step",
+      "snippet": "Clearly, the antiderivative of $x^2$ is $x^2/2$.",
+      "explanation": "This proof step uses cue words like 'clearly', 'obvious', or 'therefore' and may be skipping a substantive argument.",
+      "fix": "Expand this step into an explicit derivation or cite the exact prior result being used.",
+      "evidence": "Extracted from theorem on line 9 as proof obligation 1."
+    },
+    {
+      "line_number": 16,
+      "status": "needs-human-check",
+      "severity": "major",
+      "title": "Weakly justified proof step",
+      "snippet": "Therefore \\int_0^1 x^2 \\, dx = \\frac{1}{2}.",
+      "explanation": "This proof step uses cue words like 'clearly', 'obvious', or 'therefore' and may be skipping a substantive argument.",
+      "fix": "Expand this step into an explicit derivation or cite the exact prior result being used.",
+      "evidence": "Extracted from theorem on line 9 as proof obligation 2."
+    },
+    {
+      "line_number": 16,
+      "status": "needs-human-check",
+      "severity": "major",
+      "title": "Weakly justified proof step",
+      "snippet": "Thus the theorem follows.",
+      "explanation": "This proof step uses cue words like 'clearly', 'obvious', or 'therefore' and may be skipping a substantive argument.",
+      "fix": "Expand this step into an explicit derivation or cite the exact prior result being used.",
+      "evidence": "Extracted from theorem on line 9 as proof obligation 3."
+    }
+  ],
+  "llm_provider_results": [],
+  "llm_self_check_results": [],
+  "llm_adjudication_results": [],
+  "warnings": []
+}

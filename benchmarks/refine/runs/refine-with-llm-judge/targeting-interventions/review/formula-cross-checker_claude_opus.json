@@ -1,0 +1,73 @@
+{
+  "role": "formula-cross-checker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "formula_mismatch",
+      "severity": "critical",
+      "title": "Cosine similarity definition missing \u2016z\u2016 in denominator",
+      "snippet": "Definition 1 (line 191): \u03c1(y, z) = (y \u00b7 z) / \u2016y\u2016  vs.  Proof of Theorem 1 (line 490): \u03c1(y*, u\u2113) = (y* \u00b7 u\u2113) / (\u2016y*\u2016 \u2016u\u2113\u2016)",
+      "explanation": "Definition 1 defines cosine similarity as \u03c1(y,z) = (y\u00b7z)/\u2016y\u2016, missing the factor \u2016z\u2016 in the denominator. The standard cosine similarity\u2014and the formula actually used in the proof of Theorem 1 (line 490) and the proof of Proposition 2 (line 572)\u2014is \u03c1(y,z) = (y\u00b7z)/(\u2016y\u2016\u00b7\u2016z\u2016). The accompanying description ('cosine of the angle', \u03c1=1 iff positive scaling, \u03c1=\u22121 iff negative scaling) is consistent only with the two-norm version. This affects every statement that references Definition 1.",
+      "fix": "Change Definition 1 to: \u03c1(y, z) = (y \u00b7 z) / (\u2016y\u2016 \u00b7 \u2016z\u2016)."
+    },
+    {
+      "category": "min_max_mismatch",
+      "severity": "critical",
+      "title": "Eigenvectors of min problems called 'maximizers' instead of 'minimizers'",
+      "snippet": "Line 320\u2013324: \u03bb_n = min_{u:\u2016u\u2016=1} \u03a3 g_{ij} u_i u_j,  \u03bb_{n\u22121} = min_{\u2026} \u03a3 g_{ij} u_i u_j.  'Moreover, the eigenvector u^n is a maximizer of the first problem, while u^{n\u22121} is a maximizer of the second.'",
+      "explanation": "The two variational problems for \u03bb_n and \u03bb_{n\u22121} are minimization problems (written with 'min'). Their solutions u^n and u^{n\u22121} are therefore minimizers. The text incorrectly calls them 'maximizers'. This is internally contradicted later in the same sentence where the paper writes u^n = arg min_{u} \u03a3 g_{ij} u_i u_j. By contrast, the analogous passage for \u03bb_1 and \u03bb_2 (line 313\u2013316) correctly calls u^1 and u^2 'maximizers' of maximization problems.",
+      "fix": "Replace both occurrences of 'maximizer' in line 324 with 'minimizer': 'the eigenvector u^n is a minimizer of the first problem, while u^{n\u22121} is a minimizer of the second'."
+    },
+    {
+      "category": "exponent_mismatch",
+      "severity": "critical",
+      "title": "Assumption 3 missing squared exponent on \u2016b\u0302\u2016",
+      "snippet": "Line 198: 'when the budget is large enough\u2014that is, C \u2265 \u2016b\u0302\u2016\u00b2'  vs.  Line 200 (Assumption 3): 'Either w < 0 and C < \u2016b\u0302\u2016'",
+      "explanation": "Two lines earlier, the paper correctly states the first-best is achievable when C \u2265 \u2016b\u0302\u2016\u00b2 (setting b_i = 0 for all i costs \u03a3 b\u0302_i\u00b2 = \u2016b\u0302\u2016\u00b2). Assumption 3 is meant to rule out this case but writes C < \u2016b\u0302\u2016 (without the square). Footnote 34 (line 770) confirms the correct version: 'w < 0 and \u03a3 b\u0302_\u2113\u00b2 \u2264 C', i.e. the threshold is \u2016b\u0302\u2016\u00b2. The missing exponent changes the meaning of the assumption.",
+      "fix": "Change Assumption 3 to: 'Either w < 0 and C < \u2016b\u0302\u2016\u00b2, or w > 0.'"
+    },
+    {
+      "category": "exponent_mismatch",
+      "severity": "major",
+      "title": "Lagrangian objective term missing squared exponent on b\u0302_\u2113",
+      "snippet": "Proof of Theorem 1 (line 465): L = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]  vs.  Rewritten problem (line 451): max_x  w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2  s.t.  \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2 \u2264 C",
+      "explanation": "In the Lagrangian (line 465), the objective term has b\u0302_\u2113 (to the first power) instead of b\u0302_\u2113\u00b2 (squared). The rewritten optimization problem it is derived from (line 451) clearly has b\u0302_\u2113\u00b2 in the objective. The downstream FOC (line 471) happens to be correct because b\u0302_\u2113\u00b2 factors out and cancels, so this error does not propagate, but it is a typographical inconsistency within the proof.",
+      "fix": "In the Lagrangian, change the first sum to: w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2."
+    },
+    {
+      "category": "subscript_mismatch",
+      "severity": "major",
+      "title": "Subscript/superscript swap on eigenvector entry u_\u2113^i vs u_i^\u2113",
+      "snippet": "Proof of Proposition 2 (line 584): b_i* \u2212 b\u0302_i = w \u03a3_{\u2113=1}^{n} u_\u2113^i [\u03b1_\u2113 / (\u03bc \u2212 w\u03b1_\u2113)] b\u0302_\u2113",
+      "explanation": "Throughout the paper, the convention is that u_i^\u2113 denotes the i-th entry of the \u2113-th eigenvector (superscript = eigenvector index, subscript = component index). Line 584 writes u_\u2113^i, which under the paper's convention means the \u2113-th entry of the i-th eigenvector\u2014a different quantity. Since U is orthogonal but not generally symmetric, U_{i\u2113} \u2260 U_{\u2113i}. The correct derivation (converting from PC basis back to original coordinates via b* \u2212 b\u0302 = U(b\u0332* \u2212 b\u0332\u0302)) requires u_i^\u2113.",
+      "fix": "Replace u_\u2113^i with u_i^\u2113 in line 584."
+    },
+    {
+      "category": "subscript_mismatch",
+      "severity": "major",
+      "title": "Self-referential change of variables: b_i defined in terms of itself instead of b\u0303_i",
+      "snippet": "Line 128: 'Performing the change of variables b_i = [\u03c4 \u2212 b_i] / 2 and \u03b2 = \u2212\u03b2\u0303 / 2'",
+      "explanation": "The change of variables is meant to express the new variable b_i in terms of the original public-goods parameter b\u0303_i (with tilde). Writing b_i = [\u03c4 \u2212 b_i]/2 is self-referential and undefined. The surrounding context makes clear the intended formula: immediately after, the status quo is correctly written as b\u0302_i = [\u03c4 \u2212 b\u0303_i]/2 (with tilde), and the original model uses b\u0303_i as the base public-good level.",
+      "fix": "Change to: b_i = [\u03c4 \u2212 b\u0303_i] / 2."
+    },
+    {
+      "category": "formula_mismatch",
+      "severity": "minor",
+      "title": "Theorem 1 eq. (6) uses b\u0302_\u2113 instead of b\u0332\u0302_\u2113 (missing underline notation for PC-basis)",
+      "snippet": "Theorem 1 eq. (6) (line 220): \u03a3 (w\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113))\u00b2 b\u0302_\u2113\u00b2 = C  vs.  Rewritten constraint (line 452): \u03a3 b\u0332\u0302_\u2113\u00b2 x_\u2113\u00b2 \u2264 C",
+      "explanation": "The paper carefully defines b\u0332 = U\u22a4b (underline notation) for principal-component projections in Section 3.1. Equation (6) in the Theorem 1 statement uses b\u0302_\u2113 (without underline), but since \u2113 indexes the principal-component basis, the correct notation is b\u0332\u0302_\u2113 = u^\u2113 \u00b7 b\u0302. This same inconsistency appears in the sketch derivation (lines 233\u2013234), the proof FOC (line 471), and the proof budget equation (line 483). The rewritten optimization problem at line 452 correctly uses b\u0332\u0302_\u2113 with the underline.",
+      "fix": "In eq. (6) and corresponding proof lines, replace b\u0302_\u2113 with b\u0332\u0302_\u2113 (the underlined/projected version) to match the established notation."
+    },
+    {
+      "category": "formula_mismatch",
+      "severity": "minor",
+      "title": "Lagrangian constraint term uses b\u0302_\u2113 instead of b\u0332\u0302_\u2113 (missing underline)",
+      "snippet": "Proof of Theorem 1 (line 465): \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]  vs.  Rewritten constraint (line 452): \u03a3 b\u0332\u0302_\u2113\u00b2 x_\u2113\u00b2 \u2264 C",
+      "explanation": "The constraint in the Lagrangian (line 465) writes b\u0302_\u2113\u00b2 (no underline), but the constraint it encodes is \u03a3 b\u0332\u0302_\u2113\u00b2 x_\u2113\u00b2 \u2264 C (line 452, with underline). This is the same underline-notation inconsistency as in the Theorem 1 statement. The quantities are conceptually different: b\u0302_\u2113 is the \u2113-th entry of the original status quo vector, while b\u0332\u0302_\u2113 is the projection of b\u0302 onto the \u2113-th principal component.",
+      "fix": "Replace b\u0302_\u2113\u00b2 with b\u0332\u0302_\u2113\u00b2 in the Lagrangian constraint term."
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "role": "basic",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "terminology_consistency",
+      "severity": "major",
+      "title": "Inconsistent spelling of 'Griffiths-Tavar\u00e9' throughout the paper",
+      "snippet": "In contrast with the Griffiths-Tavare scheme described above... (line 138); the Griffiths-Tavare method is a particular instance of this approach (line 173); Implementations of the GriffithsTavar\u00e9 scheme (line 195); the Griffiths-Tavare method and the MCMC method (line 607); GriffithsTavare method will (in this example) generate (line 865); the Griffiths-Tavare approach (line 907); Griffiths-Tavare or Stephens-Donnelly (line 1030)",
+      "explanation": "The standard form used elsewhere in the paper is 'Griffiths-Tavar\u00e9' (with an acute accent on the final 'e' of Tavar\u00e9). In at least seven locations the accent is dropped ('Griffiths-Tavare'), the hyphen is dropped ('GriffithsTavar\u00e9' on line 195), or both are missing ('GriffithsTavare' on line 865). This inconsistency recurs in the main paper text and in the discussion contributions, and may reflect copy-editing oversights. All occurrences should be standardised to 'Griffiths-Tavar\u00e9'.",
+      "fix": "Replace every variant ('Griffiths-Tavare', 'GriffithsTavar\u00e9', 'GriffithsTavare') with the canonical form 'Griffiths-Tavar\u00e9'."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Duplicate reference label '(1994b)' for two distinct Griffiths\u2013Tavar\u00e9 papers",
+      "snippet": "_(1994b) Ancestral inference in population genetics. Statist. Sci., 9, 307-319.\n$\\_\\_\\_\\_$ (1994b) Sampling theory for neutral alleles in a varying environment. Phil. Trans. R. Soc. Lond. B, 344, 403-410.",
+      "explanation": "Lines 691\u2013692 in the reference list assign the label '(1994b)' to two separate publications by Griffiths and Tavar\u00e9. Based on the main text's pattern of citations (which also cites '(1994c)' as an existing label), 'Sampling theory for neutral alleles in a varying environment' should be labelled '(1994c)'. The duplicate label makes it impossible to disambiguate citations of these two works in the body of the paper.",
+      "fix": "Relabel the 'Sampling theory for neutral alleles\u2026' entry from '(1994b)' to '(1994c)' and verify that all in-text citations referencing that work use '(1994c)'."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Author name misspelled 'Wuif' (should be 'Wiuf') throughout",
+      "snippet": "When we have recombination between different sequences the patterns can be described as series of trees linked along DNA sequences (Wuif and Hein, 1999). ... Wuif, C. and Hein, J. (1999) Recombination as a point process along sequences. Theor. Popln Biol., 55, 248-259.",
+      "explanation": "The discussant Ian Wilson and the reference list both spell the author's name as 'Wuif, C.' The correct surname of the population geneticist is 'Wiuf, C.' (Carsten Wiuf). The error is consistent across the in-text citation (line 731) and the reference entry (line 1264), so it is a systematic typo rather than a one-off slip.",
+      "fix": "Replace 'Wuif' with 'Wiuf' in both the in-text citation '(Wuif and Hein, 1999)' and the reference list entry 'Wuif, C. and Hein, J. (1999)'."
+    },
+    {
+      "category": "reference_ambiguity",
+      "severity": "major",
+      "title": "Remark 1 refers to '$\\pi$' where '$\\hat{\\pi}$' is intended",
+      "snippet": "Property (e) provides a characterization of $\\pi$ which is, in some more general settings not considered in this paper, more amenable to generalization than definition 1.",
+      "explanation": "Remark 1 discusses properties of $\\hat{\\pi}$ (the approximation to the conditional sampling distribution $\\pi$). Property (e) in Proposition 1 states that $\\hat{\\pi}(\\cdot \\mid A_n)$ is the stationary distribution of a specific Markov chain; it is therefore $\\hat{\\pi}$, not $\\pi$, that is characterised by this stationarity property. Using the undecorated $\\pi$ in this sentence contradicts the immediately preceding discussion and will confuse readers who rely on the notation to distinguish the exact distribution from the approximation.",
+      "fix": "Change '\u2026a characterization of $\\pi$ which is\u2026' to '\u2026a characterization of $\\hat{\\pi}$ which is\u2026'."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Subscript '$n-1$' should be '$k-1$' in backward-rate derivation",
+      "snippet": "= \\frac{\\pi\\left(\\alpha_{1}, \\ldots, \\alpha_{n-1}, \\beta\\right) \\delta \\theta P_{\\beta \\alpha} / 2}{\\pi\\left(\\alpha_{1}, \\ldots, \\alpha_{n-1}, \\alpha\\right)}+o(\\delta)",
+      "explanation": "The surrounding proof (lines 228\u2013244) establishes that at time $t$ there are $k$ lineages with types $A_k(t) = (\\alpha_1, \\alpha_2, \\ldots, \\alpha_{k-1}, \\alpha)$. The probability expression in the displayed equation therefore involves the joint distribution of $k$ types indexed up to $k-1$, not $n-1$. Writing $\\alpha_{n-1}$ instead of $\\alpha_{k-1}$ conflates the fixed sample size $n$ with the current (decreasing) lineage count $k$, producing a mathematically incorrect expression.",
+      "fix": "Replace both occurrences of '$\\alpha_{n-1}$' in the displayed equation with '$\\alpha_{k-1}$'."
+    },
+    {
+      "category": "clarity",
+      "severity": "minor",
+      "title": "Awkward self-referential phrasing: 'our IS is actually independent sampling'",
+      "snippet": "However, for PIM our IS is actually independent sampling from the full conditional distribution of the history of the sample and thus represents an extremely efficient solution to questions of ancestral inference for these kinds of data.",
+      "explanation": "'IS' expands to 'importance sampling', so the sentence literally reads 'our importance sampling is actually independent sampling', which is circular and confusing. The authors mean to say that their IS scheme degenerates to exact (i.i.d.) sampling under the PIM model because the proposal equals the target, but this distinction is obscured by the phrasing.",
+      "fix": "Rewrite as: 'However, for PIM our IS scheme in fact amounts to independent sampling from the full conditional distribution of the history of the sample\u2026'"
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Incomplete noun phrase: 'an efficient IS' missing head noun",
+      "snippet": "Although the amount of human effort that is required to design an efficient IS is often (as here) substantial, relatively simple MCMC update proposal schemes may give a reasonable performance for a wide range of problems.",
+      "explanation": "'IS' is an abbreviation that functions as a modifier or noun phrase head only when accompanied by its referent noun (e.g., 'IS scheme', 'IS function', 'IS algorithm'). Standing alone as the object of 'design', it reads as a partial noun phrase. The intended meaning is clear in context, but the grammar is non-standard in academic writing.",
+      "fix": "Add the appropriate head noun, e.g.: '\u2026to design an efficient IS scheme is often (as here) substantial\u2026'"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Malformed ellipsis '. .' in a mathematical expression",
+      "snippet": "i.e. a random history $\\mathcal{H}=\\left(H_{-m}, . ., H_{-1}, H_{0}\\right)$ may be sampled by choosing $H_{0}=A_{n}$",
+      "explanation": "The expression uses '. .' (two full stops separated by a space) as an ellipsis within a mathematical tuple. All other similar constructions in the paper use the standard LaTeX ellipsis command '$\\ldots$'. This inconsistency looks like a copy-paste artefact or a formatting error.",
+      "fix": "Replace '. .' with '$\\ldots$' so the expression reads $\\mathcal{H}=\\left(H_{-m}, \\ldots, H_{-1}, H_{0}\\right)$."
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "'form the bases for inference' should be 'form the basis for inference'",
+      "snippet": "Simulated histories, according to the proposal distribution, form the bases for inference using importance sampling.",
+      "explanation": "The idiomatic English expression for 'provide the foundation for' is 'form the basis for' (singular). Using the plural 'bases' is grammatically non-standard in this construction and does not add any intended sense of multiplicity; it reads as a grammatical error.",
+      "fix": "Change 'form the bases for inference' to 'form the basis for inference'."
+    },
+    {
+      "category": "clarity",
+      "severity": "minor",
+      "title": "Acronym 'NSE' not defined at first use",
+      "snippet": "As a more challenging example we also applied our method to the so-called NSE data set considered by Wilson and Balding (1998) and supplied with micsat.",
+      "explanation": "The acronym 'NSE' is introduced without expansion. Its meaning (Nigeria, Sardinia and East Anglia \u2014 the populations sampled) is only revealed eight lines later when the data are described. Academic style requires acronyms to be spelled out at first use, especially when the expansion is not immediately obvious.",
+      "fix": "Expand the acronym at first use: 'the so-called NSE (Nigeria, Sardinia and East Anglia) data set'."
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Missing period in subsection headings '3.3' and '6.2'",
+      "snippet": "### 3.3 Markov chain Monte Carlo method II\n...\n### 6.2 Extensions",
+      "explanation": "All other numbered subsection headings in the paper include a period after the subsection number (e.g., '3.1.', '3.2.', '3.4.', '6.1.', '6.3.', '6.4.', '6.5.'). Headings '3.3' and '6.2' are the only exceptions, suggesting two instances of accidental omission rather than a deliberate stylistic choice.",
+      "fix": "Add the missing period: '### 3.3. Markov chain Monte Carlo method II' and '### 6.2. Extensions'."
+    }
+  ]
+}

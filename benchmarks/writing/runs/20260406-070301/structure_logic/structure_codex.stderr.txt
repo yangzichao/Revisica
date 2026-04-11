@@ -1,0 +1,114 @@
+Reading prompt from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Users/zichaoyang/workplace/ReviseAgent
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019d6320-d606-7810-9ef1-d9dd303ed7a8
+--------
+user
+You are reviewing the structure and scholarly rhetoric of an academic draft.
+
+Scope:
+- Evaluate paragraph flow, section logic, argument progression, contribution framing, claim/evidence alignment, and scholarly tone.
+- Focus on article-level and paragraph-level weaknesses, not local typos.
+- Do not pretend to certify mathematical correctness.
+- Be conservative and specific.
+
+The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/structure_logic.tex`.
+
+Return JSON only, with this schema:
+{
+  "findings": [
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "short title",
+      "snippet": "exact local snippet",
+      "explanation": "why this is a structural or rhetoric problem",
+      "fix": "concrete revision suggestion"
+    }
+  ]
+}
+
+Allowed categories:
+- `structure_logic`
+- `scholarly_rhetoric`
+- `claim_evidence_gap`
+- `contribution_framing`
+
+Allowed severities:
+- `critical`
+- `major`
+- `minor`
+
+If there are no worthwhile findings, return `{"findings":[]}`.
+
+Source LaTeX:
+
+```tex
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{A Novel Framework for Graph Optimization}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Graphs are used in many applications.
+Many algorithms have been proposed.
+Our algorithm is better.
+We test it on several datasets.
+
+\section{Related Work}
+Smith et al.\ (2020) proposed a method for graph partitioning.
+Jones et al.\ (2021) extended this to weighted graphs.
+There are also methods based on spectral clustering.
+
+\section{Our Method}
+We propose a new framework for graph optimization.
+The framework has three phases.
+
+In Phase 1, we compute a preliminary partition using a greedy approach.
+In Phase 3, we refine the partition using local search.
+In Phase 2, we merge small clusters.
+
+The time complexity is $O(n \log n)$ in the best case.
+However, in our experiments the runtime was often quadratic.
+
+\section{Experiments}
+We tested our method on five benchmark datasets.
+Our method achieved the best results on three of them.
+On the other two datasets, baseline methods performed better.
+We attribute this to the nature of the graphs, but we did not investigate further.
+
+Table~1 shows the results but we were unable to include it due to space constraints.
+
+\section{Theoretical Analysis}
+
+\begin{theorem}
+The proposed method converges to a local optimum in polynomial time.
+\end{theorem}
+
+We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.
+
+\section{Conclusion}
+We presented a novel framework for graph optimization that outperforms existing methods in most cases.
+Future work will address the limitations identified in our experiments.
+Our contribution is significant because graph optimization is important.
+
+\end{document}
+
+```
+
+codex
+{"findings":[{"category":"contribution_framing","severity":"major","title":"Introduction states superiority without defining the problem or contribution","snippet":"Graphs are used in many applications.\nMany algorithms have been proposed.\nOur algorithm is better.\nWe test it on several datasets.","explanation":"The introduction moves from generic background to a superiority claim without specifying the research problem, the limitation in prior work, what the proposed framework actually contributes, or by what criteria it is 'better.' This weakens article-level motivation and leaves later sections without a clear argumentative target.","fix":"Rewrite the introduction to establish the graph optimization problem, identify the specific gap in existing methods, state the paper's core idea, and preview the contribution dimensions precisely (e.g., accuracy, runtime, robustness, or applicability). Replace 'Our algorithm is better' with a scoped, evidence-ready claim."},{"category":"structure_logic","severity":"major","title":"Related work is listed but not synthesized into an argument gap","snippet":"Smith et al.\\ (2020) proposed a method for graph partitioning.\nJones et al.\\ (2021) extended this to weighted graphs.\nThere are also methods based on spectral clustering.","explanation":"This section reads as a loose inventory of prior studies rather than a structured review that positions the present paper. The paragraph does not compare strands of work, identify their tradeoffs, or explain which limitation motivates the proposed framework, so the transition into 'Our Method' lacks logical force.","fix":"Reorganize related work by approach or limitation, then end the section with an explicit positioning sentence such as which methods fail under what conditions and how the proposed framework addresses that gap."},{"category":"structure_logic","severity":"major","title":"Method description breaks procedural flow","snippet":"The framework has three phases.\n\nIn Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.","explanation":"The method claims a three-phase pipeline but presents Phase 3 before Phase 2. Even if this is only an ordering issue in exposition, it disrupts paragraph-level coherence and makes the algorithm harder to follow as a staged procedure.","fix":"Present the phases in execution order and give each phase a short functional rationale. If the actual execution order is nonsequential, state that explicitly and explain why the exposition departs from numeric order."},{"category":"claim_evidence_gap","severity":"major","title":"Complexity claim is left in tension with reported runtime behavior","snippet":"The time complexity is $O(n \\log n)$ in the best case.\nHowever, in our experiments the runtime was often quadratic.","explanation":"The section places a favorable complexity statement directly next to an apparently conflicting empirical observation, but does not explain the conditions under which each applies. This creates a claim-evidence gap and leaves readers unsure whether the theoretical statement is narrow, the implementation is inefficient, or the experiments reveal a practical limitation.","fix":"Clarify the scope of the complexity claim by stating whether it is best-case, average-case, or conditional on graph structure, then explain why empirical runtime can become quadratic. If needed, move this discussion to a limitations paragraph that reconciles theory and practice."},{"category":"claim_evidence_gap","severity":"major","title":"Experimental claims are undermined by missing evidence and uninvestigated exceptions","snippet":"Our method achieved the best results on three of them.\nOn the other two datasets, baseline methods performed better.\nWe attribute this to the nature of the graphs, but we did not investigate further.\n\nTable~1 shows the results but we were unable to include it due to space constraints.","explanation":"The experiments section makes comparative performance claims but withholds the main supporting evidence and explicitly declines to analyze failure cases. Structurally, this prevents the section from carrying the argumentative weight needed for the paper's main contribution claim.","fix":"Include the comparative results table or summarize the key metrics in text, and add a brief analysis of why the method underperforms on the two datasets. If a full explanation is unavailable, frame this as a limitation rather than an unsupported attribution."},{"category":"scholarly_rhetoric","severity":"major","title":"Theoretical analysis uses assertion in place of scholarly support","snippet":"\\begin{theorem}\nThe proposed method converges to a local optimum in polynomial time.\n\\end{theorem}\n\nWe do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.","explanation":"Introducing a theorem creates an expectation of formal support, but the paragraph immediately withdraws that support and replaces it with informal assertion. This is not just a mathematical issue; rhetorically it weakens the paper's credibility and misaligns the section title 'Theoretical Analysis' with what is actually provided.","fix":"Either provide a proof sketch with clearly stated assumptions, downgrade the statement to an informal proposition or conjecture, or remove the theorem environment entirely and describe the convergence intuition as an unproven observation."},{"category":"contribution_framing","severity":"major","title":"Conclusion overstates significance relative to mixed evidence","snippet":"We presented a novel framework for graph optimization that outperforms existing methods in most cases.\nFuture work will address the limitations identified in our experiments.\nOur contribution is significant because graph optimization is important.","explanation":"The conclusion escalates from mixed experimental evidence to a broad significance claim without articulating what the actual contribution is beyond topic importance. 'Graph optimization is important' justifies relevance of the area, not significance of this paper. This weakens the closing framing and can read as promotional rather than scholarly.","fix":"Recast the conclusion around the paper's demonstrated contribution and limitations: summarize where the method improves on baselines, where it does not, and what specific conceptual or empirical advance the paper offers. Replace generic significance language with a precise statement of contribution."}]}
+tokens used
+4,019

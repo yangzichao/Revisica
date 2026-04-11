@@ -1,0 +1,96 @@
+Now I have enough of the paper to produce a thorough analysis. Let me compile all findings.
+
+```json
+{
+  "findings": [
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Wrong possessive form: 'individual's' should be 'individuals''",
+      "snippet": "interventions that change individual's private returns to investment",
+      "explanation": "The planner targets multiple individuals, so the possessive must be the plural form 'individuals'' (apostrophe after the 's'). The singular possessive 'individual's' is grammatically incorrect here.",
+      "fix": "interventions that change individuals' private returns to investment"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Truncated plural possessive: 'individual'' missing trailing 's'",
+      "snippet": "the vector of individual' eigenvector centralities in the",
+      "explanation": "The word 'individual'' is missing its final 's'. It should read 'individuals'' (plural possessive) to refer to the eigenvector centralities of all network members.",
+      "fix": "the vector of individuals' eigenvector centralities in the"
+    },
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Self-referential change-of-variables formula: b_i defined in terms of itself",
+      "snippet": "Performing the change of variables $b_{i}=\\left[\\tau-b_{i}\\right] / 2$",
+      "explanation": "The right-hand side uses b_i, which is the very variable being defined, making the expression circular and mathematically meaningless. The intended formula maps the local public goods parameterisation (with tilde) to the general model, so the right-hand side should involve \\tilde{b}_i. The status-quo companion formula immediately following correctly uses \\tilde{b}_i, confirming this is a typo.",
+      "fix": "Performing the change of variables $b_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$"
+    },
+    {
+      "category": "grammar",
+      "severity": "critical",
+      "title": "Cosine similarity definition missing \\|z\\| in the denominator",
+      "snippet": "$\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|}$",
+      "explanation": "The standard cosine similarity (and the angle interpretation stated in the very next sentence) requires dividing by the product of both norms: \\|y\\|\\|z\\|. As written, the denominator contains only \\|y\\|, so the formula is not dimensionless and does not equal the cosine of the angle between the vectors.",
+      "fix": "$\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|\\|\\boldsymbol{z}\\|}$"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Misspelling: 'faciliates' instead of 'facilitates'",
+      "snippet": "faciliates a description of the optimal intervention in terms of similarity to the status quo vector",
+      "explanation": "The word 'faciliates' is missing the letter 't'. The correct spelling is 'facilitates'.",
+      "fix": "facilitates a description of the optimal intervention in terms of similarity to the status quo vector"
+    },
+    {
+      "category": "terminology_consistency",
+      "severity": "minor",
+      "title": "Inconsistent agent label: 'the principal's objective' vs. 'the planner'",
+      "snippet": "By rewriting the principal's objective $W(\\boldsymbol{b}, \\boldsymbol{G})$ and budget constraints",
+      "explanation": "Throughout the paper the decision-maker is consistently called 'the planner' (e.g., in the Introduction, Section 2, Section 4, and Section 5). At this single point in Section 4 the word 'principal' is used instead, which appears to be a remnant of an earlier draft and introduces a jarring terminology switch.",
+      "fix": "By rewriting the planner's objective $W(\\boldsymbol{b}, \\boldsymbol{G})$ and budget constraints"
+    },
+    {
+      "category": "reference_ambiguity",
+      "severity": "major",
+      "title": "Mislabelled variable: 'status quo actions \\hat{b}' — \\hat{b} is standalone marginal returns, not actions",
+      "snippet": "As long as the status quo actions $\\hat{\\boldsymbol{b}}$ are positive",
+      "explanation": "The symbol \\hat{b} is defined in Section 2 (and used consistently everywhere else) as the vector of status quo *standalone marginal returns*, not the action vector. The status quo action vector would be a^*(\\hat{b}) = [I - βG]^{-1}\\hat{b}. Calling \\hat{b} 'status quo actions' is factually incorrect and could mislead readers about which nonnegativity constraint is being imposed.",
+      "fix": "As long as the status quo standalone marginal returns $\\hat{\\boldsymbol{b}}$ are positive"
+    },
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Sign flip in denominator of bottom-gap expression (inconsistent with Proposition 2)",
+      "snippet": "the term $\\alpha_{n-1} /\\left(\\alpha_{n-1}-\\alpha_{n}\\right)$ is large when the difference $\\lambda_{n-1}-\\lambda_{n}$, which we call the \"bottom gap,\" is small",
+      "explanation": "In Proposition 2 (part 2) the budget threshold is written with denominator (α_n − α_{n−1}), i.e. the larger index minus the smaller. Here the denominator is written in reverse order as (α_{n−1} − α_n). Because α_n > α_{n−1} when β < 0 (the substitutes case), the expression in the text has a negative denominator while the one in Proposition 2 is positive. The two occurrences are inconsistent; the text passage appears to have the subtraction reversed.",
+      "fix": "the term $\\alpha_{n-1} /\\left(\\alpha_{n}-\\alpha_{n-1}\\right)$ is large when the difference $\\lambda_{n-1}-\\lambda_{n}$, which we call the \"bottom gap,\" is small"
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Mixed singular/plural in cross-reference: 'Figures … and Figure'",
+      "snippet": "see Figures 3(B) and Figure 3(D)",
+      "explanation": "The sentence mixes the plural 'Figures' for the first reference with the singular 'Figure' for the second. Both sub-figures belong to the same Figure 3, so the reference should use either the consistent plural form 'Figures 3(B) and 3(D)' or 'Figure 3(B) and Figure 3(D)'.",
+      "fix": "see Figures 3(B) and 3(D)"
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Missing summation index in LaTeX: '\\sum_{\\in \\mathcal{N}}' should be '\\sum_{i \\in \\mathcal{N}}'",
+      "snippet": "$K(\\mathcal{B})= \\begin{cases}\\phi\\left(\\sum_{\\in \\mathcal{N}} \\sigma_{ii}^{\\mathcal{B}}\\right)$",
+      "explanation": "The subscript of the summation sign is '\\in \\mathcal{N}', which is missing the index variable 'i'. Without it the expression is syntactically malformed. Every other similar summation in the paper (e.g. \\sum_{i \\in \\mathcal{N}}) correctly includes the index.",
+      "fix": "$K(\\mathcal{B})= \\begin{cases}\\phi\\left(\\sum_{i \\in \\mathcal{N}} \\sigma_{ii}^{\\mathcal{B}}\\right)$"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Wrong possessive form: 'individual's' should be 'individuals'' (Section 5 prose)",
+      "snippet": "Shocks to individual's standalone marginal returns create variability",
+      "explanation": "As with the Abstract, the sentence refers to multiple individuals collectively, requiring the plural possessive 'individuals'' rather than the singular possessive 'individual's'.",
+      "fix": "Shocks to individuals' standalone marginal returns create variability"
+    }
+  ]
+}
+```

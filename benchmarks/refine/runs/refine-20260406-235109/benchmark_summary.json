@@ -1,0 +1,47 @@
+{
+  "manifest": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/manifest.json",
+  "aggregate_recall": 0.4423076923076923,
+  "aggregate_full_recall": 0.1346153846153846,
+  "cases": [
+    {
+      "case_id": "inference-molecular",
+      "expected": 15,
+      "found": 29,
+      "recall": 0.4666666666666667,
+      "full_recall": 0.06666666666666667,
+      "matched": 1,
+      "partial": 6,
+      "missed": 8
+    },
+    {
+      "case_id": "coset-codes",
+      "expected": 19,
+      "found": 44,
+      "recall": 0.631578947368421,
+      "full_recall": 0.21052631578947367,
+      "matched": 4,
+      "partial": 8,
+      "missed": 7
+    },
+    {
+      "case_id": "targeting-interventions",
+      "expected": 6,
+      "found": 47,
+      "recall": 0.6666666666666666,
+      "full_recall": 0.3333333333333333,
+      "matched": 2,
+      "partial": 2,
+      "missed": 2
+    },
+    {
+      "case_id": "chaotic-balanced-state",
+      "expected": 12,
+      "found": 0,
+      "recall": 0.0,
+      "full_recall": 0.0,
+      "matched": 0,
+      "partial": 0,
+      "missed": 12
+    }
+  ]
+}

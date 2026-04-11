@@ -1,0 +1,70 @@
+```json
+{
+  "findings": [
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Section 5 introduction buries methodological rationale under procedural caveats",
+      "snippet": "All methods that we consider naturally provide estimators of likelihood or relative likelihood surfaces. From a classical perspective it would be more natural to consider estimating and plotting log-likelihood surfaces. However, because of the limited information in data, it is at best unclear whether the classical asymptotic theory relating to the interpretation of the log-likelihood applies in genetics settings of interest.",
+      "explanation": "The opening paragraph of Section 5 (Applications) devotes its primary space to justifying why the authors report likelihood rather than log-likelihood — a secondary methodological footnote — before stating what the section demonstrates or how comparisons are structured. The comparison strategy (small problems as ground truth, then varying iteration counts) is introduced mid-paragraph, fragmenting the logic. A well-ordered applications section should lead with what is being demonstrated, then the comparison design, then any caveats about evaluation metrics.",
+      "fix": "Open Section 5 with a one-sentence statement of the section's purpose (demonstrating efficiency gains and comparing IS vs. MCMC across genetic model classes). Move the likelihood-vs-log-likelihood justification to a brief parenthetical or dedicated methods note at the end of the paragraph. Consolidate the comparison strategy into a coherent second paragraph before the subsections begin."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "minor",
+      "title": "Final paragraph of Section 1 disrupts forward momentum with a retrospective analogy",
+      "snippet": "The flavour of the inference problem on which this paper is focused is reminiscent of the problem addressed by Edwards (1970). In each case, the structure in genetic data arises through the action of stochastic processes superimposed on an evolutionary tree.",
+      "explanation": "The introduction's final paragraph, which draws an analogy to Edwards (1970) and Whittle (1970), appears after the section roadmap paragraph. A roadmap paragraph conventionally closes an introduction by guiding the reader forward. Placing a historical analogy after the roadmap interrupts that forward momentum and makes the introduction feel disorganized or that the analogy is an afterthought.",
+      "fix": "Move the Edwards/Whittle analogy paragraph to precede the section roadmap paragraph. Let the roadmap remain as the true closing paragraph of the introduction."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "critical",
+      "title": "Abstract claim of 'several orders of magnitude' efficiency gain is not uniformly supported by empirical evidence",
+      "snippet": "Our approach substantially outperforms existing IS algorithms, with efficiency typically improved by several orders of magnitude.",
+      "explanation": "The clearest support for this claim comes from Table 1 (theta=15.0) and the microsatellite figures. However, for the theta=2.0 case in Table 1 both methods perform comparably at 20,000 samples. For the NSE microsatellite data (Section 5.4), the authors explicitly state that the MCMC competitor is more accurate. For infinite sites data (Section 5.5), gains are described as 'about an order of magnitude,' not 'several.' The word 'typically' provides some hedging, but no aggregate efficiency statistic (e.g., effective sample size ratio) is reported to substantiate 'several orders of magnitude' as a central tendency across all cases.",
+      "fix": "Qualify the abstract claim more precisely — e.g., 'In problems with highly constrained type spaces, efficiency is improved by several orders of magnitude; in less constrained settings, gains of approximately one order of magnitude are observed.' Alternatively, report effective sample size ratios in a summary table covering all five application cases so the 'typically' qualifier has quantitative backing."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "major",
+      "title": "Section 5.4 concedes MCMC superiority without explanation or forward link to Section 6.1",
+      "snippet": "Further investigation (more runs of each method) suggested that the curve obtained by using micsat is more accurate.",
+      "explanation": "On the largest and most realistic dataset (60 males, three populations, five loci), the MCMC competitor produces more accurate results than the proposed IS method. This concession is abrupt and unelaborated. No reason is given at this point for why IS fails, nor is this failure integrated into a revised understanding of IS applicability. The explanation (constrained vs. unconstrained tree space) is deferred to Section 6.1, leaving a conspicuous logical gap at the moment of failure.",
+      "fix": "At the concession in Section 5.4, add a forward reference: 'This pattern — where MCMC outperforms IS on larger, less constrained problems — is explained in Section 6.1 in terms of tree-space dimensionality.' In Section 6.1, explicitly link back to the NSE result so the concession becomes part of a principled framework rather than an isolated admission."
+    },
+    {
+      "category": "contribution_framing",
+      "severity": "major",
+      "title": "Abstract conflates the theoretical characterization (Theorem 1) and the algorithmic contribution (SD scheme) without prioritizing either",
+      "snippet": "The optimal proposal distribution for these problems can be characterized, and we exploit a detailed analysis of genealogical processes to develop a practicable approximation to it.",
+      "explanation": "Theorem 1 (time-reversal characterization of the optimal proposal) and Definition 2 (the SD approximation) are logically distinct contributions of different intellectual weight. Running them together in a single sentence undersells Theorem 1 as a conceptual anchor with independent significance and makes it harder for readers to locate the paper's intellectual center of gravity. Theoretical readers may miss the algorithmic contribution; practitioners may not appreciate the theoretical characterization.",
+      "fix": "Separate the two contributions in the abstract with distinct sentences: 'We first characterize the optimal IS proposal distribution via time-reversal of the underlying genealogical process (Theorem 1). Building on this characterization, we derive a computationally practicable approximation that defines a new IS scheme. The new scheme substantially outperforms...'"
+    },
+    {
+      "category": "contribution_framing",
+      "severity": "minor",
+      "title": "Section 6.3 heading 'Bells and Whistles' is tonally inconsistent with scholarly register",
+      "snippet": "### 6.3. Bells and Whistles",
+      "explanation": "This colloquial heading is inconsistent with the neutral technical language of all other section headers ('General,' 'Extensions,' 'Diagnostics,' 'Future Challenges'). The section discusses failed IS alternatives and computational heuristics — meaningful methodological contributions — that deserve a more informative and dignified heading, especially in a paper read before the Royal Statistical Society.",
+      "fix": "Rename to 'Alternative Proposal Distributions and Further Improvements' or 'Heuristic Enhancements and Computational Strategies' to align with the section's actual content and the paper's overall register."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "major",
+      "title": "Section 3.4 introduces IS without a transition from the preceding MCMC discussion",
+      "snippet": "IS (see Ripley (1987) for background) is a standard method of reducing the variance of Monte Carlo estimators such as expression (5).",
+      "explanation": "Section 3.4 begins abruptly with a definitional sentence about IS, without a bridge sentence contextualizing it as an alternative or complement to the MCMC approaches in Sections 3.2–3.3. This is a load-bearing rhetorical moment because Section 4 positions the entire paper's contribution within the IS framework. The abrupt pivot weakens the argument's coherence precisely where it needs to be strongest.",
+      "fix": "Add a transitional sentence at the start of Section 3.4 that explicitly connects IS to the missing-data framing and to the preceding MCMC discussion — e.g., 'An alternative to MCMC for handling missing genealogical data is importance sampling (IS), which addresses expression (4) directly by constructing a proposal distribution over histories.'"
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "minor",
+      "title": "References contain a duplicate label for Griffiths and Tavaré (1994b), making in-text '1994c' citations unresolvable",
+      "snippet": "(1994b) Ancestral inference in population genetics. Statist. Sci., 9, 307–319.\n$\\_\\_\\_\\_$ (1994b) Sampling theory for neutral alleles in a varying environment. Phil. Trans. R. Soc. Lond. B, 344, 403–410.",
+      "explanation": "Two distinct papers are both labeled '(1994b)' in the reference list. The second is clearly the '1994c' paper cited throughout the main text (e.g., Section 3.1 cites '1994a, b, c'). This typographical error means in-text citations to '1994c' cannot be resolved from the reference list, creating a bibliographic inconsistency that violates scholarly citation standards.",
+      "fix": "Correct the second '(1994b)' entry to '(1994c)'. Verify all in-text citations to the 1994 Griffiths–Tavaré trilogy to ensure letter designations are consistent throughout."
+    }
+  ]
+}
+```

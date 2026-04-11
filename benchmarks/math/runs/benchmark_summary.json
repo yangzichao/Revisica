@@ -1,0 +1,37 @@
+{
+  "manifest": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/manifest.json",
+  "passed": 5,
+  "total": 5,
+  "results": [
+    {
+      "case_id": "correct_integral",
+      "passed": true,
+      "message": "ok",
+      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/runs/correct_integral"
+    },
+    {
+      "case_id": "wrong_integral",
+      "passed": true,
+      "message": "ok",
+      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/runs/wrong_integral"
+    },
+    {
+      "case_id": "wrong_average_value",
+      "passed": true,
+      "message": "ok",
+      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/runs/wrong_average_value"
+    },
+    {
+      "case_id": "continuity_singularity",
+      "passed": true,
+      "message": "ok",
+      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/runs/continuity_singularity"
+    },
+    {
+      "case_id": "proof_antiderivative_error",
+      "passed": true,
+      "message": "ok",
+      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/runs/proof_antiderivative_error"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "role": "claim-verify-claim-29",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": []
+}

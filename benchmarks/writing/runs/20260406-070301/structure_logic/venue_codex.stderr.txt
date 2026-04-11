@@ -1,0 +1,119 @@
+Reading prompt from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Users/zichaoyang/workplace/ReviseAgent
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019d6322-2017-7e41-bf90-9ccde089c530
+--------
+user
+You are reviewing an academic draft for venue/style alignment.
+
+Target venue profile:
+- `general-academic`
+
+Scope:
+- Diagnose whether the draft's writing style, framing, emphasis, and expected reader positioning match the target profile.
+- Focus on high-level venue fit, not local grammar.
+- If the target profile is broad, use a conservative interpretation.
+- Suggest rewrites only for the highest-value gaps.
+
+The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/structure_logic.tex`.
+
+Return JSON only, with this schema:
+{
+  "findings": [
+    {
+      "category": "venue_alignment",
+      "severity": "major",
+      "title": "short title",
+      "snippet": "exact local snippet",
+      "explanation": "why this does not align with the target profile",
+      "fix": "concrete revision suggestion",
+      "rewrite": "optional short rewrite example"
+    }
+  ]
+}
+
+Allowed categories:
+- `venue_alignment`
+- `audience_positioning`
+- `abstract_positioning`
+- `introduction_positioning`
+- `rewrite_suggestion`
+
+Allowed severities:
+- `critical`
+- `major`
+- `minor`
+
+If there are no worthwhile findings, return `{"findings":[]}`.
+
+Source LaTeX:
+
+```tex
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{A Novel Framework for Graph Optimization}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Graphs are used in many applications.
+Many algorithms have been proposed.
+Our algorithm is better.
+We test it on several datasets.
+
+\section{Related Work}
+Smith et al.\ (2020) proposed a method for graph partitioning.
+Jones et al.\ (2021) extended this to weighted graphs.
+There are also methods based on spectral clustering.
+
+\section{Our Method}
+We propose a new framework for graph optimization.
+The framework has three phases.
+
+In Phase 1, we compute a preliminary partition using a greedy approach.
+In Phase 3, we refine the partition using local search.
+In Phase 2, we merge small clusters.
+
+The time complexity is $O(n \log n)$ in the best case.
+However, in our experiments the runtime was often quadratic.
+
+\section{Experiments}
+We tested our method on five benchmark datasets.
+Our method achieved the best results on three of them.
+On the other two datasets, baseline methods performed better.
+We attribute this to the nature of the graphs, but we did not investigate further.
+
+Table~1 shows the results but we were unable to include it due to space constraints.
+
+\section{Theoretical Analysis}
+
+\begin{theorem}
+The proposed method converges to a local optimum in polynomial time.
+\end{theorem}
+
+We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.
+
+\section{Conclusion}
+We presented a novel framework for graph optimization that outperforms existing methods in most cases.
+Future work will address the limitations identified in our experiments.
+Our contribution is significant because graph optimization is important.
+
+\end{document}
+
+```
+
+codex
+{"findings":[{"category":"abstract_positioning","severity":"major","title":"Missing abstract leaves the paper without standard scholarly framing","snippet":"\\maketitle\n\n\\section{Introduction}","explanation":"For a conservative general-academic profile, readers expect an abstract that states the problem, approach, main evidence, and scope of contribution before the introduction. Starting directly with the introduction makes the draft feel incomplete and weakens venue fit because the reader is not given a concise scholarly positioning of the work.","fix":"Add a conventional abstract that briefly covers: the graph optimization problem, the proposed framework, the nature of the evaluation, the main empirical outcome, and the paper's main limitation or scope.","rewrite":"\\begin{abstract}\nWe study graph optimization and propose a three-phase framework that combines greedy initialization, cluster merging, and local refinement. We evaluate the method on five benchmark datasets and find that it outperforms baseline methods on three datasets while underperforming on two others, suggesting that performance depends on graph structure. These results indicate that the framework is promising but not uniformly superior, motivating further analysis of the conditions under which it is most effective.\n\\end{abstract}"},{"category":"introduction_positioning","severity":"major","title":"Introduction is too generic and does not establish a research gap","snippet":"Graphs are used in many applications.\nMany algorithms have been proposed.\nOur algorithm is better.\nWe test it on several datasets.","explanation":"A general academic introduction should orient the reader to a specific problem, identify a gap in existing work, and state the contribution in a calibrated way. This introduction is too generic, makes an unsupported comparative claim, and does not explain why the problem is difficult, what is missing in prior work, or what precise contribution the paper makes.","fix":"Rewrite the introduction around four moves: define the problem context, identify the limitation in prior methods, state the proposed contribution precisely, and preview the evidence and paper structure.","rewrite":"Graph optimization plays a central role in applications such as partitioning, clustering, and network analysis. Despite substantial prior work, existing methods often face tradeoffs between solution quality and computational cost, particularly on heterogeneous graph structures. This paper presents a three-phase optimization framework designed to balance efficiency with partition quality. We evaluate the method on benchmark datasets and analyze both its strengths and its observed failure cases."},{"category":"venue_alignment","severity":"major","title":"Promotional and absolute claims are not calibrated to academic tone","snippet":"\\title{A Novel Framework for Graph Optimization}\n...\nOur algorithm is better.\n...\nWe presented a novel framework for graph optimization that outperforms existing methods in most cases.\nFuture work will address the limitations identified in our experiments.\nOur contribution is significant because graph optimization is important.","explanation":"The draft repeatedly uses assertive, self-promotional language without qualification. In a general-academic style, novelty and significance should be demonstrated through precise comparison and evidence, not declared directly. Phrases such as 'novel,' 'better,' and 'significant because graph optimization is important' read as overstated and under-argued.","fix":"Replace promotional wording with specific, evidence-based claims. State what is new in technical terms and qualify comparative performance according to the actual experimental results.","rewrite":"\\title{A Three-Phase Framework for Graph Optimization}\n...\nWe propose a three-phase framework for graph optimization and evaluate it against established baselines.\n...\nThe results suggest that the method is competitive on several benchmark datasets, while also revealing settings in which baseline methods remain stronger."},{"category":"audience_positioning","severity":"major","title":"Evidence is presented as incomplete, asking readers to accept unsupported claims","snippet":"Table~1 shows the results but we were unable to include it due to space constraints.\n...\nWe do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.","explanation":"General academic readers expect core claims to be inspectable and supported within the paper. Saying that the main results table is omitted and that a theorem is unproved but 'intuitively obvious' positions the reader as someone who should trust the authors without evidence. That is misaligned with standard scholarly expectations.","fix":"Either include the missing evidence and a formal proof, or narrow the claims. If a proof is out of scope, restate the theorem as an informal proposition or empirical observation and clearly mark it as such.","rewrite":"Table~1 summarizes the benchmark results discussed below.\n...\nWe conjecture that the method converges to a local optimum under the update rules used here; a formal proof is left for future work."},{"category":"venue_alignment","severity":"minor","title":"Discussion of limitations is too shallow for a balanced academic framing","snippet":"On the other two datasets, baseline methods performed better.\nWe attribute this to the nature of the graphs, but we did not investigate further.","explanation":"General-academic writing usually treats negative or mixed results as an opportunity for analysis, boundary-setting, or hypothesis formation. This passage acknowledges a limitation but stops too early, which makes the discussion feel underdeveloped rather than reflective and rigorous.","fix":"Expand this into a brief limitations discussion that states what graph properties may matter, what evidence is currently missing, and how future work would test the hypothesis.","rewrite":"Baseline methods performed better on two datasets, suggesting that the proposed framework may be sensitive to graph characteristics such as density, weight distribution, or community structure. Because these factors were not isolated in the present study, the results should be interpreted as conditional rather than universal; a targeted analysis of dataset properties is an important direction for future work."}]}
+tokens used
+11,360

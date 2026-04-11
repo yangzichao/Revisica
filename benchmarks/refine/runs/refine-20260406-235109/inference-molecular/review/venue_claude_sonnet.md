@@ -1,0 +1,62 @@
+Now I have enough context to compile a thorough venue/style analysis. Let me produce the findings.
+
+```json
+{
+  "findings": [
+    {
+      "category": "venue_alignment",
+      "severity": "critical",
+      "title": "Explicit RSS read-paper attribution header",
+      "snippet": "[Read before The Royal Statistical Society at a meeting organized by the Research Section on Wednesday, March 15th, 2000, Professor P. J. Diggle in the Chair]",
+      "explanation": "The bracketed header immediately below the author line brands the document as a Royal Statistical Society 'read paper'—a highly venue-specific publication format with no equivalent in general-academic journals. It anchors every framing decision in the paper (discussant sections, vote of thanks, 'Summary.' label, formal reply structure) to the RSS institutional context. Any general-academic reader or editor will immediately recognise this as unprocessed RSS-format material rather than a standalone journal submission.",
+      "fix": "Remove the read-paper attribution line in its entirety. If the submission history is relevant (e.g. for a reprint or revised version), it can be acknowledged in a footnote worded as 'An earlier version of this paper was read before the Royal Statistical Society on 15 March 2000.'",
+      "rewrite": "An earlier version of this work was presented to the Royal Statistical Society Research Section, March 2000."
+    },
+    {
+      "category": "abstract_positioning",
+      "severity": "critical",
+      "title": "Abstract labelled 'Summary.' per JRSS house style",
+      "snippet": "Summary. Full likelihood-based inference for modern population genetics data presents methodological and computational challenges.",
+      "explanation": "The JRSS convention is to open the abstract block with the word 'Summary.' followed immediately by the text. No other major general-academic venue uses this convention; virtually all use the heading 'Abstract' on a separate line, or no heading at all. Leaving 'Summary.' in place signals to editors and reviewers that the manuscript has been lifted from JRSS without adaptation, and it may also cause abstract-parsing errors in submission systems that search for the keyword 'Abstract'.",
+      "fix": "Replace the inline 'Summary.' prefix with a standalone 'Abstract' heading consistent with the target venue's style guide.",
+      "rewrite": "**Abstract**\n\nFull likelihood-based inference for modern population genetics data presents methodological and computational challenges..."
+    },
+    {
+      "category": "audience_positioning",
+      "severity": "major",
+      "title": "Verbatim discussant comments and ceremonial 'vote of thanks' embedded in the manuscript body",
+      "snippet": "## Discussion on the paper by Stephens and Donnelly\n\nIan Wilson (University of Aberdeen)\nIt is a great pleasure for me to propose the vote of thanks for this paper. [...]\n\nThe vote of thanks was passed by acclamation.",
+      "explanation": "From line 726 onward, the document contains lengthy formal discussion contributions from five named discussants (Ian Wilson, D. A. Stephens, Bob Griffiths, Rosalind Harding, and others), each complete with mathematical notation and citations, followed by the ceremonial announcement 'The vote of thanks was passed by acclamation.' This multi-voice structure is unique to the RSS read-paper tradition. General-academic journals have no such section; peer review is anonymous and pre-publication, not public and post-presentation. Including this material repositions the document as a historical transcript rather than an original research paper and substantially inflates word count with content that is not the authors' own work.",
+      "fix": "Remove the entire '## Discussion on the paper by Stephens and Donnelly' section and all subsequent discussant contributions. If the authors subsequently published a reply, that material should also be omitted or incorporated as a self-contained rejoinder appendix clearly attributed to the authors only. Any substantive scientific points raised by discussants that influenced the final manuscript can be acknowledged in a revised Acknowledgements section.",
+      "rewrite": null
+    },
+    {
+      "category": "venue_alignment",
+      "severity": "major",
+      "title": "Colloquial section heading 'Bells and whistles' (Section 6.3)",
+      "snippet": "### 6.3. Bells and whistles\n\nOur search for an efficient IS function was based exclusively on our knowledge of the underlying stochastic processes.",
+      "explanation": "The phrase 'bells and whistles' is idiomatic slang for optional or decorative extras—it is self-deprecating in the context of an RSS read paper (where informality during the presentation is expected), but it is out of register for a general-academic journal article, where section headings are expected to be descriptive and discipline-neutral. Readers outside the immediate community may be confused about the section's content, and the heading undermines the otherwise rigorous scholarly tone of the surrounding text.",
+      "fix": "Replace with a descriptive, formal heading that reflects the section's actual content (exploring further efficiency improvements and computational strategies).",
+      "rewrite": "### 6.3. Further efficiency improvements and adaptive strategies"
+    },
+    {
+      "category": "venue_alignment",
+      "severity": "minor",
+      "title": "Reference list uses JRSS-specific abbreviated journal titles throughout",
+      "snippet": "Davison, A. C. and Smith, R. L. (1990) Models for exceedances over high thresholds (with discussion). J. R. Statist. Soc. B, 52, 393–442.\nGeyer, C. J. and Thompson, E. A. (1992) Constrained Monte Carlo maximum likelihood for dependent data (with discussion). J. R. Statist. Soc. B, 54, 657–699.",
+      "explanation": "The reference list consistently employs JRSS house-style abbreviations—'J. R. Statist. Soc. B', 'J. Am. Statist. Ass.', 'Theor. Popln Biol.', 'Stochast. Process. Applic.'—that are unique to or strongly associated with the Royal Statistical Society publication ecosystem. General-academic venues (and most modern journal submission systems) require either full journal names or an independently specified abbreviation list. The current format will fail automated reference checkers and appear stylistically inconsistent to editors at non-RSS journals.",
+      "fix": "Expand all abbreviated journal titles to their full forms (or reformat according to the target venue's citation style guide). For example, 'J. R. Statist. Soc. B' → 'Journal of the Royal Statistical Society: Series B', 'J. Am. Statist. Ass.' → 'Journal of the American Statistical Association', 'Theor. Popln Biol.' → 'Theoretical Population Biology'.",
+      "rewrite": null
+    },
+    {
+      "category": "introduction_positioning",
+      "severity": "minor",
+      "title": "Citation of an RSS discussion contribution as a scholarly precedent implicitly assumes RSS-insider reader knowledge",
+      "snippet": "we note an analogy between the approach suggested by Whittle (1970) in the discussion of Edwards (1970) and the approach which we adopt here.",
+      "explanation": "The phrase 'in the discussion of Edwards (1970)' references a formal discussant contribution appended to an RSS read paper—a format that general-academic readers may not be familiar with. Without explanation, readers outside the RSS tradition may not understand that 'the discussion' refers to a distinct, citable scholarly contribution rather than an informal remark or a section of Edwards's own paper. This creates a small but unnecessary comprehension barrier and positions the reader as a member of the RSS historical community.",
+      "fix": "Briefly gloss the nature of the Whittle (1970) contribution so that the analogy is accessible to any academic reader.",
+      "rewrite": "we note an analogy between the approach suggested by Whittle (1970)—in the published discussion appended to Edwards (1970)—and the approach which we adopt here."
+    }
+  ]
+}
+```

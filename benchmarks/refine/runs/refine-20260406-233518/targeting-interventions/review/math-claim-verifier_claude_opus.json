@@ -1,0 +1,49 @@
+{
+  "role": "math-claim-verifier",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "formula_inconsistency",
+      "severity": "major",
+      "title": "Cosine similarity Definition 1 missing ||z|| in denominator",
+      "snippet": "DEFINITION 1: The cosine similarity of two nonzero vectors y and z is \u03c1(y, z) = (y \u00b7 z) / ||y||.",
+      "explanation": "The definition as written (line 191) gives \u03c1(y,z) = (y\u00b7z)/||y||, which is not cosine similarity \u2014 it is the scalar projection of z onto the unit vector of y. Standard cosine similarity requires both norms: \u03c1(y,z) = (y\u00b7z)/(||y|| ||z||). The correct two-norm formula is used everywhere else in the paper (e.g., the proof of Theorem 1 at line 490 writes \u03c1(y*,u^\u2113) = (y*\u00b7u^\u2113)/(||y*|| ||u^\u2113||)). Numerical test confirms the single-norm formula gives values \u2260 [-1,1] for non-unit vectors, violating the stated property that \u03c1 = \u00b11 for parallel vectors of arbitrary norm.",
+      "fix": "Correct Definition 1 to: \u03c1(y, z) = (y \u00b7 z) / (||y|| ||z||)."
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "major",
+      "title": "Assumption 3 uses ||b\u0302|| instead of ||b\u0302||\u00b2 in budget condition",
+      "snippet": "Assumption 3: Either w < 0 and C < ||b\u0302||, or w > 0.",
+      "explanation": "Assumption 3 (line 200) states C < ||b\u0302|| (the Euclidean norm), but the proof logic requires C < ||b\u0302||\u00b2 (the squared norm). The proof's footnote 34 (line 770) correctly says 'w < 0 and \u03a3 b\u0302_\u2113\u00b2 > C', and \u03a3 b\u0302_\u2113\u00b2 = ||b\u0302||\u00b2 by Parseval's theorem. Setting b = 0 costs K = \u03a3 b\u0302_i\u00b2 = ||b\u0302||\u00b2, so the planner can achieve the bliss point iff C \u2265 ||b\u0302||\u00b2. The condition C < ||b\u0302|| is strictly more restrictive than C < ||b\u0302||\u00b2 (they differ unless ||b\u0302|| \u2264 1), which would unnecessarily exclude interesting cases from the theorem. Footnote 15 has the same issue (says C \u2265 ||b\u0302|| where it should be C \u2265 ||b\u0302||\u00b2).",
+      "fix": "In Assumption 3, replace 'C < ||b\u0302||' with 'C < ||b\u0302||\u00b2'. Similarly fix footnote 15 to read 'C \u2265 ||b\u0302||\u00b2'."
+    },
+    {
+      "category": "math_verification",
+      "severity": "major",
+      "title": "Variational characterization says 'maximizer' instead of 'minimizer' for \u03bb\u2099, \u03bb\u2099\u208b\u2081",
+      "snippet": "Moreover, the eigenvector u^n is a maximizer of the first problem, while u^{n-1} is a maximizer of the second; these are uniquely determined under Assumption 2.",
+      "explanation": "Line 324 describes the variational characterization of the two smallest eigenvalues \u03bb\u2099 = min and \u03bb\u2099\u208b\u2081 = min (subject to orthogonality). It then says u^n is 'a maximizer of the first problem' and u^{n-1} is 'a maximizer of the second.' Since both problems are minimizations (explicitly stated two lines earlier), u^n and u^{n-1} are minimizers, not maximizers. This is a copy-paste error from the preceding paragraph about \u03bb\u2081/\u03bb\u2082 where the 'maximizer' language was correct. Numerical verification confirms u^n minimizes u^T G u over the unit sphere, achieving \u03bb\u2099 (cosine similarity 1.0 with the minimizing vector).",
+      "fix": "Replace both instances of 'maximizer' with 'minimizer' in the sentence about u^n and u^{n-1} for the bottom eigenvalue characterization."
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Lagrangian display missing square on b\u0302_\u2113 in objective term",
+      "snippet": "L = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]",
+      "explanation": "In the proof of Theorem 1 (line 465), the Lagrangian's objective term is written as w \u03a3 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113 (with b\u0302_\u2113 to the first power), but the optimization problem (IT-PC transformed, line 451) has the objective w \u03a3 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2. SymPy differentiation confirms: without the square, \u2202L/\u2202x_\u2113 = 2\u03b1_\u2113 b\u0302_\u2113 w(1+x_\u2113) \u2212 2b\u0302_\u2113\u00b2 \u03bc x_\u2113, which does NOT factor as the paper claims (line 471: 2b\u0302_\u2113\u00b2[w\u03b1_\u2113(1+x_\u2113) \u2212 \u03bcx_\u2113]). With the square, the factoring is correct. The error is confined to the display; all subsequent derivations use the correct squared form.",
+      "fix": "Replace b\u0302_\u2113 with b\u0302_\u2113\u00b2 in the objective term of the Lagrangian display (line 465)."
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Eigenvector index notation swapped in proof: u_\u2113^i should be u_i^\u2113",
+      "snippet": "b_i* \u2212 b\u0302_i = w \u03a3_\u2113 u_\u2113^i (\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113)) b\u0302_\u2113",
+      "explanation": "Line 584 writes u_\u2113^i (subscript \u2113, superscript i), but the paper's established notation convention (line 186: a_i* = \u03a3_\u2113 (1/(1\u2212\u03b2\u03bb_\u2113)) u_i^\u2113 b_\u2113) uses u_i^\u2113 (subscript i = node index, superscript \u2113 = eigenvector index). The swapped notation u_\u2113^i would denote the \u2113-th entry of the i-th eigenvector, which is a different quantity. Numerical verification with a 4-node example confirms that the correct reconstruction uses u_i^\u2113 = U[i,\u2113], matching the formula's output to machine precision for all nodes.",
+      "fix": "Replace u_\u2113^i with u_i^\u2113 in the display on line 584."
+    }
+  ]
+}

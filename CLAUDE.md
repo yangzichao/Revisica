@@ -10,7 +10,7 @@ python -m pip install .
 revise-agent bootstrap
 ```
 
-No Makefile. All development commands go through the `revise-agent` CLI (entry point: `src/revise_agent/cli.py`).
+Only runtime dependency is `sympy>=1.13`. No Makefile — all development commands go through the `revise-agent` CLI (entry point: `src/revise_agent/cli.py`).
 
 ## Running the Tool
 
@@ -23,6 +23,10 @@ revise-agent review examples/minimal_paper.tex --venue-profile econ-top5 --llm-p
 revise-agent writing-review examples/minimal_paper.tex --reviewer-a codex:gpt-5 --reviewer-b claude:sonnet
 revise-agent math-review examples/minimal_paper.tex --llm-proof-review --targets codex claude
 ```
+
+Role arguments use the `provider[:model]` format, e.g. `codex:gpt-5` or `claude:sonnet`. When no model is specified, `model_router.py` auto-selects based on task type (math reasoning -> opus/gpt-5, writing -> sonnet/gpt-5).
+
+Supported venue profiles: `general-academic`, `econ-general-top`, `econ-top5`, `econ-theory`, `econ-empirical`, `econ-applied`.
 
 ## Running Benchmarks
 
@@ -38,6 +42,7 @@ revise-agent benchmark-run --suite proofnet --mode single-agent --limit 1 --revi
 
 # Refine.ink benchmark (primary eval for recall against paper comments)
 revise-agent benchmark-refine
+revise-agent benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600
 
 # Benchmark history
 revise-agent benchmark-history
@@ -45,31 +50,17 @@ revise-agent benchmark-history
 
 Quickest sanity check after a change: `revise-agent benchmark-run --suite math-cases --mode deterministic-only`
 
+No test suite exists yet — the math benchmark with `deterministic-only` mode is the fastest way to verify correctness.
+
 ## Architecture
 
 ReviseAgent converts a LaTeX paper into reviewable units and runs them through two independent lanes in parallel:
 
 ```
-LaTeX file → split into units → [writing lane | math lane] → merge findings → final report
+LaTeX file -> split into units -> [writing lane | math lane] -> merge findings -> final report
 ```
 
-**Writing lane** (`writing_review.py`):
-- Extracts sections and generates section combinations (pairs/triples)
-- Runs 3 specialist roles in parallel via `ThreadPoolExecutor` (up to 12 workers): `basic` (grammar/clarity), `structure` (logic/flow), `venue` (style/fit)
-- Optional self-check and judge/adjudication layers
-- Calls providers via `review.py`, which shells out to the `codex` or `claude` CLI
-
-**Math lane** (`math_review.py` → four sub-modules):
-- `math_extraction.py`: parse functions, claims, theorem/proof blocks from LaTeX
-- `math_deterministic.py`: SymPy-based symbolic checks (integrals, average-value claims, continuity/domain)
-- `math_llm_review.py`: multi-provider proof-obligation review with optional self-check and adjudication
-- `math_artifacts.py`: render JSON/Markdown reports
-
-**Provider execution** (`review.py`): shared layer that invokes `codex` and `claude` CLIs as subprocesses. Model routing is centralized in `model_router.py`—task type determines which provider/model spec to use.
-
-**Benchmarking** (`benchmark_framework.py`, `benchmark_refine.py`): `benchmark_framework.py` runs math-oriented suites across modes; `benchmark_refine.py` is the Refine.ink adapter with a claim-by-claim verifier and LLM judge. Provenance (git commit, prompt hashes, pass/fail) is recorded in `benchmarks/registry.jsonl`.
-
-**Agent definitions**: `.claude/agents/` holds markdown files defining writing and math specialist agents. Static system instructions should live in these files; dynamic task builders (injecting file paths, findings content, venue profiles) remain in Python.
+For detailed architecture documentation, see `docs/current-architecture.md`.
 
 ## Key Source Files
 
@@ -77,33 +68,59 @@ LaTeX file → split into units → [writing lane | math lane] → merge finding
 |---|---|
 | `cli.py` | Command dispatch (thin) |
 | `unified_review.py` | Concurrent writing + math orchestration |
-| `writing_review.py` | Writing lane orchestration (846 lines, has known dead code—see Priority 1 in `docs/architecture-refactor-todo.md`) |
+| `writing_review.py` | Writing lane orchestration |
 | `math_review.py` | Math lane orchestrator (calls 4 sub-modules) |
-| `review.py` | Shared provider execution; shells out to `codex`/`claude` CLIs (known temp-file leak—see Priority 2) |
-| `benchmark_framework.py` | Unified benchmark runner |
-| `benchmark_refine.py` | Refine.ink benchmark adapter |
-| `templates.py` | All prompt templates |
-| `model_router.py` | Task-type → provider/model selection |
+| `math_extraction.py` | Function/claim/theorem/proof extraction from LaTeX |
+| `math_deterministic.py` | SymPy-based symbolic analysis |
+| `math_llm_review.py` | Multi-provider proof review + adjudication |
+| `math_artifacts.py` | Math report rendering (JSON/Markdown) |
+| `math_types.py` | All math-lane dataclasses (`MathReviewRun`, `ProofBlueprint`, `MathIssue`, etc.) |
+| `review.py` | Shared provider execution; shells out to `codex`/`claude` CLIs |
+| `templates.py` | All prompt templates and venue profile definitions |
+| `model_router.py` | Task-type -> provider/model selection |
 | `core_types.py` | `ProviderModelSpec`, `ReviewResult`, `AgentSpec` dataclasses |
+| `adjudication_policy.py` | Provider preference logic for adjudication |
+| `section_combiner.py` | Section extraction and combination generation |
+| `claim_extractor.py` | Per-paragraph/footnote claim extraction and verification tasks |
+| `agent_assets.py` | Load agent definition files from `.claude/agents/` |
+| `benchmark_framework.py` | Unified benchmark runner (math suites) |
+| `benchmark_refine.py` | Refine.ink benchmark adapter with LLM judge |
+| `benchmark_provenance.py` | Git/prompt provenance tracking for benchmark registry |
+| `bootstrap.py` | CLI/asset detection and installation for codex/claude platforms |
+
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `REVISE_AGENT_CODEX_HOME` | Override Codex config home (default: `~/.codex`) |
+| `REVISE_AGENT_CLAUDE_HOME` | Override Claude config home (default: `~/.claude`) |
+| `REVISE_AGENT_RUNTIME_HOME` | Override `$HOME` for subprocess execution |
 
 ## Output Structure
 
 - Reviews: `reviews/<stem>-unified-<timestamp>/summary.md` (+ `writing/`, `math/` subdirs)
-- Benchmarks: `benchmarks/runs/<suite>-<mode>-<timestamp>/benchmark_summary.md`
+- Benchmarks: `benchmarks/runs/<suite>-<mode>-<timestamp>/benchmark_summary.md` (framework runs), `benchmarks/<suite>/runs/` (per-suite runs)
 - Provenance registry: `benchmarks/registry.jsonl`
+- Curated reports: `benchmarks/reports/`
 
-## Known Issues and Refactoring Plan
+## Documentation Map
 
-See `docs/architecture-refactor-todo.md` for the full ordered refactor plan. Priority areas:
-1. Dead code in `writing_review.py` (`_run_provider` import, `_build_role_prompt`)
-2. Temp-file leak in `review.py` Codex subprocess execution
-3. `math_review.py` is oversized—extraction, deterministic, LLM, and artifact logic are already split into sub-modules but the orchestrator still carries too much
-4. `benchmark_framework.py` has suite/mode `if/elif` branching that needs a registry/dispatch table
+| What | Where |
+|---|---|
+| Task priorities | `docs/todo.md` |
+| Feature specs | `docs/specs/` |
+| Experiment learnings | `docs/learning/` (see `README.md` for index) |
+| Architecture details | `docs/current-architecture.md` |
+| Refactoring plan | `docs/architecture-refactor-todo.md` |
+| Benchmark reports | `benchmarks/reports/` |
+| Agent definitions | `.claude/agents/` |
+
+## Conventions
 
 **Ground rules for refactoring**: preserve current CLI behavior unless explicitly changing it; do not mix prompt-content changes with structural changes; verify benchmark artifact format is stable after each change.
 
-## Benchmark Reporting
+**Benchmark reporting format**: `benchmarks/reports/YYYY-MM-DD-<name>.md` — must include git commit ID, exact commands run, artifact paths.
 
-When recording benchmark results, follow the format in `docs/benchmark-reports/` (see memory: `feedback_benchmark_report_format.md`):
-- File: `docs/benchmark-reports/YYYY-MM-DD-<name>.md`
-- Must include: git commit ID, exact commands run, artifact paths
+**Learning file format**: `docs/learning/YYYY-MM-DD-<slug>.md` — must include date, commit, observation, lesson, architecture implications.
+
+**Spec file format**: `docs/specs/<feature-name>.md` — must include status, problem, design, implementation plan, acceptance criteria.

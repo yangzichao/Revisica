@@ -1,0 +1,33 @@
+{
+  "role": "math-claim-verifier",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Missing square on b\u0302_\u2113 in displayed Lagrangian",
+      "snippet": "\ud835\udcdb = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]",
+      "explanation": "In the appendix proof of Theorem 1, the displayed Lagrangian writes the objective term as w\u00b7\u03b1_\u2113\u00b7(1+x_\u2113)\u00b2\u00b7b\u0302_\u2113 (underline, no square), but the transformed problem (IT-PC) derived just above it has b\u0302_\u2113\u00b2 (squared) in the objective. The subsequent FOC in Eq. (11) correctly factors out b\u0302_\u2113\u00b2, so all downstream results\u2014including the solution x_\u2113* = w\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113) and the budget equation (6)\u2014are unaffected. This is a typographical error in the Lagrangian display only.",
+      "fix": "Replace b\u0302_\u2113 with b\u0302_\u2113\u00b2 in the first sum of the Lagrangian display, making it: \ud835\udcdb = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]."
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Cosine similarity definition missing ||z|| in denominator",
+      "snippet": "\u03c1(y, z) = y\u00b7z / ||y||",
+      "explanation": "Definition 1 defines cosine similarity as \u03c1(y,z) = y\u00b7z/||y||, but the standard cosine similarity is y\u00b7z/(||y||\u00b7||z||). The denominator is missing the norm of the second vector. In all subsequent uses in the paper, the second vector is z = u^\u2113(G), which is normalized to ||u^\u2113|| = 1, so every formula downstream (Theorem 1, Corollary 1, Propositions 1\u20132) is numerically correct. This is a typographical omission in the general definition.",
+      "fix": "Correct Definition 1 to read: \u03c1(y, z) = y\u00b7z / (||y|| \u00b7 ||z||)."
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "'Maximizer' should be 'minimizer' for bottom eigenvalue characterization",
+      "snippet": "Moreover, the eigenvector u^n is a maximizer of the first problem, while u^{n-1} is a maximizer of the second",
+      "explanation": "In Section 4.2, the characterizations of \u03bb_n and \u03bb_{n-1} use minimization problems (min_{u:||u||=1} \u03a3 g_ij u_i u_j). But the text states that u^n and u^{n-1} are 'maximizers' of these problems. They should be 'minimizers', since the Rayleigh quotient is minimized (not maximized) at the bottom eigenvector. This is likely a copy error from the analogous passage about \u03bb_1 and \u03bb_2 just above, where 'maximizer' is correct.",
+      "fix": "Change 'the eigenvector u^n is a maximizer of the first problem, while u^{n-1} is a maximizer of the second' to 'the eigenvector u^n is a minimizer of the first problem, while u^{n-1} is a minimizer of the second'."
+    }
+  ]
+}

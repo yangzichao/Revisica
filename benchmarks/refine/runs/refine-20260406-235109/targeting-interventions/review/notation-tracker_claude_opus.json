@@ -1,0 +1,145 @@
+{
+  "role": "notation-tracker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_drift",
+      "severity": "critical",
+      "title": "Cosine similarity definition missing \u2016z\u2016 in denominator",
+      "snippet": "DEFINITION 1: The cosine similarity of two nonzero vectors $\\boldsymbol{y}$ and $\\boldsymbol{z}$ is $\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|}$.",
+      "explanation": "The definition gives \u03c1(y,z)= (y\u00b7z)/\u2016y\u2016, but the standard cosine similarity\u2014and the formula used in every proof (e.g., line 490: y*\u00b7u^\u2113 / (\u2016y*\u2016 \u2016u^\u2113\u2016), and line 572)\u2014divides by \u2016y\u2016\u2016z\u2016. The denominator is missing \u2016z\u2016. Although eigenvectors satisfy \u2016u^\u2113\u2016=1 so the omission is invisible in most applications, the definition as stated is mathematically wrong for general vectors.",
+      "fix": "Change the definition to $\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|\\|\\boldsymbol{z}\\|}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "critical",
+      "title": "Self-referential change of variables in Example 2: b_i defined in terms of b_i",
+      "snippet": "Performing the change of variables $b_{i}=[\\tau-b_{i}] / 2$ and $\\beta=-\\tilde{\\beta} / 2$",
+      "explanation": "Line 128 writes b_i = [\u03c4 \u2212 b_i]/2, defining b_i in terms of itself. From context and from footnote 15 (line 735), which correctly writes b_i = [\u03c4 \u2212 \\tilde{b}_i]/2, the tilde on b_i on the right-hand side was dropped. This makes the change of variables circular and undefined.",
+      "fix": "Replace $b_{i}=[\\tau-b_{i}] / 2$ with $b_{i}=[\\tau-\\tilde{b}_{i}] / 2$."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "critical",
+      "title": "Assumption 3 missing squared norm: C < \u2016b\u0302\u2016 should be C < \u2016b\u0302\u2016\u00b2",
+      "snippet": "Assumption 3: Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|$, or $w>0$.",
+      "explanation": "Two lines earlier (line 198), the text states the first-best is achievable when C \u2265 \u2016b\u0302\u2016\u00b2. Assumption 3 is meant to rule out this case, so the condition should be C < \u2016b\u0302\u2016\u00b2. As written, C < \u2016b\u0302\u2016 is dimensionally inconsistent with the quadratic cost function K = \u03a3(b_i \u2212 b\u0302_i)\u00b2, which has units of b\u00b2 not b. Footnote 34 (line 770) also confirms the correct threshold is \u03a3 b\u0302_\u2113\u00b2 (= \u2016b\u0302\u2016\u00b2).",
+      "fix": "Change to $C<\\|\\hat{\\boldsymbol{b}}\\|^{2}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Scalar \u03b2 incorrectly bolded as \ud835\udec3 in diagonal system",
+      "snippet": "$[\\boldsymbol{I}-\\boldsymbol{\\beta} \\boldsymbol{\\Lambda}]^{-1}$ is $\\frac{1}{1-\\beta \\lambda_{\\ell}}$",
+      "explanation": "At lines 175 and 436, the scalar parameter \u03b2 is typeset in bold (\\boldsymbol{\u03b2}), suggesting it is a vector or matrix. In every other occurrence (equations (2), (3), (4), Theorem 1, all proofs), \u03b2 is an unbolded scalar. The bold is applied only when \u03b2 appears between two bold matrices I and \u039b, likely a copy-paste artifact.",
+      "fix": "Replace $\\boldsymbol{\\beta}$ with $\\beta$ at both occurrences."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Missing boldface on vectors in equation (2) and line 166",
+      "snippet": "$[I-\\beta G] a^{*}=b$  (line 57)\n$[I-\\beta \\boldsymbol{U} \\boldsymbol{\\Lambda} \\boldsymbol{U}^{\\top}] a^{*}=b$  (line 166)",
+      "explanation": "Equation (2) writes I, a*, and b without boldface, but equation (3) immediately after writes [\ud835\udc08\u2212\u03b2\ud835\udc06]\u207b\u00b9\ud835\udc1b with full boldface. Similarly, line 166 mixes bolded U, \u039b with unbolded I, a*, b. The paper's convention (established in \u00a72) is that matrices and vectors are bold.",
+      "fix": "Write $[\\boldsymbol{I}-\\beta \\boldsymbol{G}] \\boldsymbol{a}^{*}=\\boldsymbol{b}$ in equation (2), and similarly in line 166."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Missing boldface on y* in Theorem 1 and similarity ratio definition",
+      "snippet": "$\\rho(y^{*}, \\boldsymbol{u}^{\\ell}(\\boldsymbol{G}))$ (lines 214, 249)",
+      "explanation": "The vector y* is defined with bold on line 203 as \ud835\udc32* = \ud835\udc1b* \u2212 \ud835\udc1b\u0302 and appears bolded in all other places (lines 239, 295, 504). However, in the statement of Theorem 1 (line 214) and the definition of the similarity ratio r*_\u2113 (line 249), y* appears without bold, breaking the convention for vectors.",
+      "fix": "Replace $y^{*}$ with $\\boldsymbol{y}^{*}$ in equations (5) and (7)."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Underline notation inconsistently dropped on b\u0302_\u2113 in principal-component basis",
+      "snippet": "Thm 1 eq (6): $\\hat{b}_{\\ell}^{2}$ vs. sketch eq (8): $\\hat{\\underline{b}}_{\\ell}^{2}$",
+      "explanation": "The paper defines z\u0332 = U\u22a4z (line 163) to denote projections in the principal-component basis. In the reformulated problem (line 227), b\u0332\u0302_\u2113 is correctly underlined. But in Theorem 1's own equation (6) (line 220), and throughout the proof's Lagrangian (line 465), FOC (line 471), budget condition (line 483), and lines 491, 532\u2013557, the underline is dropped and the symbol is written as b\u0302_\u2113. Since b\u0302_i (subscript i) denotes the i-th individual's status quo return in the original basis, the missing underline creates genuine ambiguity about which basis is intended.",
+      "fix": "Consistently write $\\underline{\\hat{b}}_{\\ell}$ (with underline) whenever the subscript is \u2113 and the quantity is a principal-component projection."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Lagrangian missing square on b\u0332\u0302_\u2113 in objective term",
+      "snippet": "$\\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}(1+x_{\\ell})^{2} \\underline{\\hat{b}}_{\\ell}+\\mu[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}]$",
+      "explanation": "In the Lagrangian (line 465), the first sum has \\underline{\\hat{b}}_{\u2113} without a square, while the objective being optimized (lines 451\u2013452) has \\underline{\\hat{b}}_{\u2113}\u00b2. The square is required; without it the Lagrangian does not match the objective and the FOC derivation does not follow.",
+      "fix": "Change $\\underline{\\hat{b}}_{\\ell}$ to $\\underline{\\hat{b}}_{\\ell}^{2}$ in the first sum of the Lagrangian."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "major",
+      "title": "Denominator ordering reversed: \u03b1_{n-1}/(\u03b1_{n-1}\u2212\u03b1_n) vs. Proposition 2's \u03b1_{n-1}/(\u03b1_n\u2212\u03b1_{n-1})",
+      "snippet": "the term $\\alpha_{n-1} /(\\alpha_{n-1}-\\alpha_{n})$ of the inequality is large when $\\lambda_{n-1}-\\lambda_{n}$...is small.",
+      "explanation": "Line 301 discusses the bound from Proposition 2 part 2 (line 296), which contains (\u03b1_{n-1}/(\u03b1_n \u2212 \u03b1_{n-1}))\u00b2. For \u03b2<0, \u03b1_n > \u03b1_{n-1}, so \u03b1_n \u2212 \u03b1_{n-1} > 0 and the Proposition's expression is positive. However, the text writes \u03b1_{n-1}/(\u03b1_{n-1} \u2212 \u03b1_n), which is negative. Although the bound squares the term (hiding the sign), the text discusses it unsquared as being 'large', which is incoherent for a negative quantity.",
+      "fix": "Change $\\alpha_{n-1}/(\\alpha_{n-1}-\\alpha_{n})$ to $\\alpha_{n-1}/(\\alpha_{n}-\\alpha_{n-1})$ to match Proposition 2."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "major",
+      "title": "Eigenvectors u^n, u^{n-1} called 'maximizers' of minimization problems",
+      "snippet": "Moreover, the eigenvector $\\boldsymbol{u}^{n}$ is a maximizer of the first problem, while $\\boldsymbol{u}^{n-1}$ is a maximizer of the second",
+      "explanation": "Line 324 refers to the problems on line 321\u2013322, which define \u03bb_n and \u03bb_{n-1} via min, not max. The eigenvectors u^n and u^{n-1} are therefore minimizers of the corresponding Rayleigh quotient problems. Compare with line 316, which correctly says u^1 is a 'maximizer' of the \u03bb_1 = max problem.",
+      "fix": "Replace 'maximizer' with 'minimizer' in both instances on line 324."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "Eigenvector entry subscript/superscript reversed: u^i_\u2113 vs. u^\u2113_i",
+      "snippet": "$b_{i}^{*}-\\hat{b}_{i}=w \\sum_{\\ell=1}^{n} u_{\\ell}^{i} \\frac{\\alpha_{\\ell}}{\\mu-w \\alpha_{\\ell}} \\hat{b}_{\\ell}$",
+      "explanation": "The paper's convention (established at line 186: a*_i = \u03a3_\u2113 (1/(1\u2212\u03b2\u03bb_\u2113)) u^\u2113_i b\u0332_\u2113) is that u^\u2113_i means the i-th entry of the \u2113-th eigenvector (superscript = eigenvector index, subscript = node index). Line 584 writes u^i_\u2113, reversing the indices. While U is orthogonal so numerically U_{i\u2113}=U_{\u2113i} is false in general, this notation swap is confusing.",
+      "fix": "Replace $u_{\\ell}^{i}$ with $u_{i}^{\\ell}$ on line 584."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "minor",
+      "title": "Spurious asterisk on \u03b1\u2082 in proof of Proposition 2",
+      "snippet": "$1+\\frac{2 \\alpha_{1}-\\alpha_{2}^{*}}{\\alpha_{1}} \\frac{\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2}$",
+      "explanation": "Line 543 writes \u03b1\u2082* (with asterisk), but \u03b1*_\u2113 is never defined; the asterisk likely crept in from the adjacent x*_\u2113 terms. The derivation (line 557) yields the factor (2\u03b1\u2081 \u2212 \u03b1\u2082), with no asterisk on \u03b1\u2082. The next line (544) correctly bounds this by 2, confirming the intended quantity is just \u03b1\u2082.",
+      "fix": "Replace $\\alpha_{2}^{*}$ with $\\alpha_{2}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Double-hat \\hat{\\hat{b}}_\u2113\u00b2 in definition of D (proof of Prop 2)",
+      "snippet": "letting $D=\\underline{\\hat{b}}_{1}^{2} \\alpha_{1} \\tilde{x}_{1}(\\tilde{x}_{1}+2)+\\sum_{\\ell=1}^{n} \\alpha_{\\ell} \\hat{\\hat{b}}_{\\ell}^{2}$",
+      "explanation": "Line 535 has \\hat{\\hat{b}}_\u2113\u00b2 (double hat). No symbol with two hats is defined anywhere. From context (matching W^s on line 526), this should be \\underline{\\hat{b}}_\u2113\u00b2 (underline + single hat).",
+      "fix": "Replace $\\hat{\\hat{b}}_{\\ell}^{2}$ with $\\underline{\\hat{b}}_{\\ell}^{2}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Transpose/asterisk misplaced in expected welfare formula",
+      "snippet": "$w \\mathbb{E}[(\\underline{\\boldsymbol{a}}^{\\top})^{*}(\\underline{\\boldsymbol{a}}^{*})]$",
+      "explanation": "Line 353 writes (a\u0332\u22a4)* instead of (a\u0332*)\u22a4. The asterisk denotes the equilibrium and should be on a\u0332 before the transpose is applied, i.e. (a\u0332*)\u22a4(a\u0332*). As written, the asterisk appears to be applied to the already-transposed vector, which is notationally anomalous.",
+      "fix": "Replace $(\\underline{\\boldsymbol{a}}^{\\top})^{*}(\\underline{\\boldsymbol{a}}^{*})$ with $(\\underline{\\boldsymbol{a}}^{*})^{\\top}(\\underline{\\boldsymbol{a}}^{*})$."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "minor",
+      "title": "Prime on \u03b1 rendered as superscript rather than subscript: \u03b1'_\u2113 vs \u03b1_{\u2113'}",
+      "snippet": "$\\frac{r_{\\ell}^{*}}{r_{\\ell^{\\prime}}^{*}}=\\frac{\\alpha_{\\ell}}{\\alpha_{\\ell^{\\prime}}} \\frac{\\mu-w \\alpha_{\\ell}^{\\prime}}{\\mu-w \\alpha_{\\ell}}$",
+      "explanation": "Line 498 writes \u03b1'_\u2113 (prime as superscript on \u03b1 with subscript \u2113) in the numerator of the second fraction, but the intended quantity is \u03b1_{\u2113'} (subscript \u2113'). The left-hand side correctly uses \u2113' as a subscript on r*, and \u03b1_{\u2113'} appears correctly in the first fraction's denominator. The misplaced prime on \u03b1 could be read as a derivative.",
+      "fix": "Replace $\\alpha_{\\ell}^{\\prime}$ with $\\alpha_{\\ell^{\\prime}}$."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "minor",
+      "title": "Missing summation index i in cost function (10)",
+      "snippet": "$K(\\mathcal{B})= \\phi(\\sum_{\\in \\mathcal{N}} \\sigma_{ii}^{\\mathcal{B}})$",
+      "explanation": "Line 384 writes \u03a3_{\u2208\ud835\udca9} with no index variable before the \u2208 symbol. The surrounding text discusses 'the sum of the variances of the b_i', confirming the missing index is i.",
+      "fix": "Replace $\\sum_{\\in \\mathcal{N}}$ with $\\sum_{i \\in \\mathcal{N}}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "New symbol \u0394b* introduced without definition in proof of Proposition 2",
+      "snippet": "$\\rho(\\Delta \\boldsymbol{b}^{*}, \\sqrt{C} \\boldsymbol{u}^{1})$",
+      "explanation": "Lines 572 and 596 use \u0394b* to denote b* \u2212 b\u0302, but this symbol is never formally defined. The rest of the paper (and the definition on line 203) uses y* = b* \u2212 b\u0302 for this quantity. The proof itself expands \u0394b* as (b* \u2212 b\u0302), confirming it is just y*, making the new notation unnecessary and potentially confusing.",
+      "fix": "Replace $\\Delta \\boldsymbol{b}^{*}$ with $\\boldsymbol{y}^{*}$ to match the notation established in Section 4."
+    }
+  ]
+}

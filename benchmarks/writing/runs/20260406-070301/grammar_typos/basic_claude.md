@@ -1,0 +1,134 @@
+```json
+{
+  "findings": [
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Misspellings in title",
+      "snippet": "On the Convergance of Iteratve Methods",
+      "explanation": "The title contains two misspellings: 'Convergance' and 'Iteratve'. These are immediately visible and undermine credibility.",
+      "fix": "On the Convergence of Iterative Methods"
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Multiple misspellings in first sentence",
+      "snippet": "This paper studys the convergance of iterative methods for solving linar systems.",
+      "explanation": "'studys' should be 'studies', 'convergance' should be 'convergence', and 'linar' should be 'linear'.",
+      "fix": "This paper studies the convergence of iterative methods for solving linear systems."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Misspelling: 'importent'",
+      "snippet": "The importent contribution of this work",
+      "explanation": "'importent' is misspelled. This error recurs in the Conclusion section as well.",
+      "fix": "The important contribution of this work"
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Subject–verb disagreement: 'we provides'",
+      "snippet": "we provides a new bound on the convergence rate",
+      "explanation": "The subject 'we' requires the plural verb form 'provide'.",
+      "fix": "we provide a new bound on the convergence rate"
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Multiple agreement errors in one sentence",
+      "snippet": "Previous work have shown that such methods converges under certain conditions,",
+      "explanation": "'Previous work' (uncountable) takes a singular verb 'has shown', and 'methods' (plural) takes the plural verb 'converge'.",
+      "fix": "Previous work has shown that such methods converge under certain conditions,"
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Double comparative and agreement errors",
+      "snippet": "but our result are more tighter and applies to a broader class of problems.",
+      "explanation": "Three problems: (1) 'result' should be 'results' (or keep singular with 'is'); (2) 'more tighter' is a double comparative—use 'tighter'; (3) 'applies' should be 'apply' to agree with the plural subject.",
+      "fix": "but our results are tighter and apply to a broader class of problems."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Wrong article: 'a $n \\times n$'",
+      "snippet": "Let $A$ be a $n \\times n$ matrix.",
+      "explanation": "The word 'n' begins with a vowel sound, so the article should be 'an'.",
+      "fix": "Let $A$ be an $n \\times n$ matrix."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Subject–verb disagreement: 'eigenvalues is'",
+      "snippet": "which means that all its eigenvalues is positive.",
+      "explanation": "'eigenvalues' is plural and requires 'are'.",
+      "fix": "which means that all its eigenvalues are positive."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Possessive 'its' written as contraction 'it's'",
+      "snippet": "the largest absolute value of it's eigenvalues.",
+      "explanation": "'it's' is the contraction of 'it is'. The possessive form is 'its'.",
+      "fix": "the largest absolute value of its eigenvalues."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Wrong article: 'a iterative method'",
+      "snippet": "We recall that a iterative method of the form",
+      "explanation": "'iterative' begins with a vowel sound; the article should be 'an'.",
+      "fix": "We recall that an iterative method of the form"
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Number disagreement: 'a well-known results'",
+      "snippet": "This is a well-known results.",
+      "explanation": "The article 'a' requires the singular 'result'.",
+      "fix": "This is a well-known result."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Misspelling: 'satisfyes'",
+      "snippet": "the convergence rate satisfyes",
+      "explanation": "'satisfyes' should be 'satisfies'.",
+      "fix": "the convergence rate satisfies"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Misspelling: 'ommit'",
+      "snippet": "We ommit the details.",
+      "explanation": "'ommit' should be 'omit'.",
+      "fix": "We omit the details."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Wrong participle: 'have showed'",
+      "snippet": "We have showed that the Jacobi method converges",
+      "explanation": "The past participle of 'show' is 'shown', not 'showed'.",
+      "fix": "We have shown that the Jacobi method converges"
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Subject–verb disagreement: 'bound … are sharp'",
+      "snippet": "The bound we derived are sharp and cannot be improved",
+      "explanation": "'The bound' is singular and requires 'is'.",
+      "fix": "The bound we derived is sharp and cannot be improved"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Repeated misspelling: 'importent' in Conclusion",
+      "snippet": "This result has importent implications for practical computations.",
+      "explanation": "Same misspelling as in the Introduction; should be 'important'.",
+      "fix": "This result has important implications for practical computations."
+    }
+  ]
+}
+```

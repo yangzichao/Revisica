@@ -1,0 +1,8 @@
+{
+  "role": "structure",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 1,
+  "success": false,
+  "findings": null
+}

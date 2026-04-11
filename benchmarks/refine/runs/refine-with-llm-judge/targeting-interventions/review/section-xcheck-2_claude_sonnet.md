@@ -1,0 +1,30 @@
+```json
+{
+  "findings": [
+    {
+      "category": "claim_inconsistency",
+      "severity": "major",
+      "title": "Assumption 3 uses ‖b̂‖ but the first-best threshold derived immediately above is ‖b̂‖²",
+      "snippet": "when the budget is large enough—that is, $C \\geq \\|\\hat{\\boldsymbol{b}}\\|^{2}$ — the planner can allocate resources to ensure that individuals have a zero target action … Assumption 3: Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|$, or $w>0$.",
+      "explanation": "The cost of moving every b_i to 0 is K(0, b̂) = Σ b̂_i² = ‖b̂‖². The prose therefore correctly identifies ‖b̂‖² as the threshold above which the first-best is achievable. Assumption 3, which is explicitly intended to rule out the first-best regime, should impose C < ‖b̂‖². Instead it imposes C < ‖b̂‖ (the norm, not the squared norm). These differ whenever ‖b̂‖ ≠ 1: e.g., if ‖b̂‖ = 3 the first-best requires C ≥ 9, but Assumption 3 only excludes C ≥ 3, so the range C ∈ [3, 9) is incorrectly classified as an interesting optimization problem when in fact the planner cannot yet reach the bliss point. The assumption as stated is therefore either too strong (excludes cases that are genuinely non-trivial) or inconsistent with the threshold just stated.",
+      "fix": "Change Assumption 3 to read: 'Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|^{2}$, or $w>0$.' This aligns the assumption with the first-best threshold $C \\geq \\|\\hat{\\boldsymbol{b}}\\|^{2}$ stated one sentence earlier."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Change-of-variables in Example 2 writes b_i on both sides of the equation (tilde missing on RHS)",
+      "snippet": "Performing the change of variables $b_{i}=\\left[\\tau-b_{i}\\right] / 2$ and $\\beta=-\\tilde{\\beta} / 2$ (with the status quo equal to $\\hat{b}_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$)",
+      "explanation": "Throughout Example 2, $\\tilde{b}_i$ denotes the original base-level parameter of the public good, while $b_i$ denotes the reparametrised standalone marginal return in the general model. The formula as written, $b_i = [\\tau - b_i]/2$, places the new variable $b_i$ on both sides, which is self-referential and collapses to the vacuous fixed point $b_i = \\tau/3$ for every individual—plainly unintended. The immediately following status-quo formula correctly uses $\\tilde{b}_i$ on the right-hand side: $\\hat{b}_i = [\\tau - \\tilde{b}_i]/2$. This confirms the tilde was accidentally omitted in the change-of-variables line.",
+      "fix": "Replace '$b_{i}=\\left[\\tau-b_{i}\\right] / 2$' with '$b_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$', consistent with the status-quo formula and with the notation $\\tilde{b}_i$ introduced earlier in Example 2."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Nonnegativity paragraph mislabels b̂ as 'status quo actions' when it is the status quo marginal returns",
+      "snippet": "As long as the status quo actions $\\hat{\\boldsymbol{b}}$ are positive, this constraint will be respected for all $C$ less than some $\\hat{C}$",
+      "explanation": "Across both sections, $\\hat{\\boldsymbol{b}}$ is consistently defined as the status quo vector of standalone marginal returns (incentives), and the equilibrium actions at the status quo are $\\hat{\\boldsymbol{a}}^* = [\\boldsymbol{I}-\\beta\\boldsymbol{G}]^{-1}\\hat{\\boldsymbol{b}}$, which differ from $\\hat{\\boldsymbol{b}}$ whenever $\\beta \\neq 0$. Calling $\\hat{\\boldsymbol{b}}$ 'status quo actions' conflates two distinct model objects. More substantively, positivity of $\\hat{\\boldsymbol{b}}$ does not in general imply positivity of the equilibrium actions $[\\boldsymbol{I}-\\beta\\boldsymbol{G}]^{-1}\\hat{\\boldsymbol{b}}$ (e.g., with strong strategic substitutes some equilibrium actions can be negative even when all $\\hat{b}_i > 0$), so the stated sufficient condition for the nonnegativity constraint to be slack is not fully justified as written.",
+      "fix": "Replace 'the status quo actions $\\hat{\\boldsymbol{b}}$' with 'the status quo standalone marginal returns $\\hat{\\boldsymbol{b}}$'. If a precise sufficiency claim is intended, replace with 'the status quo equilibrium actions $[\\boldsymbol{I}-\\beta\\boldsymbol{G}]^{-1}\\hat{\\boldsymbol{b}}$' and verify the implied condition on $\\hat{\\boldsymbol{b}}$ and $\\boldsymbol{G}$."
+    }
+  ]
+}
+```

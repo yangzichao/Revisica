@@ -1,0 +1,111 @@
+Reading prompt from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Users/zichaoyang/workplace/ReviseAgent
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019d631d-3dab-7123-861e-fa682c4dbf58
+--------
+user
+You are reviewing an academic draft for venue/style alignment.
+
+Target venue profile:
+- `general-academic`
+
+Scope:
+- Diagnose whether the draft's writing style, framing, emphasis, and expected reader positioning match the target profile.
+- Focus on high-level venue fit, not local grammar.
+- If the target profile is broad, use a conservative interpretation.
+- Suggest rewrites only for the highest-value gaps.
+
+The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/grammar_typos.tex`.
+
+Return JSON only, with this schema:
+{
+  "findings": [
+    {
+      "category": "venue_alignment",
+      "severity": "major",
+      "title": "short title",
+      "snippet": "exact local snippet",
+      "explanation": "why this does not align with the target profile",
+      "fix": "concrete revision suggestion",
+      "rewrite": "optional short rewrite example"
+    }
+  ]
+}
+
+Allowed categories:
+- `venue_alignment`
+- `audience_positioning`
+- `abstract_positioning`
+- `introduction_positioning`
+- `rewrite_suggestion`
+
+Allowed severities:
+- `critical`
+- `major`
+- `minor`
+
+If there are no worthwhile findings, return `{"findings":[]}`.
+
+Source LaTeX:
+
+```tex
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{On the Convergance of Iteratve Methods}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This paper studys the convergance of iterative methods for solving linar systems.
+The importent contribution of this work is that we provides a new bound on the convergence rate.
+Previous work have shown that such methods converges under certain conditions,
+but our result are more tighter and applies to a broader class of problems.
+
+\section{Preliminaries}
+Let $A$ be a $n \times n$ matrix. We assume that $A$ is positive definite,
+which means that all its eigenvalues is positive.
+The spectral radius of a matrix $B$, denoted $\rho(B)$, is the largest absolute value of it's eigenvalues.
+
+We recall that a iterative method of the form
+\[
+x^{(k+1)} = Bx^{(k)} + c
+\]
+converges if and only if $\rho(B) < 1$. This is a well-known results.
+
+\section{Main Result}
+\begin{theorem}
+Let $A$ be a symmetric positive definite matrix with eigenvalues $0 < \lambda_1 \le \cdots \le \lambda_n$.
+Then the Jacobi method converges and the convergence rate satisfyes
+\[
+\rho(B_J) \le 1 - \frac{2\lambda_1}{\lambda_1 + \lambda_n}.
+\]
+\end{theorem}
+
+\begin{proof}
+The proof follows from standard spectral analysis. We ommit the details.
+\end{proof}
+
+\section{Conclusion}
+We have showed that the Jacobi method converges for symmetric positive definite matrices.
+The bound we derived are sharp and cannot be improved further without additional assumptions.
+This result has importent implications for practical computations.
+
+\end{document}
+
+```
+
+codex
+{"findings":[{"category":"abstract_positioning","severity":"major","title":"Missing abstract leaves the paper unpositioned for a broad academic audience","snippet":"\\maketitle\n\n\\section{Introduction}","explanation":"For a conservative `general-academic` target, readers usually expect an abstract that states the problem, method, main result, and significance before the introduction. Without it, the draft does not establish scope or contribution early enough for a general scholarly readership.","fix":"Add a short abstract summarizing the problem setting, the specific analytical result, the method used to obtain it, and the practical or theoretical significance.","rewrite":"\\begin{abstract}\nWe study the convergence of iterative methods for linear systems, with a focus on the Jacobi method for symmetric positive definite matrices. Using spectral analysis, we derive an upper bound on the convergence rate in terms of the extreme eigenvalues of the system matrix. This result clarifies when the method is effective and situates the bound relative to standard convergence criteria.\n\\end{abstract}"},{"category":"introduction_positioning","severity":"major","title":"Introduction asserts contribution without enough scholarly framing","snippet":"The importent contribution of this work is that we provides a new bound on the convergence rate.\nPrevious work have shown that such methods converges under certain conditions,\nbut our result are more tighter and applies to a broader class of problems.","explanation":"The introduction uses strong novelty language, but it does not identify the specific gap in prior work, define the baseline being improved, or explain why the new bound matters. For a general academic style, contribution claims should be situated relative to prior literature rather than presented as unsupported assertions.","fix":"Reframe the introduction around a concrete research gap, briefly characterize prior results, and state the paper's contribution in measured terms.","rewrite":"Prior analyses have established convergence conditions for several stationary iterative methods, but the sharpness and scope of available rate bounds remain limited in some settings. In this paper, we revisit the Jacobi method for symmetric positive definite systems and derive a spectral upper bound on its convergence rate, clarifying the dependence on the extreme eigenvalues of the coefficient matrix."},{"category":"venue_alignment","severity":"major","title":"Core result is presented without enough argumentation for academic standards","snippet":"\\begin{proof}\nThe proof follows from standard spectral analysis. We ommit the details.\n\\end{proof}","explanation":"Even in a short general-academic paper, central claims normally require either a substantive proof, a proof sketch, or an explicit citation to a standard result. Omitting the argument entirely makes the draft read more like lecture notes or a placeholder than a venue-aligned research manuscript.","fix":"Include at least a proof sketch identifying the main spectral argument and how the bound is obtained, or cite a standard source and clearly state what part is adapted versus new.","rewrite":"\\begin{proof}[Proof sketch]\nBecause $A$ is symmetric positive definite, its eigenvalues are real and positive. The Jacobi iteration matrix can therefore be analyzed through its spectrum, and the convergence rate is controlled by $\\rho(B_J)$. Bounding this quantity in terms of $\\lambda_1$ and $\\lambda_n$ yields the stated inequality.\n\\end{proof}"},{"category":"venue_alignment","severity":"major","title":"Conclusion overclaims generality and impact beyond what the paper demonstrates","snippet":"The bound we derived are sharp and cannot be improved further without additional assumptions.\nThis result has importent implications for practical computations.","explanation":"For a general academic audience, claims about sharpness and practical significance should be supported by argument, comparison, or evidence. As written, the conclusion escalates the paper's significance beyond what the preceding sections substantiate.","fix":"Temper the conclusion so it summarizes the established result and limits claims to what is actually shown in the draft. If practical implications are important, add discussion or experiments earlier in the paper.","rewrite":"We have established a convergence bound for the Jacobi method under the assumption that the system matrix is symmetric positive definite. This result provides a concise spectral characterization of the rate and may be useful as a basis for further theoretical or empirical study."}]}
+tokens used
+3,817

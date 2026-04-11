@@ -1,0 +1,97 @@
+{
+  "role": "notation-tracker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_drift",
+      "severity": "critical",
+      "title": "Table II header uses three different symbols for the same lattice argument",
+      "snippet": "| A | $k(\\mathrm{~A})$ | $\\kappa(\\Lambda)$ | $r(\\Lambda)$ | $\\rho(\\Delta)$ | $d_{\\text{min}}^{2}(\\Lambda)$ | $\\gamma(\\Lambda)$ | ...",
+      "explanation": "In the header row of Table II (line 574), the lattice argument is written three different ways within the same row: plain 'A' for the first column, '$k(\\mathrm{A})$' for the informativity column, and '$\\rho(\\Delta)$' for the normalized redundancy column. The remaining columns correctly use '$\\Lambda$'. Neither 'A' nor '$\\Delta$' is defined anywhere in the paper. All should be '$\\Lambda$', matching the running text at line 569 which introduces the table with '$k(\\Lambda)$' and '$\\kappa(\\Lambda)$'.",
+      "fix": "Replace 'A' with '$\\Lambda$' in column 1, '$k(\\mathrm{A})$' with '$k(\\Lambda)$' in column 2, and '$\\rho(\\Delta)$' with '$\\rho(\\Lambda)$' in column 5."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "critical",
+      "title": "Dual lattice $\\Lambda(0,n)^\\perp$ equated to undefined notation $\\Lambda(n)$",
+      "snippet": "$\\Lambda(0, n)^{\\perp}= \\Lambda(n)$",
+      "explanation": "At line 564, the self-dual Barnes-Wall lattice is written as '$\\Lambda(0, n)^{\\perp}= \\Lambda(n)$'. The notation '$\\Lambda(n)$' is never defined anywhere in the paper. The Barnes-Wall lattice family is consistently parameterized as $\\Lambda(r, n)$ with two arguments throughout the entire paper (lines 501, 506, 516, etc.). Since line 514 proves that $\\Lambda(0, n)$ is self-dual, this should read '$\\Lambda(0, n)^{\\perp} = \\Lambda(0, n)$'. The first argument '0' was dropped.",
+      "fix": "Change '$\\Lambda(0, n)^{\\perp}= \\Lambda(n)$' to '$\\Lambda(0, n)^{\\perp}= \\Lambda(0, n)$'."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "$D_8^\\perp$ corrupted to $D_8^1$ and $D_8^{1/8}$ in multiple tables",
+      "snippet": "| $D_{8}^{1}$ | $R E_{8}$ |  (line 629); | $D_{8}^{\\frac{1}{8}}$ | $R E_{8}$ |  (lines 893, 1008); | $D_{8}^{1}$ | $R E_{8}$ |  (line 1014)",
+      "explanation": "The dual checkerboard lattice $D_8^\\perp$ is correctly rendered at lines 894\u2013895 and introduced at line 867, but appears corrupted in four table entries: as '$D_8^1$' in Table III (line 629) and Table XI (line 1014), and as '$D_8^{1/8}$' in Tables VII and XI (lines 893, 1008). The correct superscript should be '$\\perp$' in all cases, consistent with the notation established at line 867 (\"Wei's lattice '$DE_8$' is here called $D_8^\\perp$\").",
+      "fix": "Replace all instances of '$D_8^1$' and '$D_8^{1/8}$' with '$D_8^\\perp$' at lines 629, 893, 1008, and 1014."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Table III uses norm bars $\\|\\cdot\\|$ instead of cardinality bars $|\\cdot|$ for partition order",
+      "snippet": "| $\\left\\|\\Lambda / \\Lambda^{\\prime}\\right\\|$ |  ...  | $\\tilde{N}_{D} /\\left\\|\\Lambda / \\Lambda^{\\prime}\\right\\|$ |",
+      "explanation": "Table III (line 612) uses double bars $\\|\\Lambda / \\Lambda'\\|$ for the order of the partition, whereas the entire rest of the paper consistently uses single bars $|\\Lambda / \\Lambda'|$ (e.g., lines 47, 152, 216, 297, 603, 608). Double bars $\\|\\cdot\\|$ denote norms throughout this paper (line 199), so using them for cardinality introduces a semantic conflict.",
+      "fix": "Replace '$\\left\\|\\Lambda / \\Lambda^{\\prime}\\right\\|$' with '$\\left|\\Lambda / \\Lambda^{\\prime}\\right|$' in both the column header and the ratio column of Table III."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Table XI section header 'Class III codes' merged into data row",
+      "snippet": "| 16 | $\\Lambda_{16}$ | $R \\Lambda_{16}$ | 256 | 4/8 | 2 | Class III codes | 4 | 6.02 | 540 | 2544 | 4.61 |",
+      "explanation": "At line 980 in Table XI, the last Class II entry ($\\Lambda_{16}/R\\Lambda_{16}$) has the text 'Class III codes' embedded in its $d_{\\min}^2$ column. This is a formatting corruption where a section sub-header was absorbed into the preceding data row. The actual $d_{\\min}^2$ for this code should be 16 (since $d_{\\min}^2(R\\Lambda_{16}) = 2 d_{\\min}^2(\\Lambda_{16}) = 2 \\times 8 = 16$), and the $\\gamma = 4$ value in the next column is shifted. The subsequent 'Class III codes' header is lost.",
+      "fix": "Separate the section header 'Class III codes' into its own row. The Class II $\\Lambda_{16}/R\\Lambda_{16}$ data row should read: $d_{\\min}^2 = 16$, $\\gamma = 4$, dB = 6.02, etc."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Table XI Class III rows merged, corrupting two entries",
+      "snippet": "| 4 | $D_{4}$ | $2 D_{4}$ $2 E_{8}$ | 4 16 | 2/4 | 3/2 | 6 | $3 / 2^{1 / 2}$ | 3.27 | | 46 | |",
+      "explanation": "At line 982 of Table XI, two Class III code entries appear merged into a single row. The $\\Lambda'$ column contains '$2D_4$ $2E_8$' and the $2^\\nu$ column contains '4 16', suggesting the $D_4/2D_4$ entry (with $2^\\nu=4$) and the $E_8/2E_8$ entry (with $2^\\nu=16$) have been concatenated. This corrupts both entries' parameters.",
+      "fix": "Split into two separate rows: (1) $\\bar{N}=4$, $D_4/2D_4$, $2^\\nu=4$, $k/(k+r)=2/4$, $\\rho=3/2$, $d_{\\min}^2=6$, $\\gamma=3/2^{1/2}$; (2) $\\bar{N}=8$, $E_8/2E_8$, $2^\\nu=16$, with its own parameters."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "major",
+      "title": "Missing $\\boldsymbol{Z}$ in partition notation $\\boldsymbol{Z}^2/\\boldsymbol{4}^2$",
+      "snippet": "Note that the $\\boldsymbol{Z}^{2} / \\boldsymbol{4}^{2}$ codes ought to be compared to the one-dimensional $\\boldsymbol{Z} / \\mathbf{4} \\boldsymbol{Z}$ codes",
+      "explanation": "At line 935, the partition is written as '$\\boldsymbol{Z}^2 / \\boldsymbol{4}^2$', which is the undefined expression '$4^2 = 16$' in the denominator. This should be '$\\boldsymbol{Z}^2 / 4\\boldsymbol{Z}^2$', consistent with the correct form used just two lines earlier at line 933 ('the 16-way two-dimensional partition $\\boldsymbol{Z}^2 / 4\\boldsymbol{Z}^2$') and throughout the paper (e.g., Table X header at line 923).",
+      "fix": "Change '$\\boldsymbol{Z}^{2} / \\boldsymbol{4}^{2}$' to '$\\boldsymbol{Z}^{2} / 4\\boldsymbol{Z}^{2}$'."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "Table XI dimension column $\\bar{N}$ inconsistent for $D_{16}/H_{16}$ between Class V and Class VI",
+      "snippet": "Class V: | 16 | $D_{16}$ | $H_{16}$ | 8 | ... (line 994)\nClass VI: | 8 | $D_{16}$ | $H_{16}$ | 64 | ... (line 1001)",
+      "explanation": "In Table XI, the $D_{16}/H_{16}$ partition appears in both Class V (line 994) and Class VI (line 1001). In Class V, $\\bar{N} = 16$ (correct: $D_{16}$ is a 16-dimensional real lattice). In Class VI, $\\bar{N} = 8$ for the same lattice. All other Class VI entries use the real dimension convention ($D_4$: 4, $E_8$: 8, $\\Lambda_{16}$: 16, $D_8$: 8), confirming that 8 is wrong for the 16-dimensional $D_{16}$.",
+      "fix": "Change the $\\bar{N}$ value for the Class VI $D_{16}/H_{16}$ entry from 8 to 16."
+    },
+    {
+      "category": "redefined_symbol",
+      "severity": "minor",
+      "title": "Variable $n$ redefined from 'bits per $N$ dimensions' to '$N/2$' within four lines",
+      "snippet": "To transmit $n$ bits per $N$ dimensions... (line 60)\n$G_{\\otimes}= \\pi(n+1) /[6(n!)^{1/n}]$, where $n=N/2$ (line 64)",
+      "explanation": "At line 60, $n$ is defined as the number of data bits to be transmitted per $N$ dimensions. Four lines later at line 64, $n$ is redefined as $n = N/2$ for the $N$-sphere shape gain formula $G_\\otimes$. Later in Section III (line 501ff), $n$ is used yet again as the index of Barnes-Wall lattices ($2^n$-dimensional). While each redefinition is locally clear, the proximity of the first two creates ambiguity.",
+      "fix": "Use a different variable (e.g., $m$ or $\\ell$) for $N/2$ in the $G_\\otimes$ formula at line 64 to avoid collision with the $n$ defined at line 60."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Coset vector alternates between bold $\\boldsymbol{c}$ and non-bold $c$ within the same sentence",
+      "snippet": "A coset of a lattice $\\Lambda$, denoted by $\\Lambda+c$, is the set of all $N$-tuples of the form $\\lambda+c$, where $\\lambda$ is any point in $\\Lambda$ and $\\boldsymbol{c}$ is some constant $N$-tuple",
+      "explanation": "At line 150, the coset representative vector is written as non-bold '$c$' in '$\\Lambda+c$' and '$\\lambda+c$', but then as bold '$\\boldsymbol{c}$' when described as 'some constant $N$-tuple'. This inconsistency continues throughout the section\u2014e.g., line 154 uses '$\\boldsymbol{c}$' for the same quantity. Since $\\boldsymbol{c}$ is a vector (an $N$-tuple), bold is the correct convention per the paper's own usage for vectors.",
+      "fix": "Consistently use bold '$\\boldsymbol{c}$' for the coset representative vector throughout Section II.B, particularly in '$\\Lambda+\\boldsymbol{c}$' and '$\\lambda+\\boldsymbol{c}$' at line 150."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Extraneous comma in $RD_4$ code formula",
+      "snippet": "$R D_{4}=$, $2 \\boldsymbol{Z}^{4}+(4,1,4)$",
+      "explanation": "At line 495, the code formula for the dual of $D_4$ is written as '$RD_4 =$, $2\\boldsymbol{Z}^4 + (4,1,4)$' with a stray comma between the equals sign and the formula. This appears to be a typesetting artifact. Compare with the correct formatting of similar formulas throughout the paper, e.g., '$D_4 = 2\\boldsymbol{Z}^4 + (4,3,2)$' (line 495, same paragraph).",
+      "fix": "Remove the comma: '$RD_4 = 2\\boldsymbol{Z}^4 + (4,1,4)$'."
+    }
+  ]
+}

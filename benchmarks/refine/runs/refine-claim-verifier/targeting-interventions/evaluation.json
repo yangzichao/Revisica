@@ -1,0 +1,59 @@
+{
+  "case_id": "targeting-interventions",
+  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md",
+  "expected_comments": 6,
+  "our_total_findings": 100,
+  "recall": 0.8333333333333334,
+  "full_recall": 0.6666666666666666,
+  "matches": [
+    {
+      "comment_id": "comment-1",
+      "comment_title": "Comparative static claim in Footnote 16",
+      "status": "matched",
+      "confidence": 0.97,
+      "explanation": "LLM judge: Finding #94 directly identifies the incorrect monotonicity direction for x_ℓ/x_{ℓ+1} in β under strategic substitutes, quoting the same snippet from Footnote 16 and explaining that the ratio is actually increasing in β for all β (including β<0), contradicting the paper's 'decreasing' claim for substitutes.",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment-2",
+      "comment_title": "Limiting direction of intervention in Proposition 1",
+      "status": "missed",
+      "confidence": 0.95,
+      "explanation": "LLM judge: No actual finding addresses the mathematical subtlety that Proposition 1(2a–b) asserts ρ(y*, u^1) → 1 (convergence of cosine similarity itself) when the proof only establishes ρ²→1 (or |ρ|→1), because the sign of the cosine similarity could flip. This issue — distinguishing convergence of ρ from convergence of ρ² — is entirely absent from the 100 actual findings.",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment-3",
+      "comment_title": "Sign error in discussion of Proposition 2 (substitutes case)",
+      "status": "matched",
+      "confidence": 0.98,
+      "explanation": "LLM judge: Finding #52 and Finding #71 both identify that the discussion paragraph for the substitutes case of Proposition 2 writes α_{n−1}/(α_{n−1}−α_n) with a sign-flipped denominator relative to the proposition statement, which correctly uses α_{n−1}/(α_n−α_{n−1}). Both findings note the denominator is negative in the discussion but positive in the proposition, and that the ratio is squared in the bound.",
+      "matched_finding_count": 2
+    },
+    {
+      "comment_id": "comment-4",
+      "comment_title": "\"Maximizer\" vs. \"minimizer\" for smallest eigenvalues",
+      "status": "matched",
+      "confidence": 0.99,
+      "explanation": "LLM judge: Findings #43, #68, and #86 all independently flag that u^n and u^{n−1} are called 'maximizers' of the Rayleigh–Ritz problems defining λ_n and λ_{n−1}, even though those problems are stated as minimizations (confirmed by the arg-min on line 324). Each finding notes this is a copy-paste slip from the complements paragraph, where u^1 and u^2 are correctly called maximizers.",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment-5",
+      "comment_title": "Typo in Lagrangian in proof of Theorem 1",
+      "status": "matched",
+      "confidence": 0.99,
+      "explanation": "LLM judge: Findings #38, #44, #69, #75, #85, #88, and #96 all identify the same error: the Lagrangian in the proof of Theorem 1 writes the objective term with b̂_ℓ (first power) instead of b̂_ℓ² (square), inconsistent with the optimization problem stated directly above it and with the correctly squared first-order condition derived immediately afterward.",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment-6",
+      "comment_title": "Unclear notation in proof of Proposition 2",
+      "status": "partial",
+      "confidence": 0.72,
+      "explanation": "LLM judge: Finding #53 captures the core complaint that Δb* is used without definition in the proof of Proposition 2 (and notes it should be y*, which is defined as b*−b̂ earlier). This covers one of the two sub-issues in comment-6. However, neither Finding #53 nor any other finding explicitly calls out the inconsistency between ρ(Δb*, √C u^1) and ρ(Δb*, u^1) — i.e., the switching between a scaled and unscaled reference vector in the cosine-similarity computation. The notation/undefined-symbol aspect is matched; the scaling inconsistency is not.",
+      "matched_finding_count": 1
+    }
+  ],
+  "warnings": []
+}

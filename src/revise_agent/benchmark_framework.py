@@ -195,7 +195,7 @@ def _load_local_math_cases(manifest: str | None) -> list[dict[str, object]]:
     manifest_path = (
         Path(manifest).expanduser().resolve()
         if manifest
-        else Path.cwd() / "benchmarks" / "math_cases" / "manifest.json"
+        else Path.cwd() / "benchmarks" / "math" / "manifest.json"
     )
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     base_dir = manifest_path.parent

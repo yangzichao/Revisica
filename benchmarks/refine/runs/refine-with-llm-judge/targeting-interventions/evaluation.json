@@ -1,0 +1,59 @@
+{
+  "case_id": "targeting-interventions",
+  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md",
+  "expected_comments": 6,
+  "our_total_findings": 92,
+  "recall": 0.6666666666666666,
+  "full_recall": 0.5,
+  "matches": [
+    {
+      "comment_id": "comment-1",
+      "comment_title": "Comparative static claim in Footnote 16",
+      "status": "missed",
+      "confidence": 0.95,
+      "explanation": "LLM judge: No actual finding addresses the comparative static claim in Footnote 16 that the ratio x_ℓ/x_{ℓ+1} is increasing in β for strategic complements and decreasing for substitutes. The findings cover many notation and sign errors but none question or verify the correctness of this specific footnote claim about how budget allocation ratios depend on β.",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment-2",
+      "comment_title": "Limiting direction of intervention in Proposition 1",
+      "status": "missed",
+      "confidence": 0.92,
+      "explanation": "LLM judge: No actual finding raises the issue of whether Proposition 1 establishes ρ→1 or only ρ²→1 as C→∞. The findings touch on the cosine similarity definition (missing ‖z‖) but none question whether the large-budget limiting result in Proposition 1(2a–b) actually yields convergence of ρ itself versus its square.",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment-3",
+      "comment_title": "Sign error in discussion of Proposition 2 (substitutes case)",
+      "status": "matched",
+      "confidence": 0.97,
+      "explanation": "LLM judge: Finding #59 ('Denominator ordering flipped: α_{n-1}/(α_{n-1} − α_n) vs α_{n-1}/(α_n − α_{n-1})') identifies exactly the same sign error. It notes that the discussion text at line 301 uses α_{n-1}/(α_{n-1} − α_n), whereas Proposition 2 Part 2 correctly uses the positive denominator α_n − α_{n-1}, and for β<0 the former is negative while the latter is positive.",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment-4",
+      "comment_title": "\"Maximizer\" vs. \"minimizer\" for smallest eigenvalues",
+      "status": "matched",
+      "confidence": 0.99,
+      "explanation": "LLM judge: Findings #42, #48, and #58 all identify the same wording slip: the eigenvectors u^n and u^{n-1} are called 'maximizers' of the variational characterizations that use 'min', when they should be called 'minimizers'. All three findings note the internal contradiction with the arg min expression appearing in the same sentence.",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment-5",
+      "comment_title": "Typo in Lagrangian in proof of Theorem 1",
+      "status": "matched",
+      "confidence": 0.99,
+      "explanation": "LLM judge: Eight separate findings independently identify the missing squared exponent on b̂_ℓ (or b̲̂_ℓ) in the Lagrangian's objective term. Finding #40 is the clearest match; #50 and #85 provide the most detailed cross-referencing with the reformulated IT-PC problem above. Finding #86 additionally notes the implication: the FOC as stated cannot be derived from the Lagrangian as printed, only from the corrected version.",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment-6",
+      "comment_title": "Unclear notation in proof of Proposition 2",
+      "status": "partial",
+      "confidence": 0.75,
+      "explanation": "LLM judge: Finding #65 ('New symbol Δb* introduced for existing quantity y*') covers the core concern that Δb* is not explicitly defined and drifts from the earlier notation y* = b* − b̂. However, the expected issue also flags the textual switch between ρ(Δb*, √C u^1) and ρ(Δb*, u^1) as a distinct source of confusion; no finding specifically addresses that inconsistency in the second argument of the cosine similarity within the proof.",
+      "matched_finding_count": 1
+    }
+  ],
+  "warnings": []
+}

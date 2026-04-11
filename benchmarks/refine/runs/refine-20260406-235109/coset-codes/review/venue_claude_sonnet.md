@@ -1,0 +1,69 @@
+```json
+{
+  "findings": [
+    {
+      "category": "venue_alignment",
+      "severity": "critical",
+      "title": "Paper is formatted and framed as an IEEE transactions invited paper, not a general-academic submission",
+      "snippet": "G. DAVID FORNEY, JR., FELLOW, IEEE\nInvited Paper",
+      "explanation": "The byline explicitly marks this as an invited paper for IEEE Transactions on Information Theory, including IEEE-specific author credentials ('Fellow, IEEE') and journal metadata (manuscript receipt dates, IEEE log number). The multi-part series structure ('Part I', companion 'Part II' in the same issue, forthcoming 'Part III'), cross-references to a companion paper in 'this issue', and the treatment of a very narrow specialist audience are incompatible with the conventions of a general-academic venue. General-academic journals expect self-contained submissions without series numbering, without journal-specific fellowship credentials in the byline, and without forward references to companion papers 'in this issue'.",
+      "fix": "Remove IEEE-specific metadata from the byline (Fellow, IEEE credential, Invited Paper label, IEEE log number, manuscript dates footnote). Retitle to drop the 'Part I' series designation and reframe the paper as a self-contained contribution. Replace forward references to 'part II in this issue' with references to a separate prior or concurrent work.",
+      "rewrite": "Replace the byline header with a plain 'G. David Forney, Jr.' and remove the 'Invited Paper' label and footnote containing the IEEE log number and manuscript receipt dates."
+    },
+    {
+      "category": "abstract_positioning",
+      "severity": "major",
+      "title": "Abstract assumes deep prior familiarity with trellis-coded modulation literature, excluding general-academic readers",
+      "snippet": "Practically all known good constructive coding techniques for band-limited channels, including lattice codes and various recently proposed trellis-coded modulation schemes, can be characterized as coset codes.",
+      "explanation": "The abstract opens by presupposing that the reader already knows what 'trellis-coded modulation schemes' are and why unifying them matters. Terms such as 'lattice partition', 'sublattice', 'binary encoder', 'error coefficient', 'constellation expansion factor', and 'decoding complexity' appear in the abstract without any glossing or motivating context. A general-academic abstract should establish why the problem matters to readers beyond the trellis-coding community and briefly indicate the mathematical level required. The current abstract reads as if targeted at IEEE transactions subscribers who already track the Ungerboeck/Calderbank–Sloane literature.",
+      "fix": "Add one to two sentences at the opening of the abstract that situate coset codes within the broader landscape of algebraic coding theory or information theory, explain why a unified geometric framework is valuable beyond the specific modulation community, and state the main conceptual contribution at a level accessible to readers in adjacent disciplines (e.g., algebraic combinatorics, discrete mathematics, or information theory broadly).",
+      "rewrite": "Coset codes provide a unified algebraic and geometric framework for constructive coding on band-limited channels. We show that virtually all known good modulation codes—including lattice codes and trellis-coded modulation schemes—can be expressed as coset codes defined by a lattice partition Λ/Λ' and a binary encoder C that selects sequences of cosets. The fundamental parameters governing performance (coding gain, error coefficient, decoding complexity, and constellation expansion) are shown to be purely geometric quantities determined by C and Λ/Λ'. Known and new classes of coset codes are classified and compared within this framework."
+    },
+    {
+      "category": "introduction_positioning",
+      "severity": "major",
+      "title": "Historical introduction presupposes reader membership in the trellis-coded modulation community",
+      "snippet": "It is probably fair to say, however, that it was the trellis-coded modulation schemes of Ungerboeck [8] that captured the attention of the modulation community and inspired widespread practical application as well as intensified research.",
+      "explanation": "The introduction is written as an insider account for 'the modulation community.' Phrases like 'captured the attention of the modulation community', references to specific modem standards ('14.4 kbit/s private-line modems and 9.6 kbit/s switched-network modems'), and the assumption that the reader understands why Ungerboeck's work is the benchmark all presuppose community membership. A general-academic introduction should orient the reader from a discipline-neutral standpoint, explain what practical or theoretical problem motivates the work, and define the modulation context before assuming it is shared knowledge.",
+      "fix": "Open the introduction with a paragraph that frames the central mathematical question—how to construct dense sphere packings or code structures that achieve near-capacity performance on additive Gaussian channels—without requiring prior knowledge of modem standards. Defer or compress the discussion of specific commercial standards.",
+      "rewrite": "This paper addresses the problem of constructing efficient codes for band-limited channels with additive Gaussian noise. Shannon's capacity formula implies that simple pulse-amplitude modulation leaves roughly 9 dB of potential gain unrealized. The goal is to develop constructive coding schemes that recover a substantial fraction of this gap. We show that nearly all known approaches to this problem—ranging from high-dimensional lattice packings to trellis-coded modulation—share a common algebraic structure that we call a coset code."
+    },
+    {
+      "category": "audience_positioning",
+      "severity": "major",
+      "title": "Technical exposition calibrated for channel-coding specialists, not a general-academic reader",
+      "snippet": "The total coding gain gamma_tot(C) is the product of the fundamental coding gain gamma(C) with the shape gain gamma_s of the finite constellation (gamma_s is defined as gamma_tot(C)/gamma(C) and is approximately equal to the ratio of the normalized second moment [7] of an N-cube to that of the region of N-space in which the constellation is contained).",
+      "explanation": "Throughout the body, the paper uses notation and terminology (normalized second moment, constellation expansion factor, Voronoi region, trellis complexity, rate-k/(k+r) convolutional encoders) that is standard in channel coding and communications engineering but would require non-trivial background from a mathematician, statistician, or computer scientist reading in a general-academic context. The 'Lattice Primer' section provides helpful background on lattice theory but does not explain communications-engineering terminology at a comparable level of accessibility.",
+      "fix": "Add a brief 'Notation and Background' subsection—or expand the introduction—that defines the communications-engineering concepts (bandwidth-limited channel, SNR, constellation, trellis diagram) at the level a mathematician or reader from a neighboring field would need. Alternatively, add brief parenthetical explanations the first time each engineering term appears.",
+      "rewrite": null
+    },
+    {
+      "category": "venue_alignment",
+      "severity": "major",
+      "title": "Multi-part series structure with forward references to companion papers is incompatible with a standalone general-academic submission",
+      "snippet": "It is intended that this paper and part II may be read independently; as a result, there is some overlap ... In [18] we shall see how such codes as the Reed-Muller and Golay codes can be built up from short codes in this way.",
+      "explanation": "The paper repeatedly defers key results to 'Part II' (published in the same journal issue) and a prospective 'Part III'. Section III explicitly says results are 'summarized' from Part II, and proofs are deferred to the companion paper. General-academic venues expect a submission to stand alone: all theorems needed to follow the argument must be either proved or cited from already-published work. The current structure makes the paper a fragment of a larger treatise rather than a self-contained article.",
+      "fix": "Either absorb the essential referenced results from Part II into this paper as self-contained lemmas or theorems with full proofs, or restructure so that all deferred results are cited as prior published references rather than 'in preparation' companion papers. Remove forward references to Part III entirely from the body.",
+      "rewrite": null
+    },
+    {
+      "category": "venue_alignment",
+      "severity": "minor",
+      "title": "Several references are 'in preparation' or 'submitted', inconsistent with archival expectations of a general-academic submission",
+      "snippet": "[14] G. D. Forney, Jr., and L. F. Wei, \"Multidimensional signal constellations,\" in preparation, 1989. ... [16] G. D. Forney, Jr., \"Coset codes - Part III: Ternary codes, lattices, and trellis codes,\" in preparation, 1989.",
+      "explanation": "References [14], [15], [16], and [17] are either 'in preparation' or 'submitted' and therefore not verifiable by a reader or referee of a general-academic journal. General-academic venues typically require that all cited works be either published or publicly accessible. These citations also reinforce the impression that the paper is part of an ongoing series rather than a standalone contribution.",
+      "fix": "Update or remove citations to unpublished work. Where their content is essential to the argument, either include it in this paper or substitute a reference to a later published version. If the citations are merely indicative of future directions, move them to a 'future work' remark rather than a formal reference entry.",
+      "rewrite": null
+    },
+    {
+      "category": "rewrite_suggestion",
+      "severity": "minor",
+      "title": "Conclusion uses first-person opinion framing suited to an invited survey but informal for a general-academic research article",
+      "snippet": "In the opinion of the author, while many of the best codes may have already been discovered, the fields of coset codes and trellis codes are no further developed than that of ordinary coding theory in the early 1960's.",
+      "explanation": "The phrase 'In the opinion of the author' is a graceful hedge appropriate for an invited survey but can appear insufficiently rigorous in a research article submitted to a general-academic venue, where speculative claims are typically introduced with evidence-tied hedging ('The evidence presented here suggests…') or placed in a clearly labeled 'Open Problems' or 'Discussion' subsection.",
+      "fix": "Rephrase speculative forward-looking claims in the conclusion as a dedicated 'Open Problems' or 'Future Directions' subsection with concisely stated open questions, rather than as personal opinion.",
+      "rewrite": "The codes presented here suggest that the field of coset codes may still be at an early stage analogous to classical coding theory in the 1960s. Several open directions are worth highlighting: (1) Are there trellis codes with 64 or fewer states achieving effective coding gains above 5 dB with small error coefficients? (2) Can suboptimal decoders be systematically designed for coset codes? (3) What is the role of ternary and other non-binary coset constructions?"
+    }
+  ]
+}
+```

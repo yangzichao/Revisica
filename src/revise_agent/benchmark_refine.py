@@ -91,7 +91,7 @@ class RefineBenchmarkRun:
 
 
 def run_refine_benchmark(
-    manifest_path: str = "benchmarks/refine_cases/manifest.json",
+    manifest_path: str = "benchmarks/refine/manifest.json",
     output_dir: str | None = None,
     venue_profile: str = "general-academic",
     reviewer_specs: list[ProviderModelSpec] | None = None,
@@ -105,7 +105,7 @@ def run_refine_benchmark(
 
     Parameters
     ----------
-    manifest_path : path to the refine_cases manifest.json
+    manifest_path : path to the refine manifest.json
     output_dir : override output directory
     venue_profile : venue profile for writing review
     reviewer_specs : provider specs for writing reviewers

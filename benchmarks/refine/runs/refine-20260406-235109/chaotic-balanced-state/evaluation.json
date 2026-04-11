@@ -1,0 +1,107 @@
+{
+  "case_id": "chaotic-balanced-state",
+  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/chaotic-balanced-state.md",
+  "expected_comments": 12,
+  "our_total_findings": 0,
+  "recall": 0.0,
+  "full_recall": 0.0,
+  "matches": [
+    {
+      "comment_id": "comment_0",
+      "comment_title": "Clarity of the model's scaling argument in the Introduction",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_1",
+      "comment_title": "Clarification on the mean-field theory's regime of validity",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_2",
+      "comment_title": "Inconsistent definition of connection probability in Sec. 2",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_3",
+      "comment_title": "Sign convention for quenched noise in Sec 5",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_4",
+      "comment_title": "Variance of inhibitory input in Sec 5.3",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_5",
+      "comment_title": "Discrepancy regarding stability boundaries in Sec. 6.2",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_6",
+      "comment_title": "Incorrect variance term in q_k expression (sec:Inhomogeneous Thresholds)",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_7",
+      "comment_title": "Unclear derivation of q_k for bounded thresholds",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_8",
+      "comment_title": "Inconsistent general formula for the rate distribution",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_9",
+      "comment_title": "Prefactor in the distance dynamics equation (sec:8)",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_10",
+      "comment_title": "Apparent contradiction on fast response to stimuli in Sec. 10.3",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_11",
+      "comment_title": "Standard deviation of input counts in Appendix A.1",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    }
+  ],
+  "warnings": []
+}

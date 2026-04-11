@@ -1,0 +1,33 @@
+{
+  "role": "section-xcheck-9",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "logic_gap",
+      "severity": "major",
+      "title": "Residual matrix definition omits eigenvalue scaling, breaking the iterative PCA procedure",
+      "snippet": "G^{(2)} = G - u^1(u^1)^\\top",
+      "explanation": "Section 3 defines the iterative residual as G^(2) = G \u2212 u^1(u^1)^\u22a4, but Fact 1 (which derives directly from the Section 2 spectral framework) establishes G = U\u039bU^\u22a4, so the rank-1 component corresponding to the first principal direction is \u03bb\u2081\u00b7u^1(u^1)^\u22a4, not u^1(u^1)^\u22a4. The text itself flags this inconsistency: it correctly states that the minimizer of \u03a3(g_ij \u2212 u_i u_j)\u00b2 is 'a scaling of the eigenvector u^1' (i.e., the minimising vector is c\u00b7u^1, yielding the rank-1 matrix \u03bb\u2081\u00b7u^1(u^1)^\u22a4 by Eckart\u2013Young), yet the residual formula drops the eigenvalue scalar. As written, G \u2212 u^1(u^1)^\u22a4 retains u^1 as an eigenvector with eigenvalue \u03bb\u2081 \u2212 1, so the next step of the procedure does not recover u^2 as the leading eigenvector unless \u03bb\u2081 = 1 coincidentally. The correct residual is G \u2212 \u03bb\u2081\u00b7u^1(u^1)^\u22a4 = \u03a3_{\u2113\u22652} \u03bb_\u2113 u^\u2113(u^\u2113)^\u22a4, which cleanly yields u^2 on the next iteration.",
+      "fix": "Change the residual definition to G^{(2)} = \\boldsymbol{G} - \\lambda_1 \\boldsymbol{u}^1(\\boldsymbol{u}^1)^{\\top}, consistent with the spectral decomposition in Fact 1 and the Eckart\u2013Young theorem. Optionally note that the minimising vector is \\sqrt{\\lambda_1}\\,\\boldsymbol{u}^1, so the best rank-1 matrix is \\lambda_1 \\boldsymbol{u}^1(\\boldsymbol{u}^1)^{\\top}."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Fact 1 uses weak eigenvalue ordering (\u2265) despite Assumption 2 guaranteeing strict distinctness",
+      "snippet": "\\lambda_{1} \\geq \\lambda_{2} \\geq \\cdots \\geq \\lambda_{n}",
+      "explanation": "Section 2's Assumption 2 explicitly requires 'all eigenvalues of G are distinct,' which means the ordering should be strict throughout: \u03bb\u2081 > \u03bb\u2082 > \u00b7\u00b7\u00b7 > \u03bb\u2099. Fact 1 in Section 3 uses weak inequalities (\u2265), which technically allows repeated eigenvalues that Assumption 2 has already ruled out. While mathematically the weak form is not false (strict implies weak), the inconsistency can mislead readers into thinking Fact 1 is stated in greater generality than the rest of the paper's framework permits, and it obscures that the uniqueness claim ('the decomposition is uniquely determined') follows directly from Assumption 2 rather than from 'generic G'.",
+      "fix": "Replace \\lambda_{1} \\geq \\lambda_{2} \\geq \\cdots \\geq \\lambda_{n} with \\lambda_{1} > \\lambda_{2} > \\cdots > \\lambda_{n} in Fact 1 (since Assumption 2 is already in force), and replace 'For generic G, the decomposition is uniquely determined' with 'Under Assumption 2, the decomposition is uniquely determined'."
+    },
+    {
+      "category": "flow_break",
+      "severity": "minor",
+      "title": "Section 3 opening sentence promises simplification of the planner's objective, but does not deliver it in the section",
+      "snippet": "This section introduces a basis for the space of standalone marginal returns and actions in which, under our assumptions on \\boldsymbol{G}, strategic effects and the planner's objective both take a simple form.",
+      "explanation": "The opening sentence claims Section 3 shows that both 'strategic effects' and 'the planner's objective' take a simple form in the principal-component basis. Section 3 as presented establishes the spectral decomposition and its PCA interpretation (strategic effects), but the simplification of the planner's welfare objective \u2014 the core of the IT problem formulated at the end of Section 2 \u2014 is not demonstrated until Section 3.1 and Section 4. A reader arriving from Section 2's IT problem formulation will expect both promises to be fulfilled within this section, creating a perceived gap. No forward reference is provided to bridge this.",
+      "fix": "Either narrow the opening sentence to what Section 3 actually delivers: '\u2026in which strategic effects take a simple form, laying the groundwork for Section 3.1, which shows how the planner's objective simplifies in this basis.' Alternatively, add an explicit forward pointer such as '(see Section 3.1)' after 'the planner's objective both take a simple form.'"
+    }
+  ]
+}

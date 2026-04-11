@@ -1,0 +1,644 @@
+Reading prompt from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Users/zichaoyang/workplace/ReviseAgent
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019d6323-a436-75e3-8e28-df4897a1f95f
+--------
+user
+You are the final judge for a writing review of an academic draft.
+
+Goal:
+- Produce one user-facing report from multiple specialized writing-review agents.
+- Merge duplicates.
+- Keep only the strongest, most actionable points.
+- Separate basic language issues from structure/rhetoric issues and venue-style gaps.
+- Include rewrite suggestions only when they materially help.
+
+The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/structure_logic.tex`.
+The target venue profile is `general-academic`.
+
+Return Markdown with exactly these top-level sections:
+- Executive Summary
+- Basic Language Issues
+- Structure and Logic Issues
+- Scholarly Rhetoric Issues
+- Venue-Style Gap
+- Suggested Rewrites
+- Needs Human Check
+- Revision Priorities
+
+Rules:
+- Quote the local problematic snippet for each kept issue.
+- Prefer issues supported by multiple role outputs when possible, but do not keep weak duplicates.
+- If a point is uncertain or style-dependent, place it under `Needs Human Check`.
+- Keep the report practical and revision-oriented.
+
+Source LaTeX:
+
+```tex
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{A Novel Framework for Graph Optimization}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Graphs are used in many applications.
+Many algorithms have been proposed.
+Our algorithm is better.
+We test it on several datasets.
+
+\section{Related Work}
+Smith et al.\ (2020) proposed a method for graph partitioning.
+Jones et al.\ (2021) extended this to weighted graphs.
+There are also methods based on spectral clustering.
+
+\section{Our Method}
+We propose a new framework for graph optimization.
+The framework has three phases.
+
+In Phase 1, we compute a preliminary partition using a greedy approach.
+In Phase 3, we refine the partition using local search.
+In Phase 2, we merge small clusters.
+
+The time complexity is $O(n \log n)$ in the best case.
+However, in our experiments the runtime was often quadratic.
+
+\section{Experiments}
+We tested our method on five benchmark datasets.
+Our method achieved the best results on three of them.
+On the other two datasets, baseline methods performed better.
+We attribute this to the nature of the graphs, but we did not investigate further.
+
+Table~1 shows the results but we were unable to include it due to space constraints.
+
+\section{Theoretical Analysis}
+
+\begin{theorem}
+The proposed method converges to a local optimum in polynomial time.
+\end{theorem}
+
+We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.
+
+\section{Conclusion}
+We presented a novel framework for graph optimization that outperforms existing methods in most cases.
+Future work will address the limitations identified in our experiments.
+Our contribution is significant because graph optimization is important.
+
+\end{document}
+
+```
+
+Structured role outputs:
+
+## Role `basic` from `codex:default`
+```json
+[
+  {
+    "category": "clarity",
+    "severity": "major",
+    "title": "Phases are presented out of order",
+    "snippet": "In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.",
+    "explanation": "The phase descriptions are numbered 1, 3, then 2, which makes the procedure harder to follow and creates avoidable confusion about the actual execution order.",
+    "fix": "Present the phases in numerical order: \"In Phase 1, we compute a preliminary partition using a greedy approach. In Phase 2, we merge small clusters. In Phase 3, we refine the partition using local search.\""
+  },
+  {
+    "category": "clarity",
+    "severity": "major",
+    "title": "Sentence contradicts itself about the table",
+    "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+    "explanation": "This says the table shows the results while also saying the table was not included. That contradiction makes the status of the results presentation unclear.",
+    "fix": "Rewrite to remove the contradiction, for example: \"The results are not shown in a table here because of space constraints.\""
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Missing comma and weak pronoun reference in theorem discussion",
+    "snippet": "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+    "explanation": "A comma is needed before \"but\" here, and \"it\" is slightly unclear because it could refer to the theorem statement or the claim more generally.",
+    "fix": "Rewrite as: \"We do not prove this theorem formally, but the claim seems intuitively obvious from the structure of the algorithm.\""
+  },
+  {
+    "category": "terminology_consistency",
+    "severity": "minor",
+    "title": "Core object is labeled inconsistently",
+    "snippet": "Our algorithm is better.",
+    "explanation": "The draft refers to the same contribution as an \"algorithm,\" \"framework,\" and \"method\" in different places. That terminology drift can make readers wonder whether these are distinct things.",
+    "fix": "Choose one term and use it consistently throughout; for example, change this sentence to \"Our method performs better.\" if \"method\" is the preferred term."
+  }
+]
+```
+## Role `basic` from `claude:default`
+```json
+[
+  {
+    "category": "clarity",
+    "severity": "critical",
+    "title": "Phases listed out of numerical order",
+    "snippet": "In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.",
+    "explanation": "The three phases are presented in the order 1, 3, 2 with no stated reason for the reordering. This reads as a copy-paste or editing error and confuses the logical sequence of the framework.",
+    "fix": "Reorder the paragraphs to Phase 1, Phase 2, Phase 3:\n\"In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 2, we merge small clusters.\nIn Phase 3, we refine the partition using local search.\""
+  },
+  {
+    "category": "clarity",
+    "severity": "critical",
+    "title": "Reference to a table that is explicitly absent",
+    "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+    "explanation": "The sentence simultaneously references Table 1 and states it was not included. This is self-contradictory; the reader is directed to content that does not exist.",
+    "fix": "Either include the table or remove the reference entirely. If results must be summarized in prose, replace with, e.g.: \"Due to space constraints, we summarize the main results in the text.\""
+  },
+  {
+    "category": "clarity",
+    "severity": "major",
+    "title": "Unqualified comparative claim",
+    "snippet": "Our algorithm is better.",
+    "explanation": "\"Better\" is used without specifying better than what, by which metric, or in what setting. The sentence conveys no actionable information.",
+    "fix": "Provide a qualified claim, e.g.: \"Our algorithm achieves lower partition cost than existing greedy methods on standard benchmarks.\""
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Missing comma before coordinating conjunction (table sentence)",
+    "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+    "explanation": "When \"but\" joins two independent clauses, a comma is required before the conjunction.",
+    "fix": "\"Table~1 shows the results, but we were unable to include it due to space constraints.\""
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Missing comma before coordinating conjunction (theorem sentence)",
+    "snippet": "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+    "explanation": "Two independent clauses are joined by \"but\" without a preceding comma.",
+    "fix": "\"We do not prove this theorem formally, but it seems intuitively obvious from the structure of the algorithm.\""
+  },
+  {
+    "category": "clarity",
+    "severity": "major",
+    "title": "Circular justification of significance",
+    "snippet": "Our contribution is significant because graph optimization is important.",
+    "explanation": "The sentence is vacuous: it asserts significance solely by restating that the problem domain is important, providing no concrete justification.",
+    "fix": "State a specific reason, e.g.: \"Our contribution is significant because it reduces partitioning cost by up to 15\\% on large-scale social-network graphs.\""
+  },
+  {
+    "category": "reference_ambiguity",
+    "severity": "minor",
+    "title": "Vague reference \"this\" in related work",
+    "snippet": "Jones et al.\\ (2021) extended this to weighted graphs.",
+    "explanation": "\"this\" could refer to the method, the problem formulation, or the partitioning result of Smith et al. A more explicit antecedent improves clarity.",
+    "fix": "\"Jones et al.\\ (2021) extended Smith et al.'s partitioning method to weighted graphs.\""
+  }
+]
+```
+## Role `structure` from `codex:default`
+```json
+[
+  {
+    "category": "contribution_framing",
+    "severity": "major",
+    "title": "Introduction states superiority without defining the problem or contribution",
+    "snippet": "Graphs are used in many applications.\nMany algorithms have been proposed.\nOur algorithm is better.\nWe test it on several datasets.",
+    "explanation": "The introduction moves from generic background to a superiority claim without specifying the research problem, the limitation in prior work, what the proposed framework actually contributes, or by what criteria it is 'better.' This weakens article-level motivation and leaves later sections without a clear argumentative target.",
+    "fix": "Rewrite the introduction to establish the graph optimization problem, identify the specific gap in existing methods, state the paper's core idea, and preview the contribution dimensions precisely (e.g., accuracy, runtime, robustness, or applicability). Replace 'Our algorithm is better' with a scoped, evidence-ready claim."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "Related work is listed but not synthesized into an argument gap",
+    "snippet": "Smith et al.\\ (2020) proposed a method for graph partitioning.\nJones et al.\\ (2021) extended this to weighted graphs.\nThere are also methods based on spectral clustering.",
+    "explanation": "This section reads as a loose inventory of prior studies rather than a structured review that positions the present paper. The paragraph does not compare strands of work, identify their tradeoffs, or explain which limitation motivates the proposed framework, so the transition into 'Our Method' lacks logical force.",
+    "fix": "Reorganize related work by approach or limitation, then end the section with an explicit positioning sentence such as which methods fail under what conditions and how the proposed framework addresses that gap."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "Method description breaks procedural flow",
+    "snippet": "The framework has three phases.\n\nIn Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.",
+    "explanation": "The method claims a three-phase pipeline but presents Phase 3 before Phase 2. Even if this is only an ordering issue in exposition, it disrupts paragraph-level coherence and makes the algorithm harder to follow as a staged procedure.",
+    "fix": "Present the phases in execution order and give each phase a short functional rationale. If the actual execution order is nonsequential, state that explicitly and explain why the exposition departs from numeric order."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "major",
+    "title": "Complexity claim is left in tension with reported runtime behavior",
+    "snippet": "The time complexity is $O(n \\log n)$ in the best case.\nHowever, in our experiments the runtime was often quadratic.",
+    "explanation": "The section places a favorable complexity statement directly next to an apparently conflicting empirical observation, but does not explain the conditions under which each applies. This creates a claim-evidence gap and leaves readers unsure whether the theoretical statement is narrow, the implementation is inefficient, or the experiments reveal a practical limitation.",
+    "fix": "Clarify the scope of the complexity claim by stating whether it is best-case, average-case, or conditional on graph structure, then explain why empirical runtime can become quadratic. If needed, move this discussion to a limitations paragraph that reconciles theory and practice."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "major",
+    "title": "Experimental claims are undermined by missing evidence and uninvestigated exceptions",
+    "snippet": "Our method achieved the best results on three of them.\nOn the other two datasets, baseline methods performed better.\nWe attribute this to the nature of the graphs, but we did not investigate further.\n\nTable~1 shows the results but we were unable to include it due to space constraints.",
+    "explanation": "The experiments section makes comparative performance claims but withholds the main supporting evidence and explicitly declines to analyze failure cases. Structurally, this prevents the section from carrying the argumentative weight needed for the paper's main contribution claim.",
+    "fix": "Include the comparative results table or summarize the key metrics in text, and add a brief analysis of why the method underperforms on the two datasets. If a full explanation is unavailable, frame this as a limitation rather than an unsupported attribution."
+  },
+  {
+    "category": "scholarly_rhetoric",
+    "severity": "major",
+    "title": "Theoretical analysis uses assertion in place of scholarly support",
+    "snippet": "\\begin{theorem}\nThe proposed method converges to a local optimum in polynomial time.\n\\end{theorem}\n\nWe do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+    "explanation": "Introducing a theorem creates an expectation of formal support, but the paragraph immediately withdraws that support and replaces it with informal assertion. This is not just a mathematical issue; rhetorically it weakens the paper's credibility and misaligns the section title 'Theoretical Analysis' with what is actually provided.",
+    "fix": "Either provide a proof sketch with clearly stated assumptions, downgrade the statement to an informal proposition or conjecture, or remove the theorem environment entirely and describe the convergence intuition as an unproven observation."
+  },
+  {
+    "category": "contribution_framing",
+    "severity": "major",
+    "title": "Conclusion overstates significance relative to mixed evidence",
+    "snippet": "We presented a novel framework for graph optimization that outperforms existing methods in most cases.\nFuture work will address the limitations identified in our experiments.\nOur contribution is significant because graph optimization is important.",
+    "explanation": "The conclusion escalates from mixed experimental evidence to a broad significance claim without articulating what the actual contribution is beyond topic importance. 'Graph optimization is important' justifies relevance of the area, not significance of this paper. This weakens the closing framing and can read as promotional rather than scholarly.",
+    "fix": "Recast the conclusion around the paper's demonstrated contribution and limitations: summarize where the method improves on baselines, where it does not, and what specific conceptual or empirical advance the paper offers. Replace generic significance language with a precise statement of contribution."
+  }
+]
+```
+## Role `structure` from `claude:default`
+```json
+[
+  {
+    "category": "structure_logic",
+    "severity": "critical",
+    "title": "Method phases presented out of order",
+    "snippet": "In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.",
+    "explanation": "The three phases of the framework are described in the order 1-3-2. This is either a serious copy-paste error or a fundamental organizational lapse. A reader following the narrative will be confused about the actual pipeline ordering and may misunderstand the method entirely.",
+    "fix": "Reorder the paragraphs so Phase 1 \u2192 Phase 2 \u2192 Phase 3 appear sequentially: Phase 1 (greedy partition), Phase 2 (merge small clusters), Phase 3 (local search refinement)."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "critical",
+    "title": "Theorem stated without proof and dismissed as 'intuitively obvious'",
+    "snippet": "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+    "explanation": "Presenting a numbered theorem and then explicitly declining to prove it\u2014while calling it 'intuitively obvious'\u2014violates basic scholarly norms. A theorem requires a proof or at least a rigorous proof sketch. Without one, the convergence claim carries no weight and undermines the credibility of the entire Theoretical Analysis section.",
+    "fix": "Either (a) provide a formal proof or detailed proof sketch, (b) downgrade the statement to a conjecture with supporting intuition, or (c) remove the section entirely if no proof is available."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "critical",
+    "title": "Results table referenced but explicitly absent",
+    "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+    "explanation": "The Experiments section references a table that the authors openly admit is not included. This means the paper's empirical claims have zero presented evidence. The entire experimental section is unsupported.",
+    "fix": "Include Table 1 with actual results. If space is genuinely an issue, move detailed tables to an appendix or supplementary material, but at minimum present a summary table in the main text."
+  },
+  {
+    "category": "contribution_framing",
+    "severity": "critical",
+    "title": "Introduction lacks any substantive contribution statement",
+    "snippet": "Our algorithm is better.\nWe test it on several datasets.",
+    "explanation": "The introduction consists of four vague sentences. There is no problem statement, no motivation for why existing methods are insufficient, no description of the proposed approach, and no concrete contribution list. 'Our algorithm is better' is an unsupported assertion that tells the reader nothing about what the contribution actually is or why it matters.",
+    "fix": "Rewrite the introduction to include: (1) a clear problem definition, (2) a concise summary of limitations of existing work, (3) a description of the proposed framework and its key ideas, and (4) a bulleted or enumerated list of concrete contributions (e.g., algorithmic novelty, theoretical guarantees, empirical improvements with quantified gains)."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "major",
+    "title": "Claimed time complexity contradicted by experimental observation",
+    "snippet": "The time complexity is $O(n \\log n)$ in the best case.\nHowever, in our experiments the runtime was often quadratic.",
+    "explanation": "Stating an O(n log n) best-case complexity provides little useful information\u2014best-case bounds are rarely meaningful in practice. The immediate admission that runtime is 'often quadratic' in experiments directly undermines the complexity claim without any analysis of why or under what conditions the gap arises. This reads as self-contradictory rather than nuanced.",
+    "fix": "Provide a worst-case or expected-case complexity analysis. Discuss the conditions under which the quadratic behavior arises. If the best-case bound is the only provable result, frame it honestly and characterize the worst case explicitly."
+  },
+  {
+    "category": "scholarly_rhetoric",
+    "severity": "major",
+    "title": "Conclusion overclaims relative to presented evidence",
+    "snippet": "We presented a novel framework for graph optimization that outperforms existing methods in most cases.",
+    "explanation": "The Experiments section states the method beats baselines on only 3 of 5 datasets (60%), while losing on the other two, and the results table is not even included. Claiming the method 'outperforms existing methods in most cases' is an overclaim that is not supported by the paper's own (absent) evidence.",
+    "fix": "Qualify the conclusion to accurately reflect the mixed experimental results: e.g., 'Our framework is competitive with existing methods and outperforms them on a majority of tested benchmarks, though further investigation is needed to understand the cases where baselines prevail.'"
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "Related Work section is a disconnected list with no synthesis",
+    "snippet": "Smith et al.\\ (2020) proposed a method for graph partitioning.\nJones et al.\\ (2021) extended this to weighted graphs.\nThere are also methods based on spectral clustering.",
+    "explanation": "The Related Work section enumerates three items with no comparative analysis, no identification of gaps, and no connection to the proposed method. It does not explain how the proposed framework differs from or improves upon these prior works. The final sentence ('There are also methods based on spectral clustering') is a throwaway with no citation or detail.",
+    "fix": "Organize related work thematically, discuss the strengths and limitations of each line of prior work, provide proper citations for all claims (including spectral clustering methods), and explicitly position the proposed framework relative to these existing approaches."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "major",
+    "title": "Experimental shortcomings acknowledged but not addressed",
+    "snippet": "We attribute this to the nature of the graphs, but we did not investigate further.",
+    "explanation": "Admitting that the method underperforms on two datasets and attributing this vaguely to 'the nature of the graphs' without any analysis is a significant gap. A scholarly paper should at minimum offer a hypothesis about which graph properties cause the degradation and ideally provide supporting analysis.",
+    "fix": "Analyze the structural properties (e.g., density, degree distribution, cluster structure) of the two underperforming datasets. Provide a concrete hypothesis for why the method struggles on them and, if possible, supporting evidence or ablation experiments."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "Theoretical Analysis section placed after Experiments",
+    "snippet": "\\section{Experiments}\n...\n\\section{Theoretical Analysis}",
+    "explanation": "Placing the theoretical analysis after experiments is unconventional and structurally disorienting. The theoretical guarantee (convergence to a local optimum) is a property of the method itself and should inform the reader's understanding before they encounter experimental results. The current ordering suggests the theory was an afterthought.",
+    "fix": "Move the Theoretical Analysis section to immediately follow the method description (Section 3), before Experiments. This allows the theoretical properties to contextualize and motivate the experimental evaluation."
+  },
+  {
+    "category": "scholarly_rhetoric",
+    "severity": "major",
+    "title": "Circular justification of significance in the conclusion",
+    "snippet": "Our contribution is significant because graph optimization is important.",
+    "explanation": "This sentence is a tautology: it asserts significance solely by appealing to the importance of the general problem domain. It provides no specific argument for why this particular contribution advances the state of the art.",
+    "fix": "Replace with a concrete statement of impact, e.g., 'Our framework introduces [specific technique] that reduces [specific metric] by [quantified amount] on standard benchmarks, addressing the open challenge of [specific limitation].'"
+  },
+  {
+    "category": "contribution_framing",
+    "severity": "minor",
+    "title": "Title promises 'novel framework' but novelty is never articulated",
+    "snippet": "\\title{A Novel Framework for Graph Optimization}",
+    "explanation": "The word 'novel' in the title sets an expectation that the paper will clearly articulate what is new. However, the method section describes standard techniques (greedy partitioning, cluster merging, local search) without identifying what distinguishes this combination from prior work.",
+    "fix": "Either revise the title to be more specific (e.g., referencing the key algorithmic idea) or add explicit discussion in the Method section explaining the novelty of the framework's design."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "minor",
+    "title": "Method section lacks formal problem definition",
+    "snippet": "We propose a new framework for graph optimization.\nThe framework has three phases.",
+    "explanation": "The method jumps directly into describing phases without first defining the optimization problem being solved\u2014what the input is, what the objective function is, or what constitutes a solution. Without a problem definition, the method description is unanchored.",
+    "fix": "Begin Section 3 with a formal problem definition: define the input graph, the objective function (e.g., minimize cut, maximize modularity), constraints, and the form of the output."
+  }
+]
+```
+## Role `venue` from `codex:default`
+```json
+[
+  {
+    "category": "abstract_positioning",
+    "severity": "major",
+    "title": "Missing abstract leaves the paper without standard scholarly framing",
+    "snippet": "\\maketitle\n\n\\section{Introduction}",
+    "explanation": "For a conservative general-academic profile, readers expect an abstract that states the problem, approach, main evidence, and scope of contribution before the introduction. Starting directly with the introduction makes the draft feel incomplete and weakens venue fit because the reader is not given a concise scholarly positioning of the work.",
+    "fix": "Add a conventional abstract that briefly covers: the graph optimization problem, the proposed framework, the nature of the evaluation, the main empirical outcome, and the paper's main limitation or scope.",
+    "rewrite": "\\begin{abstract}\nWe study graph optimization and propose a three-phase framework that combines greedy initialization, cluster merging, and local refinement. We evaluate the method on five benchmark datasets and find that it outperforms baseline methods on three datasets while underperforming on two others, suggesting that performance depends on graph structure. These results indicate that the framework is promising but not uniformly superior, motivating further analysis of the conditions under which it is most effective.\n\\end{abstract}"
+  },
+  {
+    "category": "introduction_positioning",
+    "severity": "major",
+    "title": "Introduction is too generic and does not establish a research gap",
+    "snippet": "Graphs are used in many applications.\nMany algorithms have been proposed.\nOur algorithm is better.\nWe test it on several datasets.",
+    "explanation": "A general academic introduction should orient the reader to a specific problem, identify a gap in existing work, and state the contribution in a calibrated way. This introduction is too generic, makes an unsupported comparative claim, and does not explain why the problem is difficult, what is missing in prior work, or what precise contribution the paper makes.",
+    "fix": "Rewrite the introduction around four moves: define the problem context, identify the limitation in prior methods, state the proposed contribution precisely, and preview the evidence and paper structure.",
+    "rewrite": "Graph optimization plays a central role in applications such as partitioning, clustering, and network analysis. Despite substantial prior work, existing methods often face tradeoffs between solution quality and computational cost, particularly on heterogeneous graph structures. This paper presents a three-phase optimization framework designed to balance efficiency with partition quality. We evaluate the method on benchmark datasets and analyze both its strengths and its observed failure cases."
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Promotional and absolute claims are not calibrated to academic tone",
+    "snippet": "\\title{A Novel Framework for Graph Optimization}\n...\nOur algorithm is better.\n...\nWe presented a novel framework for graph optimization that outperforms existing methods in most cases.\nFuture work will address the limitations identified in our experiments.\nOur contribution is significant because graph optimization is important.",
+    "explanation": "The draft repeatedly uses assertive, self-promotional language without qualification. In a general-academic style, novelty and significance should be demonstrated through precise comparison and evidence, not declared directly. Phrases such as 'novel,' 'better,' and 'significant because graph optimization is important' read as overstated and under-argued.",
+    "fix": "Replace promotional wording with specific, evidence-based claims. State what is new in technical terms and qualify comparative performance according to the actual experimental results.",
+    "rewrite": "\\title{A Three-Phase Framework for Graph Optimization}\n...\nWe propose a three-phase framework for graph optimization and evaluate it against established baselines.\n...\nThe results suggest that the method is competitive on several benchmark datasets, while also revealing settings in which baseline methods remain stronger."
+  },
+  {
+    "category": "audience_positioning",
+    "severity": "major",
+    "title": "Evidence is presented as incomplete, asking readers to accept unsupported claims",
+    "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.\n...\nWe do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+    "explanation": "General academic readers expect core claims to be inspectable and supported within the paper. Saying that the main results table is omitted and that a theorem is unproved but 'intuitively obvious' positions the reader as someone who should trust the authors without evidence. That is misaligned with standard scholarly expectations.",
+    "fix": "Either include the missing evidence and a formal proof, or narrow the claims. If a proof is out of scope, restate the theorem as an informal proposition or empirical observation and clearly mark it as such.",
+    "rewrite": "Table~1 summarizes the benchmark results discussed below.\n...\nWe conjecture that the method converges to a local optimum under the update rules used here; a formal proof is left for future work."
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "minor",
+    "title": "Discussion of limitations is too shallow for a balanced academic framing",
+    "snippet": "On the other two datasets, baseline methods performed better.\nWe attribute this to the nature of the graphs, but we did not investigate further.",
+    "explanation": "General-academic writing usually treats negative or mixed results as an opportunity for analysis, boundary-setting, or hypothesis formation. This passage acknowledges a limitation but stops too early, which makes the discussion feel underdeveloped rather than reflective and rigorous.",
+    "fix": "Expand this into a brief limitations discussion that states what graph properties may matter, what evidence is currently missing, and how future work would test the hypothesis.",
+    "rewrite": "Baseline methods performed better on two datasets, suggesting that the proposed framework may be sensitive to graph characteristics such as density, weight distribution, or community structure. Because these factors were not isolated in the present study, the results should be interpreted as conditional rather than universal; a targeted analysis of dataset properties is an important direction for future work."
+  }
+]
+```
+## Role `venue` from `claude:default`
+```json
+[
+  {
+    "category": "abstract_positioning",
+    "severity": "critical",
+    "title": "Missing abstract",
+    "snippet": "\\begin{document}\n\\maketitle\n\n\\section{Introduction}",
+    "explanation": "The draft contains no \\begin{abstract}...\\end{abstract} block. Every general-academic venue\u2014journals, conferences, workshops, and preprint servers\u2014requires an abstract. Its absence signals the draft is not ready for any form of external review.",
+    "fix": "Add a structured abstract (\u2248150\u2013250 words) that states the problem, the proposed approach, the key result, and the main limitation.",
+    "rewrite": "\\begin{abstract}\nWe study the graph optimization problem and propose a three-phase framework combining greedy partitioning, cluster merging, and local-search refinement. On five standard benchmarks the method achieves the best known objective on three, while remaining competitive on the other two. We analyze convergence properties and discuss current limitations.\n\\end{abstract}"
+  },
+  {
+    "category": "introduction_positioning",
+    "severity": "critical",
+    "title": "Introduction lacks problem definition, motivation, and contribution list",
+    "snippet": "Graphs are used in many applications.\nMany algorithms have been proposed.\nOur algorithm is better.\nWe test it on several datasets.",
+    "explanation": "A general-academic audience expects the introduction to (a) define the specific problem, (b) motivate why it matters, (c) summarize limitations of existing work, and (d) enumerate concrete contributions. The current four-sentence introduction does none of these; 'Our algorithm is better' is an unsupported assertion that undermines credibility.",
+    "fix": "Expand to \u22651 page: formalize the optimization objective, cite evidence of practical impact, contrast with prior art, and list numbered contributions (e.g., 'Our contributions are threefold: (1)\u2026').",
+    "rewrite": ""
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "critical",
+    "title": "Theorem stated but explicitly unproven",
+    "snippet": "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+    "explanation": "No academic venue accepts a labeled Theorem whose proof is replaced by 'it seems intuitively obvious.' This violates the basic contract of a theorem environment: a statement so labeled must be accompanied by a rigorous proof (or a precise citation to one). Presenting it this way will cause immediate rejection at any peer-reviewed venue.",
+    "fix": "Either (a) supply a full proof or proof sketch with the key argument, (b) downgrade the statement to a Conjecture with supporting intuition, or (c) remove the theorem environment entirely and discuss convergence informally.",
+    "rewrite": "\\begin{conjecture}\nThe proposed method converges to a local optimum in polynomial time.\n\\end{conjecture}\n\nWe offer informal evidence for this conjecture. Because each phase monotonically decreases the objective (Phase~1 by \\ldots, Phase~2 by \\ldots, Phase~3 by \\ldots), and the objective is lower-bounded, the sequence of iterates must converge. Bounding the number of improving steps by $O(n^k)$ would yield a polynomial-time guarantee; we leave a formal proof to future work."
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "critical",
+    "title": "Referenced table is missing",
+    "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+    "explanation": "Citing a table that does not exist in the manuscript is unacceptable at any venue. Empirical results are the primary evidence for the claims; omitting them removes the paper's evidentiary basis.",
+    "fix": "Include Table 1 with full numerical results. If space is genuinely constrained, move supplementary tables to an appendix or supplementary material file, but the main results table must appear in the body.",
+    "rewrite": ""
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Method phases presented out of logical order",
+    "snippet": "In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.",
+    "explanation": "Phases are presented in the order 1 \u2192 3 \u2192 2, which breaks the logical flow and confuses readers about the actual pipeline. A general-academic reader expects sequential exposition of an algorithm's stages.",
+    "fix": "Reorder the paragraphs to Phase 1 \u2192 Phase 2 \u2192 Phase 3, matching the intended execution order.",
+    "rewrite": "In Phase~1, we compute a preliminary partition using a greedy approach.\nIn Phase~2, we merge small clusters.\nIn Phase~3, we refine the partition using local search."
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Complexity claim contradicted by empirical evidence without reconciliation",
+    "snippet": "The time complexity is $O(n \\log n)$ in the best case.\nHowever, in our experiments the runtime was often quadratic.",
+    "explanation": "Stating a best-case complexity of O(n log n) and then reporting quadratic empirical behavior without analysis is a red flag. An academic reader will ask for worst-case and expected-case bounds, and an explanation of when and why the best case does not hold. The gap suggests the complexity analysis is incomplete or incorrect.",
+    "fix": "Provide worst-case and average-case complexity. Explain the structural conditions under which the algorithm degrades to quadratic time, and relate those conditions to the experimental graphs.",
+    "rewrite": ""
+  },
+  {
+    "category": "audience_positioning",
+    "severity": "major",
+    "title": "Conclusion overclaims relative to reported results",
+    "snippet": "We presented a novel framework for graph optimization that outperforms existing methods in most cases.",
+    "explanation": "The experiments section reports winning on 3 of 5 datasets, with the other 2 favoring baselines. While 3/5 is technically 'most,' the conclusion glosses over the losses and does not qualify the claim. A general-academic audience expects honest, balanced summarization of results.",
+    "fix": "Qualify the claim: specify the conditions or graph types where the method excels and where it does not, and avoid unqualified 'outperforms.'",
+    "rewrite": "We presented a framework for graph optimization that matches or improves upon existing methods on three of five benchmarks, while underperforming on graphs with [specific property]. These mixed results suggest the approach is most effective for [characterization], and we outline directions to address the remaining gaps."
+  },
+  {
+    "category": "audience_positioning",
+    "severity": "major",
+    "title": "Related work is superficial and does not position the contribution",
+    "snippet": "Smith et al.\\ (2020) proposed a method for graph partitioning.\nJones et al.\\ (2021) extended this to weighted graphs.\nThere are also methods based on spectral clustering.",
+    "explanation": "The related work lists three items without discussing their strengths, weaknesses, or relationship to the proposed method. A general-academic reader needs to understand what gap remains and why existing approaches are insufficient.",
+    "fix": "For each cited line of work, state (a) what it achieves, (b) its key limitation, and (c) how the proposed framework addresses that limitation. Add coverage of other relevant families of methods.",
+    "rewrite": ""
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Experiments dismiss negative results without investigation",
+    "snippet": "We attribute this to the nature of the graphs, but we did not investigate further.",
+    "explanation": "Explicitly stating that a negative result was not investigated is a significant weakness for any academic venue. Reviewers expect at minimum a hypothesis, a preliminary analysis (e.g., graph density, degree distribution), or a discussion of what further experiments would clarify.",
+    "fix": "Offer a concrete hypothesis (e.g., 'We conjecture the greedy Phase 1 yields poor initial partitions on highly irregular degree distributions') and, ideally, a small ablation or diagnostic experiment to support it.",
+    "rewrite": ""
+  },
+  {
+    "category": "audience_positioning",
+    "severity": "minor",
+    "title": "Circular justification in conclusion",
+    "snippet": "Our contribution is significant because graph optimization is important.",
+    "explanation": "This sentence is a tautology that adds no information. A general-academic reader expects significance to be argued in terms of concrete improvements, new theoretical insights, or practical impact\u2014not by restating that the problem domain is important.",
+    "fix": "Replace with a specific significance statement, e.g., 'Our framework reduces partitioning time by X% on large social-network graphs, enabling real-time community detection in streaming settings.'",
+    "rewrite": ""
+  }
+]
+```
+
+codex
+I’m consolidating the role outputs against the LaTeX source and filtering for only the issues that materially affect revision quality. First pass is to merge duplicates, then I’ll separate sentence-level language problems from argument structure, scholarly tone/norms, and venue-fit gaps.
+codex
+Plan:
+1. Collapse duplicated findings, giving priority to issues independently flagged by multiple roles.
+2. Keep only issues that change reader understanding, credibility, or venue readiness.
+3. Place sentence-level clarity/grammar under `Basic Language Issues`, paper-logic under `Structure and Logic Issues`, credibility/tone/norm violations under `Scholarly Rhetoric Issues`, and format/convention gaps under `Venue-Style Gap`.
+4. Add rewrite suggestions only where a concrete rewrite is faster than abstract advice.
+5. Put style-dependent or uncertain points under `Needs Human Check`, then finish with a revision order that reflects review risk.
+codex
+# Executive Summary
+Across the role outputs, the same core problems recur: the draft is not yet review-ready because its main claims are under-supported, its contribution is weakly framed, and several passages break basic scholarly expectations. The highest-priority fixes are to add the missing core evidence, remove or downgrade unsupported theoretical claims, rewrite the introduction around a specific problem and contribution, and repair the method/experiments narrative so the paper reads as a coherent argument rather than a set of assertions.
+
+# Basic Language Issues
+- **Imprecise and inconsistent naming of the contribution.**  
+  > "Our algorithm is better."  
+  > "We propose a new framework for graph optimization."  
+  > "The proposed method converges to a local optimum in polynomial time."  
+  The draft alternates among `algorithm`, `framework`, and `method`, and the sentence "Our algorithm is better" is too vague to carry meaning. Pick one term and replace empty comparative wording with a metric- and baseline-specific claim.
+
+- **Ambiguous reference in related work.**  
+  > "Jones et al.\ (2021) extended this to weighted graphs."  
+  `this` has no precise antecedent. Replace it with the specific method or formulation being extended.
+
+- **Minor sentence-level repair needed in the theorem discussion.**  
+  > "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm."  
+  At minimum, this needs a comma before `but`, and `it` should be replaced with a clearer noun such as `the claim` or `the convergence argument`.
+
+# Structure and Logic Issues
+- **The introduction does not define the problem, gap, or contribution.**  
+  > "Graphs are used in many applications."  
+  > "Many algorithms have been proposed."  
+  > "Our algorithm is better."  
+  > "We test it on several datasets."  
+  This opening jumps from generic background to an unsupported superiority claim. Rewrite it to state the graph optimization problem, the limitation in prior work, the paper's actual idea, and the exact contribution being evaluated.
+
+- **The method description breaks procedural order.**  
+  > "In Phase 1, we compute a preliminary partition using a greedy approach."  
+  > "In Phase 3, we refine the partition using local search."  
+  > "In Phase 2, we merge small clusters."  
+  This reads like an editing error and makes the pipeline harder to follow. Present the phases in execution order and briefly state the purpose of each phase.
+
+- **The related-work section lists papers but does not build an argument gap.**  
+  > "Smith et al.\ (2020) proposed a method for graph partitioning."  
+  > "Jones et al.\ (2021) extended this to weighted graphs."  
+  > "There are also methods based on spectral clustering."  
+  The section inventories prior work without synthesizing tradeoffs, limitations, or the gap your method addresses. Reorganize it around method families or limitations, then end with a positioning sentence that motivates your approach.
+
+- **The runtime discussion creates an unresolved theory-practice mismatch.**  
+  > "The time complexity is $O(n \log n)$ in the best case."  
+  > "However, in our experiments the runtime was often quadratic."  
+  As written, the favorable complexity claim is immediately undercut by practice, with no explanation of when each statement applies. Clarify the conditions for the bound and explain why the observed runtime can still be quadratic.
+
+- **The experiments section does not adequately analyze mixed results.**  
+  > "Our method achieved the best results on three of them."  
+  > "On the other two datasets, baseline methods performed better."  
+  > "We attribute this to the nature of the graphs, but we did not investigate further."  
+  This is a claim-evidence gap: the draft acknowledges failure cases, offers a vague explanation, and then stops. Add at least a bounded explanation of what graph properties may be responsible, or frame this explicitly as an unresolved limitation.
+
+# Scholarly Rhetoric Issues
+- **Theoretical analysis is presented with theorem-level force but without theorem-level support.**  
+  > "\begin{theorem}"  
+  > "The proposed method converges to a local optimum in polynomial time."  
+  > "\end{theorem}"  
+  > "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm."  
+  This is the strongest credibility problem in the draft. A labeled theorem needs a proof, a proof sketch with clear assumptions, or a citation. If that support is unavailable, downgrade it to a conjecture, proposition, or informal observation.
+
+- **Several claims are promotional or circular rather than evidence-based.**  
+  > "\title{A Novel Framework for Graph Optimization}"  
+  > "Our algorithm is better."  
+  > "We presented a novel framework for graph optimization that outperforms existing methods in most cases."  
+  > "Our contribution is significant because graph optimization is important."  
+  These statements assert novelty, superiority, and significance without establishing them. Replace them with narrower claims tied to actual evidence, and justify significance through the paper's specific advance rather than the importance of the field.
+
+# Venue-Style Gap
+- **The draft is missing an abstract.**  
+  > "\maketitle"  
+  > ""  
+  > "\section{Introduction}"  
+  For a `general-academic` profile, this is a basic completeness issue. Add a conventional abstract that states the problem, approach, main empirical result, and main limitation.
+
+- **The manuscript references a results table that is not present.**  
+  > "Table~1 shows the results but we were unable to include it due to space constraints."  
+  This is not just awkward wording; for a general academic paper, the main empirical evidence must be inspectable in the manuscript or in clearly referenced supplementary material. Include the table, move it to an appendix, or summarize the key numbers in prose.
+
+# Suggested Rewrites
+- **Repair the phase ordering directly.**  
+  > "In Phase 1, we compute a preliminary partition using a greedy approach."  
+  > "In Phase 3, we refine the partition using local search."  
+  > "In Phase 2, we merge small clusters."  
+  Rewrite as:  
+  `In Phase 1, we compute a preliminary partition using a greedy approach. In Phase 2, we merge small clusters. In Phase 3, we refine the partition using local search.`
+
+- **Replace the current introduction opener with a contribution-oriented version.**  
+  > "Graphs are used in many applications."  
+  > "Many algorithms have been proposed."  
+  > "Our algorithm is better."  
+  > "We test it on several datasets."  
+  Rewrite as:  
+  `Graph optimization underlies tasks such as partitioning, clustering, and network analysis, but existing methods often trade off solution quality against computational cost. This paper proposes a three-phase framework that combines greedy initialization, cluster merging, and local refinement. We evaluate the method on five benchmark datasets and find mixed but promising results, with gains on three datasets and weaker performance on two others. These results help identify both the strengths of the approach and the conditions under which it requires further refinement.`
+
+- **Downgrade the unsupported theorem if no proof will be added.**  
+  > "The proposed method converges to a local optimum in polynomial time."  
+  Rewrite as:  
+  `We conjecture that the proposed method converges to a local optimum in polynomial time under the update rules used here, but a formal proof is left for future work.`
+
+- **Remove the contradiction around the missing table.**  
+  > "Table~1 shows the results but we were unable to include it due to space constraints."  
+  Rewrite as:  
+  `Due to space constraints, we summarize the main comparative results in the text and provide the full table in supplementary material.`
+
+# Needs Human Check
+- **Whether to move `Theoretical Analysis` before `Experiments`.**  
+  > "\section{Experiments}"  
+  > "..."  
+  > "\section{Theoretical Analysis}"  
+  This was flagged as structurally odd, but section order is somewhat field- and venue-dependent. If the theory is substantial, moving it earlier would help; if it remains lightweight, the current order may be acceptable after the unsupported theorem claim is fixed.
+
+- **Whether the title can keep `Novel`.**  
+  > "\title{A Novel Framework for Graph Optimization}"  
+  If the paper can clearly articulate what is technically new relative to prior work, the title may be defensible. If the method is mainly a recombination of standard steps, the title should become more specific and less self-evaluative.
+
+- **Whether `outperforms existing methods in most cases` is acceptable framing.**  
+  > "We presented a novel framework for graph optimization that outperforms existing methods in most cases."  
+  Technically, 3 of 5 datasets is `most`, but this wording may still feel overstated if the margins are small, the benchmark set is narrow, or the missing table weakens confidence. This should be calibrated against the actual numerical evidence.
+
+# Revision Priorities
+1. Restore evidentiary credibility: add the missing results table or equivalent evidence, and either prove, downgrade, or remove the theorem.
+2. Rewrite the introduction so it states the problem, research gap, method, and concrete contribution instead of making unsupported superiority claims.
+3. Repair the method section by defining the problem clearly and presenting the phases in a coherent sequence.
+4. Rework the experiments discussion so mixed results and failure cases are analyzed rather than hand-waved.
+5. Calibrate the paper's rhetoric by removing unsupported claims of novelty, superiority, and significance.
+6. Add the abstract and perform final venue-alignment cleanup once the argument and evidence are stable.
+tokens used
+15,225

@@ -1,0 +1,163 @@
+{
+  "case_id": "coset-codes",
+  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/coset-codes.md",
+  "expected_comments": 19,
+  "our_total_findings": 44,
+  "recall": 0.631578947368421,
+  "full_recall": 0.21052631578947367,
+  "matches": [
+    {
+      "comment_id": "comment_0",
+      "comment_title": "Decoding complexity as a geometric parameter",
+      "status": "partial",
+      "confidence": 0.3579710144927536,
+      "explanation": "Heuristic score: 0.36",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment_1",
+      "comment_title": "Definition of fundamental volume and redundancy in the Introduction",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_2",
+      "comment_title": "Role of algebraic structure in the coset code framework",
+      "status": "partial",
+      "confidence": 0.44651162790697674,
+      "explanation": "Heuristic score: 0.45",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_3",
+      "comment_title": "Mismatch in coset decomposition formulas",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_4",
+      "comment_title": "Description of coset representatives in Sec. II.F",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_5",
+      "comment_title": "Clarity of argument for mod-4 lattice structure",
+      "status": "partial",
+      "confidence": 0.2817910447761194,
+      "explanation": "Heuristic score: 0.28",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_6",
+      "comment_title": "Undefined notation for the dual of a Barnes-Wall lattice",
+      "status": "matched",
+      "confidence": 0.7454545454545455,
+      "explanation": "Heuristic score: 0.75",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_7",
+      "comment_title": "Notation for a lattice in Table III",
+      "status": "matched",
+      "confidence": 0.696,
+      "explanation": "Heuristic score: 0.70",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_8",
+      "comment_title": "Description of the Ungerboeck encoder in Sec. IV.A",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_9",
+      "comment_title": "Incorrect formula for lattice coding gain",
+      "status": "matched",
+      "confidence": 0.5874626865671642,
+      "explanation": "Heuristic score: 0.59",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_10",
+      "comment_title": "Incomplete premise in Lemma 6",
+      "status": "partial",
+      "confidence": 0.2717948717948718,
+      "explanation": "Heuristic score: 0.27",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment_11",
+      "comment_title": "Inconsistency in Decoding Complexity Calculation",
+      "status": "partial",
+      "confidence": 0.3579710144927536,
+      "explanation": "Heuristic score: 0.36",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment_12",
+      "comment_title": "Unclear reference to \"last three codes\"",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_13",
+      "comment_title": "Inconsistent encoder description for Class II codes",
+      "status": "partial",
+      "confidence": 0.38807017543859645,
+      "explanation": "Heuristic score: 0.39",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_14",
+      "comment_title": "Path enumeration for Class V error coefficient",
+      "status": "partial",
+      "confidence": 0.2742857142857143,
+      "explanation": "Heuristic score: 0.27",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_15",
+      "comment_title": "Minimum distance argument for Class VI codes",
+      "status": "matched",
+      "confidence": 0.53,
+      "explanation": "Heuristic score: 0.53",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_16",
+      "comment_title": "Parameter mismatch for lattice X_32 in Discussion",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_17",
+      "comment_title": "Incorrect example for γ=3 codes in Discussion",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_18",
+      "comment_title": "Parameter comparison between Wei code and X24 lattice",
+      "status": "partial",
+      "confidence": 0.3010989010989011,
+      "explanation": "Heuristic score: 0.30",
+      "matched_finding_count": 1
+    }
+  ],
+  "warnings": []
+}

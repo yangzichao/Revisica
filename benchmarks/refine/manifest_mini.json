@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "id": "targeting-interventions",
+      "file": "targeting-interventions.md",
+      "data_file": "targeting-interventions.json",
+      "description": "Economic Theory paper: Targeting Interventions in Networks",
+      "authors": "by Galeotti, Golub, and Goyal",
+      "badge": "Economic Theory",
+      "expected": {
+        "num_comments": 6,
+        "comment_titles": [
+          "Comparative static claim in Footnote 16",
+          "Limiting direction of intervention in Proposition 1",
+          "Sign error in discussion of Proposition 2 (substitutes case)",
+          "\"Maximizer\" vs. \"minimizer\" for smallest eigenvalues",
+          "Typo in Lagrangian in proof of Theorem 1",
+          "Unclear notation in proof of Proposition 2"
+        ],
+        "has_overall_feedback": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "role": "section-xcheck-10",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "claim_inconsistency",
+      "severity": "critical",
+      "title": "Budget threshold uses squared norm in text but drops the square in Assumption 3",
+      "snippet": "Running text: 'C \u2265 \u2016b\u0302\u2016\u00b2 \u2014 the planner sets b_i = 0'; Assumption 3: 'Either w < 0 and C < \u2016b\u0302\u2016, or w > 0.'",
+      "explanation": "The paragraph immediately preceding Assumption 3 states that the first-best is achievable when C \u2265 \u2016b\u0302\u2016\u00b2 (squared norm). Assumption 3 then carves out the complementary case as C < \u2016b\u0302\u2016 (unsquared norm). These two expressions describe complementary regions only if \u2016b\u0302\u2016 = \u2016b\u0302\u2016\u00b2, which holds only when \u2016b\u0302\u2016 = 1. For generic b\u0302, the conditions are inconsistent: there is either a gap or an overlap depending on whether \u2016b\u0302\u2016 > 1 or < 1. One of the two expressions is almost certainly a typo.",
+      "fix": "Standardise the exponent. Since the budget constraint in the theorem is stated in squared-norm units (\u2211 b\u0302\u00b2_\u2113 x\u00b2_\u2113 \u2264 C), write Assumption 3 as 'C < \u2016b\u0302\u2016\u00b2'."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "critical",
+      "title": "r*_\u2113 used in Corollary 1 without ever being defined",
+      "snippet": "Corollary 1: '\u2026then |r*_\u2113| is decreasing in \u2113; if strategic substitutes (\u03b2 < 0), then |r*_\u2113| is increasing in \u2113.'",
+      "explanation": "The symbol r*_\u2113 first appears in Corollary 1 with no prior definition in either Section 3 or Section 4. The Theorem 1 proof sketch introduces x_\u2113 and the cosine-similarity ratio, but neither are labelled r*_\u2113. Readers cannot evaluate the corollary without knowing what r*_\u2113 denotes.",
+      "fix": "Explicitly define r*_\u2113 = \u03c1(y*, u^\u2113(G)) / \u03c1(b\u0302, u^\u2113(G)) (the similarity ratio) in a displayed equation between Theorem 1 and Corollary 1, then reference it in the corollary."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Three typographically distinct forms for the same PC projection of b\u0302",
+      "snippet": "Definition of x_\u2113: '(b\u0332_\u2113 \u2212 b\u0302\u0332_\u2113)/b\u0302\u0332_\u2113'; proof-sketch objective: '\u0175_\u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302\u0332\u00b2_\u2113'; \u03bc-determination equation (6): 'b\u0302\u00b2_\u2113' (no underline).",
+      "explanation": "Three notations appear for what should be the single object 'projection of b\u0302 onto eigenvector \u2113': (1) \\underline{\\hat{b}}_\u2113, (2) \\hat{\\underline{b}}_\u2113 (hat and underline swapped), and (3) bare \\hat{b}_\u2113 without underline in the theorem's \u03bc equation. Since the underline signals a principal-component coordinate, omitting it in equation (6) is a semantically meaningful drift, not merely cosmetic.",
+      "fix": "Adopt a single canonical form (e.g., \\underline{\\hat{b}}_\u2113) and apply it uniformly in the definition of x_\u2113, the reformulated objective, and the \u03bc-determination equation."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Eigenvector written as u^\u2113(G) in the theorem but as u^\u2113 in Section 3 and the proof sketch",
+      "snippet": "Theorem 1 statement: '\u03c1(y*, u^\u2113(G))'; proof sketch two lines later: '\u03c1(y*, u^\u2113)'; Section 3 Fact 1: 'u^\u2113'.",
+      "explanation": "Section 3 introduces eigenvectors uniformly as u^\u2113 (no G argument). The Theorem 1 statement writes u^\u2113(G) to flag network dependence, but the proof sketch within the same section immediately reverts to u^\u2113. This inconsistency also severs the notational link back to Section 3.",
+      "fix": "Choose one convention. If the G-dependence is worth highlighting, introduce u^\u2113(G) in Fact 1 of Section 3 and use it uniformly through Section 4. Otherwise, drop (G) from the theorem statement."
+    },
+    {
+      "category": "cross_reference_error",
+      "severity": "major",
+      "title": "Equation (4) \u2014 the equilibrium PC-action formula \u2014 is invoked but not visible in either section",
+      "snippet": "'\u0101*_\u2113 = \u221a\u03b1_\u2113 \u00b7 b\u0332_\u2113 is the equilibrium action in the \u2113th principal component (see equation (4)).'",
+      "explanation": "The relation between the principal-component coordinate of the equilibrium action and the PC coordinate of the incentive vector is central to the proof of Theorem 1, yet it is attributed to equation (4), which does not appear in Section 3 or Section 4. The formula is non-trivial \u2014 it encodes the network-amplification factor (1\u2212\u03b2\u03bb_\u2113)\u207b\u00b9 through \u03b1_\u2113 \u2014 and is the logical bridge between the two sections. A reader following the flow from Section 3 into Section 4 cannot verify the formula or check whether the assumptions required for equation (4) are subsumed by Assumptions 1\u20133.",
+      "fix": "Reproduce or re-derive equation (4) inline (or in a brief displayed equation) at the point of use in Section 4, and confirm that the assumptions underpinning it are a subset of Assumptions 1\u20133."
+    },
+    {
+      "category": "logic_gap",
+      "severity": "minor",
+      "title": "Corollary 1's monotonicity claim is not bridged to Theorem 1 by an intermediate step",
+      "snippet": "Corollary 1: 'If \u03b2 > 0, then |r*_\u2113| is decreasing in \u2113; if \u03b2 < 0, then |r*_\u2113| is increasing in \u2113.'",
+      "explanation": "Deriving Corollary 1 from Theorem 1 requires three non-obvious steps: (a) \u03bb_\u2113 is decreasing in \u2113 (Section 3); (b) \u03b1_\u2113 = (1\u2212\u03b2\u03bb_\u2113)\u207b\u00b2 is therefore monotone in \u2113 in a direction that depends on the sign of \u03b2; and (c) the ratio w\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113) is increasing in \u03b1_\u2113 under the sign conditions of Assumption 3. Step (c) also requires care about the sign of w. None of these steps are noted between the theorem and the corollary.",
+      "fix": "Add a short remark after Theorem 1 showing that \u03b1_\u2113 is decreasing (\u03b2 > 0) or increasing (\u03b2 < 0) in \u2113, that w\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113) is increasing in \u03b1_\u2113 given \u03bc > w\u03b1_\u2113, and hence conclude Corollary 1."
+    },
+    {
+      "category": "flow_break",
+      "severity": "minor",
+      "title": "Section 3's closing geometric observation about eigenvectors is not connected to Section 4's opening",
+      "snippet": "Section 3 close: 'entries of top eigenvectors\u2026are similar among neighboring nodes, while bottom eigenvectors\u2026tend to be negatively correlated among neighboring nodes.' Section 4 opens immediately with a budget-sufficiency dispensation.",
+      "explanation": "Section 3 motivates the eigenvector structure through the circle-network figure, noting that top (low-\u2113) components are spatially smooth and bottom (high-\u2113) components are oscillatory. Section 4 then pivots to a budget case without referencing this intuition. The observation becomes relevant only implicitly in Corollary 1 (smooth components matter for strategic complements; oscillatory ones for substitutes), but the link is never drawn. The reader is left unsure whether the geometric description served only an expository purpose or is analytically consequential.",
+      "fix": "Add a bridging sentence at the start of Section 4 \u2014 e.g., noting that the smooth/oscillatory structure of eigenvectors established in Section 3 will resurface in Corollary 1, where strategic complementarity versus substitutability determines which components the planner targets."
+    }
+  ]
+}

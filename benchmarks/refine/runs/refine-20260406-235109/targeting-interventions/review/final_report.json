@@ -1,0 +1,7 @@
+{
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "command": []
+}

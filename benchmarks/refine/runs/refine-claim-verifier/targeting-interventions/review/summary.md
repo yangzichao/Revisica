@@ -1,0 +1,242 @@
+# ReviseAgent Writing Review Run
+
+- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md`
+- Timestamp: `2026-04-07T09:10:51`
+- Venue profile: `general-academic`
+- Detected providers: `codex, claude`
+- Reviewers: `claude`
+- Judge: `auto`
+- Mode: `single-provider`
+- Basic findings: `12`
+- Structure findings: `6`
+- Venue findings: `6`
+- Math-claim-verifier findings: `4`
+- Notation-tracker findings: `19`
+- Formula-cross-checker findings: `9`
+- Section cross-check findings: `41`
+- Claim verification findings: `3`
+
+## Role Runs
+
+- `section-xcheck-0` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-6` via `claude:sonnet`: ok (exit=0)
+- `venue` via `claude:sonnet`: ok (exit=0)
+- `structure` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-1` via `claude:sonnet`: ok (exit=0)
+- `basic` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-4` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-2` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-5` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-11` via `claude:sonnet`: ok (exit=0)
+- `notation-tracker` via `claude:opus`: ok (exit=0)
+- `section-xcheck-8` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-7` via `claude:sonnet`: ok (exit=0)
+- `claim-verify-claim-1` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-2` via `claude:opus`: ok (exit=0)
+- `formula-cross-checker` via `claude:opus`: ok (exit=0)
+- `section-xcheck-3` via `claude:sonnet`: ok (exit=0)
+- `claim-verify-claim-7` via `claude:opus`: ok (exit=0)
+- `section-xcheck-9` via `claude:sonnet`: ok (exit=0)
+- `section-xcheck-10` via `claude:sonnet`: ok (exit=0)
+- `claim-verify-claim-9` via `claude:opus`: ok (exit=0)
+- `math-claim-verifier` via `claude:opus`: ok (exit=0)
+- `section-xcheck-13` via `claude:sonnet`: ok (exit=0)
+- `claim-verify-claim-10` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-5` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-15` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-6` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-11` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-16` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-13` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-14` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-8` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-4` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-18` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-19` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-17` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-23` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-12` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-24` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-27` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-3` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-20` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-26` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-28` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-34` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-29` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-25` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-21` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-36` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-33` via `claude:opus`: ok (exit=0)
+- `section-xcheck-12` via `claude:sonnet`: ok (exit=0)
+- `claim-verify-claim-39` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-22` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-35` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-30` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-32` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-46` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-38` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-44` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-43` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-42` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-41` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-40` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-47` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-48` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-45` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-31` via `claude:opus`: ok (exit=0)
+- `claim-verify-claim-37` via `claude:opus`: ok (exit=0)
+
+## Warnings
+
+- Only one provider is active for writing review, so ReviseAgent will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
+- Self-check filtered 2 false positive(s) from `section-xcheck-6` (claude).
+- Self-check filtered 1 false positive(s) from `section-xcheck-1` (claude).
+- Self-check filtered 1 false positive(s) from `section-xcheck-7` (claude).
+- Self-check filtered 1 false positive(s) from `venue` (claude).
+- Self-check filtered 1 false positive(s) from `basic` (claude).
+- Self-check filtered 1 false positive(s) from `structure` (claude).
+- Self-check filtered 1 false positive(s) from `section-xcheck-9` (claude).
+- Self-check filtered 1 false positive(s) from `section-xcheck-12` (claude).
+- Self-check filtered 4 false positive(s) from `section-xcheck-10` (claude).
+
+## Files
+
+- `section-xcheck-0_claude_sonnet.md`
+- `section-xcheck-0_claude_sonnet.json`
+- `section-xcheck-6_claude_sonnet.md`
+- `section-xcheck-6_claude_sonnet.json`
+- `venue_claude_sonnet.md`
+- `venue_claude_sonnet.json`
+- `structure_claude_sonnet.md`
+- `structure_claude_sonnet.json`
+- `section-xcheck-1_claude_sonnet.md`
+- `section-xcheck-1_claude_sonnet.json`
+- `basic_claude_sonnet.md`
+- `basic_claude_sonnet.json`
+- `section-xcheck-4_claude_sonnet.md`
+- `section-xcheck-4_claude_sonnet.json`
+- `section-xcheck-2_claude_sonnet.md`
+- `section-xcheck-2_claude_sonnet.json`
+- `section-xcheck-5_claude_sonnet.md`
+- `section-xcheck-5_claude_sonnet.json`
+- `section-xcheck-11_claude_sonnet.md`
+- `section-xcheck-11_claude_sonnet.json`
+- `notation-tracker_claude_opus.md`
+- `notation-tracker_claude_opus.json`
+- `section-xcheck-8_claude_sonnet.md`
+- `section-xcheck-8_claude_sonnet.json`
+- `section-xcheck-7_claude_sonnet.md`
+- `section-xcheck-7_claude_sonnet.json`
+- `claim-verify-claim-1_claude_opus.md`
+- `claim-verify-claim-1_claude_opus.json`
+- `claim-verify-claim-2_claude_opus.md`
+- `claim-verify-claim-2_claude_opus.json`
+- `formula-cross-checker_claude_opus.md`
+- `formula-cross-checker_claude_opus.json`
+- `section-xcheck-3_claude_sonnet.md`
+- `section-xcheck-3_claude_sonnet.json`
+- `claim-verify-claim-7_claude_opus.md`
+- `claim-verify-claim-7_claude_opus.json`
+- `section-xcheck-9_claude_sonnet.md`
+- `section-xcheck-9_claude_sonnet.json`
+- `section-xcheck-10_claude_sonnet.md`
+- `section-xcheck-10_claude_sonnet.json`
+- `claim-verify-claim-9_claude_opus.md`
+- `claim-verify-claim-9_claude_opus.json`
+- `math-claim-verifier_claude_opus.md`
+- `math-claim-verifier_claude_opus.json`
+- `section-xcheck-13_claude_sonnet.md`
+- `section-xcheck-13_claude_sonnet.json`
+- `claim-verify-claim-10_claude_opus.md`
+- `claim-verify-claim-10_claude_opus.json`
+- `claim-verify-claim-5_claude_opus.md`
+- `claim-verify-claim-5_claude_opus.json`
+- `claim-verify-claim-15_claude_opus.md`
+- `claim-verify-claim-15_claude_opus.json`
+- `claim-verify-claim-6_claude_opus.md`
+- `claim-verify-claim-6_claude_opus.json`
+- `claim-verify-claim-11_claude_opus.md`
+- `claim-verify-claim-11_claude_opus.json`
+- `claim-verify-claim-16_claude_opus.md`
+- `claim-verify-claim-16_claude_opus.json`
+- `claim-verify-claim-13_claude_opus.md`
+- `claim-verify-claim-13_claude_opus.json`
+- `claim-verify-claim-14_claude_opus.md`
+- `claim-verify-claim-14_claude_opus.json`
+- `claim-verify-claim-8_claude_opus.md`
+- `claim-verify-claim-8_claude_opus.json`
+- `claim-verify-claim-4_claude_opus.md`
+- `claim-verify-claim-4_claude_opus.json`
+- `claim-verify-claim-18_claude_opus.md`
+- `claim-verify-claim-18_claude_opus.json`
+- `claim-verify-claim-19_claude_opus.md`
+- `claim-verify-claim-19_claude_opus.json`
+- `claim-verify-claim-17_claude_opus.md`
+- `claim-verify-claim-17_claude_opus.json`
+- `claim-verify-claim-23_claude_opus.md`
+- `claim-verify-claim-23_claude_opus.json`
+- `claim-verify-claim-12_claude_opus.md`
+- `claim-verify-claim-12_claude_opus.json`
+- `claim-verify-claim-24_claude_opus.md`
+- `claim-verify-claim-24_claude_opus.json`
+- `claim-verify-claim-27_claude_opus.md`
+- `claim-verify-claim-27_claude_opus.json`
+- `claim-verify-claim-3_claude_opus.md`
+- `claim-verify-claim-3_claude_opus.json`
+- `claim-verify-claim-20_claude_opus.md`
+- `claim-verify-claim-20_claude_opus.json`
+- `claim-verify-claim-26_claude_opus.md`
+- `claim-verify-claim-26_claude_opus.json`
+- `claim-verify-claim-28_claude_opus.md`
+- `claim-verify-claim-28_claude_opus.json`
+- `claim-verify-claim-34_claude_opus.md`
+- `claim-verify-claim-34_claude_opus.json`
+- `claim-verify-claim-29_claude_opus.md`
+- `claim-verify-claim-29_claude_opus.json`
+- `claim-verify-claim-25_claude_opus.md`
+- `claim-verify-claim-25_claude_opus.json`
+- `claim-verify-claim-21_claude_opus.md`
+- `claim-verify-claim-21_claude_opus.json`
+- `claim-verify-claim-36_claude_opus.md`
+- `claim-verify-claim-36_claude_opus.json`
+- `claim-verify-claim-33_claude_opus.md`
+- `claim-verify-claim-33_claude_opus.json`
+- `section-xcheck-12_claude_sonnet.md`
+- `section-xcheck-12_claude_sonnet.json`
+- `claim-verify-claim-39_claude_opus.md`
+- `claim-verify-claim-39_claude_opus.json`
+- `claim-verify-claim-22_claude_opus.md`
+- `claim-verify-claim-22_claude_opus.json`
+- `claim-verify-claim-35_claude_opus.md`
+- `claim-verify-claim-35_claude_opus.json`
+- `claim-verify-claim-30_claude_opus.md`
+- `claim-verify-claim-30_claude_opus.json`
+- `claim-verify-claim-32_claude_opus.md`
+- `claim-verify-claim-32_claude_opus.json`
+- `claim-verify-claim-46_claude_opus.md`
+- `claim-verify-claim-46_claude_opus.json`
+- `claim-verify-claim-38_claude_opus.md`
+- `claim-verify-claim-38_claude_opus.json`
+- `claim-verify-claim-44_claude_opus.md`
+- `claim-verify-claim-44_claude_opus.json`
+- `claim-verify-claim-43_claude_opus.md`
+- `claim-verify-claim-43_claude_opus.json`
+- `claim-verify-claim-42_claude_opus.md`
+- `claim-verify-claim-42_claude_opus.json`
+- `claim-verify-claim-41_claude_opus.md`
+- `claim-verify-claim-41_claude_opus.json`
+- `claim-verify-claim-40_claude_opus.md`
+- `claim-verify-claim-40_claude_opus.json`
+- `claim-verify-claim-47_claude_opus.md`
+- `claim-verify-claim-47_claude_opus.json`
+- `claim-verify-claim-48_claude_opus.md`
+- `claim-verify-claim-48_claude_opus.json`
+- `claim-verify-claim-45_claude_opus.md`
+- `claim-verify-claim-45_claude_opus.json`
+- `claim-verify-claim-31_claude_opus.md`
+- `claim-verify-claim-31_claude_opus.json`
+- `claim-verify-claim-37_claude_opus.md`
+- `claim-verify-claim-37_claude_opus.json`
+- `final_report.md`
+- `final_report.json`

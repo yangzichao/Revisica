@@ -1,0 +1,57 @@
+{
+  "role": "basic",
+  "provider": "claude",
+  "model": null,
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "reference_ambiguity",
+      "severity": "critical",
+      "title": "Reference to non-existent figure",
+      "snippet": "Figure~1 shows the relationship but I couldn't get the plotting software to work so you'll have to take my word for it.",
+      "explanation": "The text references \"Figure 1\" but there is no \\figure environment, \\includegraphics, or \\label anywhere in the document. This is a dangling reference to content that does not exist.",
+      "fix": "Either add the actual figure with a proper \\begin{figure} environment and \\label, or remove the reference entirely."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Run-on compound sentence (Figure 1 sentence)",
+      "snippet": "Figure~1 shows the relationship but I couldn't get the plotting software to work so you'll have to take my word for it.",
+      "explanation": "Three independent clauses are chained with \"but\" and \"so\" and no commas, producing a run-on sentence.",
+      "fix": "Figure~1 shows the relationship, but I couldn't get the plotting software to work, so you'll have to take my word for it."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Missing commas around conditional clause",
+      "snippet": "Now if we set a minimum wage $\\bar{w} > w^*$ then clearly",
+      "explanation": "A sentence-initial conditional clause (\"if ... then\") requires a comma after the introductory adverb and after the condition.",
+      "fix": "Now, if we set a minimum wage $\\bar{w} > w^*$, then clearly"
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Missing comma before 'where' relative clause",
+      "snippet": "demand $D(w) = b - cw$ where $w$ is the wage.",
+      "explanation": "A non-restrictive 'where' clause that defines notation should be set off by a comma.",
+      "fix": "demand $D(w) = b - cw$, where $w$ is the wage."
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Missing comma after sentence adverb and before conjunction",
+      "snippet": "Also Card and Krueger (1994) found the opposite but their methodology is super flawed in my opinion.",
+      "explanation": "The sentence adverb \"Also\" at the start of a sentence should be followed by a comma, and the coordinating conjunction \"but\" joining two independent clauses needs a preceding comma.",
+      "fix": "Also, Card and Krueger (1994) found the opposite, but their methodology is super flawed in my opinion."
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Missing comma after introductory element",
+      "snippet": "OK so here's my model.",
+      "explanation": "\"OK\" is an interjection and \"so\" is a transitional word; both need to be set off by commas.",
+      "fix": "OK, so here's my model."
+    }
+  ]
+}

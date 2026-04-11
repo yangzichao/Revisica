@@ -1,0 +1,145 @@
+Reading prompt from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Users/zichaoyang/workplace/ReviseAgent
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019d632a-a8b2-7c93-9209-1df112571c2b
+--------
+user
+You are reviewing the basic writing hygiene of an academic draft.
+
+Scope:
+- Only flag clear, local writing problems.
+- Prioritize typo, grammar, broken phrasing, ambiguous references, terminology drift, and obvious sentence-level clarity failures.
+- Do not spend effort on venue style or contribution framing here.
+- Be conservative. Prefer fewer, high-confidence findings.
+
+The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/clean_draft.tex`.
+
+Return JSON only, with this schema:
+{
+  "findings": [
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "short title",
+      "snippet": "exact local snippet",
+      "explanation": "why this is a problem",
+      "fix": "concrete local rewrite or correction"
+    }
+  ]
+}
+
+Allowed categories:
+- `typo`
+- `grammar`
+- `clarity`
+- `reference_ambiguity`
+- `terminology_consistency`
+
+Allowed severities:
+- `critical`
+- `major`
+- `minor`
+
+If there are no worthwhile findings, return `{"findings":[]}`.
+
+Source LaTeX:
+
+```tex
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+
+\title{Asymptotic Behavior of Solutions to a Class of Nonlinear Differential Equations}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the asymptotic behavior of solutions to the nonlinear ordinary differential equation
+$u'' + f(u) = 0$, where $f$ satisfies standard growth and monotonicity conditions.
+Under these assumptions, we establish that all bounded solutions converge to an equilibrium
+as $t \to \infty$. Our proof relies on a Lyapunov functional argument combined with
+the {\L}ojasiewicz--Simon inequality.
+\end{abstract}
+
+\section{Introduction}
+The long-time behavior of solutions to nonlinear evolution equations has been studied extensively
+in the past decades. A central question is whether bounded solutions converge to a single
+equilibrium or exhibit more complicated dynamics such as oscillation or chaos.
+
+For gradient-like systems, convergence to equilibrium can often be established using
+Lyapunov methods. The key difficulty arises when the set of equilibria is not discrete,
+in which case standard arguments guarantee convergence to the equilibrium set but not
+to a single point. The {\L}ojasiewicz--Simon inequality, introduced by Simon~(1983)
+building on earlier work of {\L}ojasiewicz~(1963), provides a powerful tool for resolving
+this difficulty.
+
+In this paper, we apply this approach to the equation
+\begin{equation}\label{eq:ode}
+u'' + f(u) = 0,
+\end{equation}
+where $f \colon \mathbb{R} \to \mathbb{R}$ is analytic and satisfies $f(0) = 0$.
+
+\section{Assumptions and Main Result}
+
+We impose the following conditions on the nonlinearity $f$.
+
+\begin{enumerate}
+\item[(A1)] $f \colon \mathbb{R} \to \mathbb{R}$ is real analytic.
+\item[(A2)] There exists a primitive $F(u) = \int_0^u f(s)\,ds$ such that $F(u) \to +\infty$
+as $|u| \to \infty$.
+\end{enumerate}
+
+Under these assumptions, we prove the following.
+
+\begin{theorem}\label{thm:main}
+Let $f$ satisfy conditions \emph{(A1)--(A2)}, and let $u$ be a bounded solution
+of~\eqref{eq:ode} on $[0,\infty)$. Then there exists $u_\infty \in \mathbb{R}$ with
+$f(u_\infty) = 0$ such that
+\[
+\lim_{t \to \infty} u(t) = u_\infty \quad \text{and} \quad \lim_{t \to \infty} u'(t) = 0.
+\]
+\end{theorem}
+
+\section{Proof of the Main Result}
+
+Define the energy functional
+\[
+E(t) = \tfrac{1}{2}\bigl(u'(t)\bigr)^2 + F\bigl(u(t)\bigr).
+\]
+A direct calculation shows that $E'(t) = 0$ along solutions of~\eqref{eq:ode},
+so $E$ is constant. Since $u$ is bounded and $F(u) \to +\infty$ as $|u| \to \infty$,
+the trajectory $\{(u(t), u'(t))\}$ is precompact. By the {\L}ojasiewicz--Simon inequality
+applied to the analytic function $F$, convergence to a single equilibrium follows
+by a standard argument (see, e.g., Haraux and Jendoubi, 2015).
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+The energy identity and precompactness imply that the $\omega$-limit set
+$\omega(u)$ is a nonempty, connected, compact subset of the set of equilibria
+$\{v : f(v) = 0\}$. By condition~(A1), this zero set is discrete (being the zero set
+of a nonzero analytic function), so $\omega(u)$ is a single point $\{u_\infty\}$.
+Convergence of $u'(t) \to 0$ follows from the energy identity and boundedness.
+\end{proof}
+
+\section{Conclusion}
+We have established convergence to equilibrium for bounded solutions of a class of
+nonlinear ordinary differential equations under analyticity and coercivity assumptions.
+The argument extends naturally to damped equations of the form $u'' + \gamma u' + f(u) = 0$
+with $\gamma > 0$, where the energy is strictly decreasing.
+
+\end{document}
+
+```
+
+codex
+{"findings":[{"category":"terminology_consistency","severity":"major","title":"Abstract mentions monotonicity conditions not stated later","snippet":"where $f$ satisfies standard growth and monotonicity conditions.","explanation":"The paper’s stated assumptions later are analyticity and coercivity, but no monotonicity condition is introduced. This creates a clear terminology mismatch between the abstract and the main text.","fix":"Replace with wording that matches the actual assumptions, for example: \"where $f$ is real analytic and satisfies a standard coercivity condition.\""},{"category":"grammar","severity":"minor","title":"Awkward time expression","snippet":"has been studied extensively\nin the past decades.","explanation":"\"In the past decades\" is awkward in formal academic English. \"Over the past decades\" or \"in recent decades\" reads more naturally.","fix":"Rewrite as: \"has been studied extensively over the past decades.\""},{"category":"grammar","severity":"minor","title":"Number mismatch in example dynamics","snippet":"such as oscillation or chaos.","explanation":"\"Oscillation\" is singular while it is used as one item in a plural class of possible dynamics. The phrasing reads unevenly.","fix":"Rewrite as: \"such as oscillations or chaos.\""}]}
+tokens used
+11,550

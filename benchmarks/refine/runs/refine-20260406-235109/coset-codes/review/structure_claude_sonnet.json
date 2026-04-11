@@ -1,0 +1,81 @@
+{
+  "role": "structure",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "contribution_framing",
+      "severity": "major",
+      "title": "Abstract does not explicitly enumerate paper's novel contributions",
+      "snippet": "Practically all known good constructive coding techniques for band-limited channels, including lattice codes and various recently proposed trellis-coded modulation schemes, can be characterized as coset codes.",
+      "explanation": "The abstract frames the paper primarily as a unifying survey and classification exercise without signaling what is genuinely new. The paper introduces new code classes (Classes I\u2013VIII), proposes a 'folk theorem' about state-complexity tradeoffs, and establishes the geometric-parameter framework as an original contribution, but none of these are identified as novel in the abstract. Readers cannot easily distinguish the paper's independent intellectual contributions from prior work (Ungerboeck [8], Calderbank\u2013Sloane [13], Wei [11]).",
+      "fix": "Add a sentence explicitly enumerating the paper's own contributions: the geometric classification framework, the eight new generic code classes, and the comparative evaluation methodology. Distinguish these from the systematization of prior work."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Section I-C ('Other Coset Codes') disrupts argument flow before framework is established",
+      "snippet": "More generally, a coset code C(S/T; C) can be defined whenever S is some set of discrete elements that forms an algebraic group... For instance, S can be a binary block code... Finally, phase-modulated codes can be constructed as coset codes as follows.",
+      "explanation": "Section I-C introduces generalized non-lattice coset codes before the reader encounters the main lattice-type framework developed in Sections II\u2013IV. The Outline (Section I-D) then explicitly states the paper focuses only on lattice-type coset codes, deferring all others to companion papers. This creates a structural detour: the reader is invited into generalizations that are immediately set aside, interrupting the logical build-up from Introduction to technical body.",
+      "fix": "Move Section I-C to a brief footnote or merge it as a short paragraph at the end of Section I-D, framing it explicitly as scope-delimiting context rather than a substantive part of the introduction."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "minor",
+      "title": "Reading-order prescription in Outline (Section I-D) is logically contradictory and interrupts flow",
+      "snippet": "The reader who desires to read both papers in the most logical order is advised to skim this paper quickly through Section II, omitting proofs; then to read part II, with primary focus on the material relating to Barnes-Wall lattices; and then to return to the rest of this paper.",
+      "explanation": "The surrounding text declares the two papers 'may be read independently,' then immediately proposes a preferred reading order, creating a logical contradiction. Embedding an explicit reading prescription in the Outline weakens the formal academic register; outlines conventionally describe section contents, not prescribe reading strategies.",
+      "fix": "Remove or condense the reading-order prescription to a footnote. If the interdependency is important, place it as a footnote to the Outline paragraph, not as a paragraph in the main text."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "major",
+      "title": "'Folk theorem' stated without formal derivation, citation, or converse argument",
+      "snippet": "In summary, we propose a folk theorem: it takes two states to get 1.5 dB, four states to get 3 dB, 16 states to get 4.5 dB, perhaps 64 states to get 5.25 dB, and 256 states to get 6 dB, as long as we require a reasonably small error coefficient (for trellis codes).",
+      "explanation": "This 'folk theorem' is a significant empirical generalization supported only by informal observation. No lower-bound argument is provided (i.e., no argument that fewer states cannot achieve these gains), and the qualifier 'perhaps' for the 64-state/5.25 dB entry signals the claim is incomplete. 'Folk theorem' signals lack of proof without explaining whether a proof is achievable or what obstacles exist, leaving the claim rhetorically ambiguous\u2014neither theorem nor conjecture.",
+      "fix": "Either rename this a 'conjecture' or 'empirical observation' and add a sentence acknowledging the absence of a converse bound and identifying the open problem, or provide a brief lower-bound argument from channel-capacity or sphere-packing bounds."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "major",
+      "title": "Assertion 'trellis codes are better than lattice codes' is unsupported by the evidence presented",
+      "snippet": "2) Trellis codes are better than lattice codes, if we consider effective coding gain versus decoding complexity.",
+      "explanation": "The supporting text immediately concedes: the effective coding gain rule of thumb is only approximate, decoding complexity is 'highly implementation-dependent,' no effective coding gain is given for lattice codes because the rule of thumb is 'questionable' for large error coefficients, and the comparison depends on algorithms from Part II. The qualifications undermine rather than support the conclusion as stated.",
+      "fix": "Reframe as a qualified observation: 'The evidence here suggests trellis codes tend to offer better effective coding gain for a given decoding complexity than lattice codes of comparable fundamental gain, primarily because their error coefficients are much smaller; a precise comparison awaits a more rigorous measure of effective coding gain.'"
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "major",
+      "title": "Central 'effective coding gain' rule of thumb introduced without derivation or citation",
+      "snippet": "In this paper, we will use the rule of thumb that every factor of two increase in the error coefficient reduces the coding gain by about 0.2 dB (at error rates of the order of 10^{-6}).",
+      "explanation": "This rule is the key metric used to compute \u03b3_eff in Tables V\u2013XI and drives the comparative analysis in Section VII, yet it is stated without derivation, without a reference to prior work, and with only a parenthetical qualification on its domain of validity. The paper's final conclusions depend materially on this unanchored heuristic.",
+      "fix": "Add a citation to the source of this rule or provide a one-paragraph derivation from the Gaussian tail approximation. Explicitly state the range of error rates for which the approximation is valid, and caution that conclusions based on \u03b3_eff are sensitive to it."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "minor",
+      "title": "Table XI embeds class-break labels inside data cells, creating ambiguous row attribution",
+      "snippet": "| 16 | $\\Lambda_{16}$ | $R\\Lambda_{16}$ | 256 | 4/8 | 2 | Class III codes | 4 | 6.02 | 540 | 2544 | 4.61 |",
+      "explanation": "Table XI consolidates parameters for eight code classes. Class-break headings are injected into data columns rather than appearing as proper section rows, making it unclear which class a given row belongs to. This conflation of data and structural labels undermines the comparative clarity the section aims to provide.",
+      "fix": "Split Table XI into separate sub-tables per class, or use properly demarcated rows with bold section headers in a dedicated column, ensuring class labels never appear in data cells."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "minor",
+      "title": "Conclusion's future-work paragraph lists ~9 unconnected directions without prioritization",
+      "snippet": "Suboptimal decoders should be investigated... The design of good sphere packings in large dimensions is a topic of active mathematical interest... The vector quantization problem is dual to the sphere packing problem... The question of how to design good multidimensional constellations is not closed.",
+      "explanation": "The conclusion enumerates approximately nine distinct open problems in a single passage without logical ordering, prioritization, or connection back to the paper's findings. Academic conclusions are expected to foreground future work most directly following from the paper's own results. The miscellaneous enumeration dilutes the rhetorical force of the conclusion.",
+      "fix": "Lead with the one or two directions most directly motivated by the paper's findings (e.g., a systematic search of Z^N/4Z^N codes to close the 5\u20136 dB gap), group remaining directions under 'broader related problems,' and remove or shorten items not actionable as research directions."
+    },
+    {
+      "category": "contribution_framing",
+      "severity": "minor",
+      "title": "Part I / Part II division of labor is scattered across five locations without a single clear demarcation",
+      "snippet": "It is intended that this paper and part II may be read independently; as a result, there is some overlap.",
+      "explanation": "The relationship between this paper and Part II is referenced in the abstract (implicitly), Section I-A, Section I-D (twice), Section II, and Section III. This repetition creates redundancy, and no single location provides a clear, complete statement of what each paper contributes that the other does not. The division of labor remains implicit throughout.",
+      "fix": "Consolidate the Part I/Part II relationship into a single clear paragraph in Section I-D, specifying what material is in each paper and which results from Part II are assumed. Remove the scattered redundant cross-references, replacing them with a single forward pointer to this consolidated paragraph."
+    }
+  ]
+}

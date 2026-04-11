@@ -1,0 +1,81 @@
+{
+  "role": "formula-cross-checker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "formula_mismatch",
+      "severity": "critical",
+      "title": "Cosine similarity definition missing \u2016z\u2016 in denominator",
+      "snippet": "Line 191 (Definition 1): \u03c1(y, z) = (y \u00b7 z) / \u2016y\u2016.  Line 490 (Proof of Theorem 1): \u03c1(y*, u^\u2113(G)) = (y* \u00b7 u^\u2113(G)) / (\u2016y*\u2016 \u2016u^\u2113(G)\u2016).",
+      "explanation": "Definition 1 gives the cosine similarity as \u03c1(y,z) = (y\u00b7z)/\u2016y\u2016, but the standard cosine similarity\u2014and the formula actually used in the proof of Theorem 1 at line 490\u2014is \u03c1(y,z) = (y\u00b7z)/(\u2016y\u2016\u2016z\u2016). The denominator is missing \u2016z\u2016. Under the stated definition, \u03c1(y,z)=1 when z is a positive scaling of y would yield \u03c1 = c\u2016y\u2016 \u2260 1, contradicting the text's own interpretation. The error is invisible in later results only because the second argument is always a unit eigenvector u^\u2113 with \u2016u^\u2113\u2016=1.",
+      "fix": "Change the definition to \u03c1(y, z) = (y \u00b7 z) / (\u2016y\u2016 \u2016z\u2016)."
+    },
+    {
+      "category": "exponent_mismatch",
+      "severity": "critical",
+      "title": "Assumption 3 missing squared norm",
+      "snippet": "Line 198: 'when the budget is large enough\u2014that is, C \u2265 \u2016b\u0302\u2016\u00b2'.  Line 200 (Assumption 3): 'Either w < 0 and C < \u2016b\u0302\u2016, or w > 0.'",
+      "explanation": "The paragraph preceding Assumption 3 correctly notes the planner can achieve the first-best when C \u2265 \u2016b\u0302\u2016\u00b2. Assumption 3 is meant to rule out exactly that case, so it should state C < \u2016b\u0302\u2016\u00b2, but it writes C < \u2016b\u0302\u2016 (missing the exponent 2). The cost function is K = \u03a3(b_i \u2212 b\u0302_i)\u00b2 \u2264 C, so the relevant threshold is \u2016b\u0302\u2016\u00b2, not \u2016b\u0302\u2016.",
+      "fix": "Change Assumption 3 to read: 'Either w < 0 and C < \u2016b\u0302\u2016\u00b2, or w > 0.'"
+    },
+    {
+      "category": "min_max_mismatch",
+      "severity": "critical",
+      "title": "Eigenvectors u^n, u^{n-1} called 'maximizers' of minimization problems",
+      "snippet": "Lines 321\u2013322 define \u03bb_n = min_{u:\u2016u\u2016=1} \u03a3 g_{ij} u_i u_j and \u03bb_{n-1} = min_{u:\u2016u\u2016=1, u\u00b7u^n=0} \u03a3 g_{ij} u_i u_j.  Line 324: 'Moreover, the eigenvector u^n is a maximizer of the first problem, while u^{n-1} is a maximizer of the second.'",
+      "explanation": "The variational problems for the bottom eigenvalues are stated as minimizations (lines 321\u2013322), so the solutions u^n and u^{n-1} are minimizers, not maximizers. Compare with lines 312\u2013316, where the top eigenvalues are correctly stated as maximization problems and u^1, u^2 are correctly called maximizers. The later sentence on the same page ('u^n = argmin \u2026') uses the correct term, confirming the word 'maximizer' earlier is an error.",
+      "fix": "Change 'maximizer' to 'minimizer' in both instances on line 324: 'Moreover, the eigenvector u^n is a minimizer of the first problem, while u^{n-1} is a minimizer of the second.'"
+    },
+    {
+      "category": "exponent_mismatch",
+      "severity": "critical",
+      "title": "Lagrangian in proof of Theorem 1 has b\u0302_\u2113 instead of b\u0302_\u2113\u00b2",
+      "snippet": "Line 465 (Lagrangian): L = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2].  Line 451 (Objective IT-PC): max_x  w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2.",
+      "explanation": "The objective function of problem (IT-PC) at line 451 contains the factor b\u0302_\u2113\u00b2 (squared), but the Lagrangian at line 465 writes the first sum with only b\u0302_\u2113 (no square). The correctly derived FOC at line 471, which factors out 2b\u0302_\u2113\u00b2, is consistent with the squared version, confirming that the Lagrangian's first term is missing the exponent.",
+      "fix": "In line 465, replace b\u0302_\u2113 with b\u0302_\u2113\u00b2 in the first summation, so the Lagrangian reads: L = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]."
+    },
+    {
+      "category": "subscript_mismatch",
+      "severity": "major",
+      "title": "Missing tilde in Example 2 change of variables",
+      "snippet": "Line 128: 'Performing the change of variables b_i = [\u03c4 \u2212 b_i]/2 and \u03b2 = \u2212\u03b2\u0303/2 (with the status quo equal to b\u0302_i = [\u03c4 \u2212 b\u0303_i]/2).'",
+      "explanation": "The change-of-variables formula writes b_i = [\u03c4 \u2212 b_i]/2, which is self-referential (b_i on both sides, yielding b_i = \u03c4/3). The right-hand side should use the tilde'd original parameter: b_i = [\u03c4 \u2212 b\u0303_i]/2. The correct form is confirmed by the status quo expression on the same line, b\u0302_i = [\u03c4 \u2212 b\u0303_i]/2, which correctly uses b\u0303_i, and by the FOC derivation of Example 2.",
+      "fix": "Change to b_i = [\u03c4 \u2212 b\u0303_i]/2."
+    },
+    {
+      "category": "sign_mismatch",
+      "severity": "major",
+      "title": "Discussion paragraph swaps denominator sign relative to Proposition 2",
+      "snippet": "Line 296 (Proposition 2, part 2): (\u03b1_{n-1}/(\u03b1_n \u2212 \u03b1_{n-1}))\u00b2.  Line 301 (discussion): 'the term \u03b1_{n-1}/(\u03b1_{n-1} \u2212 \u03b1_n) is large when \u2026'",
+      "explanation": "Proposition 2 part 2 uses the ratio \u03b1_{n-1}/(\u03b1_n \u2212 \u03b1_{n-1}), which is positive because \u03b1_n > \u03b1_{n-1} when \u03b2 < 0. The discussion paragraph reverses the denominator to \u03b1_{n-1}/(\u03b1_{n-1} \u2212 \u03b1_n), which is negative (since \u03b1_{n-1} \u2212 \u03b1_n < 0). The text then says this quantity 'is large,' which is incoherent for a negative quantity. The denominator signs are swapped between the proposition and the discussion.",
+      "fix": "Change the discussion to read: 'the term \u03b1_{n-1}/(\u03b1_n \u2212 \u03b1_{n-1}) is large when the difference \u03bb_{n-1} \u2212 \u03bb_n \u2026 is small.'"
+    },
+    {
+      "category": "subscript_mismatch",
+      "severity": "major",
+      "title": "Swapped sub/superscripts on eigenvector entry in proof of Proposition 2",
+      "snippet": "Line 584 (Proof of Prop 2): b_i* \u2212 b\u0302_i = w \u03a3_\u2113 u_\u2113^i (\u03b1_\u2113/(\u03bc \u2212 w\u03b1_\u2113)) b\u0302_\u2113.  Line 186 (convention): a_i* = \u03a3_\u2113 (1/(1\u2212\u03b2\u03bb_\u2113)) u_i^\u2113 b_\u2113.",
+      "explanation": "The paper's convention (established at line 142 and used at line 186) is u_i^\u2113, where the subscript i denotes the node and the superscript \u2113 denotes the eigenvector index. Line 584 writes u_\u2113^i, swapping subscript and superscript. While these entries of an orthogonal matrix are numerically equal (u_i^\u2113 = U_{i\u2113} = (U^\u22a4)_{\u2113i}), the notation is inconsistent with the rest of the paper and could confuse readers.",
+      "fix": "Change u_\u2113^i to u_i^\u2113 on line 584 to match the paper's established convention."
+    },
+    {
+      "category": "subscript_mismatch",
+      "severity": "minor",
+      "title": "Prime placed on wrong symbol in proof of Proposition 1",
+      "snippet": "Line 498: r_\u2113*/r_{\u2113'}* = (\u03b1_\u2113/\u03b1_{\u2113'}) \u00b7 (\u03bc \u2212 w\u03b1_\u2113')/(\u03bc \u2212 w\u03b1_\u2113), where the second fraction's numerator uses \u03b1_\u2113' (prime as superscript on \u03b1_\u2113) instead of \u03b1_{\u2113'} (\u03b1 subscripted by \u2113').",
+      "explanation": "The denominator of the first fraction correctly writes \u03b1_{\u2113'} (subscript \u2113'), but the numerator of the second fraction writes \u03b1_{\u2113}^{\u2032} (\u03b1 subscripted by \u2113 with a separate prime mark), which in LaTeX renders differently. This is a typesetting error: the prime should be part of the subscript (\u2113'), not a separate superscript on \u03b1.",
+      "fix": "Change \u03b1_{\u2113}^{\u2032} to \u03b1_{\u2113'} in the numerator of the second fraction."
+    },
+    {
+      "category": "formula_mismatch",
+      "severity": "minor",
+      "title": "Misplaced asterisk on transposed vector in equation (9)",
+      "snippet": "Line 353: E[W] = w E[(a*)\u22a4 a*] = w E[(a\u0332\u22a4)* (a\u0332*)] = \u2026",
+      "explanation": "In the second step of the chain of equalities, the expression (a\u0332\u22a4)* places the equilibrium asterisk on the transposition rather than on the vector. It should read (a\u0332*)\u22a4(a\u0332*) to be consistent with the first step (a*)\u22a4a*. The superscript * denoting equilibrium ended up attached to the transpose operator rather than to the vector a\u0332.",
+      "fix": "Change (a\u0332\u22a4)*(a\u0332*) to (a\u0332*)\u22a4(a\u0332*)."
+    }
+  ]
+}

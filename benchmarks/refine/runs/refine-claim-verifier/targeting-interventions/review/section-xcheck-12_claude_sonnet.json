@@ -1,0 +1,49 @@
+{
+  "role": "section-xcheck-12",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Lagrangian objective term missing square on \\hat{\\underline{b}}_\\ell",
+      "snippet": "\\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\underline{\\hat{b}}_{\\ell}+\\mu\\left[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}\\right]",
+      "explanation": "The transformed problem (IT-PC-x) written immediately above the Lagrangian has the objective w\u2211\u03b1_\u2113(1+x_\u2113)\u00b2\\hat{\\underline{b}}_\u2113\u00b2, i.e. \\hat{\\underline{b}}_\u2113 is squared. However, in the Lagrangian itself the same term appears as \\hat{\\underline{b}}_\u2113 (without the square). The constraint term in the same Lagrangian correctly has \\hat{b}_\u2113\u00b2. The subsequent FOC is derived as if the square were present (it produces 2\\hat{b}_\u2113\u00b2[\u2026]), confirming the Lagrangian as written is internally inconsistent with both the problem statement above it and the FOC derived from it. A reader checking the derivation directly from the stated Lagrangian would obtain a wrong first-order condition.",
+      "fix": "Add the missing exponent: the objective term in the Lagrangian should read w\u2211_{\u2113=1}^{n} \u03b1_\u2113(1+x_\u2113)\u00b2\\hat{\\underline{b}}_\u2113\u00b2 (replace \\underline{\\hat{b}}_{\\ell} with \\underline{\\hat{b}}_{\\ell}^{2})."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "W^s uses underlined \\hat{\\underline{b}}_\u2113 while W^* drops the underline for the same object",
+      "snippet": "W^{s}=\\hat{\\underline{b}}_{1}^{2} \\alpha_{1} \\tilde{x}_{1}\\left(\\tilde{x}_{1}+2\\right)+\\sum_{\\ell=1}^{n} \\alpha_{\\ell} \\hat{\\underline{b}}_{\\ell}^{2} \\quad\\text{vs}\\quad W^{*}=\\hat{b}_{1}^{2} \\alpha_{1} x_{1}^{*}\\left(x_{1}^{*}+2\\right)+\\sum_{\\ell=2}^{n} \\hat{b}_{\\ell}^{2} \\alpha_{\\ell} x_{\\ell}^{*}\\left(x_{\\ell}^{*}+2\\right)+\\sum_{\\ell=1}^{n} \\alpha_{\\ell} \\hat{b}_{\\ell}^{2}",
+      "explanation": "Both W^s and W^* are computed in the principal-component basis (indexed by \u2113), so the coefficients \\hat{b}_\u2113 in both expressions are the same objects: the components of \\hat{b} in the eigenvector basis of G, which the paper consistently denotes \\hat{\\underline{b}}_\u2113 with an underline. W^s is written with the underline; W^* in the very next display drops it everywhere. The chain of inequalities bounding W^*/W^s then mixes both conventions. This makes it non-obvious to a reader that the terms in numerator and denominator are comparable, and it obscures whether the manipulation is valid.",
+      "fix": "Unify the notation: replace all bare \\hat{b}_\u2113 in the expression for W^* and in the subsequent W^*/W^s inequality chain with \\hat{\\underline{b}}_\u2113 to match the convention used in W^s and throughout the rest of the Theorem 1 proof."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Undefined symbol \u03b1\u2082* appears in intermediate W^*/W^s inequality",
+      "snippet": "\\leq 1+\\frac{2 \\alpha_{1}-\\alpha_{2}^{*}}{\\alpha_{1}} \\frac{\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2}",
+      "explanation": "The symbol \u03b1\u2082* (\u03b1-sub-2 with an asterisk) appears in an intermediate step of the bounding chain for W^*/W^s. The asterisk notation is reserved throughout the paper for optimal-policy values of decision variables (e.g. x_\u2113*), not for the eigenvalue-derived constants \u03b1_\u2113 = 1/(1\u2212\u03b2\u03bb_\u2113)\u00b2. The detailed calculation that follows this step (the multi-line derivation of the bound on \u2211_{\u2113\u22652} \\hat{b}_\u2113\u00b2 \u03b1_\u2113 x_\u2113*(x_\u2113*+2)) yields the factor (2\u03b1\u2081\u2212\u03b1\u2082) without any asterisk, confirming that \u03b1\u2082* is a typographical error for \u03b1\u2082.",
+      "fix": "Replace \u03b1\u2082* with \u03b1\u2082 (remove the asterisk). The corrected intermediate bound reads 1 + (2\u03b1\u2081\u2212\u03b1\u2082)/\u03b1\u2081 \u00b7 \u2016\\hat{b}\u2016\u00b2/C \u00b7 (\u03b1\u2082/(\u03b1\u2081\u2212\u03b1\u2082))\u00b2, which then simplifies to the next line via (2\u03b1\u2081\u2212\u03b1\u2082)/\u03b1\u2081 \u2264 2 (holding because \u03b1\u2082 > 0)."
+    },
+    {
+      "category": "flow_break",
+      "severity": "minor",
+      "title": "Garbled annotation 'see calculation below D are positive' left in proof body",
+      "snippet": "\\leq 1+\\frac{2\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2} \\quad \\text{see calculation below } D \\text{ are positive}",
+      "explanation": "The phrase 'see calculation below D are positive' appears inline as a proof annotation at the end of the W^*/W^s inequality chain. It is syntactically incomplete and reads as a drafting note accidentally left in the LaTeX source. As written it is mathematically uninformative: it does not identify which step it justifies, what 'D' refers to in this context (D was defined earlier as a specific scalar but the annotation provides no equation pointer), nor which positivity claim is being invoked. The actual justification for the final inequality step \u2014 that (2\u03b1\u2081\u2212\u03b1\u2082)/\u03b1\u2081 \u2264 2 because \u03b1\u2082 > 0 \u2014 is absent.",
+      "fix": "Remove the annotation and add a brief inline justification: e.g., 'since (2\u03b1\u2081\u2212\u03b1\u2082)/\u03b1\u2081 \u2264 2, as \u03b1\u2082 > 0.' Alternatively, point explicitly to the calculation below: '(see derivation of (\u2217\u2217) below)' with a cross-reference."
+    },
+    {
+      "category": "flow_break",
+      "severity": "minor",
+      "title": "Concluding Remarks direct reader to Supplemental Material for extensions with no boundary statement at Appendix entry",
+      "snippet": "In the Supplemental Material, we relax these restrictions and develop extensions of our approach to non-symmetric matrices of interaction and to more general costs of intervention... We also relax Property A...",
+      "explanation": "Section 6 explicitly tells the reader that relaxed models (non-symmetric G, general costs, Property A relaxed) appear in the Supplemental Material. The Appendix begins immediately thereafter with 'Proof of Theorem 1' under the base-case assumptions, with no sentence delineating the Appendix's scope. A reader moving linearly from the Concluding Remarks into the Appendix has no signal that the Appendix covers only the symmetric, quadratic, Property-A results and that extensions proved in the Supplemental Material are a separate document. This creates a mild but genuine navigational gap at the section boundary.",
+      "fix": "Add a one-sentence preamble to the Appendix, e.g.: 'This appendix contains proofs of the results in Sections 3\u20135 under Assumptions 1\u20133 and Property A. Proofs of the extensions discussed in Section 6 (non-symmetric interaction matrices, general cost structures, relaxed Property A) are provided in the Supplemental Material.'"
+    }
+  ]
+}

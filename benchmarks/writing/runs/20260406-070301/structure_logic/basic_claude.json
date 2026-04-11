@@ -1,0 +1,65 @@
+{
+  "role": "basic",
+  "provider": "claude",
+  "model": null,
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "clarity",
+      "severity": "critical",
+      "title": "Phases listed out of numerical order",
+      "snippet": "In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 3, we refine the partition using local search.\nIn Phase 2, we merge small clusters.",
+      "explanation": "The three phases are presented in the order 1, 3, 2 with no stated reason for the reordering. This reads as a copy-paste or editing error and confuses the logical sequence of the framework.",
+      "fix": "Reorder the paragraphs to Phase 1, Phase 2, Phase 3:\n\"In Phase 1, we compute a preliminary partition using a greedy approach.\nIn Phase 2, we merge small clusters.\nIn Phase 3, we refine the partition using local search.\""
+    },
+    {
+      "category": "clarity",
+      "severity": "critical",
+      "title": "Reference to a table that is explicitly absent",
+      "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+      "explanation": "The sentence simultaneously references Table 1 and states it was not included. This is self-contradictory; the reader is directed to content that does not exist.",
+      "fix": "Either include the table or remove the reference entirely. If results must be summarized in prose, replace with, e.g.: \"Due to space constraints, we summarize the main results in the text.\""
+    },
+    {
+      "category": "clarity",
+      "severity": "major",
+      "title": "Unqualified comparative claim",
+      "snippet": "Our algorithm is better.",
+      "explanation": "\"Better\" is used without specifying better than what, by which metric, or in what setting. The sentence conveys no actionable information.",
+      "fix": "Provide a qualified claim, e.g.: \"Our algorithm achieves lower partition cost than existing greedy methods on standard benchmarks.\""
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Missing comma before coordinating conjunction (table sentence)",
+      "snippet": "Table~1 shows the results but we were unable to include it due to space constraints.",
+      "explanation": "When \"but\" joins two independent clauses, a comma is required before the conjunction.",
+      "fix": "\"Table~1 shows the results, but we were unable to include it due to space constraints.\""
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Missing comma before coordinating conjunction (theorem sentence)",
+      "snippet": "We do not prove this theorem formally but it seems intuitively obvious from the structure of the algorithm.",
+      "explanation": "Two independent clauses are joined by \"but\" without a preceding comma.",
+      "fix": "\"We do not prove this theorem formally, but it seems intuitively obvious from the structure of the algorithm.\""
+    },
+    {
+      "category": "clarity",
+      "severity": "major",
+      "title": "Circular justification of significance",
+      "snippet": "Our contribution is significant because graph optimization is important.",
+      "explanation": "The sentence is vacuous: it asserts significance solely by restating that the problem domain is important, providing no concrete justification.",
+      "fix": "State a specific reason, e.g.: \"Our contribution is significant because it reduces partitioning cost by up to 15\\% on large-scale social-network graphs.\""
+    },
+    {
+      "category": "reference_ambiguity",
+      "severity": "minor",
+      "title": "Vague reference \"this\" in related work",
+      "snippet": "Jones et al.\\ (2021) extended this to weighted graphs.",
+      "explanation": "\"this\" could refer to the method, the problem formulation, or the partitioning result of Smith et al. A more explicit antecedent improves clarity.",
+      "fix": "\"Jones et al.\\ (2021) extended Smith et al.'s partitioning method to weighted graphs.\""
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "role": "basic",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Identical symbols on both sides of a mathematical comparison",
+      "snippet": "then in $M N$-space (where they can be compared directly) $\\Lambda_{N}^{M}$ has a greater or lesser density of points per unit volume than does $\\Lambda_{N}^{M}$ according to whether $\\gamma\\left(\\Lambda_{N}\\right)$ is greater or less than $\\gamma\\left(\\Lambda_{M}\\right)$",
+      "explanation": "The sentence compares '\u039b_N^M' with '\u039b_N^M'\u2014identical on both sides\u2014making the comparison vacuous. The second occurrence should be '\u039b_M^N' (the N-fold Cartesian product of the M-dimensional lattice \u039b_M), so that the two MN-dimensional lattices being compared are distinct objects.",
+      "fix": "Replace the second '$\\Lambda_{N}^{M}$' with '$\\Lambda_{M}^{N}$', yielding: '\u2026$\\Lambda_{N}^{M}$ has a greater or lesser density of points per unit volume than does $\\Lambda_{M}^{N}$ according to whether\u2026'"
+    },
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Missing word 'if' in 'if and only it'",
+      "snippet": "A mod-2 complex $\\boldsymbol{G}$-lattice $\\Lambda$ has depth 1 if and only it the code $C_{1}$ of Lemma 4 is the ( $N, N$ ) code",
+      "explanation": "'if and only it' is missing the second 'if'. This is a one-word omission that turns a standard logical phrase ('if and only if') into ungrammatical text, potentially confusing readers about whether 'depth 1' is a sufficient condition, a necessary condition, or both.",
+      "fix": "Replace 'if and only it' with 'if and only if'."
+    },
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Missing 'Z' in lattice-partition notation 'Z\u00b2/4\u00b2'",
+      "snippet": "Note that the $\\boldsymbol{Z}^{\\mathbf{2}} \\boldsymbol{/} \\mathbf{4}^{2}$ codes ought to be compared to the one-dimensional $\\boldsymbol{Z} / \\mathbf{4} \\boldsymbol{Z}$ codes, since they have the same redundancy and depth",
+      "explanation": "The partition is written '4\u00b2' (just a scalar) instead of '4Z\u00b2'. The sublattice must be '4Z\u00b2' (all even-even integer pairs scaled by 4) to be a valid lattice partition of Z\u00b2. Without the 'Z\u00b2' the expression is dimensionally inconsistent with every other partition notation used in the paper.",
+      "fix": "Replace '$\\boldsymbol{Z}^{\\mathbf{2}} \\boldsymbol{/} \\mathbf{4}^{2}$' with '$\\boldsymbol{Z}^{\\mathbf{2}} / 4\\boldsymbol{Z}^{\\mathbf{2}}$'."
+    },
+    {
+      "category": "clarity",
+      "severity": "critical",
+      "title": "Table XI row: literal string 'Class III codes' appears in the d\u00b2_min data column",
+      "snippet": "| 16 | $\\Lambda_{16}$ | $R \\Lambda_{16}$ | 256 | 4/8 | 2 | Class III codes | 4 | 6.02 | 540 | 2544 | 4.61 |",
+      "explanation": "The text 'Class III codes' has been inserted into the column that should contain the minimum squared distance d\u00b2_min, shifting all subsequent numeric entries one column to the left. The actual d\u00b2_min value for the \u039b\u2081\u2086/R\u039b\u2081\u2086 256-state Class II code is 16 (matching the Class II entry for \u039b\u2081\u2086/R\u039b\u2081\u2086 listed elsewhere), and \u03b3 = 4 (6.02 dB). As printed, the row is unreadable.",
+      "fix": "Remove 'Class III codes' from the d\u00b2_min column and restore the correct numeric value. The corrected row should be: | 16 | $\\Lambda_{16}$ | $R\\Lambda_{16}$ | 256 | 4/8 | 2 | 16 | 4 | 6.02 | 540 | 2544 | 4.61 |"
+    },
+    {
+      "category": "clarity",
+      "severity": "critical",
+      "title": "Table XI Class III section: two rows incorrectly merged into one",
+      "snippet": "| 4 | $D_{4}$ | $2 D_{4}$ $2 E_{8}$ | 4 16 | 2/4 | 3/2 | 6 | $3 / 2^{1 / 2}$ | 3.27 | | 46 | |",
+      "explanation": "The \u039b' column contains '$2 D_{4}$ $2 E_{8}$' and the 2^\u03bd column contains '4 16', indicating that two separate data rows have been concatenated into one. The Class III code based on D\u2084/2D\u2084 and the Class III code based on E\u2088/2E\u2088 should be separate rows. As presented, all parameter values for both codes are uninterpretable.",
+      "fix": "Split into two rows: (1) | 4 | $D_{4}$ | $2D_{4}$ | 4 | 2/4 | 3/2 | 6 | $3/2^{1/2}$ | 3.27 | \u2014 | 46 | \u2014 | and (2) | 8 | $E_{8}$ | $2E_{8}$ | 16 | 4/8 | 2 | 16 | 4 | 6.02 | 1020 | 684 | 4.42 | (values for the second row should be verified against the source)."
+    },
+    {
+      "category": "grammar",
+      "severity": "major",
+      "title": "Missing sentence-ending period before 'We call this'",
+      "snippet": "ascending order We call this the weight distribution of the lattice (theta series, in the lattice literature).",
+      "explanation": "The sentence 'Because a lattice \u039b consists of discrete points, the norms of all lattice points are an infinite set of discrete values that can be enumerated in ascending order' is missing a period at its end, causing it to run together with the next sentence. Without the period the two independent statements are incorrectly fused.",
+      "fix": "Insert a period after 'ascending order': '\u2026enumerated in ascending order. We call this the weight distribution of the lattice\u2026'"
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Stray closing parenthesis in description of \u211d\u1d3a",
+      "snippet": "note that $\\boldsymbol{R}^{N}$ is itself a group under ordinary vector addition (but not a lattice), because its points are not discrete).",
+      "explanation": "There is one opening parenthesis for the aside '(but not a lattice)' and two closing parentheses (one after 'lattice' and one at the end of the clause). The trailing ')' is spurious.",
+      "fix": "Delete the final ')': '\u2026(but not a lattice), because its points are not discrete.'"
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Misspelling: 'tesselation' should be 'tessellation'",
+      "snippet": "Geometrically, this is a tesselation of $N$-space by translates of fundamental regions of $\\Lambda$.",
+      "explanation": "The standard English spelling requires a double 's': 'tessellation'. The single-'s' form 'tesselation' is a common misspelling.",
+      "fix": "Replace 'tesselation' with 'tessellation'."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Stray comma inside formula 'R D\u2084 =, 2Z\u2074'",
+      "snippet": "its dual under this alternative definition is $R D_{4}$, which has code formula $R D_{4} =$, $2 \\boldsymbol{Z}^{4}+(4,1,4)$",
+      "explanation": "A comma appears immediately after the equals sign inside the displayed formula '$R D_{4} =$, $2\\boldsymbol{Z}^{4}+(4,1,4)$', breaking the equation and making it syntactically invalid as a mathematical expression.",
+      "fix": "Remove the comma after '=': '\u2026which has code formula $R D_{4} = 2\\boldsymbol{Z}^{4}+(4,1,4)$'"
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Table III: approximation symbol rendered as minus sign ('\u20132' instead of '~2')",
+      "snippet": "| $Z^{8}$ | $2 E_{8}$ | 8 | $2^{12}$ | 4 | 1 | 0 | 1 | 16 | 7376 | -2 |",
+      "explanation": "Every other approximate value in the final column of Table III is formatted as '~2', '~2', etc. The entry '-2' appears to be a rendering artifact where the tilde '~' was converted to a minus sign '\u2212', yielding a negative complexity value that is nonsensical.",
+      "fix": "Replace '-2' with '~2' in that table cell."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Spurious mid-word hyphen: 'Calder-bank-Sloane'",
+      "snippet": "with the error coefficient for the Calder-bank-Sloane (CS) version (as given in [13]).",
+      "explanation": "'Calderbank' is a single surname; the hyphen 'Calder-bank' is a typographic artifact from a line-break in the original typeset paper and should not appear in the transcribed document.",
+      "fix": "Replace 'Calder-bank-Sloane' with 'Calderbank-Sloane'."
+    },
+    {
+      "category": "reference_ambiguity",
+      "severity": "major",
+      "title": "Undefined notation '\u039b(n)' used where '\u039b(0,n)' is expected",
+      "snippet": "$\\Lambda(n, n)^{\\perp}=\\boldsymbol{G}^{N} \\simeq \\boldsymbol{Z}^{2 N}, \\Lambda(0, n)^{\\perp}= \\Lambda(n)$, and $\\Lambda(n-1, n)^{\\perp}$",
+      "explanation": "Throughout the paper lattices are indexed with two parameters as '\u039b(r, n)'. The notation '\u039b(n)' (one parameter) is never defined. Because \u039b(0, n) is stated to be self-dual, the intended expression is almost certainly '\u039b(0, n)'. Using '\u039b(n)' creates ambiguity about whether a different object is intended.",
+      "fix": "Replace '$\\Lambda(n)$' with '$\\Lambda(0, n)$': '\u2026$\\Lambda(0, n)^{\\perp}= \\Lambda(0, n)$\u2026'"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Missing hyphen in compound adjective 'onedimensional'",
+      "snippet": "one fundamental region of the onedimensional integer lattice $\\boldsymbol{Z}$ is the half-open interval",
+      "explanation": "'onedimensional' should be hyphenated as 'one-dimensional' to match standard usage and the hyphenated form used consistently throughout the rest of the paper (e.g., 'two-dimensional', 'N-dimensional').",
+      "fix": "Replace 'onedimensional' with 'one-dimensional'."
+    },
+    {
+      "category": "terminology_consistency",
+      "severity": "minor",
+      "title": "Inconsistent subscript notation for binomial coefficient: 'C_{nj}' vs 'C_{n_j}'",
+      "snippet": "$K(r, n)=\\sum_{0 \\leq j \\leq r} C_{n j}$ information bits, where $C_{n_{j}}$ is the combinatorial coefficient $(n!) /[(j!)((n-j)!)]$",
+      "explanation": "The same binomial coefficient symbol is first written as '$C_{nj}$' (two-character flat subscript) and immediately redefined in the same sentence as '$C_{n_j}$' (nested subscript with underscore). This inconsistency makes the two references look like distinct symbols and may cause typesetting ambiguity.",
+      "fix": "Pick one form and use it consistently throughout. The most readable is the flat subscript: replace '$C_{n_{j}}$' with '$C_{nj}$'."
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Spurious mid-word hyphens from line-break artifacts: 'fi-nite-dimensional' and 'par-tial-unit-memory'",
+      "snippet": "infinite-dimensional generalizations of fi-nite-dimensional sphere-packings \u2026 using unit-memory and par-tial-unit-memory convolutional codes",
+      "explanation": "Both 'fi-nite-dimensional' (line ~1094) and 'par-tial-unit-memory' (line ~1118 in the References section) contain spurious hyphens that are OCR or PDF-to-Markdown conversion artifacts from the original typeset line breaks. They should be 'finite-dimensional' and 'partial-unit-memory' respectively.",
+      "fix": "Replace 'fi-nite-dimensional' with 'finite-dimensional' and 'par-tial-unit-memory' with 'partial-unit-memory'."
+    }
+  ]
+}

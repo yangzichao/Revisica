@@ -1,0 +1,33 @@
+{
+  "role": "section-xcheck-4",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "claim_inconsistency",
+      "severity": "major",
+      "title": "Assumption 3 budget threshold drops the square from \u2016b\u0302\u2016\u00b2",
+      "snippet": "when the budget is large enough\u2014that is, C \u2265 \u2016b\u0302\u2016\u00b2\u2014the planner can allocate resources to ensure that individuals have a zero target action \u2026 Assumption 3: Either w < 0 and C < \u2016b\u0302\u2016, or w > 0.",
+      "explanation": "The prose correctly identifies the first-best threshold as \u2016b\u0302\u2016\u00b2: setting b_i = 0 for all i costs exactly \u2016\u0177\u2016\u00b2 = \u2016b\u0302\u2016\u00b2 under the quadratic budget constraint K(b, b\u0302) = \u03a3(b_i \u2212 b\u0302_i)\u00b2. Assumption 3 is supposed to exclude this achievable case, so it should read C < \u2016b\u0302\u2016\u00b2. As written (C < \u2016b\u0302\u2016), the assumption is inconsistent with the preceding threshold. When \u2016b\u0302\u2016 > 1 the assumption is too weak (allows budgets large enough to reach the first-best); when \u2016b\u0302\u2016 < 1 it is unnecessarily strict (excludes valid interesting-problem cases). Either way, Theorem 1 is stated under a formally incorrect assumption.",
+      "fix": "Change Assumption 3 to: 'Either w < 0 and C < \u2016b\u0302\u2016\u00b2, or w > 0.' This matches the budget threshold derived immediately above the assumption."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Mixed use of b\u0302_\u2113 (undecorated) and b\u0302\u0332_\u2113 (underlined) for the same principal-component projection in Section 4",
+      "snippet": "s.t.  \u03a3_\u2113 b\u0302\u0332_\u2113\u00b2 x_\u2113\u00b2 \u2264 C   \u2026   2 b\u0302_\u2113\u00b2 \u00b7 w\u03b1_\u2113(1+x_\u2113) = 2 b\u0302_\u2113\u00b2 \u00b7 \u03bc x_\u2113   \u2026   \u03a3_\u2113 (w\u03b1_\u2113 / (\u03bc \u2212 w\u03b1_\u2113))\u00b2 b\u0302_\u2113\u00b2 = C",
+      "explanation": "The paper establishes the convention that underlined quantities (e.g. b\u0332_\u2113 = u^\u2113 \u00b7 b) denote projections onto principal components. In the reformulated budget constraint and Lagrangian, the authors correctly write b\u0302\u0332_\u2113\u00b2 (underlined) for the projection of b\u0302 onto the \u2113-th eigenvector. However, in the marginal-return/cost condition and in equation (6) that pins down the shadow price \u03bc, the same quantity appears as b\u0302_\u2113\u00b2 without the underline decoration. Because b\u0302_\u2113 (the \u2113-th coordinate of b\u0302 in the original basis) differs from b\u0302\u0332_\u2113 (the projection onto u^\u2113) unless G is diagonal, this notation drift is genuinely ambiguous and could mislead a reader trying to verify the derivation.",
+      "fix": "Consistently replace the bare b\u0302_\u2113\u00b2 with b\u0302\u0332_\u2113\u00b2 (or equivalently (\u00fb^\u2113 \u00b7 b\u0302)\u00b2) in both the marginal-condition display and equation (6), matching the notation already used in the reformulated maximisation problem."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Misplaced superscripts * and \u22a4 in the welfare-chain equation in Section 5",
+      "snippet": "\ud835\udd3c[W(b; G)] = w \ud835\udd3c[(a*)\u22a4 a*] = w \ud835\udd3c[(\u0101\u22a4)*(\u0101*)] = w \u03a3_\u2113 \u03b1_\u2113 (\ud835\udd3c[b\u0332_\u2113]\u00b2 + Var[b\u0332_\u2113])",
+      "explanation": "In the intermediate step the left factor of the inner product is written (\u0101\u22a4)* \u2014 i.e., the transpose superscript is applied first and the equilibrium-star second. The correct expression is (\u0101*)\u22a4 (\u0101*): the equilibrium star should bind more tightly than the transpose, consistent with the notation established throughout Section 4 (e.g. (a*)\u22a4 a* in the first step). As written, a reader could interpret (\u0101\u22a4)* as the conjugate of the transpose (a Hermitian adjoint in a complex setting) rather than the transpose of the equilibrium vector, which is misleading even in a purely real model.",
+      "fix": "Replace (\u0101\u22a4)*(\u0101*) with (\u0101*)\u22a4(\u0101*) in equation (9), so the chain reads: w \ud835\udd3c[(a*)\u22a4 a*] = w \ud835\udd3c[(\u0101*)\u22a4(\u0101*)] = w \u03a3_\u2113 \u03b1_\u2113 (\ud835\udd3c[b\u0332_\u2113]\u00b2 + Var[b\u0332_\u2113])."
+    }
+  ]
+}

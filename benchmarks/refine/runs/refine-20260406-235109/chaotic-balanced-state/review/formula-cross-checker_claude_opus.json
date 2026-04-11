@@ -1,0 +1,8 @@
+{
+  "role": "formula-cross-checker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 1,
+  "success": false,
+  "findings": null
+}

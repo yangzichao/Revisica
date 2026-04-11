@@ -1,0 +1,41 @@
+{
+  "role": "section-xcheck-2",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Assumption 3 uses unsquared norm \u2016b\u0302\u2016 where \u2016b\u0302\u2016\u00b2 is required",
+      "snippet": "Assumption 3: Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|$, or $w>0$.",
+      "explanation": "The prose immediately preceding Assumption 3 correctly identifies the threshold for first-best achievability as the squared norm: 'when the budget is large enough\u2014that is, $C \\geq \\|\\hat{\\boldsymbol{b}}\\|^2$\u2014the planner can\u2026 set $b_i = 0$ for all $i$.' This is verified by the cost function definition $K(\\boldsymbol{b},\\hat{\\boldsymbol{b}})=\\sum_i(b_i-\\hat{b}_i)^2$: setting $\\boldsymbol{b}=\\boldsymbol{0}$ costs exactly $\\|\\hat{\\boldsymbol{b}}\\|^2$. However, Assumption 3 writes the exclusion condition as $C<\\|\\hat{\\boldsymbol{b}}\\|$ (the Euclidean norm, not its square). These two thresholds coincide only when $\\|\\hat{\\boldsymbol{b}}\\|=1$; in general they differ. When $\\|\\hat{\\boldsymbol{b}}\\|>1$ the assumption is over-restrictive (it excludes budgets that would not actually achieve the first-best), and when $\\|\\hat{\\boldsymbol{b}}\\|<1$ it is under-restrictive (it permits budgets that do achieve the first-best). The formal assumption therefore does not correctly rule out the case it is designed to exclude.",
+      "fix": "Replace $C<\\|\\hat{\\boldsymbol{b}}\\|$ with $C<\\|\\hat{\\boldsymbol{b}}\\|^2$ in Assumption 3 to match both the preceding narrative and the cost-function definition."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Self-referential change-of-variables formula in Example 2 (missing tilde)",
+      "snippet": "Performing the change of variables $b_i = [\\tau - b_i]/2$ and $\\beta = -\\tilde{\\beta}/2$ (with the status quo equal to $\\hat{b}_i = [\\tau - \\tilde{b}_i]/2$)",
+      "explanation": "The formula $b_i = [\\tau - b_i]/2$ defines $b_i$ in terms of itself, giving the degenerate solution $b_i = \\tau/3$, which is not what is intended. The status quo formula immediately following it\u2014$\\hat{b}_i = [\\tau - \\tilde{b}_i]/2$\u2014uses the original utility parameter $\\tilde{b}_i$ correctly, confirming that the tilde was accidentally dropped in the change-of-variables line. The FOC derivation for the local-public-goods game confirms the intended mapping: expanding the FOC of $U_i = -\\frac{1}{2}(\\tau - x_i)^2 - \\frac{1}{2}a_i^2$ yields $a_i = \\frac{\\tau-\\tilde{b}_i}{2} - \\frac{\\tilde{\\beta}}{2}\\sum_j g_{ij}a_j$, so $b_i$ should equal $\\frac{\\tau-\\tilde{b}_i}{2}$, not $\\frac{\\tau - b_i}{2}$.",
+      "fix": "Change $b_i = [\\tau - b_i]/2$ to $b_i = [\\tau - \\tilde{b}_i]/2$ so that the new-variable $b_i$ is expressed in terms of the original utility parameter $\\tilde{b}_i$, consistent with the status quo formula and the FOC derivation."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Inconsistent notation for eigenvector-basis projections of b\u0302 within Section 4",
+      "snippet": "\\sum_{\\ell=1}^{n}\\left(\\frac{w \\alpha_{\\ell}}{\\mu-w \\alpha_{\\ell}}\\right)^{2} \\hat{b}_{\\ell}^{2}=C \u2026 \\max _{x} \\sum_{\\ell=1}^{n} w \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\hat{\\underline{b}}_{\\ell}^{2}",
+      "explanation": "Section 4 uses two distinct typographic forms for what is plainly the same object\u2014the projection of $\\hat{\\boldsymbol{b}}$ onto the $\\ell$th eigenvector $\\boldsymbol{u}^\\ell(\\boldsymbol{G})$. In the reformulated optimization problem the notation $\\hat{\\underline{b}}_\\ell$ (with underline) appears, while in equation (6) and in both the marginal-return and marginal-cost expressions the underline is dropped, yielding $\\hat{b}_\\ell$. Because neither form is formally defined in these sections, the reader cannot be certain these denote the same scalar quantity without inferring it from context.",
+      "fix": "Pick one notation (the underlined $\\hat{\\underline{b}}_\\ell$ is preferable because it visually distinguishes the scalar projection from the vector $\\hat{\\boldsymbol{b}}$) and apply it uniformly throughout Section 4, including equation (6) and the marginal-condition display."
+    },
+    {
+      "category": "claim_inconsistency",
+      "severity": "minor",
+      "title": "Nonnegativity paragraph mislabels b\u0302 as 'status quo actions'",
+      "snippet": "As long as the status quo actions $\\hat{\\boldsymbol{b}}$ are positive, this constraint will be respected for all $C$ less than some $\\hat{C}$",
+      "explanation": "Throughout both sections $\\hat{\\boldsymbol{b}}$ is consistently defined as the vector of status quo standalone marginal returns (incentives), not as a vector of actions. The status quo equilibrium actions are $\\hat{\\boldsymbol{a}}^* = [\\boldsymbol{I}-\\beta\\boldsymbol{G}]^{-1}\\hat{\\boldsymbol{b}}$, which in general differ from $\\hat{\\boldsymbol{b}}$. Referring to $\\hat{\\boldsymbol{b}}$ as 'status quo actions' conflates these two objects and is inconsistent with every other usage of $\\hat{\\boldsymbol{b}}$ in the paper. The condition for equilibrium actions to remain nonneg under a small intervention should in principle be stated in terms of $\\hat{\\boldsymbol{a}}^*$, not $\\hat{\\boldsymbol{b}}$.",
+      "fix": "Replace 'the status quo actions $\\hat{\\boldsymbol{b}}$' with either 'the status quo standalone marginal returns $\\hat{\\boldsymbol{b}}$' (if the claim is genuinely about incentives) or 'the status quo equilibrium actions $\\hat{\\boldsymbol{a}}^* = [\\boldsymbol{I}-\\beta\\boldsymbol{G}]^{-1}\\hat{\\boldsymbol{b}}$' (if the claim is about actions), and verify which condition actually guarantees nonnegativity of the post-intervention equilibrium actions."
+    }
+  ]
+}

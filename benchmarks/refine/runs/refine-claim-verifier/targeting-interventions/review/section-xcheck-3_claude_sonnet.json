@@ -1,0 +1,41 @@
+{
+  "role": "section-xcheck-3",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Lagrangian objective term is missing the square on \\underline{\\hat{b}}_\\ell",
+      "snippet": "\\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\underline{\\hat{b}}_{\\ell}+\\mu\\left[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}\\right]",
+      "explanation": "The Lagrangian on line 465 writes the objective term as \u03b1_\u2113(1+x_\u2113)\u00b2\\underline{\\hat{b}}_\u2113 (linear in \\hat{b}_\u2113). However, the transformed problem it corresponds to (lines 450\u2013453) has the objective w \u03a3 \u03b1_\u2113(1+x_\u2113)\u00b2\\underline{\\hat{b}}_\u2113\u00b2 (squared), because the change of variables x_\u2113 = y_\u2113/\\hat{b}_\u2113 yields \\underline{b}_\u2113 = \\hat{b}_\u2113(1+x_\u2113), so \\underline{b}_\u2113\u00b2 = \\hat{b}_\u2113\u00b2(1+x_\u2113)\u00b2. Furthermore, the first-order condition on line 471 is '2\\hat{b}_\u2113\u00b2[w\u03b1_\u2113(1+x_\u2113*) \u2212 \u03bcx_\u2113*] = 0', which can only be obtained by differentiating a Lagrangian with \\hat{b}_\u2113\u00b2 in the objective, not \\hat{b}_\u2113. The Lagrangian as displayed is therefore internally inconsistent with both the problem above it and the FOC below it.",
+      "fix": "Replace \\underline{\\hat{b}}_{\\ell} with \\underline{\\hat{b}}_{\\ell}^{2} in the objective term of the Lagrangian, giving \\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\underline{\\hat{b}}_{\\ell}^{2}+\\mu\\left[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}\\right]."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Change-of-variables formula for Example 2 is self-referential: b_i appears on both sides",
+      "snippet": "Performing the change of variables $b_{i}=\\left[\\tau-b_{i}\\right] / 2$ and $\\beta=-\\tilde{\\beta} / 2$ (with the status quo equal to $\\hat{b}_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$)",
+      "explanation": "On line 128 the formula b_i = [\u03c4 \u2212 b_i]/2 uses the target variable b_i on its own right-hand side, making it a fixed-point equation (b_i = \u03c4/3 for all i, regardless of agent-level parameters) rather than a mapping from the public-goods model to the general model. The immediately adjacent status-quo formula correctly uses \\tilde{b}_i: \\hat{b}_i = [\u03c4 \u2212 \\tilde{b}_i]/2. The first-order-condition algebra also confirms the correct substitution: differentiating U_i w.r.t. a_i gives a_i = (\u03c4 \u2212 \\tilde{b}_i)/2 \u2212 (\\tilde{\u03b2}/2)\u03a3 g_ij a_j, so the standalone marginal return in the general model is b_i = (\u03c4 \u2212 \\tilde{b}_i)/2. The tilde was accidentally dropped from the right-hand side.",
+      "fix": "Replace b_i = [\\tau - b_i]/2 with b_i = [\\tau - \\tilde{b}_i]/2, consistent with the status-quo formula on the same line and with the first-order-condition derivation."
+    },
+    {
+      "category": "cross_reference_error",
+      "severity": "minor",
+      "title": "\u03b1_\u2113 well-definedness attributed to Assumption 1 (symmetry) instead of Assumption 2 (spectral radius)",
+      "snippet": "Note that, for all $\\ell, \\alpha_{\\ell}$ are well-defined (by Assumption 1) and strictly positive (by genericity of $\\boldsymbol{G}$).",
+      "explanation": "On line 456, 'well-defined' for \u03b1_\u2113 = 1/(1\u2212\u03b2\u03bb_\u2113(G))\u00b2 means the denominator (1\u2212\u03b2\u03bb_\u2113) is nonzero. This is guaranteed by Assumption 2 (spectral radius of \u03b2G < 1, so |\u03b2\u03bb_\u2113| < 1 for every \u2113), not by Assumption 1 (which only says G is symmetric and thereby ensures real eigenvalues via Fact 1). The existence of real eigenvalues \u03bb_\u2113 is a prerequisite for \u03b1_\u2113 to be a real number, but 'well-defined' in the sense of a non-vanishing denominator requires Assumption 2. Citing Assumption 1 conflates the existence of eigenvalues with the invertibility of (I \u2212 \u03b2\u039b).",
+      "fix": "Change '(by Assumption 1)' to '(by Assumption 2, which implies |\u03b2\u03bb_\u2113| < 1 for every \u2113, so each denominator 1\u2212\u03b2\u03bb_\u2113(G) is nonzero)'."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Undefined symbol \u03b1_2* appears in the welfare bound of Proof of Proposition 2",
+      "snippet": "\\leq 1+\\frac{2 \\alpha_{1}-\\alpha_{2}^{*}}{\\alpha_{1}} \\frac{\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2}",
+      "explanation": "On line 543 the intermediate inequality introduces the symbol \u03b1_2* (with a superscript star), which is never defined in either section. The supporting calculation immediately below (lines 552\u2013557) establishes that the numerator of the bounding factor is (2\u03b1_1 \u2212 \u03b1_2), using only the plain \u03b1_2 with no star. Since \u03b1_2 is the amplification factor for the second principal component (defined on line 436), and the final bound on line 544 simplifies by using (2\u03b1_1 \u2212 \u03b1_2*)/\u03b1_1 \u2264 2 (which holds iff \u03b1_2* \u2265 0), the star is extraneous notation inconsistent with every other occurrence of \u03b1_2 in the proof.",
+      "fix": "Replace \u03b1_2* with \u03b1_2 on line 543. If the inequality step requires explicit justification that (2\u03b1_1 \u2212 \u03b1_2)/\u03b1_1 \u2264 2, add a brief parenthetical: 'since \u03b1_2 > 0'."
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+```json
+{
+  "findings": [
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Introduction conflates model exposition and literature context, disrupting logical flow",
+      "snippet": "We now lay out the elements of the model in more detail. Individuals play a simultaneous-move game... [three full paragraphs of model detail] ... We now place the paper in the context of the literature.",
+      "explanation": "The Introduction devotes three consecutive paragraphs (paragraphs 2–4) to a detailed technical walkthrough of the model—including the payoff structure, the planner's budget constraint, and the mechanics of strategic complements versus substitutes—before pivoting to the literature review at paragraph 7. This inverts the conventional logic of an economics introduction (motivation → contribution → related work → roadmap). The contribution framing arrives too late and too briefly to anchor the preceding technical detail.",
+      "fix": "Condense paragraphs 2–4 of the Introduction to a high-level description of the model primitives (one paragraph). Move the principal-component mechanism sketch directly after the motivation statement. Bring the literature review and contribution claim forward to immediately follow the motivation, before the technical roadmap paragraph."
+    },
+    {
+      "category": "contribution_framing",
+      "severity": "major",
+      "title": "Contribution statement is vague and self-deprecating relative to the paper's substantive results",
+      "snippet": "The main contribution of this paper is methodological. It lies in (i) using the principal components approach to decompose the effect of an intervention on social welfare and (ii) using the structure afforded by this decomposition to characterize optimal interventions.",
+      "explanation": "The contribution statement restricts itself to methodology and describes the approach in purely procedural terms. It does not assert what the paper discovers—namely, the directional complementarity between strategic spillover type and eigenvector order, the budget-threshold condition for simplicity, the spectral-gap interpretation for network topology, and the extension to stochastic environments. Framing a contribution purely as a technique without stating the substantive insights that technique generates weakens the paper's claim to the reader.",
+      "fix": "Expand the contribution statement to enumerate substantive discoveries: (1) under strategic complements, eigenvector centrality (top principal component) is welfare-maximizing for large budgets; (2) under strategic substitutes, the bottom principal component encoding the optimal bipartition drives targeting; (3) simplicity of optimal interventions is governed by the spectral gap, linking network cohesion/divisibility directly to policy design. The methodological claim can follow as the unifying mechanism."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "major",
+      "title": "Intuition for Corollary 1 (ordering of similarity ratios) is deferred but never fully supplied",
+      "snippet": "Corollary 1: Suppose Assumptions 1-3 hold and the network game satisfies Property A. If the game is one of strategic complements (β>0), then |r*_ℓ| is decreasing in ℓ; if the game is one of strategic substitutes (β<0), then |r*_ℓ| is increasing in ℓ.",
+      "explanation": "Corollary 1 is stated with only a brief bridge sentence as transition. There is no dedicated paragraph explaining why α_ℓ is larger for smaller ℓ when β>0 and larger for larger ℓ when β<0, nor why this ranking translates into the welfare-relevant targeting direction. The intuition promised in the Introduction—that top eigenvectors capture global structure and bottom eigenvectors capture local structure—is never formally connected to Corollary 1 in Section 4.",
+      "fix": "After stating Corollary 1, add a two-to-three sentence paragraph explaining: (a) α_ℓ = (1−βλ_ℓ)^{−2} is monotone in λ_ℓ with direction depending on the sign of β; (b) higher α_ℓ means a marginal investment in that direction yields higher welfare return; (c) therefore the planner concentrates spending on the direction with the highest return per unit of budget, which for β>0 is the top eigenvector (global structure) and for β<0 is the bottom eigenvector (bipartition structure). This makes the verbal Introduction claims verifiable from within Section 4."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "minor",
+      "title": "Section 3 header and opening paragraph overstate the section's scope",
+      "snippet": "This section introduces a basis for the space of standalone marginal returns and actions in which, under our assumptions on G, strategic effects and the planner's objective both take a simple form.",
+      "explanation": "The claim that the planner's objective 'takes a simple form' in this basis is only fully established in Section 4 when Theorem 1 is derived. Section 3 itself only shows that equilibrium actions decouple in this basis and defines cosine similarity. The section title 'PRINCIPAL COMPONENTS' is underspecified for the game-theoretic application being developed.",
+      "fix": "Revise the opening sentence to restrict scope to what is established within the section: 'This section introduces the principal components of G—a basis in which strategic effects decouple across components, simplifying the equilibrium characterization and preparing the analysis of optimal interventions in Section 4.' Rename the section to 'PRINCIPAL COMPONENT DECOMPOSITION OF THE GAME' or equivalent."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "minor",
+      "title": "Meta-announcement 'We now place the paper in the context of the literature' is mechanical and disrupts flow",
+      "snippet": "We now place the paper in the context of the literature. The intervention problem we study concerns optimal policy in the presence of externalities. Research over the past two decades has deepened our understanding...",
+      "explanation": "The sentence functions as a section label rather than a rhetorical move. This phrasing forces the literature discussion into a single paragraph at the end of the Introduction, making it feel like an afterthought. The literature review is also extremely compressed and relies heavily on footnotes, fragmenting the narrative.",
+      "fix": "Remove the meta-announcement sentence. Integrate the literature motivation earlier in the Introduction after the first paragraph with a natural transition: 'A growing literature has studied how network structure shapes equilibrium behavior [citations], creating demand for policy frameworks that exploit this structure. Our approach addresses this demand by…' Reserve the end-of-introduction paragraph for summarizing how this paper's contribution differs from the closest antecedents."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "minor",
+      "title": "Section 5 (Incomplete Information) is structurally disconnected from the large-budget simplicity results of Section 4",
+      "snippet": "In the basic model, we assumed that the planner knows the standalone marginal returns of every individual. This section extends the analysis to settings where the planner does not know these parameters.",
+      "explanation": "The transition from Section 4 does not motivate why a planner would face incomplete information after the detailed deterministic analysis. The connection to the large-budget simplicity result is particularly important—Proposition 3 exactly recovers the deterministic result with the expected status quo—but this connection is not explicitly drawn. The section reads as an isolated extension rather than a deepening of the paper's main theme.",
+      "fix": "Add a transitional sentence at the start of Section 5: 'The simplicity of large-budget interventions—where the planner need only know the relevant eigenvector of G—motivates the question of how much information about individual standalone marginal returns is actually needed. We now show that the qualitative ordering of principal components extends to settings where the planner knows only the distribution of these returns.' This frames incomplete information as testing the robustness of Section 4's insights."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "minor",
+      "title": "Claim that Property A 'is not essential' is asserted without guidance on which results survive the relaxation",
+      "snippet": "While Property A facilitates analysis, it is not essential. Supplemental Material Section OA3.1 extends the analysis to cover important cases where this property does not hold.",
+      "explanation": "The paper asserts this critical assumption can be relaxed but gives no indication of whether the main qualitative insights—the ordering of principal components by strategic type, the spectral-gap condition for simplicity—survive. Pointing readers to the Supplemental Material without any preview of what survives or fails is insufficient for an assumption that underpins every main result in Sections 4 and 5.",
+      "fix": "Add one sentence summarizing the key finding from OA3.1: e.g., 'In Section OA3.1, we show that the principal-component ordering of Corollary 1 extends to a broader class of externality structures, though the explicit proportionality formula of Theorem 1 requires modification.' This confirms the conceptual contribution is robust without requiring a detour to the supplement."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "minor",
+      "title": "Conclusion refers to 'ongoing work' that by the 2020 date may now be published, undermining credibility",
+      "snippet": "In ongoing work, Galeotti, Golub, Goyal, Talamàs, and Tamuz (2020) show that the principal component approach that we employed in this paper is useful in deriving the optimal taxation scheme...",
+      "explanation": "The phrase 'ongoing work' refers to a 2020 manuscript. Depending on publication timing, this work may no longer be 'ongoing' and may have appeared in print or as a finalized working paper. More broadly, the two forward-looking directions mentioned in the conclusion are each dispatched in one sentence without explaining tractability or expected difficulty, making them appear perfunctory.",
+      "fix": "Update the reference to Galeotti et al. (2020) with actual publication status. If published, cite it normally and describe the result as established. Expand the second future direction (interventions on the interaction matrix) with one sentence explaining what makes it a technically distinct but natural open question."
+    }
+  ]
+}
+```

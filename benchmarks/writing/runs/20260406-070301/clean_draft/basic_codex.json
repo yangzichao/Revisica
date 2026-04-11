@@ -1,0 +1,33 @@
+{
+  "role": "basic",
+  "provider": "codex",
+  "model": null,
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "terminology_consistency",
+      "severity": "major",
+      "title": "Abstract mentions monotonicity conditions not stated later",
+      "snippet": "where $f$ satisfies standard growth and monotonicity conditions.",
+      "explanation": "The paper\u2019s stated assumptions later are analyticity and coercivity, but no monotonicity condition is introduced. This creates a clear terminology mismatch between the abstract and the main text.",
+      "fix": "Replace with wording that matches the actual assumptions, for example: \"where $f$ is real analytic and satisfies a standard coercivity condition.\""
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Awkward time expression",
+      "snippet": "has been studied extensively\nin the past decades.",
+      "explanation": "\"In the past decades\" is awkward in formal academic English. \"Over the past decades\" or \"in recent decades\" reads more naturally.",
+      "fix": "Rewrite as: \"has been studied extensively over the past decades.\""
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Number mismatch in example dynamics",
+      "snippet": "such as oscillation or chaos.",
+      "explanation": "\"Oscillation\" is singular while it is used as one item in a plural class of possible dynamics. The phrasing reads unevenly.",
+      "fix": "Rewrite as: \"such as oscillations or chaos.\""
+    }
+  ]
+}

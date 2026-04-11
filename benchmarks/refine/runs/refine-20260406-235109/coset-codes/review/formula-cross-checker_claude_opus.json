@@ -1,0 +1,41 @@
+{
+  "role": "formula-cross-checker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "subscript_mismatch",
+      "severity": "critical",
+      "title": "Wrong subscript in lattice coding gain formula (Section IV.B, line 746)",
+      "snippet": "Relative to $\\gamma(\\Lambda)=2^{-\\rho(\\Lambda)} d_{\\text{min}}^{2}(\\Lambda^{\\prime})$, the gain $\\gamma(\\mathbb{C})$ is greater by the distance gain factor of $d_{\\text{min}}^{2}(\\mathbb{C}) / d_{\\text{min}}^{2}(\\Lambda)$",
+      "explanation": "The formula states \u03b3(\u039b) = 2^{-\u03c1(\u039b)} d_min\u00b2(\u039b') with a prime on \u039b, but the established definition (Section II.E, line 300) is \u03b3(\u039b) = 2^{-\u03c1(\u039b)} d_min\u00b2(\u039b) \u2014 no prime. The \u039b' subscript refers to the sublattice, which has a *larger* minimum distance than \u039b. Substituting the erroneous formula into the surrounding argument yields \u03b3(C) = 2^{-\u03c1(C)} d_min\u00b2(C) \u00d7 d_min\u00b2(\u039b')/d_min\u00b2(\u039b), which contains a spurious extra factor and contradicts the correct result \u03b3(C) = 2^{-\u03c1(C)} d_min\u00b2(C) derived three lines earlier at line 728. With the corrected d_min\u00b2(\u039b), the d_min\u00b2(\u039b) terms cancel correctly.",
+      "fix": "Replace d_min\u00b2(\u039b') with d_min\u00b2(\u039b) in the formula on line 746: \u03b3(\u039b) = 2^{-\u03c1(\u039b)} d_min\u00b2(\u039b)."
+    },
+    {
+      "category": "subscript_mismatch",
+      "severity": "major",
+      "title": "Garbled symbols in Table II column headers (line 574)",
+      "snippet": "| A | $k(\\mathrm{~A})$ | $\\kappa(\\Lambda)$ | $r(\\Lambda)$ | $\\rho(\\Delta)$ | $d_{\\text{min}}^{2}(\\Lambda)$ | $\\gamma(\\Lambda)$ | ...",
+      "explanation": "Three column headers use incorrect symbols: (1) the first column shows 'A' instead of '\u039b'; (2) the second column shows 'k(A)' instead of 'k(\u039b)'; (3) the fifth column shows '\u03c1(\u0394)' instead of '\u03c1(\u039b)'. All other columns in the same header and all references throughout the paper consistently use \u039b. The symbol \u0394 does not appear in any formula in the paper. The table data itself (Z\u00b2, D\u2084, E\u2088, etc.) confirms these are lattice parameters. Likely an OCR/rendering corruption of the Greek letter \u039b \u2192 A and \u039b \u2192 \u0394.",
+      "fix": "Correct the Table II header to: | \u039b | k(\u039b) | \u03ba(\u039b) | r(\u039b) | \u03c1(\u039b) | d_min\u00b2(\u039b) | \u03b3(\u039b) | ..."
+    },
+    {
+      "category": "formula_mismatch",
+      "severity": "major",
+      "title": "Table XI Class II/III boundary corruption (line 980): d_min\u00b2 value replaced by section header",
+      "snippet": "| 16 | $\\Lambda_{16}$ | $R \\Lambda_{16}$ | 256 | 4/8 | 2 | Class III codes | 4 | 6.02 | 540 | 2544 | 4.61 |",
+      "explanation": "In Table XI, the last row of the Class II codes section (\u039b\u2081\u2086/R\u039b\u2081\u2086, 256 states) has its d_min\u00b2 cell corrupted with the text 'Class III codes', which should have been a separate section-divider row. The d_min\u00b2 value should be 16, since for a Class II code d_min\u00b2(C) = d_min\u00b2(\u039b') = d_min\u00b2(R\u039b\u2081\u2086) = 2 \u00d7 d_min\u00b2(\u039b\u2081\u2086) = 2 \u00d7 8 = 16 (as stated in the Class II description at line 967). This is confirmed by the adjacent \u03b3=4 column: \u03b3 = 2^{-\u03c1} \u00d7 d_min\u00b2 = 2^{-2} \u00d7 16 = 4.",
+      "fix": "Separate the 'Class III codes' section header onto its own row and restore d_min\u00b2 = 16 for the \u039b\u2081\u2086/R\u039b\u2081\u2086 Class II entry."
+    },
+    {
+      "category": "formula_mismatch",
+      "severity": "minor",
+      "title": "Inconsistent dB rounding for \u03b3 = 2 in Discussion (line 1068)",
+      "snippet": "four states to get $\\gamma=2$ ( 3.02 dB )",
+      "explanation": "The value 10 \u00d7 log\u2081\u2080(2) = 3.0103 dB is consistently rounded to '3.01 dB' throughout the paper \u2014 in the Introduction (line 78: '\u03b3(C) is 2^{-1}\u00b74 = 2 (3.01 dB)'), in Section II.E (line 376: '\u03b3(E\u2088) = 2 (3.01 dB)'), in Table IV (line 806), in Table IX (line 908), and in Table XI (line 974). However, the Discussion section (line 1068) uniquely states '3.02 dB' for the same \u03b3 = 2.",
+      "fix": "Change '3.02 dB' to '3.01 dB' on line 1068 to match all other occurrences."
+    }
+  ]
+}

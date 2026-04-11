@@ -1,0 +1,41 @@
+{
+  "role": "section-xcheck-3",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "cross_reference_error",
+      "severity": "major",
+      "title": "Well-definedness of \u03b1_\u2113 attributed to Assumption 1 instead of Assumption 2",
+      "snippet": "\"Note that, for all \u2113, \u03b1_\u2113 are well-defined (by Assumption 1) and strictly positive (by genericity of G).\"",
+      "explanation": "Assumption 1 in Section 2 states only that G is symmetric, which implies eigenvalues are real. Well-definedness of \u03b1_\u2113 = 1/(1\u2212\u03b2\u03bb_\u2113(G))\u00b2 requires the denominator to be nonzero, i.e., \u03b2\u03bb_\u2113(G) \u2260 1 for every eigenvalue \u2113. This is exactly what Assumption 2's spectral radius condition \u03c1(\u03b2G) < 1 guarantees \u2014 not Assumption 1. The citation therefore points to the wrong assumption for the critical no-zero-denominator property.",
+      "fix": "Change '(by Assumption 1)' to '(by Assumption 2)', since it is the spectral radius condition \u03c1(\u03b2G) < 1 that forces 1\u2212\u03b2\u03bb_\u2113(G) \u2260 0 for all \u2113, making each \u03b1_\u2113 well-defined."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Lagrangian writes b\u0302_\u2113 (not squared) in objective term, inconsistent with the stated IT-PC objective and the FOC that follows",
+      "snippet": "\"L = w\u2211_\u2113 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113 + \u03bc[C \u2212 \u2211_\u2113 b\u0302_\u2113\u00b2 x_\u2113\u00b2]\"",
+      "explanation": "The IT-PC reformulation written just above (in the same proof) has objective w\u2211_\u2113 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2, with b\u0302_\u2113 squared. The Lagrangian as displayed uses b\u0302_\u2113 (not squared) in the first term while correctly using b\u0302_\u2113\u00b2 in the constraint term. Furthermore, the first-order condition that immediately follows \u2014 2b\u0302_\u2113\u00b2[w\u03b1_\u2113(1+x_\u2113*) \u2212 \u03bcx_\u2113*] = 0 \u2014 is consistent with the squared form of the objective, not with the Lagrangian as written. The Lagrangian is therefore internally inconsistent with both the objective above it and the FOC below it.",
+      "fix": "In the Lagrangian, replace the unsquared b\u0302_\u2113 with b\u0302_\u2113\u00b2 in the objective term: L = w\u2211_\u2113 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2 + \u03bc[C \u2212 \u2211_\u2113 b\u0302_\u2113\u00b2 x_\u2113\u00b2]."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Example 2 change-of-variables formula is self-referential: b_i = [\u03c4 \u2212 b_i]/2 should use b\u0303_i",
+      "snippet": "\"Performing the change of variables b_i = [\u03c4 \u2212 b_i]/2 and \u03b2 = \u2212\u03b2\u0303/2 (with the status quo equal to b\u0302_i = [\u03c4 \u2212 b\u0303_i]/2)\"",
+      "explanation": "The change-of-variables formula places b_i on both sides of the equation (b_i = [\u03c4 \u2212 b_i]/2), making it self-referential. The local public goods setup introduces a distinct parameter b\u0303_i (with tilde) for the base level of the public good. The correct mapping from the local public goods notation to the general model is b_i = [\u03c4 \u2212 b\u0303_i]/2, as confirmed by the status quo formula immediately after (b\u0302_i = [\u03c4 \u2212 b\u0303_i]/2) which correctly uses the tilde. The right-hand side of the change-of-variables is missing the tilde on b_i.",
+      "fix": "Replace 'b_i = [\u03c4 \u2212 b_i]/2' with 'b_i = [\u03c4 \u2212 b\u0303_i]/2' to match the notation established in the local public goods setup and the immediately following status quo formula."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Undefined symbol \u03b1_2* appears in intermediate bound of Proposition 2 proof",
+      "snippet": "\"\u2264 1 + (2\u03b1_1 \u2212 \u03b1_2*)/(\u03b1_1) \u00b7 \u2016b\u0302\u2016\u00b2/C \u00b7 (\u03b1_2/(\u03b1_1\u2212\u03b1_2))\u00b2\"",
+      "explanation": "The symbol \u03b1_2* is introduced in an intermediate step of the Proposition 2 welfare bound but is never defined anywhere in Section 2 or the Appendix. No starred eigenvalue index notation is defined in either section. The separate calculation immediately below this line yields the factor (2\u03b1_1 \u2212 \u03b1_2) (without the asterisk), and the final bound obtained by applying (2\u03b1_1 \u2212 \u03b1_2)/\u03b1_1 \u2264 2 is consistent with the unstarred \u03b1_2. The asterisk is therefore a spurious symbol that creates a discrepancy between the displayed bound and the derivation that is meant to justify it.",
+      "fix": "Replace \u03b1_2* with \u03b1_2 throughout the intermediate bound, giving (2\u03b1_1 \u2212 \u03b1_2)/\u03b1_1, and verify this matches the factor (2\u03b1_1 \u2212 \u03b1_2)\u2016b\u0302\u2016\u00b2 produced in the calculation below."
+    }
+  ]
+}

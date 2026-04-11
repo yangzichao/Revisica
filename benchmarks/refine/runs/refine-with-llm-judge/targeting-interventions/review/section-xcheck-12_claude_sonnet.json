@@ -1,0 +1,41 @@
+{
+  "role": "section-xcheck-12",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Lagrangian objective term uses b\u0302_\u2113 (first power) instead of b\u0302_\u2113\u00b2 (second power)",
+      "snippet": "\\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\underline{\\hat{b}}_{\\ell}+\\mu\\left[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}\\right]",
+      "explanation": "The reformulated maximization problem (IT-PC after the x_\u2113 = y_\u2113/b\u0302_\u2113 change of variables) has objective w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2, i.e., b\u0302_\u2113 squared. The Lagrangian written immediately after carries only b\u0302_\u2113 (first power) in the objective term, while the constraint term in the same Lagrangian correctly uses b\u0302_\u2113\u00b2. The mismatch is internal to the appendix and makes the printed Lagrangian inconsistent with the problem it is supposed to represent.",
+      "fix": "Replace \\underline{\\hat{b}}_{\\ell} with \\hat{b}_{\\ell}^{2} in the objective term of the Lagrangian so it reads: \\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\hat{b}_{\\ell}^{2}+\\mu\\left[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}\\right]."
+    },
+    {
+      "category": "logic_gap",
+      "severity": "major",
+      "title": "First-order condition is consistent with the corrected Lagrangian but not with the Lagrangian as printed",
+      "snippet": "0=\\frac{\\partial \\mathcal{L}}{\\partial x_{\\ell}}=2 \\hat{b}_{\\ell}^{2}\\left[w \\alpha_{\\ell}\\left(1+x_{\\ell}^{*}\\right)-\\mu x_{\\ell}^{*}\\right]=0",
+      "explanation": "Differentiating the Lagrangian as printed (with b\u0302_\u2113, not b\u0302_\u2113\u00b2, in the objective term) yields \u2202L/\u2202x_\u2113 = 2w \u03b1_\u2113 (1+x_\u2113*) b\u0302_\u2113 \u2212 2\u03bc b\u0302_\u2113\u00b2 x_\u2113*, which cannot be factored into 2b\u0302_\u2113\u00b2[w \u03b1_\u2113(1+x_\u2113*) \u2212 \u03bc x_\u2113*] and does not match the FOC as stated. The FOC is only correct if the Lagrangian already has b\u0302_\u2113\u00b2 in the objective. A reader following the printed Lagrangian will arrive at a different first-order condition, creating a genuine logical gap between the stated Lagrangian and the derivation that follows.",
+      "fix": "Correct the Lagrangian (see finding above). Once b\u0302_\u2113\u00b2 appears in both terms, differentiation with respect to x_\u2113 immediately yields 2b\u0302_\u2113\u00b2[w \u03b1_\u2113(1+x_\u2113*) \u2212 \u03bc x_\u2113*] = 0, matching the printed FOC exactly. No change to the FOC line itself is needed."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Symbol \u03b1\u2082* appears in the welfare bound but is never defined anywhere",
+      "snippet": "\\leq 1+\\frac{2 \\alpha_{1}-\\alpha_{2}^{*}}{\\alpha_{1}} \\frac{\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2}",
+      "explanation": "The intermediate inequality step in the Proof of Proposition 2 (welfare part) introduces \u03b1\u2082* in the factor (2\u03b1\u2081 \u2212 \u03b1\u2082*)/\u03b1\u2081. The symbol \u03b1\u2082* appears nowhere else in the proof, the theorem statements, or the notation setup. The supporting calculation that follows derives the bound in terms of plain \u03b1\u2082 (without asterisk), and the final stated bound for Proposition 2 likewise uses \u03b1\u2082. Because \u03b1\u2082* is undefined, the inequality chain from the intermediate step to the final bound (which drops to 2\u2016b\u0302\u2016\u00b2/C \u00b7 (\u03b1\u2082/(\u03b1\u2081\u2212\u03b1\u2082))\u00b2) cannot be verified by the reader. This also obscures the missing explicit argument that (2\u03b1\u2081 \u2212 \u03b1\u2082)/\u03b1\u2081 \u2264 2 (which holds since \u03b1\u2082 \u2265 0).",
+      "fix": "Replace \\alpha_{2}^{*} with \\alpha_{2}. The intermediate line then reads 1 + (2\u03b1\u2081 \u2212 \u03b1\u2082)/\u03b1\u2081 \u00b7 \u2016b\u0302\u2016\u00b2/C \u00b7 (\u03b1\u2082/(\u03b1\u2081\u2212\u03b1\u2082))\u00b2, consistent with the supporting calculation. Add a brief note that (2\u03b1\u2081 \u2212 \u03b1\u2082)/\u03b1\u2081 \u2264 2 because \u03b1\u2082 \u2265 0 (all \u03b1_\u2113 are strictly positive by Assumption 1 and genericity), justifying the final drop to 1 + 2\u2016b\u0302\u2016\u00b2/C \u00b7 (\u03b1\u2082/(\u03b1\u2081\u2212\u03b1\u2082))\u00b2."
+    },
+    {
+      "category": "flow_break",
+      "severity": "minor",
+      "title": "Annotation 'see calculation below D are positive' is incoherent and mislabels its proof step",
+      "snippet": "\\leq 1+\\frac{2\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2} & \\text { see calculation below } D \\text { are positive }",
+      "explanation": "The right-column annotation 'see calculation below D are positive' is placed against the final inequality step in the welfare-ratio chain, but it conflates two separate justifications belonging to two different steps: 'see calculation below' refers forward to the supporting multi-line derivation that bounds \u03a3_{\u2113\u22652} terms, while 'D are positive' (asserting D > 0) is the relevant justification for the earlier step where D is dropped from the denominator. Neither sub-phrase correctly justifies the step it annotates here, which actually requires the argument (2\u03b1\u2081 \u2212 \u03b1\u2082)/\u03b1\u2081 \u2264 2. The annotation appears to be a draft artefact where two marginal notes were accidentally merged.",
+      "fix": "Remove the merged annotation from this line. Place 'since D > 0 (all terms positive)' next to the step where D is dropped from the denominator, and place 'see calculation below; uses (2\u03b1\u2081 \u2212 \u03b1\u2082)/\u03b1\u2081 \u2264 2' next to the final step. This restores a coherent annotation column and ensures each proof step has a legible justification."
+    }
+  ]
+}

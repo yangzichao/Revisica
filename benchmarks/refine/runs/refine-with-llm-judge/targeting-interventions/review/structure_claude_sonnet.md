@@ -1,0 +1,70 @@
+```json
+{
+  "findings": [
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Introduction model exposition interrupts narrative flow before motivation is complete",
+      "snippet": "We now lay out the elements of the model in more detail. Individuals play a simultaneous-move game with continuous actions. An agent's action creates standalone returns...",
+      "explanation": "The second paragraph of Section 1 immediately pivots to detailed model exposition (payoff structure, network adjacency, budget constraint form) before the paper has articulated why the problem is hard, what prior approaches fail to capture, or what the reader should expect to learn. Standard scholarly practice places motivating difficulty and prior-work gaps before model details; here the full model description precedes the literature review by roughly four paragraphs. This front-loading of technical machinery disrupts the rhetorical arc and may cause readers unfamiliar with network games to disengage before the paper's novelty is positioned.",
+      "fix": "Move the detailed model walkthrough (paragraph beginning 'We now lay out the elements of the model in more detail') to after the high-level result summary and literature positioning paragraph. The introduction should follow the structure: (1) question and motivation, (2) sketch of main result and intuition, (3) literature positioning, (4) brief roadmap—then let Section 2 carry the full model. If a model summary is needed in the introduction, limit it to two to three sentences."
+    },
+    {
+      "category": "contribution_framing",
+      "severity": "major",
+      "title": "Contribution claim is narrowly framed as 'methodological' without articulating economic content",
+      "snippet": "The main contribution of this paper is methodological. It lies in (i) using the principal components approach to decompose the effect of an intervention on social welfare and (ii) using the structure afforded by this decomposition to characterize optimal interventions.",
+      "explanation": "Labeling the contribution purely 'methodological' undersells the paper's substantive economic content. The results deliver precise, policy-actionable predictions: under strategic complements, a planner should target in proportion to eigenvector centrality; under strategic substitutes, targeting should exploit the bipartite structure of the network. These are not merely methodological claims—they constitute positive economic propositions about when network structure makes simple policies near-optimal and how the spectral gap governs this threshold. A purely methodological framing risks inviting referees to treat the paper as a technique paper and demand additional applications, rather than recognizing its economic content.",
+      "fix": "Reframe the contribution statement to lead with the substantive economic finding—the sharp complementarity/substitutability dichotomy and the spectral-gap threshold for simplicity—and then describe the principal-component decomposition as the analytical vehicle that enables these results. For example: 'Our main contribution is to show that the nature of strategic interaction (complements vs. substitutes) determines which network statistic governs optimal targeting, and to characterize precisely how large the budget must be for a single network statistic to suffice. Methodologically, this relies on a principal-component decomposition...'"
+    },
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Literature review is deferred too late and is disproportionately brief relative to the paper's scope",
+      "snippet": "We now place the paper in the context of the literature. The intervention problem we study concerns optimal policy in the presence of externalities. Research over the past two decades has deepened our understanding of the empirical structure of networks and the theory of how networks affect strategic behavior.",
+      "explanation": "The literature review is placed after four pages of model description and result previews, occupying roughly one short paragraph before the roadmap. For a paper drawing on multiple intersecting literatures—optimal policy with externalities, network games (Ballester et al. 2006; Bramoullé and Kranton 2007; Allouch 2015/2017), spectral graph theory, and targeted interventions in CS/sociology/public health—this placement and length are insufficient. Readers cannot assess the paper's positioning relative to prior work until almost the end of the introduction. Moreover, footnotes 4 and 5 do the heavy lifting for the literature review, which is unusual and may frustrate reviewers who expect substantive in-text differentiation.",
+      "fix": "Expand the literature review to a dedicated paragraph (or two) placed earlier in the introduction—before the roadmap but after the results preview. Distinguish the paper's contribution from at least: (a) prior work on key-player targeting (Ballester et al. 2006), (b) spectral approaches to network games, and (c) existing public-health or CS targeting algorithms. Elevate the most important comparisons from footnotes into the main text."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "major",
+      "title": "Proposition 2 simplicity threshold lacks evidence of bound tightness",
+      "snippet": "Proposition 2 gives a condition on the size of the budget beyond which (a) simple interventions achieve most of the optimal welfare and (b) the optimal intervention is very similar to the simple intervention. This bound depends on the status quo standalone marginal returns and on the structure of the network via α₂/(α₁−α₂).",
+      "explanation": "Proposition 2 states a sufficient condition for near-simplicity, but the paper does not assess whether this bound is tight or approximately tight. The multiplier 2||b̂||² appears as a loose inequality artifact from the proof, and the paper concedes this implicitly by discussing the bound only in asymptotic terms. Without an example showing that near-simplicity fails when the bound is violated, or an argument that the scaling is qualitatively correct, the proposition's practical content is unclear. The Figure 3 illustrations partially illustrate near-simplicity but do not speak to the stated bound's quantitative content.",
+      "fix": "Add a short paragraph after Proposition 2's discussion that either (a) provides a family of examples where the stated bound is approximately achieved, demonstrating tightness, or (b) explicitly acknowledges the bound is sufficient but not necessary and characterizes a sharper bound or a numerical procedure for computing the actual threshold. Explicitly connect the figure discussion to the bound's quantitative claim."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Property A introduced via examples before being formally stated, creating forward-reference dependency",
+      "snippet": "All the settings discussed in Examples 1 and 2 share a technically convenient property: Property A: The aggregate equilibrium utility is proportional to the sum of the squares of the equilibrium actions...",
+      "explanation": "Property A is introduced only after two worked examples, yet it is the load-bearing technical assumption for all main results (Theorem 1, Corollary 1, Propositions 1–4). The introduction previews these results without flagging the dependence on Property A, and Section 4 opens by invoking it before readers have seen its formal definition in context. This placement forces readers to accept results stated under a condition whose scope they do not yet understand, or to read the paper non-linearly.",
+      "fix": "State Property A as a named assumption in Section 2, immediately after the formal payoff function and before the examples, alongside a brief statement of which results depend on it. Then verify it in Examples 1 and 2 rather than discovering it through them. Section 4 should open with a reminder ('Recall Property A...') to reinforce its role."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "minor",
+      "title": "Section 5 (Incomplete Information) lacks a statement of the new conceptual difficulty it addresses",
+      "snippet": "In the basic model, we assumed that the planner knows the standalone marginal returns of every individual. This section extends the analysis to settings where the planner does not know these parameters.",
+      "explanation": "Section 5 opens with a single sentence of motivation and immediately introduces formal probability notation. It is not explained why incomplete information is a natural concern in this context, which kinds of interventions are practically constrained by it, or whether the stochastic results are extensions or genuine qualitative departures from the deterministic case. Proposition 3 is presented without emphasizing how much or how little it simplifies the planner's problem compared to the deterministic baseline.",
+      "fix": "Add two to three sentences at the start of Section 5 that: (a) give an applied motivation for incomplete information (e.g., planner observes aggregate network statistics but not individual marginal returns), (b) state in words the key qualitative finding before the formal analysis (mean-shifts reduce to the deterministic case; variance control is a genuinely new problem), and (c) flag whether Propositions 3 and 4 confirm or complicate the main intuitions from Section 4."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "minor",
+      "title": "Concluding remarks raises new applications without connecting them to the paper's analytical framework",
+      "snippet": "In some circumstances, the planner seeks a budget-balanced tax/subsidy scheme in order to improve the economic outcome... In ongoing work, Galeotti, Golub, Goyal, Talamàs, and Tamuz (2020) show that the principal component approach that we employed in this paper is useful...",
+      "explanation": "The conclusion introduces a budget-balanced tax/subsidy extension and cites ongoing work by the same authors, but does not indicate how the principal-component logic extends, what changes in the constraints, or what new difficulties arise. This leaves the application as an advertisement rather than a substantive pointer. Conclusion sections should synthesize what was shown or clearly articulate the direction and challenge of future work.",
+      "fix": "Either (a) briefly explain in one to two sentences how the budget-balance constraint changes the principal-component characterization (e.g., which components are feasible or infeasible to target), or (b) remove the reference to ongoing work and confine the future-directions discussion to the network-alteration problem, which is more naturally connected to the paper's framework."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "minor",
+      "title": "Intuition for the status quo effect in Theorem 1 is circular and under-explained",
+      "snippet": "The intuition here is that if a given principal component is strongly represented in the status quo vector of standalone incentives, then—because of the convexity of welfare in the principal component basis—changes in that dimension have a particularly large effect.",
+      "explanation": "The cited intuition ('convexity of welfare in the principal component basis') restates a mathematical property of the objective rather than providing economic content. The explanation does not clarify why convexity in each dimension implies concentrating resources on dimensions already large in the status quo—in isolation, convexity could equally suggest spreading resources. The economic logic (that marginal gain from shifting in a large-status-quo direction is higher because of the cross-product terms, visible in the $(1 + x_\\ell)^2$ structure of the proof) is present in the derivation but not surfaced in the prose.",
+      "fix": "Replace the convexity reference with a sentence that exposes the economic mechanism: because the welfare gain from changing $\\underline{b}_\\ell$ is proportional to $(1 + x_\\ell)$, and $x_\\ell$ is the relative change, a principal component already large in the status quo provides a larger base from which marginal changes yield high returns. Connect this explicitly to the $(1 + x_\\ell)^2$ term in the reformulated objective."
+    }
+  ]
+}
+```

@@ -1,0 +1,41 @@
+{
+  "role": "math-claim-verifier",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Definition 1: cosine similarity formula missing ||z|| in denominator",
+      "snippet": "DEFINITION 1: The cosine similarity of two nonzero vectors y and z is \u03c1(y, z) = (y \u00b7 z) / ||y||",
+      "explanation": "The standard cosine similarity is \u03c1(y,z) = (y\u00b7z)/(||y|| ||z||). The paper's Definition 1 omits ||z|| from the denominator. This is inconsistent with the paper's own subsequent usage in the proof of Theorem 1, where the standard two-norm formula is used: \u03c1(y*,u^\u2113) = (y*\u00b7u^\u2113)/(||y*|| ||u^\u2113||). Because eigenvectors u^\u2113 are normalized (||u^\u2113||=1), the formulas agree in the specific application, but the general definition as stated is incorrect. A numerical counterexample confirms: for y=[1,2,3], z=[2,4,6] (z=2y, so cosine similarity should be 1), the paper's formula gives 7.48 instead of 1.",
+      "fix": "Change Definition 1 to: \u03c1(y, z) = (y \u00b7 z) / (||y|| \u00b7 ||z||)"
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Lagrangian in proof of Theorem 1 missing square on \\hat{\\underline{b}}_\u2113",
+      "snippet": "L = w \u2211 \u03b1_\u2113 (1+x_\u2113)\u00b2 \\hat{\\underline{b}}_\u2113 + \u03bc[C \u2212 \u2211 \\hat{\\underline{b}}_\u2113\u00b2 x_\u2113\u00b2]",
+      "explanation": "In the proof of Theorem 1 (Appendix), the Lagrangian writes the first sum with \\hat{\\underline{b}}_\u2113 (without the square), while the objective function from (IT-PC rewritten) and the subsequent FOC both correctly use \\hat{\\underline{b}}_\u2113\u00b2. Symbolic differentiation of the correct Lagrangian (with the squared term) exactly reproduces the FOC stated in the paper, confirming this is a typographical error.",
+      "fix": "Change \\hat{\\underline{b}}_\u2113 to \\hat{\\underline{b}}_\u2113\u00b2 in the first term of the Lagrangian"
+    },
+    {
+      "category": "math_verification",
+      "severity": "minor",
+      "title": "Section 4.2: u^n and u^(n-1) called 'maximizers' of minimization problems",
+      "snippet": "Moreover, the eigenvector u^n is a maximizer of the first problem, while u^(n-1) is a maximizer of the second",
+      "explanation": "The text defines \u03bb_n = min_{u:||u||=1} \u03a3 g_{ij} u_i u_j and \u03bb_{n-1} = min (constrained). Since these are minimization problems, u^n and u^(n-1) are minimizers, not maximizers. Numerical verification on a 4-node path graph confirms: u^n achieves the minimum of the quadratic form over 10,000 random unit vectors.",
+      "fix": "Change 'maximizer' to 'minimizer' in both instances: 'the eigenvector u^n is a minimizer of the first problem, while u^(n-1) is a minimizer of the second'"
+    },
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Example 2: circular variable definition b_i = [\u03c4 \u2212 b_i]/2",
+      "snippet": "Performing the change of variables b_i = [\u03c4 \u2212 b_i]/2 and \u03b2 = \u2212\u03b2\u0303/2",
+      "explanation": "The change of variables formula uses b_i on both sides of the equation, which is circular. Symbolic verification of the FOC confirms the correct formula is b_i = [\u03c4 \u2212 b\u0303_i]/2 (with tilde). The immediately following status quo formula correctly uses b\u0303_i: \u0125at{b}_i = [\u03c4 \u2212 b\u0303_i]/2, confirming the tilde was accidentally dropped.",
+      "fix": "Change 'b_i = [\u03c4 \u2212 b_i]/2' to 'b_i = [\u03c4 \u2212 b\u0303_i]/2'"
+    }
+  ]
+}

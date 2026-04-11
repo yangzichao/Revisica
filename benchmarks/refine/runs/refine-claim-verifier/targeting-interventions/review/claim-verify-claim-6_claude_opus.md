@@ -1,0 +1,16 @@
+The computation clearly shows the claim is incorrect. Let me provide the result:
+
+```json
+{
+  "findings": [
+    {
+      "category": "formula_inconsistency",
+      "severity": "minor",
+      "title": "Incorrect scaling in norm decomposition identity in Footnote 24",
+      "snippet": "$\\left\\|\\frac{1}{n} \\hat{\\boldsymbol{b}}\\right\\|^{2}$ is equal to the sum of $\\left(\\frac{1}{n} \\sum_{i \\in \\mathcal{N}} \\hat{b}_{i}\\right)^{2}$ (the squared mean of the entries of $\\boldsymbol{b}$) and the sum of squared deviations of the entries of the vector $\\hat{\\boldsymbol{b}}$ from their mean.",
+      "explanation": "The claimed identity is that ||\\frac{1}{n} \\hat{b}||^2 = (mean of \\hat{b}_i)^2 + \\sum_i (\\hat{b}_i - \\bar{b})^2. The LHS equals (1/n^2) \\sum_i \\hat{b}_i^2, while the RHS equals \\sum_i \\hat{b}_i^2 - (n-1)\\bar{b}^2. These are not equal in general. For example, with \\hat{b} = (1,2,3) and n=3: LHS ≈ 1.556 but RHS = 6.0. The standard variance decomposition identity is (1/n)||\\hat{b}||^2 = (\\bar{b})^2 + (1/n)\\sum_i(\\hat{b}_i - \\bar{b})^2 (i.e., second moment = squared mean + variance). The paper appears to have written ||(1/n)\\hat{b}||^2 = (1/n^2)||\\hat{b}||^2 when it should be (1/n)||\\hat{b}||^2, confusing 1/n^2 with 1/n as the scaling factor. Additionally, 'sum of squared deviations' should be 'variance' (mean squared deviation, i.e., SSD/n) if the (1/n)||\\hat{b}||^2 form is used. This is a footnote providing intuition for why ||\\hat{b}||^2 depends on heterogeneity; the qualitative point is correct and no main results are affected.",
+      "fix": "Replace the identity with one of the correct forms: either (a) '(1/n)||\\hat{b}||^2 is equal to the sum of the squared mean and the variance of the entries' or (b) '||\\hat{b}||^2 is equal to the sum of n times the squared mean and the sum of squared deviations from the mean.'"
+    }
+  ]
+}
+```

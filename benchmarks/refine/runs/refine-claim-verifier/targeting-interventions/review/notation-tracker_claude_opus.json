@@ -1,0 +1,161 @@
+{
+  "role": "notation-tracker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_drift",
+      "severity": "critical",
+      "title": "Cosine similarity definition missing \u2016z\u2016 in denominator",
+      "snippet": "DEFINITION 1: The cosine similarity of two nonzero vectors y and z is \u03c1(y,z) = (y\u00b7z)/\u2016y\u2016.",
+      "explanation": "Definition 1 (line 191) defines cosine similarity as \u03c1(y,z) = y\u00b7z / \u2016y\u2016, omitting \u2016z\u2016 from the denominator. The correct definition is y\u00b7z / (\u2016y\u2016\u2016z\u2016). The proof of Theorem 1 (line 490) correctly uses both norms: \u03c1(y*,u^\u2113(G)) = y*\u00b7u^\u2113(G) / (\u2016y*\u2016 \u2016u^\u2113(G)\u2016), contradicting the stated definition.",
+      "fix": "Change Definition 1 to: \u03c1(y,z) = (y\u00b7z) / (\u2016y\u2016 \u2016z\u2016)."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "critical",
+      "title": "Example 2 change-of-variables is self-referential",
+      "snippet": "Performing the change of variables b_i = [\u03c4 \u2212 b_i]/2 and \u03b2 = \u2212\u03b2\u0303/2",
+      "explanation": "Line 128 defines b_i = [\u03c4 \u2212 b_i]/2, using b_i on both sides of the equation. From the context of Example 2, the right-hand side should use the base-level public good b\u0303_i (with tilde), since b_i is the new variable being defined. Compare with the correct status-quo formula on the same line: b\u0302_i = [\u03c4 \u2212 b\u0303_i]/2, which properly uses b\u0303_i.",
+      "fix": "Change b_i = [\u03c4 \u2212 b_i]/2 to b_i = [\u03c4 \u2212 b\u0303_i]/2."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "critical",
+      "title": "'maximizer' should be 'minimizer' for \u03bb_n and \u03bb_{n\u22121}",
+      "snippet": "Moreover, the eigenvector u^n is a maximizer of the first problem, while u^{n-1} is a maximizer of the second",
+      "explanation": "Line 324 states that u^n is a 'maximizer' of min_{u:\u2016u\u2016=1} \u03a3 g_{ij} u_i u_j (the problem defining \u03bb_n) and u^{n\u22121} is a 'maximizer' of the corresponding constrained problem (defining \u03bb_{n\u22121}). Both problems are minimization problems, so the eigenvectors should be called 'minimizers.' Compare with the analogous statement for the top eigenvalues (line 316) which correctly says u^1 and u^2 are maximizers of maximization problems.",
+      "fix": "Change both occurrences of 'maximizer' to 'minimizer' in the sentence about \u03bb_n and \u03bb_{n\u22121}."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "critical",
+      "title": "Lagrangian missing squared exponent on b\u0302_\u2113",
+      "snippet": "L = w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113 + \u03bc[C \u2212 \u03a3 b\u0302_\u2113\u00b2 x_\u2113\u00b2]",
+      "explanation": "In the Lagrangian (line 465), the objective term has underline-b\u0302_\u2113 without a square: w \u03a3 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113. But the optimization problem (IT-x) from which it derives (lines 450\u2013452) has the objective w \u03a3 \u03b1_\u2113(1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2, with b\u0302_\u2113 squared. The missing exponent 2 causes a dimensional error in the Lagrangian.",
+      "fix": "Change \u0332b\u0302_\u2113 to \u0332b\u0302_\u2113\u00b2 in the first sum of the Lagrangian."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Systematic dropping of underline on b\u0302_\u2113 in PC-basis equations",
+      "snippet": "\u03a3 (w\u03b1_\u2113 / (\u03bc\u2212w\u03b1_\u2113))\u00b2 b\u0302_\u2113\u00b2 = C   [Theorem 1, eq. (6)]",
+      "explanation": "Throughout Section 4 and the Appendix, the projection \u0332b\u0302_\u2113 = (U^\u22a4 b\u0302)_\u2113 (defined at line 163 as the PC-basis representation) is inconsistently written. Equation (6) (line 220), the marginal condition (line 233), the FOC (line 471), the binding budget (line 483), and the cosine-similarity derivation (line 491) all use b\u0302_\u2113 (no underline) where the PC-basis quantity \u0332b\u0302_\u2113 is meant. Compare with the correct usage in lines 227, 452, 474, and 549 where \u0332b\u0302_\u2113 is used. Since b\u0302_\u2113 properly denotes the \u2113-th element of b\u0302 in the original (not PC) basis, this is a systematic notation error.",
+      "fix": "Add underlines to all PC-basis references: change b\u0302_\u2113 to \u0332b\u0302_\u2113 in equations (6), (8), the FOC display (line 471), equation after (11) (line 483), and line 491."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Equation (2) missing boldface on vectors/matrices",
+      "snippet": "[I\u2212\u03b2G] a* = b",
+      "explanation": "Equation (2) (line 57) writes the Nash equilibrium system as [I\u2212\u03b2G] a* = b, with no boldface on I, G, a*, or b. Three lines later, equation (3) (line 69) writes the same relationship as a* = [I\u2212\u03b2G]^{\u22121} b with all boldface: \ud835\udc1a* = [\ud835\udc08\u2212\u03b2\ud835\udc06]^{\u22121} \ud835\udc1b. The same inconsistency recurs on line 166 where the substitution of G = U\u039bU^\u22a4 gives [I\u2212\u03b2U\u039bU^\u22a4] a* = b with I, a*, b unbolded but U, \u039b bolded.",
+      "fix": "Add boldface to equation (2): [\ud835\udc08\u2212\u03b2\ud835\udc06] \ud835\udc1a* = \ud835\udc1b. Similarly fix line 166."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "\u03b2 incorrectly boldfaced as a matrix",
+      "snippet": "the \u2113th diagonal entry of [\ud835\udc08\u2212\ud835\udec3\ud835\udeb2]^{\u22121} is 1/(1\u2212\u03b2\u03bb_\u2113)",
+      "explanation": "On line 175, \u03b2 appears in boldface as \ud835\udec3 inside [\ud835\udc08\u2212\ud835\udec3\ud835\udeb2]^{\u22121}, treating it as if it were a matrix. But \u03b2 is a scalar parameter (defined on line 48). The same error occurs on line 436 in the proof of Theorem 1: \u0332\ud835\udc1a* = [\ud835\udc08\u2212\ud835\udec3\ud835\udeb2]^{\u22121} \u0332\ud835\udc1b. All other occurrences correctly render \u03b2 as a non-bold scalar.",
+      "fix": "Remove boldface from \u03b2 in both occurrences: write [\ud835\udc08\u2212\u03b2\ud835\udeb2]^{\u22121}."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "y* inconsistently missing boldface in Theorem 1 and similarity ratio",
+      "snippet": "\u03c1(y*, u^\u2113(G)) \u221d \u03c1(b\u0302, u^\u2113(G)) \u00b7 w\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113)",
+      "explanation": "In equation (5) (line 214) and equation (7) (line 249), y* appears without boldface, while in the theorem statement (line 211) and elsewhere (lines 203, 266\u2013267) it is correctly boldfaced as \ud835\udc32*. Since y* is a vector in \u211d\u207f, it should always be bold.",
+      "fix": "Add boldface: change y* to \ud835\udc32* in equations (5) and (7)."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "major",
+      "title": "Assumption 3 missing squared norm",
+      "snippet": "Either w<0 and C < \u2016b\u0302\u2016, or w>0",
+      "explanation": "Assumption 3 (line 200) states C < \u2016b\u0302\u2016, but the preceding discussion (line 198) shows the first-best is achievable when C \u2265 \u2016b\u0302\u2016\u00b2, using the squared norm. The complementary condition ruling out the first-best should therefore be C < \u2016b\u0302\u2016\u00b2, not C < \u2016b\u0302\u2016. Also note that footnote 34 (line 770) correctly uses \u0332b\u0302_\u2113\u00b2 summed, confirming the squared norm is intended.",
+      "fix": "Change C < \u2016b\u0302\u2016 to C < \u2016b\u0302\u2016\u00b2 in Assumption 3."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "Eigenvector entry subscript/superscript swap: u_\u2113^i vs u_i^\u2113",
+      "snippet": "b_i* \u2212 b\u0302_i = w \u03a3_{\u2113=1}^n u_\u2113^i [\u03b1_\u2113/(\u03bc\u2212w\u03b1_\u2113)] b\u0302_\u2113",
+      "explanation": "In the proof of Proposition 2 (line 584), the eigenvector entry is written u_\u2113^i, with \u2113 as subscript and i as superscript. Throughout the paper (lines 142, 186, 288\u2013289, 590), the convention is u_i^\u2113: i (node index) as subscript, \u2113 (eigenvector index) as superscript. The swap reverses the meaning.",
+      "fix": "Change u_\u2113^i to u_i^\u2113 on line 584."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "\u03b1_\u2113' vs \u03b1_{\u2113'} subscript notation mismatch in Proposition 1 proof",
+      "snippet": "r_\u2113*/r_{\u2113'}* = (\u03b1_\u2113/\u03b1_{\u2113'}) \u00b7 (\u03bc\u2212w\u03b1_\u2113')/(\u03bc\u2212w\u03b1_\u2113)",
+      "explanation": "In the proof of Proposition 1 (line 498), the second fraction writes \u03b1_\u2113' (prime on \u03b1) instead of \u03b1_{\u2113'} (prime on the subscript \u2113). The first fraction correctly writes \u03b1_{\u2113'} with the prime attached to \u2113. \u03b1_\u2113' would denote a derivative of \u03b1_\u2113, while \u03b1_{\u2113'} denotes the amplification factor for a different index \u2113'.",
+      "fix": "Change \u03b1_\u2113' to \u03b1_{\u2113'} in the denominator of the second fraction."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "major",
+      "title": "Denominator order flipped: \u03b1_{n\u22121}/(\u03b1_{n\u22121}\u2212\u03b1_n) vs \u03b1_{n\u22121}/(\u03b1_n\u2212\u03b1_{n\u22121})",
+      "snippet": "the term \u03b1_{n-1}/(\u03b1_{n-1}\u2212\u03b1_n) is large when the difference \u03bb_{n-1}\u2212\u03bb_n is small",
+      "explanation": "Line 301 writes \u03b1_{n\u22121}/(\u03b1_{n\u22121}\u2212\u03b1_n), but when \u03b2<0, we have \u03b1_n > \u03b1_{n\u22121}, so \u03b1_{n\u22121}\u2212\u03b1_n < 0, making the expression negative. This contradicts Proposition 2 (line 296) which correctly uses \u03b1_{n\u22121}/(\u03b1_n\u2212\u03b1_{n\u22121}) with a positive denominator. The sign of the denominator is flipped relative to the proposition statement.",
+      "fix": "Change \u03b1_{n\u22121}/(\u03b1_{n\u22121}\u2212\u03b1_n) to \u03b1_{n\u22121}/(\u03b1_n\u2212\u03b1_{n\u22121}) on line 301."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "major",
+      "title": "\u0394\ud835\udc1b* used without definition; should be \ud835\udc32*",
+      "snippet": "\u03c1(\u0394\ud835\udc1b*, \u221aC \ud835\udc2e\u00b9) = (\ud835\udc1b*\u2212b\u0302)\u00b7(\u221aC \ud835\udc2e\u00b9) / \u2016\ud835\udc1b*\u2212b\u0302\u2016 \u2016\u221aC \ud835\udc2e\u00b9\u2016",
+      "explanation": "The proof of Proposition 2 (line 569) introduces the symbol \u0394\ud835\udc1b* without definition. From context, \u0394\ud835\udc1b* = \ud835\udc1b* \u2212 b\u0302, which was defined earlier as \ud835\udc32* (line 203). The rest of the paper consistently uses \ud835\udc32* for this quantity. The notation \u0394\ud835\udc1b* appears only in this proof section (lines 569, 572, 596).",
+      "fix": "Replace \u0394\ud835\udc1b* with \ud835\udc32* throughout the cosine-similarity part of the Proposition 2 proof, or add a definition \u0394\ud835\udc1b* = \ud835\udc1b* \u2212 b\u0302 = \ud835\udc32*."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Stray star on \u03b1\u2082 in proof of Proposition 2",
+      "snippet": "\u2264 1 + (2\u03b1\u2081\u2212\u03b1\u2082*)/\u03b1\u2081 \u00b7 (\u2016b\u0302\u2016\u00b2/C) \u00b7 (\u03b1\u2082/(\u03b1\u2081\u2212\u03b1\u2082))\u00b2",
+      "explanation": "Line 543 in the proof of Proposition 2 writes \u03b1\u2082* (with a star superscript), but \u03b1\u2082 is never defined with a star. From the derivation context, this should simply be \u03b1\u2082. The star appears to be a typographical artifact.",
+      "fix": "Remove the star: change \u03b1\u2082* to \u03b1\u2082."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Double-hat b\u0302\u0302_\u2113 typo in proof of Proposition 2",
+      "snippet": "D = \u0332b\u0302\u2081\u00b2 \u03b1\u2081 x\u0303\u2081(x\u0303\u2081+2) + \u03a3 \u03b1_\u2113 b\u0302\u0302_\u2113\u00b2",
+      "explanation": "Line 535 contains b\u0302\u0302_\u2113 (double hat), which is not a defined symbol. Based on the derivation in the PC basis, it should be \u0332b\u0302_\u2113 (underlined, single hat).",
+      "fix": "Change b\u0302\u0302_\u2113 to \u0332b\u0302_\u2113."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "minor",
+      "title": "i \u2208 N instead of i \u2208 \ud835\udca9",
+      "snippet": "we assume that for every i \u2208 N, g_{ii}=0",
+      "explanation": "Line 48 writes 'i \u2208 N' (plain N), but the set of individuals is defined as \ud835\udca9 (calligraphic N) on line 39. All other references use \ud835\udca9.",
+      "fix": "Change N to \ud835\udca9."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "minor",
+      "title": "Missing subscript i in summation \u03a3_{\u2208\ud835\udca9}",
+      "snippet": "K(B) = \u03c6(\u03a3_{\u2208\ud835\udca9} \u03c3_{ii}^B)",
+      "explanation": "Line 384 writes \u03a3_{\u2208\ud835\udca9} without the summation index i, leaving the summation formally undefined. It should be \u03a3_{i\u2208\ud835\udca9}.",
+      "fix": "Change \u03a3_{\u2208\ud835\udca9} to \u03a3_{i\u2208\ud835\udca9}."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Transposition notation entangled with equilibrium star",
+      "snippet": "w \ud835\udd3c[(\u0332\ud835\udc1a^\u22a4)* (\u0332\ud835\udc1a*)]",
+      "explanation": "Line 353 writes (\u0332\ud835\udc1a^\u22a4)* placing the equilibrium star outside the transposition, yielding an ambiguous expression. The intended notation is (\u0332\ud835\udc1a*)^\u22a4 \u0332\ud835\udc1a*, consistent with the pattern (\ud835\udc1a*)^\u22a4 \ud835\udc1a* used elsewhere (line 107).",
+      "fix": "Change (\u0332\ud835\udc1a^\u22a4)*(\u0332\ud835\udc1a*) to (\u0332\ud835\udc1a*)^\u22a4 \u0332\ud835\udc1a*."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Underline applied to wrong scope in proof: \u0332(\ud835\udc1a^\u22a4) \u0332\ud835\udc1a",
+      "snippet": "w \ud835\udc1a^\u22a4 \ud835\udc1a = w\u2016\ud835\udc1a\u2016\u00b2 = w\u2016\u0332\ud835\udc1a\u2016\u00b2 = w \u0332(\ud835\udc1a^\u22a4) \u0332\ud835\udc1a",
+      "explanation": "Line 433 applies the underline decoration across \ud835\udc1a^\u22a4 as a block, writing \u0332(\ud835\udc1a^\u22a4) \u0332\ud835\udc1a. This is inconsistent with the definition \u0332\ud835\udc33 = U^\u22a4 \ud835\udc33 (line 163), which applies to a vector. The correct notation is \u0332\ud835\udc1a^\u22a4 \u0332\ud835\udc1a (underline on \ud835\udc1a, then transpose).",
+      "fix": "Change \u0332(\ud835\udc1a^\u22a4) \u0332\ud835\udc1a to \u0332\ud835\udc1a^\u22a4 \u0332\ud835\udc1a."
+    }
+  ]
+}

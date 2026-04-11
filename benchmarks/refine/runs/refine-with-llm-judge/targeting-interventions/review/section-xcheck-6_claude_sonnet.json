@@ -1,0 +1,8 @@
+{
+  "role": "section-xcheck-6",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": []
+}

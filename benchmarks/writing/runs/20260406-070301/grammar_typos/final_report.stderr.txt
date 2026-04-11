@@ -1,0 +1,684 @@
+Reading prompt from stdin...
+OpenAI Codex v0.118.0 (research preview)
+--------
+workdir: /Users/zichaoyang/workplace/ReviseAgent
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019d631e-58e9-7f20-ba73-f1efcd18f21f
+--------
+user
+You are the final judge for a writing review of an academic draft.
+
+Goal:
+- Produce one user-facing report from multiple specialized writing-review agents.
+- Merge duplicates.
+- Keep only the strongest, most actionable points.
+- Separate basic language issues from structure/rhetoric issues and venue-style gaps.
+- Include rewrite suggestions only when they materially help.
+
+The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/grammar_typos.tex`.
+The target venue profile is `general-academic`.
+
+Return Markdown with exactly these top-level sections:
+- Executive Summary
+- Basic Language Issues
+- Structure and Logic Issues
+- Scholarly Rhetoric Issues
+- Venue-Style Gap
+- Suggested Rewrites
+- Needs Human Check
+- Revision Priorities
+
+Rules:
+- Quote the local problematic snippet for each kept issue.
+- Prefer issues supported by multiple role outputs when possible, but do not keep weak duplicates.
+- If a point is uncertain or style-dependent, place it under `Needs Human Check`.
+- Keep the report practical and revision-oriented.
+
+Source LaTeX:
+
+```tex
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{On the Convergance of Iteratve Methods}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This paper studys the convergance of iterative methods for solving linar systems.
+The importent contribution of this work is that we provides a new bound on the convergence rate.
+Previous work have shown that such methods converges under certain conditions,
+but our result are more tighter and applies to a broader class of problems.
+
+\section{Preliminaries}
+Let $A$ be a $n \times n$ matrix. We assume that $A$ is positive definite,
+which means that all its eigenvalues is positive.
+The spectral radius of a matrix $B$, denoted $\rho(B)$, is the largest absolute value of it's eigenvalues.
+
+We recall that a iterative method of the form
+\[
+x^{(k+1)} = Bx^{(k)} + c
+\]
+converges if and only if $\rho(B) < 1$. This is a well-known results.
+
+\section{Main Result}
+\begin{theorem}
+Let $A$ be a symmetric positive definite matrix with eigenvalues $0 < \lambda_1 \le \cdots \le \lambda_n$.
+Then the Jacobi method converges and the convergence rate satisfyes
+\[
+\rho(B_J) \le 1 - \frac{2\lambda_1}{\lambda_1 + \lambda_n}.
+\]
+\end{theorem}
+
+\begin{proof}
+The proof follows from standard spectral analysis. We ommit the details.
+\end{proof}
+
+\section{Conclusion}
+We have showed that the Jacobi method converges for symmetric positive definite matrices.
+The bound we derived are sharp and cannot be improved further without additional assumptions.
+This result has importent implications for practical computations.
+
+\end{document}
+
+```
+
+Structured role outputs:
+
+## Role `basic` from `codex:default`
+```json
+[
+  {
+    "category": "typo",
+    "severity": "major",
+    "title": "Misspellings in the title",
+    "snippet": "\\title{On the Convergance of Iteratve Methods}",
+    "explanation": "The title contains two spelling errors. Errors in the title are especially noticeable and reduce credibility immediately.",
+    "fix": "\\title{On the Convergence of Iterative Methods}"
+  },
+  {
+    "category": "typo",
+    "severity": "major",
+    "title": "Multiple spelling errors in the opening sentence",
+    "snippet": "This paper studys the convergance of iterative methods for solving linar systems.",
+    "explanation": "This sentence has three clear spelling errors: \"studys,\" \"convergance,\" and \"linar.\"",
+    "fix": "This paper studies the convergence of iterative methods for solving linear systems."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Subject-verb agreement error in contribution sentence",
+    "snippet": "The importent contribution of this work is that we provides a new bound on the convergence rate.",
+    "explanation": "The clause \"we provides\" is ungrammatical because \"we\" takes the base verb \"provide.\" The sentence also contains the misspelling \"importent.\"",
+    "fix": "The important contribution of this work is that we provide a new bound on the convergence rate."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Multiple agreement and comparative errors in prior-work sentence",
+    "snippet": "Previous work have shown that such methods converges under certain conditions, but our result are more tighter and applies to a broader class of problems.",
+    "explanation": "This sentence has several clear local grammar problems: \"work have\" should be \"work has,\" \"methods converges\" should be \"methods converge,\" \"result are\" should be \"result is\" or \"results are,\" and \"more tighter\" is an incorrect comparative.",
+    "fix": "Previous work has shown that such methods converge under certain conditions, but our result is tighter and applies to a broader class of problems."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Agreement error with plural subject",
+    "snippet": "which means that all its eigenvalues is positive.",
+    "explanation": "The subject \"eigenvalues\" is plural, so the verb should be \"are,\" not \"is.\"",
+    "fix": "which means that all its eigenvalues are positive."
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Incorrect possessive form",
+    "snippet": "is the largest absolute value of it's eigenvalues.",
+    "explanation": "\"It's\" means \"it is\" or \"it has.\" The possessive form needed here is \"its.\"",
+    "fix": "is the largest absolute value of its eigenvalues."
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Incorrect article before vowel sound",
+    "snippet": "We recall that a iterative method of the form",
+    "explanation": "\"Iterative\" begins with a vowel sound, so the article should be \"an.\"",
+    "fix": "We recall that an iterative method of the form"
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Singular-plural mismatch in result statement",
+    "snippet": "This is a well-known results.",
+    "explanation": "The determiner \"This\" and verb \"is\" require the singular noun \"result,\" not the plural \"results.\"",
+    "fix": "This is a well-known result."
+  },
+  {
+    "category": "typo",
+    "severity": "minor",
+    "title": "Misspelling in theorem statement",
+    "snippet": "Then the Jacobi method converges and the convergence rate satisfyes",
+    "explanation": "\"Satisfyes\" is a misspelling of \"satisfies.\"",
+    "fix": "Then the Jacobi method converges and the convergence rate satisfies"
+  },
+  {
+    "category": "typo",
+    "severity": "minor",
+    "title": "Misspelling in proof sentence",
+    "snippet": "We ommit the details.",
+    "explanation": "\"Ommit\" is misspelled; the correct form is \"omit.\"",
+    "fix": "We omit the details."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Incorrect past participle in conclusion",
+    "snippet": "We have showed that the Jacobi method converges for symmetric positive definite matrices.",
+    "explanation": "After \"have,\" the correct past participle is \"shown,\" not \"showed.\"",
+    "fix": "We have shown that the Jacobi method converges for symmetric positive definite matrices."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Agreement error in conclusion about the bound",
+    "snippet": "The bound we derived are sharp and cannot be improved further without additional assumptions.",
+    "explanation": "The subject \"The bound\" is singular, so the verb should be \"is,\" not \"are.\"",
+    "fix": "The bound we derived is sharp and cannot be improved further without additional assumptions."
+  },
+  {
+    "category": "typo",
+    "severity": "minor",
+    "title": "Misspelling in final sentence",
+    "snippet": "This result has importent implications for practical computations.",
+    "explanation": "\"Importent\" is a misspelling of \"important.\"",
+    "fix": "This result has important implications for practical computations."
+  }
+]
+```
+## Role `basic` from `claude:default`
+```json
+[
+  {
+    "category": "typo",
+    "severity": "critical",
+    "title": "Misspellings in title",
+    "snippet": "On the Convergance of Iteratve Methods",
+    "explanation": "The title contains two misspellings: 'Convergance' and 'Iteratve'. These are immediately visible and undermine credibility.",
+    "fix": "On the Convergence of Iterative Methods"
+  },
+  {
+    "category": "typo",
+    "severity": "major",
+    "title": "Multiple misspellings in first sentence",
+    "snippet": "This paper studys the convergance of iterative methods for solving linar systems.",
+    "explanation": "'studys' should be 'studies', 'convergance' should be 'convergence', and 'linar' should be 'linear'.",
+    "fix": "This paper studies the convergence of iterative methods for solving linear systems."
+  },
+  {
+    "category": "typo",
+    "severity": "major",
+    "title": "Misspelling: 'importent'",
+    "snippet": "The importent contribution of this work",
+    "explanation": "'importent' is misspelled. This error recurs in the Conclusion section as well.",
+    "fix": "The important contribution of this work"
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Subject\u2013verb disagreement: 'we provides'",
+    "snippet": "we provides a new bound on the convergence rate",
+    "explanation": "The subject 'we' requires the plural verb form 'provide'.",
+    "fix": "we provide a new bound on the convergence rate"
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Multiple agreement errors in one sentence",
+    "snippet": "Previous work have shown that such methods converges under certain conditions,",
+    "explanation": "'Previous work' (uncountable) takes a singular verb 'has shown', and 'methods' (plural) takes the plural verb 'converge'.",
+    "fix": "Previous work has shown that such methods converge under certain conditions,"
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Double comparative and agreement errors",
+    "snippet": "but our result are more tighter and applies to a broader class of problems.",
+    "explanation": "Three problems: (1) 'result' should be 'results' (or keep singular with 'is'); (2) 'more tighter' is a double comparative\u2014use 'tighter'; (3) 'applies' should be 'apply' to agree with the plural subject.",
+    "fix": "but our results are tighter and apply to a broader class of problems."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Wrong article: 'a $n \\times n$'",
+    "snippet": "Let $A$ be a $n \\times n$ matrix.",
+    "explanation": "The word 'n' begins with a vowel sound, so the article should be 'an'.",
+    "fix": "Let $A$ be an $n \\times n$ matrix."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Subject\u2013verb disagreement: 'eigenvalues is'",
+    "snippet": "which means that all its eigenvalues is positive.",
+    "explanation": "'eigenvalues' is plural and requires 'are'.",
+    "fix": "which means that all its eigenvalues are positive."
+  },
+  {
+    "category": "typo",
+    "severity": "major",
+    "title": "Possessive 'its' written as contraction 'it's'",
+    "snippet": "the largest absolute value of it's eigenvalues.",
+    "explanation": "'it's' is the contraction of 'it is'. The possessive form is 'its'.",
+    "fix": "the largest absolute value of its eigenvalues."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Wrong article: 'a iterative method'",
+    "snippet": "We recall that a iterative method of the form",
+    "explanation": "'iterative' begins with a vowel sound; the article should be 'an'.",
+    "fix": "We recall that an iterative method of the form"
+  },
+  {
+    "category": "grammar",
+    "severity": "minor",
+    "title": "Number disagreement: 'a well-known results'",
+    "snippet": "This is a well-known results.",
+    "explanation": "The article 'a' requires the singular 'result'.",
+    "fix": "This is a well-known result."
+  },
+  {
+    "category": "typo",
+    "severity": "major",
+    "title": "Misspelling: 'satisfyes'",
+    "snippet": "the convergence rate satisfyes",
+    "explanation": "'satisfyes' should be 'satisfies'.",
+    "fix": "the convergence rate satisfies"
+  },
+  {
+    "category": "typo",
+    "severity": "minor",
+    "title": "Misspelling: 'ommit'",
+    "snippet": "We ommit the details.",
+    "explanation": "'ommit' should be 'omit'.",
+    "fix": "We omit the details."
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Wrong participle: 'have showed'",
+    "snippet": "We have showed that the Jacobi method converges",
+    "explanation": "The past participle of 'show' is 'shown', not 'showed'.",
+    "fix": "We have shown that the Jacobi method converges"
+  },
+  {
+    "category": "grammar",
+    "severity": "major",
+    "title": "Subject\u2013verb disagreement: 'bound \u2026 are sharp'",
+    "snippet": "The bound we derived are sharp and cannot be improved",
+    "explanation": "'The bound' is singular and requires 'is'.",
+    "fix": "The bound we derived is sharp and cannot be improved"
+  },
+  {
+    "category": "typo",
+    "severity": "minor",
+    "title": "Repeated misspelling: 'importent' in Conclusion",
+    "snippet": "This result has importent implications for practical computations.",
+    "explanation": "Same misspelling as in the Introduction; should be 'important'.",
+    "fix": "This result has important implications for practical computations."
+  }
+]
+```
+## Role `structure` from `codex:default`
+```json
+[
+  {
+    "category": "contribution_framing",
+    "severity": "major",
+    "title": "Introduction claims a contribution before defining the research gap",
+    "snippet": "The importent contribution of this work is that we provides a new bound on the convergence rate.\nPrevious work have shown that such methods converges under certain conditions,\nbut our result are more tighter and applies to a broader class of problems.",
+    "explanation": "The paper announces novelty and superiority immediately, but it never identifies which prior limitation is being overcome, which class of methods or systems is under debate, or what baseline result the new bound improves on. As written, the contribution is framed as a promotional claim rather than a clearly situated research advance.",
+    "fix": "Recast the introduction around a concrete gap: summarize the established convergence result, state its limitation, and then specify exactly what new bound is proved, for which method, and relative to which prior result."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "Section progression does not build a clear path from setup to theorem",
+    "snippet": "We recall that a iterative method of the form\n\\[\nx^{(k+1)} = Bx^{(k)} + c\n\\]\nconverges if and only if $\\rho(B) < 1$. This is a well-known results.\n\n\\section{Main Result}\n\\begin{theorem}\nLet $A$ be a symmetric positive definite matrix with eigenvalues $0 < \\lambda_1 \\le \\cdots \\le \\lambda_n$.\nThen the Jacobi method converges",
+    "explanation": "The preliminaries introduce a generic fixed-point iteration, but the paper does not explain how the Jacobi method fits this template, what $B_J$ is, or why the assumptions on $A$ are the right ones for the announced result. The theorem therefore appears abruptly rather than as the culmination of a prepared line of reasoning.",
+    "fix": "Insert a bridging paragraph at the end of Preliminaries that defines the Jacobi iteration matrix, connects it to the generic convergence criterion, and explains why the spectral properties of symmetric positive definite matrices are relevant to the bound."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "critical",
+    "title": "Core theorem is asserted without enough evidence for the paper's main claim",
+    "snippet": "\\begin{proof}\nThe proof follows from standard spectral analysis. We ommit the details.\n\\end{proof}",
+    "explanation": "In a paper this short, the theorem is effectively the entire substantive contribution. Omitting the proof leaves the central claim unsupported, so readers cannot judge how the bound is obtained, what intermediate lemmas are required, or whether the argument genuinely establishes the stated rate estimate. This is a structural gap, not just a missing detail.",
+    "fix": "Provide at least a concise proof sketch: define the Jacobi iteration matrix, state the spectral argument used, and show the steps that lead from the eigenvalue assumptions to the displayed bound. If the full proof is deferred, explain where it can be found."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "major",
+    "title": "Conclusion introduces a sharpness claim that was not established in the body",
+    "snippet": "The bound we derived are sharp and cannot be improved further without additional assumptions.",
+    "explanation": "The article never presents a proposition, example, comparison argument, or discussion showing sharpness or non-improvability. Because this is a stronger claim than mere convergence, introducing it only in the conclusion creates a mismatch between what the paper argues and what it asks the reader to accept.",
+    "fix": "Either remove the sharpness claim from the conclusion or add explicit support in the main result section, such as a matching example, a lower-bound argument, or a comparison to known optimal bounds."
+  },
+  {
+    "category": "scholarly_rhetoric",
+    "severity": "major",
+    "title": "Argumentative tone relies on unsupported evaluative language",
+    "snippet": "This is a well-known results.\n...\nThis result has importent implications for practical computations.",
+    "explanation": "The draft uses evaluative phrases that signal certainty and significance, but it does not provide citations, exposition, or concrete consequences to justify them. This weakens scholarly tone because the prose asks the reader to accept importance by assertion rather than by positioning, evidence, or analysis.",
+    "fix": "Replace broad evaluative statements with specific scholarly moves: cite standard results when invoking them, and in the conclusion name the practical consequence precisely or narrow the claim to what the paper has actually shown."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "minor",
+    "title": "Conclusion merely restates claims instead of synthesizing the paper's argumentative arc",
+    "snippet": "We have showed that the Jacobi method converges for symmetric positive definite matrices.\nThe bound we derived are sharp and cannot be improved further without additional assumptions.\nThis result has importent implications for practical computations.",
+    "explanation": "The conclusion repeats headline claims but does not synthesize how the preliminaries, theorem, and proof support the paper's contribution, nor does it delimit the scope of the result. As a result, the ending feels declarative rather than reflective or integrative.",
+    "fix": "Rewrite the conclusion to briefly recap the problem, the exact contribution, the conditions under which it holds, and one concrete implication or limitation. That will make the section function as closure rather than repetition."
+  }
+]
+```
+## Role `structure` from `claude:default`
+```json
+[
+  {
+    "category": "claim_evidence_gap",
+    "severity": "critical",
+    "title": "Main theorem is stated but never proved",
+    "snippet": "The proof follows from standard spectral analysis. We ommit the details.",
+    "explanation": "The paper's stated contribution is 'a new bound on the convergence rate,' yet the proof of the sole theorem\u2014the only technical content\u2014is entirely omitted. A one-sentence appeal to 'standard spectral analysis' provides zero evidence for the claimed result. If the bound is truly new, it cannot simultaneously follow from standard analysis and be a contribution; if it is standard, the paper has no contribution. Either way, the proof section fails to support the central claim.",
+    "fix": "Provide a complete proof, or at minimum a detailed proof sketch that makes the key novel step explicit. If the result is indeed standard, reframe the contribution honestly (e.g., a new context of application, a simplified proof, etc.)."
+  },
+  {
+    "category": "claim_evidence_gap",
+    "severity": "major",
+    "title": "Sharpness claim in conclusion is unsupported",
+    "snippet": "The bound we derived are sharp and cannot be improved further without additional assumptions.",
+    "explanation": "The conclusion asserts the bound is sharp, but no tightness example, lower-bound argument, or even a citation is provided anywhere in the paper. This is a strong claim with no accompanying evidence.",
+    "fix": "Either add a section (or at least a remark) demonstrating sharpness via an explicit matrix family that attains the bound, or weaken the claim to 'the bound appears to be tight in our experiments' or 'we conjecture the bound is sharp.'"
+  },
+  {
+    "category": "contribution_framing",
+    "severity": "major",
+    "title": "Contribution is vague and self-contradicting",
+    "snippet": "The importent contribution of this work is that we provides a new bound on the convergence rate. Previous work have shown that such methods converges under certain conditions, but our result are more tighter and applies to a broader class of problems.",
+    "explanation": "The introduction claims (a) a new, tighter bound and (b) applicability to a broader class of problems. However, the main theorem addresses only symmetric positive definite (SPD) matrices\u2014one of the narrowest and most classical settings for Jacobi convergence. No prior work is cited, so the reader cannot assess what is actually new or what 'broader class' means. The framing overpromises relative to the paper's actual content.",
+    "fix": "Cite specific prior bounds and state precisely how the new bound improves on them. Remove or substantiate the 'broader class of problems' claim. If the scope is SPD matrices only, say so up front and frame the novelty around the tightness or simplicity of the bound."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "No references or related work",
+    "snippet": "Previous work have shown that such methods converges under certain conditions,",
+    "explanation": "The paper repeatedly appeals to prior work ('Previous work have shown\u2026', 'This is a well-known results') but contains no bibliography at all. An academic paper claiming a novel bound must situate itself within the literature with explicit citations, otherwise every comparative claim is unverifiable.",
+    "fix": "Add a \\bibliography with references to at least the classical Jacobi convergence results (e.g., Varga's 'Matrix Iterative Analysis,' Saad's 'Iterative Methods for Sparse Linear Systems') and any specific prior bounds the paper claims to improve upon."
+  },
+  {
+    "category": "structure_logic",
+    "severity": "major",
+    "title": "Paper lacks substantive technical depth between Preliminaries and Conclusion",
+    "snippet": "\\section{Main Result} ... \\begin{proof} The proof follows from standard spectral analysis. We ommit the details. \\end{proof}",
+    "explanation": "The entire body of the paper consists of one theorem statement and a vacuous proof. There is no lemma development, no discussion of proof technique, no numerical experiments, and no comparison with existing bounds. The section structure (Intro \u2192 Preliminaries \u2192 Main Result \u2192 Conclusion) is skeletal and cannot sustain the claims made.",
+    "fix": "Expand the Main Result section with a full proof. Consider adding a 'Numerical Experiments' or 'Comparison with Existing Bounds' section to demonstrate the practical value of the result. A 'Discussion' section could address extensions to non-symmetric or indefinite cases."
+  },
+  {
+    "category": "scholarly_rhetoric",
+    "severity": "major",
+    "title": "Introduction uses unhedged superlatives without justification",
+    "snippet": "our result are more tighter and applies to a broader class of problems.",
+    "explanation": "Beyond the grammatical errors, 'more tighter' is an unhedged comparative that is never substantiated. Scholarly writing requires precise comparative claims backed by evidence or citations. The rhetoric here reads as assertion rather than argument.",
+    "fix": "Replace with a precise, hedged comparison: e.g., 'Our bound improves on the classical estimate of [Citation] by a factor of \u2026 and extends to [specific class], whereas the prior result required [specific stronger assumption].'"
+  },
+  {
+    "category": "structure_logic",
+    "severity": "minor",
+    "title": "Preliminaries section restates textbook material without clear purpose",
+    "snippet": "We recall that a iterative method of the form \\[ x^{(k+1)} = Bx^{(k)} + c \\] converges if and only if $\\rho(B) < 1$. This is a well-known results.",
+    "explanation": "The Preliminaries section defines basic concepts (positive definiteness, spectral radius, convergence criterion) that any reader of a paper on iterative methods would already know, yet it does not introduce any notation or concepts specific to the paper's contribution (e.g., the Jacobi splitting, the structure of B_J). The section thus does not bridge the gap between background and the theorem.",
+    "fix": "Trim the standard definitions to brief reminders and instead introduce the Jacobi splitting A = D \u2212 L \u2212 U, define B_J = D\u207b\u00b9(L + U), and set up whatever spectral-analytic machinery the (currently missing) proof will use."
+  },
+  {
+    "category": "scholarly_rhetoric",
+    "severity": "minor",
+    "title": "Conclusion merely restates results without broader perspective",
+    "snippet": "We have showed that the Jacobi method converges for symmetric positive definite matrices. The bound we derived are sharp and cannot be improved further without additional assumptions. This result has importent implications for practical computations.",
+    "explanation": "The conclusion is three sentences that (1) restate the theorem, (2) make an unsupported sharpness claim, and (3) vaguely gesture at 'practical computations' without specifying any. A conclusion should discuss limitations, open problems, or concrete applications.",
+    "fix": "Add discussion of: (a) what the bound implies for specific applications (e.g., discretized PDEs), (b) whether the approach extends to Gauss-Seidel or SOR methods, (c) any open questions. Remove or substantiate the sharpness claim."
+  }
+]
+```
+## Role `venue` from `codex:default`
+```json
+[
+  {
+    "category": "abstract_positioning",
+    "severity": "major",
+    "title": "Missing abstract leaves the paper unpositioned for a broad academic audience",
+    "snippet": "\\maketitle\n\n\\section{Introduction}",
+    "explanation": "For a conservative `general-academic` target, readers usually expect an abstract that states the problem, method, main result, and significance before the introduction. Without it, the draft does not establish scope or contribution early enough for a general scholarly readership.",
+    "fix": "Add a short abstract summarizing the problem setting, the specific analytical result, the method used to obtain it, and the practical or theoretical significance.",
+    "rewrite": "\\begin{abstract}\nWe study the convergence of iterative methods for linear systems, with a focus on the Jacobi method for symmetric positive definite matrices. Using spectral analysis, we derive an upper bound on the convergence rate in terms of the extreme eigenvalues of the system matrix. This result clarifies when the method is effective and situates the bound relative to standard convergence criteria.\n\\end{abstract}"
+  },
+  {
+    "category": "introduction_positioning",
+    "severity": "major",
+    "title": "Introduction asserts contribution without enough scholarly framing",
+    "snippet": "The importent contribution of this work is that we provides a new bound on the convergence rate.\nPrevious work have shown that such methods converges under certain conditions,\nbut our result are more tighter and applies to a broader class of problems.",
+    "explanation": "The introduction uses strong novelty language, but it does not identify the specific gap in prior work, define the baseline being improved, or explain why the new bound matters. For a general academic style, contribution claims should be situated relative to prior literature rather than presented as unsupported assertions.",
+    "fix": "Reframe the introduction around a concrete research gap, briefly characterize prior results, and state the paper's contribution in measured terms.",
+    "rewrite": "Prior analyses have established convergence conditions for several stationary iterative methods, but the sharpness and scope of available rate bounds remain limited in some settings. In this paper, we revisit the Jacobi method for symmetric positive definite systems and derive a spectral upper bound on its convergence rate, clarifying the dependence on the extreme eigenvalues of the coefficient matrix."
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Core result is presented without enough argumentation for academic standards",
+    "snippet": "\\begin{proof}\nThe proof follows from standard spectral analysis. We ommit the details.\n\\end{proof}",
+    "explanation": "Even in a short general-academic paper, central claims normally require either a substantive proof, a proof sketch, or an explicit citation to a standard result. Omitting the argument entirely makes the draft read more like lecture notes or a placeholder than a venue-aligned research manuscript.",
+    "fix": "Include at least a proof sketch identifying the main spectral argument and how the bound is obtained, or cite a standard source and clearly state what part is adapted versus new.",
+    "rewrite": "\\begin{proof}[Proof sketch]\nBecause $A$ is symmetric positive definite, its eigenvalues are real and positive. The Jacobi iteration matrix can therefore be analyzed through its spectrum, and the convergence rate is controlled by $\\rho(B_J)$. Bounding this quantity in terms of $\\lambda_1$ and $\\lambda_n$ yields the stated inequality.\n\\end{proof}"
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Conclusion overclaims generality and impact beyond what the paper demonstrates",
+    "snippet": "The bound we derived are sharp and cannot be improved further without additional assumptions.\nThis result has importent implications for practical computations.",
+    "explanation": "For a general academic audience, claims about sharpness and practical significance should be supported by argument, comparison, or evidence. As written, the conclusion escalates the paper's significance beyond what the preceding sections substantiate.",
+    "fix": "Temper the conclusion so it summarizes the established result and limits claims to what is actually shown in the draft. If practical implications are important, add discussion or experiments earlier in the paper.",
+    "rewrite": "We have established a convergence bound for the Jacobi method under the assumption that the system matrix is symmetric positive definite. This result provides a concise spectral characterization of the rate and may be useful as a basis for further theoretical or empirical study."
+  }
+]
+```
+## Role `venue` from `claude:default`
+```json
+[
+  {
+    "category": "abstract_positioning",
+    "severity": "critical",
+    "title": "Missing abstract",
+    "snippet": "\\begin{document}\n\\maketitle\n\n\\section{Introduction}",
+    "explanation": "The draft has no abstract. Every general-academic venue\u2014journals, conferences, and preprint servers alike\u2014requires an abstract to frame the problem, state the contribution, and summarize key results. Without one, the paper cannot be evaluated or indexed.",
+    "fix": "Add an abstract (150\u2013250 words) that states the problem (convergence of iterative methods for linear systems), the specific contribution (a new or tighter spectral bound for the Jacobi method on SPD matrices), the main result, and its significance.",
+    "rewrite": "\\begin{abstract}\nWe study the convergence of the Jacobi iterative method for symmetric positive definite linear systems. We establish an explicit upper bound on the spectral radius of the Jacobi iteration matrix in terms of the extremal eigenvalues of the coefficient matrix, and show that this bound is tight. Our result sharpens existing estimates and extends to a broader class of problems than previously considered.\n\\end{abstract}"
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "critical",
+    "title": "No bibliography or references",
+    "snippet": "Previous work have shown that such methods converges under certain conditions,\nbut our result are more tighter and applies to a broader class of problems.",
+    "explanation": "The paper cites no prior work at all. For any academic venue, claims like 'Previous work have shown\u2026' and 'our result are more tighter' must reference specific publications so the reader can verify novelty and context. The absence of a bibliography makes the paper unpublishable.",
+    "fix": "Add a bibliography with references to foundational works (e.g., Varga's 'Matrix Iterative Analysis', Young's 'Iterative Solution of Large Linear Systems', Saad's 'Iterative Methods for Sparse Linear Systems') and cite them inline where prior results are invoked.",
+    "rewrite": ""
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "critical",
+    "title": "Proof entirely omitted",
+    "snippet": "\\begin{proof}\nThe proof follows from standard spectral analysis. We ommit the details.\n\\end{proof}",
+    "explanation": "The paper's single theorem\u2014its claimed main contribution\u2014has no proof. Stating that details are omitted with no sketch, no reference to a supplementary appendix, and no citation to where the argument can be found is unacceptable at any academic venue. The reader has no way to verify correctness.",
+    "fix": "Provide a complete proof or at minimum a detailed proof sketch. If the bound is derived from standard spectral theory, make the key steps explicit: express B_J in terms of A, bound its eigenvalues using those of A, and derive the stated inequality."
+  },
+  {
+    "category": "audience_positioning",
+    "severity": "major",
+    "title": "Claimed novelty is indistinguishable from known results",
+    "snippet": "The importent contribution of this work is that we provides a new bound on the convergence rate.",
+    "explanation": "The bound presented, \u03c1(B_J) \u2264 1 \u2212 2\u03bb\u2081/(\u03bb\u2081+\u03bb_n), closely resembles well-known spectral estimates for the Jacobi method on SPD matrices (related to the condition number \u03ba = \u03bb_n/\u03bb\u2081). Without references, a comparison table, or explicit discussion of how this bound improves on existing ones, a general-academic reader cannot assess whether there is any actual novelty.",
+    "fix": "State the best previously known bound explicitly, cite its source, and show how the new bound is strictly tighter or applies under weaker hypotheses. If the result is not new, reframe the paper as expository.",
+    "rewrite": ""
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Unsupported sharpness claim",
+    "snippet": "The bound we derived are sharp and cannot be improved further without additional assumptions.",
+    "explanation": "Claiming a bound is 'sharp' is a precise mathematical assertion that requires proof or a matching lower-bound / extremal example. No such evidence is provided. At any academic venue, an unsubstantiated sharpness claim would be flagged by reviewers as overclaiming.",
+    "fix": "Either provide an example matrix (or family of matrices) for which the bound is attained, or weaken the claim to 'near-tight' with a quantified gap."
+  },
+  {
+    "category": "introduction_positioning",
+    "severity": "major",
+    "title": "Introduction lacks problem motivation, scope, and paper outline",
+    "snippet": "This paper studys the convergance of iterative methods for solving linar systems.\nThe importent contribution of this work is that we provides a new bound on the convergence rate.",
+    "explanation": "The introduction is two sentences long with no motivation (why iterative methods matter), no description of the problem setting, no discussion of related work, and no outline of the paper's structure. For a general-academic audience, the introduction must establish context, clearly state the gap in existing knowledge, and preview the paper's approach.",
+    "fix": "Expand the introduction to ~1 page: (1) motivate iterative methods for large sparse systems, (2) survey existing convergence results with citations, (3) identify the specific gap or limitation, (4) state the contribution precisely, and (5) outline the remaining sections."
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "major",
+    "title": "Misspelled title undermines credibility",
+    "snippet": "\\title{On the Convergance of Iteratve Methods}",
+    "explanation": "While local typos are out of scope, two misspellings in the title ('Convergance', 'Iteratve') are a venue-level concern: the title is the first thing editors, reviewers, and readers see, and errors here signal a lack of preparation that would lead to desk rejection at most venues.",
+    "fix": "Correct to: 'On the Convergence of Iterative Methods'. Consider a more specific title that highlights the actual contribution, e.g., 'A Tight Spectral Bound for the Jacobi Method on Symmetric Positive Definite Systems'.",
+    "rewrite": "\\title{A Tight Spectral Bound for the Jacobi Method on Symmetric Positive Definite Systems}"
+  },
+  {
+    "category": "venue_alignment",
+    "severity": "minor",
+    "title": "Paper is far too short for a research contribution",
+    "snippet": "",
+    "explanation": "The entire document is roughly half a page of content. Even a short note or brief communication at a general-academic venue would typically be 4\u20136 pages minimum, with full proofs, examples, and numerical illustrations. The current length is closer to a homework solution than a research paper.",
+    "fix": "Expand the paper substantially: add a full proof, a worked numerical example, comparison with Gauss-Seidel or SOR, and discussion of practical implications."
+  }
+]
+```
+
+codex
+# Executive Summary
+The draft is not yet viable as a `general-academic` submission. All reviewer roles converged on four high-priority problems: the paper’s sole theorem is unsupported, the manuscript lacks basic venue components such as an abstract and references, the contribution is overstated relative to the evidence shown, and the prose has many visible language errors, including in the title.
+
+The fastest path to a credible revision is to fix the evidence chain first: prove the theorem, define the Jacobi setup clearly, situate the claim against prior literature, and remove unsupported sharpness/impact language. Copyediting should happen after that structural repair, but the title and first paragraph should be corrected immediately because they currently damage credibility on first read.
+
+# Basic Language Issues
+- `\title{On the Convergance of Iteratve Methods}`  
+  The title has two conspicuous misspellings: `Convergance` and `Iteratve`. This is the most visible language problem and should be corrected before any further circulation.
+
+- `This paper studys the convergance of iterative methods for solving linar systems.`  
+  This opening sentence contains three spelling errors: `studys`, `convergance`, and `linar`. Because it is the first sentence of the paper, it strongly affects perceived quality.
+
+- `The importent contribution of this work is that we provides a new bound on the convergence rate.`  
+  This sentence combines a misspelling (`importent`) with a subject-verb agreement error (`we provides`). It should be cleaned up as a single unit.
+
+- `Previous work have shown that such methods converges under certain conditions, but our result are more tighter and applies to a broader class of problems.`  
+  This sentence has multiple local errors at once: `work have`, `methods converges`, `result are`, `more tighter`, and `applies`. It needs full recasting rather than small edits.
+
+- `Let $A$ be a $n \times n$ matrix.`  
+  The article is wrong before a vowel sound; this should read `an $n \times n$ matrix`.
+
+- `which means that all its eigenvalues is positive.`  
+  `eigenvalues` is plural, so `is` should be `are`.
+
+- `The spectral radius of a matrix $B$, denoted $\rho(B)$, is the largest absolute value of it's eigenvalues.`  
+  `it's` is the contraction of `it is`; the possessive form here is `its`.
+
+- `We recall that a iterative method of the form` and `This is a well-known results.`  
+  These are straightforward article/number errors: `a iterative` should be `an iterative`, and `a well-known results` should be `a well-known result`.
+
+- `Then the Jacobi method converges and the convergence rate satisfyes` and `We ommit the details.`  
+  These are clear misspellings: `satisfyes` and `ommit`.
+
+- `We have showed that the Jacobi method converges for symmetric positive definite matrices.` and `The bound we derived are sharp` and `This result has importent implications for practical computations.`  
+  The conclusion still has basic grammar and spelling problems: `have showed`, `bound ... are`, and `importent`.
+
+# Structure and Logic Issues
+- `\begin{proof} The proof follows from standard spectral analysis. We ommit the details. \end{proof}`  
+  The central theorem is asserted but not actually supported. Since the theorem is effectively the paper’s only substantive result, omitting the proof breaks the paper’s core logic. Add a full proof or at least a real proof sketch with the key spectral steps.
+
+- `We recall that a iterative method of the form ... converges if and only if $\rho(B) < 1$.` followed by `Then the Jacobi method converges` and `\rho(B_J)`  
+  The paper does not bridge from the generic fixed-point iteration to the specific Jacobi method. `B_J` appears in the theorem without being defined in the preliminaries. Add the Jacobi splitting, define the iteration matrix, and explain how the generic convergence criterion specializes to this case.
+
+- `The importent contribution of this work is that we provides a new bound on the convergence rate. Previous work have shown...`  
+  The introduction announces a contribution before establishing the research gap, the baseline result, or the precise limitation being overcome. The reader needs a clearer path from prior work to the stated theorem.
+
+- `The bound we derived are sharp and cannot be improved further without additional assumptions.`  
+  This claim appears only in the conclusion and is not established anywhere in the body. Either prove sharpness in the main argument or remove/soften the statement.
+
+# Scholarly Rhetoric Issues
+- `our result are more tighter and applies to a broader class of problems.`  
+  The draft uses strong comparative language without showing what prior result is being improved or what “broader class” means. In scholarly prose, comparative claims need a named baseline and evidence.
+
+- `This is a well-known results.`  
+  Calling something “well-known” without citation is weak academic signaling. Either cite a standard source or state the fact neutrally.
+
+- `This result has importent implications for practical computations.`  
+  The paper gestures toward significance but does not name any concrete implication, application domain, or computational consequence. Replace vague impact language with a specific outcome or remove it.
+
+- `The proof follows from standard spectral analysis.` paired with `we provides a new bound`  
+  The rhetoric is internally unstable: if the result is genuinely new, the paper should identify the novel step; if it is standard, the novelty claim must be reduced. The current phrasing does neither well.
+
+# Venue-Style Gap
+- `\maketitle` followed immediately by `\section{Introduction}`  
+  The paper has no abstract. For a `general-academic` profile, that is a major submission-level gap. Add an abstract that states the problem, method, main result, and significance in measured terms.
+
+- `Previous work have shown that such methods converges under certain conditions,`  
+  The paper invokes prior work but provides no citations and no bibliography. This is not just a missing detail; it prevents any evaluation of novelty or correctness.
+
+- `\section{Main Result}` with one theorem and `The proof follows from standard spectral analysis. We ommit the details.`  
+  The manuscript is too skeletal for a general academic paper. Even a short note would normally include a full proof, explicit relation to prior work, and at least a brief discussion or example.
+
+# Suggested Rewrites
+- For the title snippet `\title{On the Convergance of Iteratve Methods}`:  
+  `\title{On the Convergence of Iterative Methods}`  
+  If the contribution survives validation, a more informative title would be better, such as a Jacobi/SPD-specific title.
+
+- For the introduction snippet `The importent contribution of this work is that we provides a new bound on the convergence rate. Previous work... broader class of problems.`:  
+  `Classical analyses establish convergence criteria for stationary iterative methods, but the scope and sharpness of available rate bounds are not always stated explicitly. In this paper, we examine the Jacobi method for symmetric positive definite systems and derive a spectral upper bound on its convergence rate in terms of the extreme eigenvalues of the coefficient matrix.`
+
+- For the missing abstract signaled by `\maketitle` followed by `\section{Introduction}`:  
+  `\begin{abstract}
+We study the Jacobi iterative method for symmetric positive definite linear systems. Using spectral arguments, we derive an upper bound on the convergence rate in terms of the smallest and largest eigenvalues of the system matrix. The result clarifies how the spectrum of the coefficient matrix controls convergence and provides a concise starting point for comparison with existing bounds.
+\end{abstract}`
+
+- For the conclusion snippet `The bound we derived are sharp and cannot be improved further without additional assumptions. This result has importent implications for practical computations.`:  
+  `We have established a spectral convergence bound for the Jacobi method under the assumption that the coefficient matrix is symmetric positive definite. This result clarifies the dependence of the rate on the extreme eigenvalues of the matrix and provides a basis for further theoretical comparison and empirical evaluation.`
+
+# Needs Human Check
+- `The importent contribution of this work is that we provides a new bound on the convergence rate.` and `\rho(B_J) \le 1 - \frac{2\lambda_1}{\lambda_1 + \lambda_n}.`  
+  A domain expert should verify whether this bound is actually new, standard, or misstated. The current draft does not provide enough literature context to tell.
+
+- `The bound we derived are sharp and cannot be improved further without additional assumptions.`  
+  This requires mathematical validation. If there is no extremal example or lower-bound argument, the statement should not remain in its current form.
+
+- `our result are more tighter and applies to a broader class of problems.`  
+  This is probably inaccurate as written, because the theorem only treats symmetric positive definite matrices. Confirm whether the intended scope is truly broader than prior work.
+
+- `The proof follows from standard spectral analysis.`  
+  A subject expert should decide whether the result is standard enough to cite directly, or whether the proof contains a genuinely novel step that must be shown explicitly.
+
+# Revision Priorities
+1. Replace the placeholder proof with a full proof or a real proof sketch of the theorem.
+2. Add an abstract, citations, and a bibliography so the paper can be evaluated as an academic manuscript.
+3. Reframe the introduction around a precise research gap and remove unsupported claims about novelty, breadth, sharpness, and impact.
+4. Rebuild the preliminaries so the Jacobi iteration matrix and its link to the generic convergence criterion are explicit before the theorem.
+5. Do a full language pass, starting with the title, opening paragraph, and conclusion.
+tokens used
+22,278

@@ -1,0 +1,22 @@
+```json
+{
+  "findings": [
+    {
+      "category": "flow_break",
+      "severity": "major",
+      "title": "Section 5 ends with setup language, not results, before the conclusion",
+      "snippet": "In view of this, we will consider intervention problems where the planner can modify the mean and the covariance matrix of \\mathcal{B}, and the cost of intervention depends only on these modifications.",
+      "explanation": "The closing sentence of Section 5 (as presented) is purely preparatory — it announces what the planner 'will consider' rather than reporting what the analysis found. The section sets up the probability space, defines the incomplete-information intervention problem (IT), and derives a welfare decomposition in terms of means and variances of principal components, but never delivers a theorem or result about the *optimal* intervention under incomplete information. Transitioning directly to Section 6 without any resolved finding leaves the reader with an open analytical thread. A reader moving from Section 5 to Section 6 has no resolved takeaway from the incomplete-information extension to carry into the conclusion.",
+      "fix": "Either (a) ensure Section 5 concludes with a stated result (e.g., a proposition characterising the optimal mean and covariance structure of \\mathcal{B}), or (b) if the full results are contained in omitted subsections of Section 5 not shown here, add a brief summary sentence before the section ends — e.g., 'The following proposition characterises the optimal intervention and mirrors the structure of Theorem X in the complete-information case.'"
+    },
+    {
+      "category": "logic_gap",
+      "severity": "major",
+      "title": "Conclusion omits the incomplete-information contribution entirely",
+      "snippet": "The main contribution of the paper is methodological: we show that principal components of the network of interaction provide a useful basis for analyzing the effects of an intervention. [...] In the Supplemental Material, we relax these restrictions and develop extensions of our approach to non-symmetric matrices of interaction and to more general costs of intervention.",
+      "explanation": "Section 6 summarises the paper's contributions and lists the relaxations pursued in the Supplemental Material (non-symmetric matrices, general costs, monetary incentives, relaxing Property A), but makes zero mention of the incomplete-information extension developed in Section 5 — a full numbered main-text section. This is a logical gap in the narrative: the conclusion claims to survey the paper's scope and extensions yet is silent on an entire section that relaxes the key assumption that 'the planner knows the standalone marginal returns of every individual.' A reader who has just read Section 5 will find the conclusion's summary internally inconsistent with the paper's own structure.",
+      "fix": "Add a sentence in Section 6 that explicitly acknowledges the incomplete-information contribution — for example: 'We also extended the analysis to settings of incomplete information, where the planner does not observe individual standalone marginal returns; we showed that the principal component decomposition remains tractable in that setting, with welfare determined by the mean and variance of the realized component projections.' This closes the narrative loop opened by Section 5."
+    }
+  ]
+}
+```

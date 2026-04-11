@@ -1,0 +1,110 @@
+```json
+{
+  "findings": [
+    {
+      "category": "typo",
+      "severity": "critical",
+      "title": "Missing 's' in plural possessive 'individual''",
+      "snippet": "the vector of individual' eigenvector centralities",
+      "explanation": "The word 'individual'' is missing the letter 's' after the apostrophe. Because the phrase refers to multiple individuals, it should read 'individuals'' (plural possessive). As written, it is neither grammatically valid nor semantically correct.",
+      "fix": "the vector of individuals' eigenvector centralities"
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Missing squared-norm exponent in Assumption 3",
+      "snippet": "Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|$, or $w>0$.",
+      "explanation": "The budget constraint throughout the paper uses the squared Euclidean norm $\\|\\hat{\\boldsymbol{b}}\\|^2 = \\sum_i \\hat{b}_i^2$. The planner reaches the first-best when $C \\geq \\|\\hat{\\boldsymbol{b}}\\|^2$, so Assumption 3 should exclude the case $C \\geq \\|\\hat{\\boldsymbol{b}}\\|^2$. Writing $C < \\|\\hat{\\boldsymbol{b}}\\|$ (without the square) uses a dimension-inconsistent quantity and makes the mathematical condition incorrect.",
+      "fix": "Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|^2$, or $w>0$."
+    },
+    {
+      "category": "typo",
+      "severity": "major",
+      "title": "Circular change-of-variables notation in local public goods example",
+      "snippet": "Performing the change of variables $b_{i}=\\left[\\tau-b_{i}\\right] / 2$",
+      "explanation": "The sentence defines the new variable $b_i$ (from the general model) in terms of $b_i$ itself, creating a circular definition. Based on context — the companion status-quo formula on the same line reads $\\hat{b}_i = [\\tau - \\tilde{b}_i]/2$ — the intended expression inside the brackets is the local-public-goods parameter $\\tilde{b}_i$, not $b_i$.",
+      "fix": "Performing the change of variables $b_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$"
+    },
+    {
+      "category": "clarity",
+      "severity": "major",
+      "title": "Cosine similarity definition omits ‖z‖ from denominator",
+      "snippet": "$\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|}$",
+      "explanation": "The standard cosine similarity formula divides by the product of both norms: $\\|\\boldsymbol{y}\\|\\|\\boldsymbol{z}\\|$. With only $\\|\\boldsymbol{y}\\|$ in the denominator the quantity is not symmetric, does not equal the cosine of the angle between the vectors in general, and the subsequent interpretive claims (e.g., '$\\rho=1$ iff $\\boldsymbol{z}$ is a positive scaling of $\\boldsymbol{y}$') are false for arbitrary $\\boldsymbol{z}$. The formula is correct only because principal components happen to be unit vectors, but the definition as stated is incomplete.",
+      "fix": "$\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|\\|\\boldsymbol{z}\\|}$"
+    },
+    {
+      "category": "terminology_consistency",
+      "severity": "major",
+      "title": "Inconsistent notation: plain N versus calligraphic 𝒩",
+      "snippet": "we assume that for every $i \\in N, g_{ii}=0$",
+      "explanation": "The set of individuals is introduced in Section 2 as $\\mathcal{N}=\\{1,\\ldots,n\\}$ and is written as $\\mathcal{N}$ in every summation and elsewhere in the paper (e.g., $\\sum_{j \\in \\mathcal{N}}$). This instance uses the plain letter $N$ instead of the calligraphic $\\mathcal{N}$, which is a notation inconsistency.",
+      "fix": "we assume that for every $i \\in \\mathcal{N}, g_{ii}=0$"
+    },
+    {
+      "category": "terminology_consistency",
+      "severity": "major",
+      "title": "Sign mismatch in discussion of Proposition 2 bound for strategic substitutes",
+      "snippet": "If $\\beta<0$, then the term $\\alpha_{n-1} /\\left(\\alpha_{n-1}-\\alpha_{n}\\right)$ is large when the difference $\\lambda_{n-1}-\\lambda_{n}$ … is small.",
+      "explanation": "Proposition 2 uses the threshold $\\alpha_{n-1}/(\\alpha_{n}-\\alpha_{n-1})$ for the strategic-substitutes case. When $\\beta<0$, the most-negative eigenvalue $\\lambda_n$ satisfies $\\alpha_n > \\alpha_{n-1}$, so the denominator $\\alpha_n - \\alpha_{n-1}$ in the proposition is strictly positive. The discussion, however, writes $\\alpha_{n-1}-\\alpha_n$ (denominator sign flipped), which would be strictly negative and inconsistent with both Proposition 2 and the economic interpretation.",
+      "fix": "If $\\beta<0$, then the term $\\alpha_{n-1} /\\left(\\alpha_{n}-\\alpha_{n-1}\\right)$ is large when the difference $\\lambda_{n-1}-\\lambda_{n}$ … is small."
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Misspelling 'faciliates' for 'facilitates'",
+      "snippet": "faciliates a description of the optimal intervention in terms of similarity to the status quo vector.",
+      "explanation": "The word 'faciliates' is missing the letter 't'. The correct spelling is 'facilitates'.",
+      "fix": "facilitates a description of the optimal intervention in terms of similarity to the status quo vector."
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Singular possessive 'individual's' used for plural in abstract",
+      "snippet": "interventions that change individual's private returns to investment",
+      "explanation": "The planner targets multiple individuals, so the possessive should be the plural form 'individuals'' (apostrophe after the 's'). 'Individual's' (singular possessive) is grammatically and semantically wrong here.",
+      "fix": "interventions that change individuals' private returns to investment"
+    },
+    {
+      "category": "grammar",
+      "severity": "minor",
+      "title": "Singular possessive 'individual's' used for plural in Section 5",
+      "snippet": "Shocks to individual's standalone marginal returns create variability",
+      "explanation": "As with the abstract, the discussion concerns shocks to the standalone marginal returns of multiple individuals. The plural possessive 'individuals'' is required.",
+      "fix": "Shocks to individuals' standalone marginal returns create variability"
+    },
+    {
+      "category": "clarity",
+      "severity": "minor",
+      "title": "Mislabelled variable: 'status quo actions $\\hat{\\boldsymbol{b}}$'",
+      "snippet": "As long as the status quo actions $\\hat{\\boldsymbol{b}}$ are positive",
+      "explanation": "$\\hat{\\boldsymbol{b}}$ is defined throughout the paper as the vector of status quo *standalone marginal returns*, not actions. The status quo actions would be the equilibrium action profile under $\\hat{\\boldsymbol{b}}$. Calling $\\hat{\\boldsymbol{b}}$ 'actions' is factually incorrect and potentially confusing.",
+      "fix": "As long as the status quo standalone marginal returns $\\hat{\\boldsymbol{b}}$ are positive"
+    },
+    {
+      "category": "terminology_consistency",
+      "severity": "minor",
+      "title": "Journal name spelled 'Behaviour' in one reference but 'Behavior' elsewhere",
+      "snippet": "Games and Economic Behaviour, 105, 84-103",
+      "explanation": "The journal is officially titled 'Games and Economic Behavior' (American English spelling). Two other references in the same list correctly use 'Behavior' (lines for Bloch & Querou 2013 and Leduc et al. 2017). The Demange (2017) entry uses the British spelling 'Behaviour', creating an inconsistency within the reference list.",
+      "fix": "Games and Economic Behavior, 105, 84-103"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Missing comma in reference between 'Golub' and 'S. Goyal'",
+      "snippet": "Galeotti, A., B. Golub S. Goyal (2020):",
+      "explanation": "A comma is missing between 'B. Golub' and 'S. Goyal', breaking the standard author-list formatting used consistently in all other multi-author references in the bibliography.",
+      "fix": "Galeotti, A., B. Golub, S. Goyal (2020):"
+    },
+    {
+      "category": "typo",
+      "severity": "minor",
+      "title": "Misspelling 'Eonomics' in affiliation within reference",
+      "snippet": "Report, Department of Eonomics, Harvard University",
+      "explanation": "'Eonomics' is missing the letter 'c'. The correct spelling is 'Economics'.",
+      "fix": "Report, Department of Economics, Harvard University"
+    }
+  ]
+}
+```

@@ -1,0 +1,33 @@
+{
+  "role": "section-xcheck-8",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Self-referential change-of-variables formula in Example 2 (missing tilde)",
+      "snippet": "Performing the change of variables $b_{i}=\\left[\\tau-b_{i}\\right] / 2$ and $\\beta=-\\tilde{\\beta} / 2$ (with the status quo equal to $\\hat{b}_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$)",
+      "explanation": "The change-of-variables formula for $b_i$ uses $b_i$ on both sides: $b_i = [\\tau - b_i]/2$. This is circular \u2014 the new variable is defined in terms of itself \u2014 and is almost certainly a dropped tilde. The companion formula for the status quo correctly writes $\\hat{b}_i = [\\tau - \\tilde{b}_i]/2$, using the original local-public-goods variable $\\tilde{b}_i$. The formula for $b_i$ should be $b_i = [\\tau - \\tilde{b}_i]/2$ for consistency and mathematical coherence.",
+      "fix": "Replace $b_{i}=\\left[\\tau-b_{i}\\right] / 2$ with $b_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2$ to match the status-quo formula and eliminate the self-referential definition."
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Dual terminology for the same externality concept: 'non-strategic' vs. 'pure'",
+      "snippet": "Introduction: \"spillover effects on others' incentives, as well as non-strategic externalities\" \u2014 Section 2: \"$P_{i}(\\boldsymbol{a}_{-i}, \\boldsymbol{G}, \\boldsymbol{b})$ captures pure externalities\u2014that is, spillovers that do not affect best responses\"",
+      "explanation": "The Introduction introduces the concept using the phrase 'non-strategic externalities,' but Section 2 names the same object 'pure externalities' (embodied in the $P_i$ term) without cross-referencing or equating the two phrases. A reader encountering Section 2 directly may not immediately recognise that 'pure externalities' is the formal counterpart of the informal 'non-strategic externalities' used in the Introduction. The inconsistency is harmless in isolation but creates a small reading friction at exactly the interface between the two sections.",
+      "fix": "Either (a) adopt one term consistently ('pure externalities' is already the formal term used in Section 2, so prefer it in the Introduction as well), or (b) add a brief parenthetical in the Introduction, e.g., 'non-strategic (or pure) externalities,' to signal the equivalence."
+    },
+    {
+      "category": "cross_reference_error",
+      "severity": "minor",
+      "title": "Road-map describes Section 2 only as 'the optimal intervention problem,' omitting model setup",
+      "snippet": "\"The rest of the paper is organized as follows. Section 2 presents the optimal intervention problem.\"",
+      "explanation": "Section 2 is titled 'THE MODEL' and devotes the bulk of its content to establishing the game (payoff function, equilibrium characterisation, Assumptions 1\u20132) before introducing the IT problem (equation 4). The road-map entry 'Section 2 presents the optimal intervention problem' is therefore misleading: it skips the foundational model content and leads a reader to expect that the game primitives were already fully formalised in the Introduction. In reality, the first formal definitions of $\\mathcal{N}$, $U_i$, $\\boldsymbol{G}$, $\\beta$, and equilibrium only appear in Section 2. This creates a minor orientation mismatch at the section boundary.",
+      "fix": "Revise the road-map sentence to reflect both purposes, e.g., 'Section 2 sets out the model and the optimal intervention (IT) problem.' This aligns with the section title and its actual structure."
+    }
+  ]
+}

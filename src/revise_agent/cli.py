@@ -129,14 +129,14 @@ def _add_math_review_parser(sub: argparse._SubParsersAction) -> None:
 
 def _add_benchmark_math_parser(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("benchmark-math", help="Run the local math benchmark suite.")
-    p.add_argument("--manifest", default="benchmarks/math_cases/manifest.json",
+    p.add_argument("--manifest", default="benchmarks/math/manifest.json",
                    help="Path to the benchmark manifest JSON.")
 
 
 def _add_benchmark_writing_parser(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("benchmark-writing",
                        help="Run the local writing benchmark suite.")
-    p.add_argument("--manifest", default="benchmarks/writing_cases/manifest.json",
+    p.add_argument("--manifest", default="benchmarks/writing/manifest.json",
                    help="Path to the writing benchmark manifest JSON.")
     p.add_argument("--venue-profile",
                    help="Override venue profile for all cases.")
@@ -215,8 +215,8 @@ def _add_benchmark_run_parser(sub: argparse._SubParsersAction) -> None:
 def _add_benchmark_refine_parser(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("benchmark-refine",
                        help="Benchmark against Refine.ink expected findings.")
-    p.add_argument("--manifest", default="benchmarks/refine_cases/manifest.json",
-                   help="Path to the refine_cases manifest JSON.")
+    p.add_argument("--manifest", default="benchmarks/refine/manifest.json",
+                   help="Path to the refine manifest JSON.")
     p.add_argument("--output-dir",
                    help="Directory where benchmark outputs should be written.")
     p.add_argument("--venue-profile", default="general-academic",

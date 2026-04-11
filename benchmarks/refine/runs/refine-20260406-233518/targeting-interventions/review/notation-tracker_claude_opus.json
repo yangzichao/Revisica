@@ -1,0 +1,145 @@
+{
+  "role": "notation-tracker",
+  "provider": "claude",
+  "model": "opus",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "undefined_symbol",
+      "severity": "critical",
+      "title": "Cosine similarity definition missing \u2016z\u2016 in denominator",
+      "snippet": "DEFINITION 1: The cosine similarity of two nonzero vectors $\\boldsymbol{y}$ and $\\boldsymbol{z}$ is $\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|}$.",
+      "explanation": "The standard cosine similarity is y\u00b7z / (\u2016y\u2016\u00b7\u2016z\u2016). The denominator is missing \u2016z\u2016. This definition is used pervasively in Theorem 1, Corollary 1, Propositions 1\u20132, and their proofs. The proofs sometimes rely on \u2016u^\u2113\u2016=1 to cancel the missing term, but the definition itself is mathematically incorrect as stated.",
+      "fix": "Change to $\\rho(\\boldsymbol{y}, \\boldsymbol{z})=\\frac{\\boldsymbol{y} \\cdot \\boldsymbol{z}}{\\|\\boldsymbol{y}\\|\\|\\boldsymbol{z}\\|}$."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "critical",
+      "title": "Circular self-referencing variable in Example 2 change of variables",
+      "snippet": "Performing the change of variables $b_{i}=\\left[\\tau-b_{i}\\right] / 2$ and $\\beta=-\\tilde{\\beta} / 2$",
+      "explanation": "The left-hand side defines b_i but the right-hand side also uses b_i, making it circular and undefined. Based on context (the tilde notation for status-quo public-goods parameters), this should read b_i = [\u03c4 \u2212 \\tilde{b}_i] / 2, using the tilde'd base-level parameter defined earlier in Example 2.",
+      "fix": "Change to $b_{i}=[\\tau - \\tilde{b}_{i}]/2$."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "critical",
+      "title": "Minimizers incorrectly called 'maximizers' for \u03bb_n and \u03bb_{n-1}",
+      "snippet": "Moreover, the eigenvector $\\boldsymbol{u}^{n}$ is a maximizer of the first problem, while $\\boldsymbol{u}^{n-1}$ is a maximizer of the second",
+      "explanation": "The two problems immediately above are minimization problems (min_{u:\u2016u\u2016=1} \u03a3 g_{ij} u_i u_j). Therefore u^n and u^{n-1} are minimizers, not maximizers. Compare with the analogous paragraph for \u03bb_1, \u03bb_2 (line ~316), which correctly calls them maximizers of max problems.",
+      "fix": "Change both occurrences of 'maximizer' to 'minimizer'."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Assumption 3 missing squared norm: C < \u2016b\u0302\u2016 instead of C < \u2016b\u0302\u2016\u00b2",
+      "snippet": "Assumption 3: Either $w<0$ and $C<\\|\\hat{\\boldsymbol{b}}\\|$, or $w>0$.",
+      "explanation": "The cost function K(b, b\u0302) = \u03a3(b_i \u2212 b\u0302_i)\u00b2 has units of \u2016\u00b7\u2016\u00b2. The preceding paragraph correctly states the bliss-point condition as C \u2265 \u2016b\u0302\u2016\u00b2. Assumption 3 should mirror this with C < \u2016b\u0302\u2016\u00b2 (not C < \u2016b\u0302\u2016). Footnote 34 also uses \u03a3 b\u0302_\u2113\u00b2 \u2264 C, confirming the squared version is intended.",
+      "fix": "Change to $C<\\|\\hat{\\boldsymbol{b}}\\|^{2}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "Lagrangian missing exponent: b\u0302_\u2113 instead of b\u0302_\u2113\u00b2",
+      "snippet": "$\\mathcal{L}=w \\sum_{\\ell=1}^{n} \\alpha_{\\ell}\\left(1+x_{\\ell}\\right)^{2} \\underline{\\hat{b}}_{\\ell}+\\mu\\left[C-\\sum_{\\ell=1}^{n} \\hat{b}_{\\ell}^{2} x_{\\ell}^{2}\\right]$",
+      "explanation": "The Lagrangian is derived from the objective max_x w \u03a3 \u03b1_\u2113 (1+x_\u2113)\u00b2 b\u0302_\u2113\u00b2 (displayed a few lines above at (IT-PC after change of variable)). The first summand should therefore contain b\u0302_\u2113\u00b2 (squared), not b\u0302_\u2113. Without the square, the subsequent first-order condition derivation would be incorrect.",
+      "fix": "Change $\\underline{\\hat{b}}_{\\ell}$ to $\\underline{\\hat{b}}_{\\ell}^{2}$ in the first summation."
+    },
+    {
+      "category": "sign_inconsistency",
+      "severity": "major",
+      "title": "Denominator sign flipped in discussion of bottom gap under strategic substitutes",
+      "snippet": "If $\\beta<0$, then the term $\\alpha_{n-1} /(\\alpha_{n-1}-\\alpha_{n})$ is large when the difference $\\lambda_{n-1}-\\lambda_{n}$... is small.",
+      "explanation": "Under strategic substitutes (\u03b2<0), \u03b1_n > \u03b1_{n-1}, so \u03b1_{n-1} \u2212 \u03b1_n < 0. Proposition 2 part 2 correctly writes the ratio as \u03b1_{n-1}/(\u03b1_n \u2212 \u03b1_{n-1}), which is positive. The text here reverses the denominator to (\u03b1_{n-1} \u2212 \u03b1_n), flipping the sign.",
+      "fix": "Change to $\\alpha_{n-1}/(\\alpha_{n}-\\alpha_{n-1})$ to match Proposition 2."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "major",
+      "title": "\u0394b* used in proof of Proposition 2 without definition",
+      "snippet": "$\\rho\\left(\\Delta \\boldsymbol{b}^{*}, \\sqrt{C} \\boldsymbol{u}^{1}\\right)=\\frac{(\\boldsymbol{b}^{*}-\\hat{\\boldsymbol{b}}) \\cdot (\\sqrt{C} \\boldsymbol{u}^{1})}{\\|\\boldsymbol{b}^{*}-\\hat{\\boldsymbol{b}}\\|\\|\\sqrt{C} \\boldsymbol{u}^{1}\\|}$",
+      "explanation": "The symbol \u0394b* is never formally defined. All preceding text and Theorem 1 use y* = b* \u2212 b\u0302 for the optimal intervention vector. The notation \u0394b* appears only in the proof of Proposition 2 (lines ~569\u2013596), creating an undefined-symbol issue and inconsistency with y*.",
+      "fix": "Replace all occurrences of $\\Delta \\boldsymbol{b}^{*}$ with $\\boldsymbol{y}^{*}$."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "Underline missing on b\u0302_\u2113 in Theorem 1's equation (6)",
+      "snippet": "$\\sum_{\\ell=1}^{n}\\left(\\frac{w \\alpha_{\\ell}}{\\mu-w \\alpha_{\\ell}}\\right)^{2} \\hat{b}_{\\ell}^{2}=C$",
+      "explanation": "This equation sums over principal-component indices \u2113. The notation z\u0332 = U\u22a4z was defined for projections onto the PC basis, so the correct symbol here is b\u0302\u0332_\u2113 (underlined). The same inconsistency recurs at lines ~233, 471, 483, 491, and multiple places in the Proposition 2 proof. In some places the underline is present (e.g., the reformulation at line ~227), in others it is absent, creating a systematic drift.",
+      "fix": "Replace $\\hat{b}_{\\ell}$ with $\\underline{\\hat{b}}_{\\ell}$ in all equations indexed by principal component \u2113 (equations (6), (8), the marginal-return/cost display, the FOC, the budget-pinning equation, and the proof of Proposition 2)."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "major",
+      "title": "\u03b2 bolded as vector in two places",
+      "snippet": "$[\\boldsymbol{I}-\\boldsymbol{\\beta} \\boldsymbol{\\Lambda}]^{-1}$",
+      "explanation": "\u03b2 is a scalar parameter throughout the paper and is never bolded in its definition or in any other usage. At line ~175 ('the \u2113th diagonal entry of [I \u2212 \u03b2\u039b]\u207b\u00b9') and line ~436 in the proof of Theorem 1 ('a* = [I \u2212 \u03b2\u039b]\u207b\u00b9 b\u0332'), \u03b2 appears in boldface (\\boldsymbol{\\beta}), suggesting it is a vector or matrix. This contradicts its scalar nature.",
+      "fix": "Change $\\boldsymbol{\\beta}$ to $\\beta$ in both locations."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "major",
+      "title": "Eigenvector entry subscripts swapped: u_\u2113^i vs u_i^\u2113",
+      "snippet": "$b_{i}^{*}-\\hat{b}_{i}=w \\sum_{\\ell=1}^{n} u_{\\ell}^{i} \\frac{\\alpha_{\\ell}}{\\mu-w \\alpha_{\\ell}} \\hat{b}_{\\ell}$",
+      "explanation": "The paper consistently uses u_i^\u2113 for the ith entry of the \u2113th eigenvector (e.g., equation for a_i* at line ~186: u_i^\u2113 b\u0332_\u2113). In the proof of Proposition 2, the subscript and superscript are reversed to u_\u2113^i. This swaps the meaning: u_\u2113^i would denote the \u2113th entry of the ith eigenvector.",
+      "fix": "Change $u_{\\ell}^{i}$ to $u_{i}^{\\ell}$."
+    },
+    {
+      "category": "undefined_symbol",
+      "severity": "major",
+      "title": "Spurious \u03b1\u2082* in proof of Proposition 2 welfare bound",
+      "snippet": "$\\leq 1+\\frac{2 \\alpha_{1}-\\alpha_{2}^{*}}{\\alpha_{1}} \\frac{\\|\\hat{\\boldsymbol{b}}\\|^{2}}{C}\\left(\\frac{\\alpha_{2}}{\\alpha_{1}-\\alpha_{2}}\\right)^{2}$",
+      "explanation": "The symbol \u03b1\u2082* is undefined. There is no asterisked version of the amplification factors \u03b1_\u2113 anywhere in the paper. Context (comparing with the derived bound on the next line and with line ~557 which yields (2\u03b1\u2081 \u2212 \u03b1\u2082)\u2016b\u0302\u2016\u00b2) confirms this should simply be \u03b1\u2082, with the asterisk being a stray character.",
+      "fix": "Change $\\alpha_{2}^{*}$ to $\\alpha_{2}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Equation (2) drops bold formatting for vectors and matrices",
+      "snippet": "$[I-\\beta G] a^{*}=b$",
+      "explanation": "Equation (2) uses plain (non-bold) I, G, a*, b. But the immediately preceding text and equation (3) right after both use bold: \ud835\udc08, \ud835\udc06, \ud835\udc1a*, \ud835\udc1b. The convention of bold for vectors/matrices is established at line ~39.",
+      "fix": "Change to $[\\boldsymbol{I}-\\beta \\boldsymbol{G}] \\boldsymbol{a}^{*}=\\boldsymbol{b}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Set name inconsistency: N vs \ud835\udca9",
+      "snippet": "we assume that for every $i \\in N, g_{ii}=0$",
+      "explanation": "The set of individuals is defined as \ud835\udca9 = {1,\u2026,n} using calligraphic font. One occurrence uses plain N instead of \ud835\udca9. All other uses in the paper correctly write \ud835\udca9.",
+      "fix": "Change $i \\in N$ to $i \\in \\mathcal{N}$."
+    },
+    {
+      "category": "subscript_inconsistency",
+      "severity": "minor",
+      "title": "Prime placement: \u03b1_\u2113' vs \u03b1_{\u2113'} in Proposition 1 proof",
+      "snippet": "$\\frac{r_{\\ell}^{*}}{r_{\\ell^{\\prime}}^{*}}=\\frac{\\alpha_{\\ell}}{\\alpha_{\\ell^{\\prime}}} \\frac{\\mu-w \\alpha_{\\ell}^{\\prime}}{\\mu-w \\alpha_{\\ell}}$",
+      "explanation": "In the denominator fraction, \u03b1_\u2113' places the prime on \u03b1 (suggesting a different quantity), whereas the intended symbol is \u03b1_{\u2113'} \u2014 the amplification factor for the \u2113'-th component \u2014 matching the numerator's \u03b1_{\u2113'}.",
+      "fix": "Change $\\alpha_{\\ell}^{\\prime}$ to $\\alpha_{\\ell^{\\prime}}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Missing summation index i in cost function (10)",
+      "snippet": "$\\phi\\left(\\sum_{\\in \\mathcal{N}} \\sigma_{ii}^{\\mathcal{B}}\\right)$",
+      "explanation": "The summation is written as \u03a3_{\u2208\ud835\udca9} with no index variable, whereas it should be \u03a3_{i\u2208\ud835\udca9}.",
+      "fix": "Change $\\sum_{\\in \\mathcal{N}}$ to $\\sum_{i \\in \\mathcal{N}}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Malformed summation in proof's reformulated problem",
+      "snippet": "$\\max _{x} w \\sum \\ell=1^{n} \\alpha_{\\ell}(1+x_{\\ell})^{2} \\underline{\\hat{b}}_{\\ell}^{2}$",
+      "explanation": "The summation appears as '\u03a3 \u2113=1^n' with the lower bound detached from the sigma, rather than the proper \u03a3_{\u2113=1}^{n}. This is likely a LaTeX rendering/conversion artifact.",
+      "fix": "Change $\\sum \\ell=1^{n}$ to $\\sum_{\\ell=1}^{n}$."
+    },
+    {
+      "category": "notation_drift",
+      "severity": "minor",
+      "title": "Awkward transpose placement: (a\u0332\u22a4)*  instead of (a\u0332*)\u22a4",
+      "snippet": "$w \\mathbb{E}\\left[\\left(\\underline{\\boldsymbol{a}}^{\\top}\\right)^{*}\\left(\\underline{\\boldsymbol{a}}^{*}\\right)\\right]$",
+      "explanation": "The notation (a\u0332\u22a4)* places the equilibrium asterisk outside the transpose, which is non-standard and ambiguous. The intended expression is (a\u0332*)\u22a4 a\u0332* \u2014 transpose of the equilibrium action vector in the PC basis, dotted with itself.",
+      "fix": "Change to $(\\underline{\\boldsymbol{a}}^{*})^{\\top} \\underline{\\boldsymbol{a}}^{*}$."
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+```json
+{
+  "findings": [
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "critical",
+      "title": "Pervasively informal, non-academic tone throughout",
+      "snippet": "So basically everyone knows that minimum wage laws mess up the labor market. In this paper I'm going to show you a really cool model that proves it. My model is way better than what other people have done before. Trust me, the math checks out.",
+      "explanation": "The abstract — the single most important paragraph for establishing credibility — reads as casual conversation rather than scholarly writing. Phrases like 'So basically', 'really cool model', 'way better', and 'Trust me' violate every convention of academic register. This tone pervades the entire manuscript (e.g., 'OK so here's my model', 'A bunch of economists', 'super flawed in my opinion') and would cause immediate desk-rejection at any peer-reviewed venue.",
+      "fix": "Rewrite the entire manuscript in formal academic English. For the abstract, replace with something like: 'This paper presents a partial-equilibrium model of the labor market to analyze the employment effects of binding minimum wage legislation. We derive conditions under which a minimum wage set above the competitive equilibrium wage generates excess labor supply. Our analysis contributes to the ongoing debate on minimum wage policy by [specific contribution].'"
+    },
+    {
+      "category": "contribution_framing",
+      "severity": "critical",
+      "title": "No defined contribution or novelty claim",
+      "snippet": "My model is way better than what other people have done before.",
+      "explanation": "The paper never states a precise contribution. The claim of superiority ('way better') is unsupported and unspecified — better in what dimension? The model presented is a standard textbook supply-and-demand framework that appears in introductory microeconomics. No aspect of the paper identifies what is new relative to existing literature, which is a fundamental requirement of any scholarly article.",
+      "fix": "Either (a) identify a genuinely novel theoretical extension (e.g., heterogeneous workers, monopsony comparison, dynamic adjustment) and articulate it clearly, or (b) reframe the paper as a pedagogical note if the purpose is expository. In either case, add a paragraph explicitly stating: 'Our contribution relative to [specific prior work] is…'"
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "critical",
+      "title": "Empirical section contains no actual evidence",
+      "snippet": "I looked at some data from the internet and it seems to confirm my model. Figure~1 shows the relationship but I couldn't get the plotting software to work so you'll have to take my word for it.",
+      "explanation": "Section 3 is titled 'Empirical Evidence' but contains zero data, zero figures, zero tables, zero statistical tests, and zero references to specific datasets. The admission that the figure does not exist ('you'll have to take my word for it') makes the section vacuous. A section that announces evidence and then provides none is worse than omitting the section entirely, because it signals a lack of scholarly rigor.",
+      "fix": "Either remove the empirical section entirely and reframe the paper as a purely theoretical note, or conduct actual empirical analysis: identify a specific dataset (e.g., CPS, QCEW), describe the sample and time period, specify an econometric model, and present results with standard errors and robustness checks."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "critical",
+      "title": "Dismissal of contradictory evidence without substantive rebuttal",
+      "snippet": "Also Card and Krueger (1994) found the opposite but their methodology is super flawed in my opinion.",
+      "explanation": "Card and Krueger (1994) is one of the most cited papers in labor economics. Dismissing it in a single sentence with 'super flawed in my opinion' without identifying any specific methodological flaw (e.g., concerns about survey data quality, sample selection, difference-in-differences assumptions) is a serious scholarly failure. Moreover, no formal citation entry exists — the reference is mentioned inline but there is no bibliography.",
+      "fix": "Add a proper literature review section that engages substantively with Card and Krueger (1994) and subsequent work (e.g., Neumark and Wascher 2000, Dube et al. 2010, Cengiz et al. 2019). For each cited study, describe its methodology, findings, and specific limitations. Include a \\bibliography or \\begin{thebibliography} section."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "critical",
+      "title": "No literature review section",
+      "snippet": "A bunch of economists have argued about it forever. Some people think it's good, some think it's bad.",
+      "explanation": "The entire engagement with prior work consists of two vague sentences in the introduction and a one-line dismissal of Card and Krueger. There is no literature review section, no bibliography, and no formal citations anywhere in the paper. A scholarly article must situate its contribution within the existing body of research.",
+      "fix": "Add a dedicated 'Related Literature' section (or substantially expand the introduction) reviewing key theoretical and empirical contributions on minimum wage effects: neoclassical competitive models, monopsony models (Manning 2003), the Card-Krueger natural experiment literature, meta-analyses, and recent work using bunching estimators. Include a properly formatted bibliography."
+    },
+    {
+      "category": "claim_evidence_gap",
+      "severity": "critical",
+      "title": "Conclusion vastly overstates what the model establishes",
+      "snippet": "I've conclusively proven that minimum wage laws cause unemployment.",
+      "explanation": "The model is a single-market, perfectly competitive, static, partial-equilibrium supply-and-demand framework with linear functional forms. It cannot 'conclusively prove' a real-world causal claim. It proves only that within its own restrictive assumptions, a binding price floor creates excess supply. The word 'conclusively' is unwarranted because: (1) the result depends on perfect competition, which is an assumption not a fact; (2) monopsony models yield opposite predictions; (3) general-equilibrium and dynamic effects are ignored; (4) no empirical evidence is presented.",
+      "fix": "Replace with a hedged conclusion that acknowledges model limitations: 'Under the assumption of a perfectly competitive labor market with linear supply and demand, our model predicts that a binding minimum wage generates excess labor supply. This result depends critically on the competitive market assumption and does not account for monopsonistic labor markets, search frictions, or general equilibrium effects. Empirical investigation is needed to assess the quantitative relevance of this mechanism.'"
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "major",
+      "title": "Inappropriate self-promotional and policy-prescriptive language",
+      "snippet": "Policymakers should listen to economists like me instead of pushing ideological agendas. This paper is definitely publishable in a top economics journal.",
+      "explanation": "Self-assessing publishability and positioning oneself above policymakers is unprofessional and undermines credibility. Accusing others of 'ideological agendas' is ironic given the paper's own one-sided framing. Academic conclusions should state findings and their implications, not make ad hominem appeals or self-congratulatory assessments.",
+      "fix": "Remove both sentences entirely. Replace with a measured policy implication: 'Our theoretical results suggest that policymakers should weigh the potential disemployment effects of minimum wage legislation, though the magnitude of such effects remains an empirical question.'"
+    },
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Model section lacks assumption statement, parameter discussion, and welfare analysis",
+      "snippet": "OK so here's my model. Consider a labor market with supply $S(w) = aw$ and demand $D(w) = b - cw$ where $w$ is the wage.",
+      "explanation": "The model is presented without: (1) a formal statement of assumptions (perfect competition, homogeneous labor, price-taking, single market); (2) specification of parameter domains (presumably a, b, c > 0, but this is unstated); (3) microfoundations for the linear functional forms; (4) any welfare or deadweight loss analysis, which is the standard next step. The derivation is a two-line textbook exercise, not a research contribution.",
+      "fix": "Add a formal 'Assumptions' paragraph specifying market structure, agent behavior, and parameter restrictions. Provide microfoundations (e.g., derive labor supply from worker utility maximization, derive labor demand from firm profit maximization). Extend the analysis to compute deadweight loss, employment levels, and comparative statics with respect to the minimum wage level."
+    },
+    {
+      "category": "structure_logic",
+      "severity": "major",
+      "title": "Introduction presupposes the conclusion, eliminating argumentative arc",
+      "snippet": "I personally think the evidence clearly shows it's bad, and I'll prove it here.",
+      "explanation": "The introduction states the conclusion as a personal belief before any analysis is presented. This eliminates the argumentative progression expected in a scholarly article (motivation → gap → method → findings). It also introduces first-person bias ('I personally think') that frames the paper as advocacy rather than inquiry.",
+      "fix": "Rewrite the introduction to follow a standard structure: (1) establish the policy relevance of minimum wage legislation, (2) summarize the existing theoretical and empirical debate, (3) identify the specific gap or question this paper addresses, (4) preview the approach and main findings in neutral terms."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "major",
+      "title": "Use of 'QED' after a derivation that is not a formal proof",
+      "snippet": "which means there's unemployment. QED.",
+      "explanation": "'QED' signals the end of a rigorous mathematical proof. The preceding argument is an informal observation that excess supply arises when price exceeds equilibrium — it is not a theorem-proof structure with stated assumptions and logical steps. Using QED here inappropriately elevates a trivial observation to the status of a formal result.",
+      "fix": "Either formalize the result as a proper theorem (state it, list assumptions, and prove it rigorously) or remove 'QED' and replace with a discussion paragraph interpreting the economic implication of excess supply."
+    },
+    {
+      "category": "scholarly_rhetoric",
+      "severity": "minor",
+      "title": "Roadmap paragraph is perfunctory",
+      "snippet": "Section 2 has the model. Section 3 has some graphs I made. Section 4 wraps things up.",
+      "explanation": "The roadmap provides no substantive preview of what each section contributes. 'Has some graphs I made' and 'wraps things up' are not informative descriptions. Moreover, Section 3 is described as containing graphs that do not exist.",
+      "fix": "Rewrite to summarize the content and purpose of each section: 'Section 2 develops a partial-equilibrium model of the labor market and derives the employment effects of a binding minimum wage. Section 3 presents empirical evidence on [specific topic]. Section 4 discusses implications and concludes.'"
+    }
+  ]
+}
+```

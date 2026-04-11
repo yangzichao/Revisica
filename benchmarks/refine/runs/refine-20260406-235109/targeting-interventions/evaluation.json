@@ -1,0 +1,59 @@
+{
+  "case_id": "targeting-interventions",
+  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md",
+  "expected_comments": 6,
+  "our_total_findings": 47,
+  "recall": 0.6666666666666666,
+  "full_recall": 0.3333333333333333,
+  "matches": [
+    {
+      "comment_id": "comment-1",
+      "comment_title": "Comparative static claim in Footnote 16",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment-2",
+      "comment_title": "Limiting direction of intervention in Proposition 1",
+      "status": "partial",
+      "confidence": 0.2692307692307692,
+      "explanation": "Heuristic score: 0.27",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment-3",
+      "comment_title": "Sign error in discussion of Proposition 2 (substitutes case)",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment-4",
+      "comment_title": "\"Maximizer\" vs. \"minimizer\" for smallest eigenvalues",
+      "status": "partial",
+      "confidence": 0.29545454545454547,
+      "explanation": "Heuristic score: 0.30",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment-5",
+      "comment_title": "Typo in Lagrangian in proof of Theorem 1",
+      "status": "matched",
+      "confidence": 0.5675675675675675,
+      "explanation": "Heuristic score: 0.57",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment-6",
+      "comment_title": "Unclear notation in proof of Proposition 2",
+      "status": "matched",
+      "confidence": 0.49651162790697667,
+      "explanation": "Heuristic score: 0.50",
+      "matched_finding_count": 2
+    }
+  ],
+  "warnings": []
+}

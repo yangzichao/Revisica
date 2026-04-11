@@ -1,0 +1,33 @@
+{
+  "role": "section-xcheck-0",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "unsupported_claim",
+      "severity": "major",
+      "title": "Abstract implies general orthogonal decomposition; conclusion reveals it requires symmetric-matrix restriction",
+      "snippet": "Abstract: \"decomposing any intervention into orthogonal principal components, which are determined by the network and are ordered according to their associated eigenvalues\" \u2014 Conclusion: \"we have focused on a model in which the matrix of interaction is symmetric\"",
+      "explanation": "The abstract presents the orthogonal principal-component decomposition with real, ordered eigenvalues as if it holds for any network game. However, the conclusion discloses that the entire analysis rests on a symmetric interaction matrix \u2014 a restriction that is precisely what guarantees real eigenvalues and orthogonal eigenvectors (by the spectral theorem). Without this caveat, the abstract's phrasing (especially 'orthogonal' and 'ordered') overclaims the generality of the method. A non-symmetric matrix yields complex eigenvalues and non-orthogonal eigenvectors, so the abstract's description would be technically inaccurate for that case.",
+      "fix": "Add a brief qualifier in the abstract, e.g., 'Under a symmetric interaction matrix, any intervention can be decomposed into orthogonal principal components, ordered by their associated (real) eigenvalues.' Alternatively, note that the Supplemental Material extends the approach to non-symmetric matrices."
+    },
+    {
+      "category": "flow_break",
+      "severity": "minor",
+      "title": "Abstract's large-budget single-component result is absent from the conclusion",
+      "snippet": "Abstract: \"For large budgets, optimal interventions are simple-they essentially involve only a single principal component.\" \u2014 Conclusion: [no mention of the large-budget or single-component result]",
+      "explanation": "The abstract presents the large-budget simplicity result ('essentially a single principal component') as a distinct, reader-facing takeaway alongside the strategic complements/substitutes characterisation. The conclusion, however, summarises only the complements/substitutes weighting result and the methodological contribution; it omits any reference to the large-budget limit. For a reader who reads the abstract and then the conclusion to confirm key findings, this creates a noticeable gap and may suggest the result is less central than the abstract implies.",
+      "fix": "Add one sentence in the conclusion recapping the large-budget result, e.g., 'A further consequence of the analysis is that, as the budget grows large, the optimal intervention concentrates on a single principal component, making large-budget policies particularly tractable.'"
+    },
+    {
+      "category": "notation_mismatch",
+      "severity": "minor",
+      "title": "Inconsistent terminology for the object of intervention: 'private returns to investment' vs. 'standalone marginal returns'",
+      "snippet": "Abstract: \"interventions that change individual's private returns to investment\" \u2014 Conclusion: \"interventions that alter the standalone marginal returns of actions\" / \"standalone marginal returns of individuals\"",
+      "explanation": "The abstract uses the informal phrase 'private returns to investment,' while the conclusion consistently uses the technical term 'standalone marginal returns.' Although these phrases refer to the same model primitive (the intercept term in the payoff/best-response function), the mismatch creates terminological drift across the paper's bookend sections. A reader scanning only the abstract and conclusion may not immediately recognise that the two phrases are synonymous.",
+      "fix": "Align the abstract to use the same technical term as the body and conclusion: replace 'private returns to investment' with 'standalone marginal returns of actions (or investment)' in the abstract."
+    }
+  ]
+}

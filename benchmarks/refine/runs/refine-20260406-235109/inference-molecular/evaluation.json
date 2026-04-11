@@ -1,0 +1,131 @@
+{
+  "case_id": "inference-molecular",
+  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/inference-molecular.md",
+  "expected_comments": 15,
+  "our_total_findings": 29,
+  "recall": 0.4666666666666667,
+  "full_recall": 0.06666666666666667,
+  "matches": [
+    {
+      "comment_id": "comment_0",
+      "comment_title": "Ambiguity in the stopping rule of Algorithm 1",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_1",
+      "comment_title": "Inconsistent notation for the sample type space",
+      "status": "partial",
+      "confidence": 0.2728767123287671,
+      "explanation": "Heuristic score: 0.27",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment_2",
+      "comment_title": "Unproven normalization constant in Theorem 1",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_3",
+      "comment_title": "Possible notational inconsistency in proof of Theorem 1",
+      "status": "partial",
+      "confidence": 0.43652037617554856,
+      "explanation": "Heuristic score: 0.44",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_4",
+      "comment_title": "Interpretation of the transition matrix in Proposition 1(e)",
+      "status": "matched",
+      "confidence": 0.47058823529411764,
+      "explanation": "Heuristic score: 0.47",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment_5",
+      "comment_title": "Unclear step in the proof of Proposition 2",
+      "status": "partial",
+      "confidence": 0.25646551724137934,
+      "explanation": "Heuristic score: 0.26",
+      "matched_finding_count": 1
+    },
+    {
+      "comment_id": "comment_6",
+      "comment_title": "Use of a further approximation for $\\hat{\\pi}$ in applications",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_7",
+      "comment_title": "Inverted description of microsatellite boundary conditions",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_8",
+      "comment_title": "Justification for the infinite sites proposal distribution",
+      "status": "partial",
+      "confidence": 0.3091358024691358,
+      "explanation": "Heuristic score: 0.31",
+      "matched_finding_count": 3
+    },
+    {
+      "comment_id": "comment_9",
+      "comment_title": "Clarity of the rooted tree sampler modification (Sec 5.5)",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_10",
+      "comment_title": "Unclear description of ascertainment correction",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_11",
+      "comment_title": "Proposed extension for long sequences is unclear",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_12",
+      "comment_title": "Formulation of the Griffiths-Tavaré estimator",
+      "status": "missed",
+      "confidence": 0.0,
+      "explanation": "Heuristic score: 0.00",
+      "matched_finding_count": 0
+    },
+    {
+      "comment_id": "comment_13",
+      "comment_title": "Ambiguous notation in discussion of methods",
+      "status": "partial",
+      "confidence": 0.3408163265306122,
+      "explanation": "Heuristic score: 0.34",
+      "matched_finding_count": 2
+    },
+    {
+      "comment_id": "comment_14",
+      "comment_title": "Incorrect recursive weight formula in SIS discussion",
+      "status": "partial",
+      "confidence": 0.43658536585365854,
+      "explanation": "Heuristic score: 0.44",
+      "matched_finding_count": 3
+    }
+  ],
+  "warnings": []
+}

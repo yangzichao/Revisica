@@ -1,0 +1,25 @@
+{
+  "role": "section-xcheck-8",
+  "provider": "claude",
+  "model": "sonnet",
+  "returncode": 0,
+  "success": true,
+  "findings": [
+    {
+      "category": "notation_mismatch",
+      "severity": "major",
+      "title": "Self-referential change-of-variables formula in Example 2 (missing tilde)",
+      "snippet": "b_{i}=\\left[\\tau-b_{i}\\right] / 2 \\text{ and } \\beta=-\\tilde{\\beta} / 2 \\text{ (with the status quo equal to } \\hat{b}_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2\\text{)}",
+      "explanation": "In the Local Public Goods example, the change-of-variables mapping from the public-goods parametrisation to the general model writes 'b_{i} = [\\tau - b_{i}]/2'. This is self-referential: solving it literally gives b_{i} = \\tau/3 for all i, which is nonsensical as a general transformation. The tilde is clearly missing; the correct formula is b_{i} = [\\tau - \\tilde{b}_{i}]/2, exactly as the status quo formula immediately following uses: \\hat{b}_{i} = [\\tau - \\tilde{b}_{i}]/2. The error is confirmed by Supplemental-Material footnote 15, which restores the tilde. The inconsistency breaks the reader's ability to verify that Example 2 instantiates the general model presented earlier in Section 2, and also to reconcile the status quo formula (correct) with the intervention formula (erroneous).",
+      "fix": "Replace 'b_{i}=\\left[\\tau-b_{i}\\right] / 2' with 'b_{i}=\\left[\\tau-\\tilde{b}_{i}\\right] / 2', adding the tilde over b_{i} on the right-hand side. This makes the change-of-variables formula consistent with (i) the status quo formula \\hat{b}_{i}=[\\tau-\\tilde{b}_{i}]/2 immediately following, (ii) the FOC derivation (which yields a_{i} = (\\tau-\\tilde{b}_{i})/2 - (\\tilde{\\beta}/2)\\sum_j g_{ij}a_j), and (iii) footnote 15 in the Supplemental Material."
+    },
+    {
+      "category": "cross_reference_error",
+      "severity": "minor",
+      "title": "Section roadmap in Introduction under-describes Section 2 content",
+      "snippet": "Section 2 presents the optimal intervention problem.",
+      "explanation": "The Introduction's roadmap states 'Section 2 presents the optimal intervention problem', but Section 2 is titled 'THE MODEL' and covers substantially more: it sets up the simultaneous-move game, introduces the adjacency matrix G, states Assumptions 1\u20132 (symmetry, spectral-radius bound, distinct eigenvalues), derives the unique Nash equilibrium a* = [I-\\betaG]^{-1}b, defines utilitarian social welfare W(b,G), and provides two worked economic applications (investment game and local public goods) along with Property A. The IT optimisation problem itself is only one component of Section 2. A reader relying on the roadmap to navigate the paper would not anticipate the game-setup material or the applications, which constitute the majority of Section 2's length.",
+      "fix": "Expand the roadmap sentence to reflect the full scope: e.g., 'Section 2 introduces the model \u2014 the game, the Nash equilibrium, the welfare criterion, and the optimal intervention (IT) problem \u2014 and illustrates it with two economic applications.'"
+    }
+  ]
+}

@@ -144,14 +144,14 @@ Each standalone writing review run creates:
 
 The local writing benchmark suite creates:
 
-- `benchmarks/writing_cases/runs/<timestamp>/benchmark_summary.md`
-- `benchmarks/writing_cases/runs/<timestamp>/benchmark_summary.json`
+- `benchmarks/writing/runs/<timestamp>/benchmark_summary.md`
+- `benchmarks/writing/runs/<timestamp>/benchmark_summary.json`
 - one subdirectory per benchmark case with writing-review artifacts
 
 The local math benchmark suite creates:
 
-- `benchmarks/math_cases/runs/benchmark_summary.md`
-- `benchmarks/math_cases/runs/benchmark_summary.json`
+- `benchmarks/math/runs/benchmark_summary.md`
+- `benchmarks/math/runs/benchmark_summary.json`
 - one subdirectory per benchmark case with its `math_report.md`
 
 The ProofNet adapter creates:

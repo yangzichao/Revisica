@@ -1,0 +1,17 @@
+{
+  "manifest": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/manifest_mini.json",
+  "aggregate_recall": 1.0,
+  "aggregate_full_recall": 0.6666666666666666,
+  "cases": [
+    {
+      "case_id": "targeting-interventions",
+      "expected": 6,
+      "found": 56,
+      "recall": 1.0,
+      "full_recall": 0.6666666666666666,
+      "matched": 4,
+      "partial": 2,
+      "missed": 0
+    }
+  ]
+}

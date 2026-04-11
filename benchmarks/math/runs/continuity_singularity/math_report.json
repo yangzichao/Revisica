@@ -1,0 +1,47 @@
+{
+  "source": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/continuity_singularity.tex",
+  "generated_at": "2026-04-06T21:59:57",
+  "functions": [
+    {
+      "name": "g",
+      "variable": "x",
+      "expression_text": "\\frac{1}{x-1}.",
+      "expression": "1/(x - 1)",
+      "line_number": 7,
+      "snippet": "\\[\ng(x) = \\frac{1}{x-1}.\n\\]"
+    }
+  ],
+  "claims": [
+    {
+      "kind": "continuity_integrability",
+      "line_number": 10,
+      "snippet": "This function is continuous on $[0,1]$ so we can safely integrate it on this interval.",
+      "details": {
+        "function_name": "g",
+        "function_expr": "\\frac{1}{x-1}.",
+        "variable": "x",
+        "a": "0",
+        "b": "1"
+      }
+    }
+  ],
+  "theorems": [],
+  "proofs": [],
+  "blueprints": [],
+  "issues": [
+    {
+      "line_number": 10,
+      "status": "machine-refuted",
+      "severity": "critical",
+      "title": "False continuity or safe-integrability claim",
+      "snippet": "This function is continuous on $[0,1]$ so we can safely integrate it on this interval.",
+      "explanation": "The function is not continuous on the stated closed interval, so the paper's claim that it can be safely integrated there is not justified.",
+      "fix": "Either change the interval to avoid singularities, remove the claim, or rewrite the passage as an improper-integral discussion.",
+      "evidence": "Continuous domain over the reals is Union(Interval.open(-oo, 1), Interval.open(1, oo)), which does not contain the full interval Interval(0, 1)."
+    }
+  ],
+  "llm_provider_results": [],
+  "llm_self_check_results": [],
+  "llm_adjudication_results": [],
+  "warnings": []
+}
