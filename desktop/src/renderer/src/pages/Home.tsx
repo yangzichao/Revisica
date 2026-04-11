@@ -12,13 +12,15 @@ const VENUE_PROFILES = [
 
 interface Provider {
   name: string
+  display_name: string
+  model_family: string
   available: boolean
-  installed: boolean
 }
 
 export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
   const navigate = useNavigate()
   const [filePath, setFilePath] = useState('')
+  const [mode, setMode] = useState<'review' | 'polish'>('review')
   const [venueProfile, setVenueProfile] = useState('general-academic')
   const [llmProofReview, setLlmProofReview] = useState(false)
   const [providers, setProviders] = useState<Provider[]>([])
@@ -51,7 +53,6 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
     e.preventDefault()
     const file = e.dataTransfer.files[0]
     if (file) {
-      // Electron provides the full path via the path property
       setFilePath((file as File & { path?: string }).path || file.name)
     }
   }, [])
@@ -67,8 +68,9 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           file_path: filePath,
+          mode,
           venue_profile: venueProfile,
-          llm_proof_review: llmProofReview
+          llm_proof_review: mode === 'review' && llmProofReview
         })
       })
 
@@ -86,13 +88,15 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
     }
   }
 
+  const availableCount = providers.filter((p) => p.available).length
+
   return (
     <div className="page home">
       <h1>Revisica</h1>
       <p className="subtitle">Academic paper revision agent</p>
 
       {!backendReady && (
-        <div className="banner warning">Starting backend server...</div>
+        <div className="banner warning">Connecting to backend...</div>
       )}
 
       <div
@@ -100,8 +104,8 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
       >
-        <p>Drag & drop a .tex file here</p>
-        <p className="muted">or enter the path below</p>
+        <p>Drag & drop a paper here</p>
+        <p className="muted">.tex or .pdf</p>
       </div>
 
       <div className="form-group">
@@ -111,44 +115,69 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
           type="text"
           value={filePath}
           onChange={(e) => setFilePath(e.target.value)}
-          placeholder="/path/to/paper.tex"
+          placeholder="/path/to/paper.tex or paper.pdf"
         />
       </div>
 
       <div className="form-group">
-        <label htmlFor="venue-profile">Venue profile</label>
-        <select
-          id="venue-profile"
-          value={venueProfile}
-          onChange={(e) => setVenueProfile(e.target.value)}
-        >
-          {VENUE_PROFILES.map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </select>
+        <label htmlFor="mode">Review mode</label>
+        <div className="mode-selector">
+          <button
+            className={mode === 'polish' ? 'active' : ''}
+            onClick={() => setMode('polish')}
+          >
+            Polish
+            <span className="mode-desc">Writing style only</span>
+          </button>
+          <button
+            className={mode === 'review' ? 'active' : ''}
+            onClick={() => setMode('review')}
+          >
+            Review
+            <span className="mode-desc">Full deep analysis</span>
+          </button>
+        </div>
       </div>
 
-      <div className="form-group checkbox">
-        <label>
-          <input
-            type="checkbox"
-            checked={llmProofReview}
-            onChange={(e) => setLlmProofReview(e.target.checked)}
-          />
-          Enable LLM proof review
-        </label>
-      </div>
+      {mode === 'review' && (
+        <>
+          <div className="form-group">
+            <label htmlFor="venue-profile">Venue profile</label>
+            <select
+              id="venue-profile"
+              value={venueProfile}
+              onChange={(e) => setVenueProfile(e.target.value)}
+            >
+              {VENUE_PROFILES.map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group checkbox">
+            <label>
+              <input
+                type="checkbox"
+                checked={llmProofReview}
+                onChange={(e) => setLlmProofReview(e.target.checked)}
+              />
+              Enable LLM proof review (deeper math analysis)
+            </label>
+          </div>
+        </>
+      )}
 
       <div className="providers">
-        <h3>Providers</h3>
+        <h3>Providers ({availableCount} available)</h3>
         {providers.length === 0 ? (
           <p className="muted">Checking providers...</p>
         ) : (
           providers.map((p) => (
-            <span key={p.name} className={`provider-badge ${p.available ? 'available' : 'missing'}`}>
-              {p.name}: {p.available ? (p.installed ? 'ready' : 'needs bootstrap') : 'not found'}
+            <span
+              key={p.name}
+              className={`provider-badge ${p.available ? 'available' : 'missing'}`}
+            >
+              {p.display_name}: {p.available ? 'ready' : 'not configured'}
             </span>
           ))
         )}
@@ -159,9 +188,9 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
       <button
         className="primary"
         onClick={handleSubmit}
-        disabled={!filePath || !backendReady || loading}
+        disabled={!filePath || !backendReady || loading || availableCount === 0}
       >
-        {loading ? 'Starting...' : 'Start Review'}
+        {loading ? 'Starting...' : mode === 'polish' ? 'Start Polish' : 'Start Review'}
       </button>
     </div>
   )

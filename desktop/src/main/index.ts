@@ -9,12 +9,28 @@ const API_BASE = `http://127.0.0.1:${API_PORT}`
 
 function getPythonCommand(): { command: string; args: string[] } {
   if (is.dev) {
-    // Dev mode: run from source using the project's venv or system Python
-    // Look for the venv Python first, fall back to system Python
+    // Dev mode: run from source
+    // Try venv Python first, then pyenv python3, then system python
     const { existsSync } = require('fs')
+    const { execSync } = require('child_process')
     const projectRoot = join(__dirname, '..', '..', '..')
-    const venvPython = join(projectRoot, '.venv', 'bin', 'python')
-    const pythonCommand = existsSync(venvPython) ? venvPython : 'python'
+
+    let pythonCommand = 'python3'
+    const venvPython = join(projectRoot, '.venv', 'bin', 'python3')
+    if (existsSync(venvPython)) {
+      // Check if venv Python is new enough (3.10+)
+      try {
+        const version = execSync(`${venvPython} -c "import sys; print(sys.version_info.minor)"`)
+          .toString()
+          .trim()
+        if (parseInt(version) >= 10) {
+          pythonCommand = venvPython
+        }
+      } catch {
+        // Fall through to system Python
+      }
+    }
+
     return {
       command: pythonCommand,
       args: ['-m', 'revisica.api', '--port', String(API_PORT)]
@@ -33,8 +49,14 @@ function startPythonBackend(): Promise<void> {
     const { command, args } = getPythonCommand()
     console.log(`Starting Python backend: ${command} ${args.join(' ')}`)
 
+    // In dev mode, run from project root so 'pip install -e .' works
+    const projectRoot = is.dev
+      ? join(__dirname, '..', '..', '..')
+      : process.resourcesPath
+
     pythonProcess = spawn(command, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: projectRoot,
       env: { ...process.env }
     })
 
