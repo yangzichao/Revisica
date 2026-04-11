@@ -27,21 +27,20 @@ This means P0 is now the **critical path** — everything else is blocked until 
 
 **The fix — one migration in this order:**
 
-- [ ] **P0.1: Agent translators** — Create `agents/translators/` that convert `AgentDefinition` → `AgentSpec` (the bridge type used by review.py). This lets graph nodes use the new agent definitions while calling the old provider execution layer. **Unblocks everything else.**
+- [x] **P0.1: Agent translators** ✅ — `agents/translators.py` with `to_agent_spec()` bridge. 13 agents in registry.
+- [x] **P0.2: Replace AgentSpec sites** ✅ — All 10 inline `AgentSpec(...)` replaced with `get_agent()` + `to_agent_spec()`.
+- [x] **P0.3: Wire ingestion** ✅ — `review_unified()` calls `parse_document()` on entry. Mode routing (polish → LangGraph graph).
+- [x] **P0.4: Wire LangGraph (partial)** ✅ — Polish mode uses LangGraph. Full review calls writing/math directly (ThreadPoolExecutor removed from unified_review.py).
+- [x] **P0.5: Remove dead platform param** ✅ — Removed from `_run_provider()`/`_run_provider_agent()`, updated all 8 call sites.
+- [ ] **P0.6: Unify prompt management** — templates.py dynamic builders + agents/definitions/ static prompts. Needs documentation, low priority.
+- [x] **P0.7: langgraph in pyproject.toml** ✅
+- [x] **P0.8: Regression** ✅ — Benchmark 5/5 PASS after every step.
 
-- [ ] **P0.2: Wire ingestion into review pipeline** — `review_unified()` calls `parse_document()` first, passes `RevisicaDocument` through to writing/math lanes. Writing lane uses `doc.sections` instead of `section_combiner.extract_sections()`. Math lane uses `doc.markdown` instead of `Path.read_text()`.
-
-- [ ] **P0.3: Wire LangGraph into public API** — `review_unified()` delegates to `graphs/unified.py`. `review_writing_file()` delegates to `graphs/writing.py`. `review_math_file()` delegates to `graphs/math.py`. Old ThreadPoolExecutor code becomes dead and gets deleted.
-
-- [ ] **P0.4: Consolidate agent definitions** — All graph nodes use `get_agent()` + translator instead of inline `AgentSpec` construction. Delete `agent_assets.py`. Delete `agents/claude/*.json` and `agents/codex/*.md` (replaced by `agents/definitions/*.py` + translators). Delete `.claude/agents/*.md`.
-
-- [ ] **P0.5: Clean up review.py** — Remove dead `platform` parameter from `_run_provider()` and `_run_provider_agent()`. Update all call sites. Consider whether review.py should be deleted entirely (its remaining functions are just thin wrappers).
-
-- [ ] **P0.6: Unify prompt management** — Decide: do venue profiles and dynamic task builders stay in `templates.py`, or move into agent definitions? Rule of thumb: static instructions → agent definitions, dynamic task construction → templates.py or graph nodes.
-
-- [ ] **P0.7: Add `langgraph>=1.0` to pyproject.toml** — Declare the dependency.
-
-- [ ] **P0.8: Regression test** — `revisica benchmark-run --suite math-cases --mode deterministic-only` must still pass 5/5. `revisica review examples/minimal_paper.tex` must produce same output.
+**Remaining structural debt:**
+- [ ] `agent_assets.py` still exists (used by `_find_codex_file` for schema path). Can be deleted once schema logic moves to translator.
+- [ ] `.claude/agents/*.md` — dead code, can be deleted.
+- [ ] `detect_platforms()` still used by writing_review.py, math_llm_review.py for availability checking. Migrate to `ProviderRegistry.list_available()` in a future pass.
+- [ ] Full review mode not yet on LangGraph (graphs/writing.py wraps old function). Decompose in P2.
 
 ### P1: Desktop app essentials
 
