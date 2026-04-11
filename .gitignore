@@ -1,0 +1,17 @@
+.venv/
+.sandbox/
+.pycache/
+*.egg-info/
+__pycache__/
+*.pyc
+reviews/
+benchmarks/runs/
+benchmarks/math_cases/runs/
+benchmarks/writing_cases/runs/
+benchmarks/refine_cases/runs/
+benchmarks/refine_cases/manifest_mini.json
+benchmarks/registry.jsonl
+benchmarks/history.md
+benchmarks/proofnet/
+benchmarks/proofbench/
+benchmarks/processbench/

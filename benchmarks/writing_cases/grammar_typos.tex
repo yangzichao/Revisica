@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{On the Convergance of Iteratve Methods}
+\author{Test Author}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This paper studys the convergance of iterative methods for solving linar systems.
+The importent contribution of this work is that we provides a new bound on the convergence rate.
+Previous work have shown that such methods converges under certain conditions,
+but our result are more tighter and applies to a broader class of problems.
+
+\section{Preliminaries}
+Let $A$ be a $n \times n$ matrix. We assume that $A$ is positive definite,
+which means that all its eigenvalues is positive.
+The spectral radius of a matrix $B$, denoted $\rho(B)$, is the largest absolute value of it's eigenvalues.
+
+We recall that a iterative method of the form
+\[
+x^{(k+1)} = Bx^{(k)} + c
+\]
+converges if and only if $\rho(B) < 1$. This is a well-known results.
+
+\section{Main Result}
+\begin{theorem}
+Let $A$ be a symmetric positive definite matrix with eigenvalues $0 < \lambda_1 \le \cdots \le \lambda_n$.
+Then the Jacobi method converges and the convergence rate satisfyes
+\[
+\rho(B_J) \le 1 - \frac{2\lambda_1}{\lambda_1 + \lambda_n}.
+\]
+\end{theorem}
+
+\begin{proof}
+The proof follows from standard spectral analysis. We ommit the details.
+\end{proof}
+
+\section{Conclusion}
+We have showed that the Jacobi method converges for symmetric positive definite matrices.
+The bound we derived are sharp and cannot be improved further without additional assumptions.
+This result has importent implications for practical computations.
+
+\end{document}

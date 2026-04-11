@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "id": "grammar_typos",
+      "file": "grammar_typos.tex",
+      "description": "Draft with pervasive spelling and grammar errors. Should trigger multiple basic-language findings.",
+      "expected": {
+        "minimum_basic_findings": 5,
+        "expected_categories": ["typo", "grammar"]
+      }
+    },
+    {
+      "id": "structure_logic",
+      "file": "structure_logic.tex",
+      "description": "Draft with structural problems: misordered phases, unproven theorem, missing table, weak claim/evidence. Should trigger structure findings.",
+      "expected": {
+        "minimum_structure_findings": 2,
+        "expected_categories": ["structure_logic", "claim_evidence_gap"]
+      }
+    },
+    {
+      "id": "venue_mismatch",
+      "file": "venue_mismatch.tex",
+      "description": "Draft written in casual, opinionated tone targeting econ-top5. Should trigger venue-alignment findings.",
+      "expected": {
+        "minimum_venue_findings": 2,
+        "venue_profile": "econ-top5",
+        "expected_categories": ["venue_alignment", "audience_positioning"]
+      }
+    },
+    {
+      "id": "clean_draft",
+      "file": "clean_draft.tex",
+      "description": "Reasonably well-written academic draft. LLMs will still find structural and rhetorical suggestions, but critical findings should be rare.",
+      "expected": {
+        "maximum_critical_findings": 5,
+        "maximum_major_findings": 20
+      }
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "cases": [
+    {
+      "id": "inference-molecular",
+      "file": "inference-molecular.md",
+      "data_file": "inference-molecular.json",
+      "description": "Statistical Genetics paper: Inference in molecular population genetics",
+      "authors": "by Matthew Stephens and Peter Donnelly",
+      "badge": "Statistical Genetics",
+      "expected": {
+        "num_comments": 15,
+        "comment_titles": [
+          "Ambiguity in the stopping rule of Algorithm 1",
+          "Inconsistent notation for the sample type space",
+          "Unproven normalization constant in Theorem 1",
+          "Possible notational inconsistency in proof of Theorem 1",
+          "Interpretation of the transition matrix in Proposition 1(e)",
+          "Unclear step in the proof of Proposition 2",
+          "Use of a further approximation for $\\hat{\\pi}$ in applications",
+          "Inverted description of microsatellite boundary conditions",
+          "Justification for the infinite sites proposal distribution",
+          "Clarity of the rooted tree sampler modification (Sec 5.5)",
+          "Unclear description of ascertainment correction",
+          "Proposed extension for long sequences is unclear",
+          "Formulation of the Griffiths-Tavaré estimator",
+          "Ambiguous notation in discussion of methods",
+          "Incorrect recursive weight formula in SIS discussion"
+        ],
+        "has_overall_feedback": true
+      }
+    },
+    {
+      "id": "coset-codes",
+      "file": "coset-codes.md",
+      "data_file": "coset-codes.json",
+      "description": "Information Theory paper: Coset Codes-Part I: Introduction and Geometrical Classification",
+      "authors": "IEEE Transactions on Information Theory",
+      "badge": "Information Theory",
+      "expected": {
+        "num_comments": 19,
+        "comment_titles": [
+          "Decoding complexity as a geometric parameter",
+          "Definition of fundamental volume and redundancy in the Introduction",
+          "Role of algebraic structure in the coset code framework",
+          "Mismatch in coset decomposition formulas",
+          "Description of coset representatives in Sec. II.F",
+          "Clarity of argument for mod-4 lattice structure",
+          "Undefined notation for the dual of a Barnes-Wall lattice",
+          "Notation for a lattice in Table III",
+          "Description of the Ungerboeck encoder in Sec. IV.A",
+          "Incorrect formula for lattice coding gain",
+          "Incomplete premise in Lemma 6",
+          "Inconsistency in Decoding Complexity Calculation",
+          "Unclear reference to \"last three codes\"",
+          "Inconsistent encoder description for Class II codes",
+          "Path enumeration for Class V error coefficient",
+          "Minimum distance argument for Class VI codes",
+          "Parameter mismatch for lattice X_32 in Discussion",
+          "Incorrect example for γ=3 codes in Discussion",
+          "Parameter comparison between Wei code and X24 lattice"
+        ],
+        "has_overall_feedback": true
+      }
+    },
+    {
+      "id": "targeting-interventions",
+      "file": "targeting-interventions.md",
+      "data_file": "targeting-interventions.json",
+      "description": "Economic Theory paper: Targeting Interventions in Networks",
+      "authors": "by Galeotti, Golub, and Goyal",
+      "badge": "Economic Theory",
+      "expected": {
+        "num_comments": 6,
+        "comment_titles": [
+          "Comparative static claim in Footnote 16",
+          "Limiting direction of intervention in Proposition 1",
+          "Sign error in discussion of Proposition 2 (substitutes case)",
+          "\"Maximizer\" vs. \"minimizer\" for smallest eigenvalues",
+          "Typo in Lagrangian in proof of Theorem 1",
+          "Unclear notation in proof of Proposition 2"
+        ],
+        "has_overall_feedback": true
+      }
+    },
+    {
+      "id": "chaotic-balanced-state",
+      "file": "chaotic-balanced-state.md",
+      "data_file": "chaotic-balanced-state.json",
+      "description": "Neuroscience paper: Chaotic Balanced State in a Model of Cortical Circuits",
+      "authors": "by C. van Vreeswijk and H. Sompolinsky",
+      "badge": "Neuroscience",
+      "expected": {
+        "num_comments": 12,
+        "comment_titles": [
+          "Clarity of the model's scaling argument in the Introduction",
+          "Clarification on the mean-field theory's regime of validity",
+          "Inconsistent definition of connection probability in Sec. 2",
+          "Sign convention for quenched noise in Sec 5",
+          "Variance of inhibitory input in Sec 5.3",
+          "Discrepancy regarding stability boundaries in Sec. 6.2",
+          "Incorrect variance term in q_k expression (sec:Inhomogeneous Thresholds)",
+          "Unclear derivation of q_k for bounded thresholds",
+          "Inconsistent general formula for the rate distribution",
+          "Prefactor in the distance dynamics equation (sec:8)",
+          "Apparent contradiction on fast response to stimuli in Sec. 10.3",
+          "Standard deviation of input counts in Appendix A.1"
+        ],
+        "has_overall_feedback": true
+      }
+    }
+  ]
+}

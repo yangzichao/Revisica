@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "id": "correct_integral",
+      "file": "correct_integral.tex",
+      "description": "Correct definite integral should be machine-verified.",
+      "expected": {
+        "machine_refuted_titles": [],
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "wrong_integral",
+      "file": "wrong_integral.tex",
+      "description": "Incorrect definite integral should be machine-refuted.",
+      "expected": {
+        "machine_refuted_titles": [
+          "Incorrect definite integral"
+        ],
+        "machine_verified_titles": []
+      }
+    },
+    {
+      "id": "wrong_average_value",
+      "file": "wrong_average_value.tex",
+      "description": "Incorrect average value should be machine-refuted.",
+      "expected": {
+        "machine_refuted_titles": [
+          "Incorrect average value"
+        ],
+        "machine_verified_titles": []
+      }
+    },
+    {
+      "id": "continuity_singularity",
+      "file": "continuity_singularity.tex",
+      "description": "False continuity claim over a singularity should be machine-refuted.",
+      "expected": {
+        "machine_refuted_titles": [
+          "False continuity or safe-integrability claim"
+        ],
+        "machine_verified_titles": []
+      }
+    },
+    {
+      "id": "proof_antiderivative_error",
+      "file": "proof_antiderivative_error.tex",
+      "description": "Blueprint-lite should extract theorem/proof and deterministic review should find the wrong integral plus weak proof steps.",
+      "expected": {
+        "machine_refuted_titles": [
+          "Incorrect definite integral"
+        ],
+        "minimum_needs_human_check": 2,
+        "minimum_blueprints": 1
+      }
+    }
+  ]
+}
