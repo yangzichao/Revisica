@@ -430,11 +430,11 @@ def _resolve_reviewer_specs(
     if not selected:
         raise RuntimeError(
             "No supported provider detected in the current environment. "
-            "Install codex and/or claude first, then run `revise-agent bootstrap`."
+            "Install codex and/or claude first, then run `revisica bootstrap`."
         )
     if len(selected) == 1:
         warnings.append(
-            "Only one provider is active for writing review, so ReviseAgent will run specialized roles "
+            "Only one provider is active for writing review, so Revisica will run specialized roles "
             "and final judging on a single provider. Cross-check quality may be lower."
         )
     return selected, warnings
@@ -795,7 +795,7 @@ def _write_summary(
     )
 
     lines = [
-        "# ReviseAgent Writing Review Run",
+        "# Revisica Writing Review Run",
         "",
         f"- Source: `{source}`",
         f"- Timestamp: `{datetime.now().isoformat(timespec='seconds')}`",

@@ -9,7 +9,7 @@
 **Commands:**
 ```bash
 # 83.3% recall run (claim-by-claim verifier + LLM judge)
-python -m revise_agent benchmark-refine \
+python -m revisica benchmark-refine \
   --manifest benchmarks/refine/manifest_mini.json \
   --reviewer-a claude \
   --use-llm-judge --llm-judge claude:sonnet \

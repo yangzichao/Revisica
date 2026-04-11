@@ -1,4 +1,4 @@
-# ReviseAgent Architecture Refactor TODO
+# Revisica Architecture Refactor TODO
 
 ## Background
 
@@ -20,8 +20,8 @@ Confirmed strengths:
 
 Confirmed problems:
 
-- `src/revise_agent/math_review.py` is too large and mixes extraction, analysis, LLM orchestration, adjudication, and artifact writing.
-- `src/revise_agent/benchmark_framework.py` has multiple suite/mode extension branches that will get worse as more suites or modes are added.
+- `src/revisica/math_review.py` is too large and mixes extraction, analysis, LLM orchestration, adjudication, and artifact writing.
+- `src/revisica/benchmark_framework.py` has multiple suite/mode extension branches that will get worse as more suites or modes are added.
 - There is a temp-file leak in Codex subprocess execution.
 - Some dead code and legacy prompt paths remain after the move to agent-task builders.
 - Static agent instructions are split between inline Python dicts and external Codex markdown files.
@@ -76,22 +76,22 @@ Definition of done:
 
 Recommended extraction:
 
-- `src/revise_agent/math_extraction.py`
+- `src/revisica/math_extraction.py`
   - function extraction
   - claim extraction
   - theorem/proof extraction
   - proof blueprint construction
-- `src/revise_agent/math_deterministic.py`
+- `src/revisica/math_deterministic.py`
   - SymPy-based claim analysis
   - blueprint analysis
   - issue parsing for deterministic checks
-- `src/revise_agent/math_llm_review.py`
+- `src/revisica/math_llm_review.py`
   - provider selection
   - parallel proof review
   - self-check
   - adjudication
   - LLM finding parsing
-- `src/revise_agent/math_artifacts.py`
+- `src/revisica/math_artifacts.py`
   - report rendering
   - JSON/Markdown artifact writing
 
@@ -149,7 +149,7 @@ Definition of done:
 
 Recommended target:
 
-- `src/revise_agent/core_types.py` or `src/revise_agent/core/types.py`
+- `src/revisica/core_types.py` or `src/revisica/core/types.py`
 
 Candidate types:
 
@@ -221,8 +221,8 @@ Definition of done:
 
 ```bash
 git status --short
-rg -n "_run_provider|_build_role_prompt|build_math_proof_review_prompt|build_math_proof_adjudication_prompt|build_math_proof_self_check_prompt" src/revise_agent
-python -m compileall src/revise_agent
+rg -n "_run_provider|_build_role_prompt|build_math_proof_review_prompt|build_math_proof_adjudication_prompt|build_math_proof_self_check_prompt" src/revisica
+python -m compileall src/revisica
 ```
 
 ## Session Kickoff Prompt

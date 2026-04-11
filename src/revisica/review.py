@@ -120,7 +120,7 @@ def _resolve_targets(
             raise RuntimeError(
                 "Requested provider(s) not installed: "
                 f"{', '.join(missing_requested)}. Detected available providers: {detected_text}. "
-                "Install codex and/or claude, then run `revise-agent bootstrap`."
+                "Install codex and/or claude, then run `revisica bootstrap`."
             )
     else:
         selected = [name for name, platform in platforms.items() if platform.available]
@@ -128,12 +128,12 @@ def _resolve_targets(
     if not selected:
         raise RuntimeError(
             "No supported provider detected in the current environment. "
-            "Install codex and/or claude first, then run `revise-agent bootstrap`."
+            "Install codex and/or claude first, then run `revisica bootstrap`."
         )
 
     if len(selected) == 1:
         warnings.append(
-            "Only one provider is active for this run, so ReviseAgent is switching to "
+            "Only one provider is active for this run, so Revisica is switching to "
             "single-provider self-verification mode. Final report quality may be lower "
             "than cross-provider review."
         )
@@ -199,7 +199,7 @@ def _run_codex(
     if cli_path is None:
         raise RuntimeError("codex CLI not found")
 
-    with tempfile.NamedTemporaryFile(prefix="revise-agent-codex-", suffix=".md", delete=False) as handle:
+    with tempfile.NamedTemporaryFile(prefix="revisica-codex-", suffix=".md", delete=False) as handle:
         output_path = Path(handle.name)
 
     cmd = [
@@ -388,7 +388,7 @@ def _run_codex_agent(
             instructions = instructions_path.read_text(encoding="utf-8")
             full_prompt = f"{instructions}\n\n---\n\n## Task\n\n{task_prompt}"
 
-    with tempfile.NamedTemporaryFile(prefix="revise-agent-codex-", suffix=".md", delete=False) as handle:
+    with tempfile.NamedTemporaryFile(prefix="revisica-codex-", suffix=".md", delete=False) as handle:
         output_path = Path(handle.name)
 
     cmd = [
@@ -472,7 +472,7 @@ def _generate_final_report(
             ), warnings
 
         warnings.append(
-            "Self-verification failed, so ReviseAgent is falling back to the original single-provider review."
+            "Self-verification failed, so Revisica is falling back to the original single-provider review."
         )
         fallback = _fallback_final_report(
             strategy="single-provider-fallback",
@@ -503,7 +503,7 @@ def _generate_final_report(
         ), warnings
 
     warnings.append(
-        "Cross-provider adjudication failed, so ReviseAgent is falling back to a merged raw provider report."
+        "Cross-provider adjudication failed, so Revisica is falling back to a merged raw provider report."
     )
     fallback = _fallback_final_report(
         strategy="cross-provider-fallback",
@@ -580,7 +580,7 @@ def _write_final_report_artifacts(run_dir: Path, final_report: FinalReportResult
 
 def _subprocess_env() -> dict[str, str]:
     env = os.environ.copy()
-    runtime_home = env.get("REVISE_AGENT_RUNTIME_HOME")
+    runtime_home = env.get("REVISICA_RUNTIME_HOME")
     if runtime_home:
         env["HOME"] = runtime_home
     return env
@@ -597,7 +597,7 @@ def _write_summary(
     final_report: FinalReportResult | None,
 ) -> None:
     lines = [
-        "# ReviseAgent Review Run",
+        "# Revisica Review Run",
         "",
         f"- Source: `{source}`",
         f"- Timestamp: `{datetime.now().isoformat(timespec='seconds')}`",

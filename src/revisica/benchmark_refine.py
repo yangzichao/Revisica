@@ -1,4 +1,4 @@
-"""Benchmark ReviseAgent against Refine.ink expected findings.
+"""Benchmark Revisica against Refine.ink expected findings.
 
 Each refine case contains a markdown paper and a JSON file with expected
 comments (title, quote, message, score).  This module runs our full
@@ -651,7 +651,7 @@ def _write_case_report(case_dir: Path, result: RefineCaseResult) -> None:
 
 def _write_benchmark_summary(report_dir: Path, run: RefineBenchmarkRun) -> None:
     lines = [
-        "# ReviseAgent vs Refine.ink Benchmark",
+        "# Revisica vs Refine.ink Benchmark",
         "",
         f"- Manifest: `{run.manifest_path}`",
         f"- Report dir: `{run.report_dir}`",

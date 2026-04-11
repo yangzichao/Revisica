@@ -1,4 +1,4 @@
-"""Task-model auto-routing for ReviseAgent.
+"""Task-model auto-routing for Revisica.
 
 When a ProviderModelSpec has no explicit model, this module selects an
 appropriate model based on the task category. The defaults should stay

@@ -145,7 +145,7 @@ def render_math_report(
         "## Executive Summary",
         "",
         (
-            f"ReviseAgent extracted {len(functions)} function definitions and {len(claims)} "
+            f"Revisica extracted {len(functions)} function definitions and {len(claims)} "
             f"math-related claims, plus {len(blueprints)} theorem/proof blueprint(s). "
             f"It machine-refuted {len(refuted)} claim(s), "
             f"machine-verified {len(verified)} claim(s), flagged {len(llm_suspected)} "
@@ -216,7 +216,7 @@ def render_summary(
     llm_suspected = sum(1 for item in issues if item.status == "llm-suspected")
     manual = sum(1 for item in issues if item.status == "needs-human-check")
     lines = [
-        "# ReviseAgent Math Run",
+        "# Revisica Math Run",
         "",
         f"- Source: `{source}`",
         f"- Timestamp: `{datetime.now().isoformat(timespec='seconds')}`",

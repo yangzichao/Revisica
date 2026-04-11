@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-PLUGIN_NAME = "revise-agent"
+PLUGIN_NAME = "revisica"
 SKILL_NAME = "latex-paper-review"
 CLAUDE_AGENT_NAME = "latex_reviewer"
 SUPPORTED_VENUE_PROFILES = (
@@ -23,20 +23,20 @@ def codex_plugin_manifest() -> str:
         "skills": "./skills/",
         "author": {
             "name": "Zichao Yang",
-            "url": "https://github.com/yangzichao/ReviseAgent",
+            "url": "https://github.com/yangzichao/Revisica",
         },
-        "homepage": "https://github.com/yangzichao/ReviseAgent",
-        "repository": "https://github.com/yangzichao/ReviseAgent",
+        "homepage": "https://github.com/yangzichao/Revisica",
+        "repository": "https://github.com/yangzichao/Revisica",
         "license": "MIT",
         "keywords": ["codex", "claude-code", "latex", "paper-review", "math"],
         "interface": {
-            "displayName": "ReviseAgent",
+            "displayName": "Revisica",
             "shortDescription": "Review LaTeX drafts for writing and math issues",
             "longDescription": "A minimal review workflow for LaTeX-first academic drafts with emphasis on mathematical correctness, writing quality, notation consistency, and actionable fixes.",
             "developerName": "Zichao Yang",
             "category": "Productivity",
             "capabilities": ["Read", "Write"],
-            "websiteURL": "https://github.com/yangzichao/ReviseAgent",
+            "websiteURL": "https://github.com/yangzichao/Revisica",
             "defaultPrompt": [
                 "Review this LaTeX draft for writing weaknesses.",
                 "Check the mathematics and point out incorrect derivations or unjustified claims.",
@@ -88,7 +88,7 @@ Output requirements:
 
 
 def codex_agent_prompt() -> str:
-    return """You are ReviseAgent for Codex.
+    return """You are Revisica for Codex.
 
 You review LaTeX-first research drafts.
 Always prioritize:
@@ -117,7 +117,7 @@ def claude_agent_definition_json() -> str:
     definition = {
         CLAUDE_AGENT_NAME: {
             "description": "Reviews LaTeX academic drafts for writing and mathematical correctness.",
-            "prompt": """You are ReviseAgent for Claude.
+            "prompt": """You are Revisica for Claude.
 
 Review LaTeX-first academic drafts with emphasis on writing quality and mathematical correctness.
 

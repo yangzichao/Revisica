@@ -115,7 +115,7 @@ def _write_summary(
     warnings: list[str],
 ) -> None:
     lines = [
-        "# ReviseAgent Unified Review",
+        "# Revisica Unified Review",
         "",
         f"- Source: `{source}`",
         f"- Timestamp: `{datetime.now().isoformat(timespec='seconds')}`",

@@ -29,7 +29,7 @@ def render_history(
         return "No benchmark runs recorded yet.\n"
 
     lines = [
-        "# ReviseAgent Benchmark History",
+        "# Revisica Benchmark History",
         "",
     ]
 

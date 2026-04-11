@@ -1,4 +1,4 @@
-# ReviseAgent — TODO
+# Revisica — TODO
 
 **Last updated:** 2026-04-11
 
@@ -36,11 +36,11 @@
 
 ```bash
 # Quick test (1 case, heuristic matching)
-revise-agent benchmark-refine --manifest benchmarks/refine/manifest_mini.json --reviewer-a claude
+revisica benchmark-refine --manifest benchmarks/refine/manifest_mini.json --reviewer-a claude
 
 # Full run with LLM judge for accurate recall
-revise-agent benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600
+revisica benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600
 
 # Dual provider
-revise-agent benchmark-refine --reviewer-a claude --reviewer-b codex --timeout-seconds 600
+revisica benchmark-refine --reviewer-a claude --reviewer-b codex --timeout-seconds 600
 ```

@@ -7,21 +7,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 python -m pip install .
-revise-agent bootstrap
+revisica bootstrap
 ```
 
-Only runtime dependency is `sympy>=1.13`. No Makefile — all development commands go through the `revise-agent` CLI (entry point: `src/revise_agent/cli.py`).
+Only runtime dependency is `sympy>=1.13`. No Makefile — all development commands go through the `revisica` CLI (entry point: `src/revisica/cli.py`).
 
 ## Running the Tool
 
 ```bash
 # Unified (writing + math concurrently)
-revise-agent review examples/minimal_paper.tex
-revise-agent review examples/minimal_paper.tex --venue-profile econ-top5 --llm-proof-review
+revisica review examples/minimal_paper.tex
+revisica review examples/minimal_paper.tex --venue-profile econ-top5 --llm-proof-review
 
 # Individual lanes
-revise-agent writing-review examples/minimal_paper.tex --reviewer-a codex:gpt-5 --reviewer-b claude:sonnet
-revise-agent math-review examples/minimal_paper.tex --llm-proof-review --targets codex claude
+revisica writing-review examples/minimal_paper.tex --reviewer-a codex:gpt-5 --reviewer-b claude:sonnet
+revisica math-review examples/minimal_paper.tex --llm-proof-review --targets codex claude
 ```
 
 Role arguments use the `provider[:model]` format, e.g. `codex:gpt-5` or `claude:sonnet`. When no model is specified, `model_router.py` auto-selects based on task type (math reasoning -> opus/gpt-5, writing -> sonnet/gpt-5).
@@ -32,29 +32,29 @@ Supported venue profiles: `general-academic`, `econ-general-top`, `econ-top5`, `
 
 ```bash
 # Local suites
-revise-agent benchmark-math
-revise-agent benchmark-writing
+revisica benchmark-math
+revisica benchmark-writing
 
 # Unified runner (suites: math-cases, proofnet, proofbench, processbench, all)
 # Modes: deterministic-only, single-agent, single-agent-self-check, multi-agent-cross-check, hybrid-single, hybrid-cross
-revise-agent benchmark-run --suite math-cases --mode deterministic-only
-revise-agent benchmark-run --suite proofnet --mode single-agent --limit 1 --reviewer codex:gpt-5
+revisica benchmark-run --suite math-cases --mode deterministic-only
+revisica benchmark-run --suite proofnet --mode single-agent --limit 1 --reviewer codex:gpt-5
 
 # Refine.ink benchmark (primary eval for recall against paper comments)
-revise-agent benchmark-refine
-revise-agent benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600
+revisica benchmark-refine
+revisica benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600
 
 # Benchmark history
-revise-agent benchmark-history
+revisica benchmark-history
 ```
 
-Quickest sanity check after a change: `revise-agent benchmark-run --suite math-cases --mode deterministic-only`
+Quickest sanity check after a change: `revisica benchmark-run --suite math-cases --mode deterministic-only`
 
 No test suite exists yet — the math benchmark with `deterministic-only` mode is the fastest way to verify correctness.
 
 ## Architecture
 
-ReviseAgent converts a LaTeX paper into reviewable units and runs them through two independent lanes in parallel:
+Revisica converts a LaTeX paper into reviewable units and runs them through two independent lanes in parallel:
 
 ```
 LaTeX file -> split into units -> [writing lane | math lane] -> merge findings -> final report
@@ -92,9 +92,9 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 
 | Variable | Purpose |
 |---|---|
-| `REVISE_AGENT_CODEX_HOME` | Override Codex config home (default: `~/.codex`) |
-| `REVISE_AGENT_CLAUDE_HOME` | Override Claude config home (default: `~/.claude`) |
-| `REVISE_AGENT_RUNTIME_HOME` | Override `$HOME` for subprocess execution |
+| `REVISICA_CODEX_HOME` | Override Codex config home (default: `~/.codex`) |
+| `REVISICA_CLAUDE_HOME` | Override Claude config home (default: `~/.claude`) |
+| `REVISICA_RUNTIME_HOME` | Override `$HOME` for subprocess execution |
 
 ## Output Structure
 

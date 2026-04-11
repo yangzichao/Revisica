@@ -51,7 +51,7 @@ No SymPy or tool use needed — pure reasoning suffices.
 
 ## Acceptance Criteria
 
-- Run `revise-agent benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600` on targeting-interventions
+- Run `revisica benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600` on targeting-interventions
 - The rho->1 vs rho^2->1 gap in Proposition 1 must be flagged
 - Recall should reach 100% (6/6) on targeting-interventions
 - No regression on other benchmark cases

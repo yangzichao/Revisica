@@ -117,7 +117,7 @@ def capture_prompt_hashes() -> PromptHashes:
 
 def _hash_math_review_prompt_sources() -> str:
     repo_root = Path(__file__).resolve().parent.parent.parent
-    llm_review_path = repo_root / "src" / "revise_agent" / "math_llm_review.py"
+    llm_review_path = repo_root / "src" / "revisica" / "math_llm_review.py"
     if not llm_review_path.exists():
         return ""
 

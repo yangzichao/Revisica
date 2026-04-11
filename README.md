@@ -1,6 +1,6 @@
-# ReviseAgent
+# Revisica
 
-ReviseAgent is a minimal POC for reviewing LaTeX-first academic drafts with Codex and Claude.
+Revisica is a minimal POC for reviewing LaTeX-first academic drafts with Codex and Claude.
 
 Current scope:
 
@@ -17,7 +17,7 @@ This POC assumes "Cloud" in the original idea means `Claude`.
 
 1. `bootstrap`
    - Detects `codex` and `claude`.
-   - Installs a local `revise-agent` plugin and `latex-paper-review` skill for each platform.
+   - Installs a local `revisica` plugin and `latex-paper-review` skill for each platform.
    - Installs a lightweight local agent profile used by the Python runner.
 2. `review` (unified)
    - Runs writing-review and math-review concurrently as independent lanes.
@@ -31,7 +31,7 @@ This POC assumes "Cloud" in the original idea means `Claude`.
    - Extracts theorem/proof environments into a lightweight `blueprint-lite` structure.
    - Breaks proofs into proof obligations so later LLM or human review can inspect specific steps.
    - Can optionally ask Codex and/or Claude to review those proof obligations and flag suspicious steps.
-   - When multiple providers review the same proof obligations, ReviseAgent adjudicates them into a cleaner merged math conclusion.
+   - When multiple providers review the same proof obligations, Revisica adjudicates them into a cleaner merged math conclusion.
    - Produces a machine-focused math report, with or without provider assistance.
 4. `writing-review`
    - Runs specialized writing agents for baseline language hygiene, structure/logic, and venue/style alignment.
@@ -45,55 +45,55 @@ This POC assumes "Cloud" in the original idea means `Claude`.
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install .
-revise-agent bootstrap
-revise-agent math-review examples/minimal_paper.tex
-revise-agent math-review examples/proof_blueprint_demo.tex --llm-proof-review --targets codex
-revise-agent writing-review examples/minimal_paper.tex
-revise-agent writing-review examples/minimal_paper.tex --venue-profile econ-top5 --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
-revise-agent review examples/minimal_paper.tex
-revise-agent review examples/minimal_paper.tex --venue-profile econ-top5 --llm-proof-review
-revise-agent benchmark-math
-revise-agent benchmark-writing
-revise-agent import-proofnet --split test --limit 5
-revise-agent benchmark-proofnet --split test --limit 5
-revise-agent benchmark-proofnet --split test --limit 3 --llm-proof-review --targets codex claude
-revise-agent benchmark-run --suite math-cases --mode deterministic-only
-revise-agent benchmark-run --suite proofnet --mode single-agent-self-check --limit 1 --reviewer codex:gpt-5.4 --self-checker codex:gpt-5.4-mini
-revise-agent benchmark-run --suite proofnet --mode multi-agent-cross-check --limit 1 --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
-revise-agent benchmark-run --suite proofbench --mode deterministic-only --limit 5
-revise-agent benchmark-run --suite processbench --mode deterministic-only --split math --limit 5
+revisica bootstrap
+revisica math-review examples/minimal_paper.tex
+revisica math-review examples/proof_blueprint_demo.tex --llm-proof-review --targets codex
+revisica writing-review examples/minimal_paper.tex
+revisica writing-review examples/minimal_paper.tex --venue-profile econ-top5 --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
+revisica review examples/minimal_paper.tex
+revisica review examples/minimal_paper.tex --venue-profile econ-top5 --llm-proof-review
+revisica benchmark-math
+revisica benchmark-writing
+revisica import-proofnet --split test --limit 5
+revisica benchmark-proofnet --split test --limit 5
+revisica benchmark-proofnet --split test --limit 3 --llm-proof-review --targets codex claude
+revisica benchmark-run --suite math-cases --mode deterministic-only
+revisica benchmark-run --suite proofnet --mode single-agent-self-check --limit 1 --reviewer codex:gpt-5.4 --self-checker codex:gpt-5.4-mini
+revisica benchmark-run --suite proofnet --mode multi-agent-cross-check --limit 1 --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
+revisica benchmark-run --suite proofbench --mode deterministic-only --limit 5
+revisica benchmark-run --suite processbench --mode deterministic-only --split math --limit 5
 ```
 
 ## CLI
 
 ```bash
-revise-agent bootstrap
-revise-agent bootstrap --targets codex
-revise-agent review path/to/paper.tex
-revise-agent review path/to/paper.tex --venue-profile econ-top5
-revise-agent review path/to/paper.tex --llm-proof-review --targets codex claude
-revise-agent review path/to/paper.tex --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --judge codex:gpt-5.4
-revise-agent writing-review path/to/paper.tex
-revise-agent writing-review path/to/paper.tex --venue-profile econ-top5
-revise-agent writing-review path/to/paper.tex --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --judge codex:gpt-5.4
-revise-agent math-review path/to/paper.tex
-revise-agent math-review path/to/paper.tex --llm-proof-review --targets codex claude
-revise-agent benchmark-math
-revise-agent benchmark-writing
-revise-agent benchmark-writing --venue-profile econ-top5 --timeout-seconds 180
-revise-agent import-proofnet --split test --limit 10
-revise-agent benchmark-proofnet --split test --limit 10
-revise-agent benchmark-proofnet --split test --limit 3 --llm-proof-review --targets codex claude
-revise-agent benchmark-run --suite math-cases --mode deterministic-only
-revise-agent benchmark-run --suite proofnet --mode single-agent
-revise-agent benchmark-run --suite proofnet --mode single-agent-self-check --reviewer codex:gpt-5.4 --self-checker codex:gpt-5.4-mini
-revise-agent benchmark-run --suite proofnet --mode multi-agent-cross-check --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
-revise-agent benchmark-run --suite proofnet --mode hybrid-cross --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --adjudicator codex:gpt-5.4
-revise-agent benchmark-run --suite proofbench --mode hybrid-single --reviewer codex:gpt-5.4
-revise-agent benchmark-run --suite processbench --mode single-agent --split math --reviewer codex:gpt-5.4-mini
-revise-agent benchmark-history
-revise-agent benchmark-history --suite writing --limit 10
-revise-agent benchmark-history --output benchmarks/history.md
+revisica bootstrap
+revisica bootstrap --targets codex
+revisica review path/to/paper.tex
+revisica review path/to/paper.tex --venue-profile econ-top5
+revisica review path/to/paper.tex --llm-proof-review --targets codex claude
+revisica review path/to/paper.tex --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --judge codex:gpt-5.4
+revisica writing-review path/to/paper.tex
+revisica writing-review path/to/paper.tex --venue-profile econ-top5
+revisica writing-review path/to/paper.tex --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --judge codex:gpt-5.4
+revisica math-review path/to/paper.tex
+revisica math-review path/to/paper.tex --llm-proof-review --targets codex claude
+revisica benchmark-math
+revisica benchmark-writing
+revisica benchmark-writing --venue-profile econ-top5 --timeout-seconds 180
+revisica import-proofnet --split test --limit 10
+revisica benchmark-proofnet --split test --limit 10
+revisica benchmark-proofnet --split test --limit 3 --llm-proof-review --targets codex claude
+revisica benchmark-run --suite math-cases --mode deterministic-only
+revisica benchmark-run --suite proofnet --mode single-agent
+revisica benchmark-run --suite proofnet --mode single-agent-self-check --reviewer codex:gpt-5.4 --self-checker codex:gpt-5.4-mini
+revisica benchmark-run --suite proofnet --mode multi-agent-cross-check --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
+revisica benchmark-run --suite proofnet --mode hybrid-cross --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --adjudicator codex:gpt-5.4
+revisica benchmark-run --suite proofbench --mode hybrid-single --reviewer codex:gpt-5.4
+revisica benchmark-run --suite processbench --mode single-agent --split math --reviewer codex:gpt-5.4-mini
+revisica benchmark-history
+revisica benchmark-history --suite writing --limit 10
+revisica benchmark-history --output benchmarks/history.md
 ```
 
 Supported unified benchmark modes:
@@ -181,13 +181,13 @@ The unified benchmark runner creates:
 - optional `llm_proof_self_check_<n>_<provider>.md` files in self-check mode
 - optional `llm_proof_adjudication_<n>_<provider>.md` files in cross-check mode
 
-Every `benchmark-math` and `benchmark-writing` run also appends a provenance entry to `benchmarks/registry.jsonl`, recording git commit, prompt template hashes, provider specs, and pass/fail results. Use `revise-agent benchmark-history` to render a comparison report from this registry.
+Every `benchmark-math` and `benchmark-writing` run also appends a provenance entry to `benchmarks/registry.jsonl`, recording git commit, prompt template hashes, provider specs, and pass/fail results. Use `revisica benchmark-history` to render a comparison report from this registry.
 
 ## Fallback Behavior
 
-- If neither `codex` nor `claude` is installed, `revise-agent review` exits with an explicit environment error.
-- If only one provider is available, ReviseAgent prints a warning and switches to `single-provider-self-verify` mode.
-- If the final adjudication step fails, ReviseAgent falls back to a merged single report instead of leaving the user with no final artifact.
+- If neither `codex` nor `claude` is installed, `revisica review` exits with an explicit environment error.
+- If only one provider is available, Revisica prints a warning and switches to `single-provider-self-verify` mode.
+- If the final adjudication step fails, Revisica falls back to a merged single report instead of leaving the user with no final artifact.
 
 ## Notes
 
@@ -197,7 +197,7 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 - The deterministic math lane is intentionally narrow. It currently targets simple function definitions, definite integrals, average-value claims, and obvious continuity failures.
 - The theorem/proof layer is also intentionally lightweight. It does not certify a proof as correct; it only extracts theorem/proof structure and highlights likely weak proof steps.
 - Optional LLM proof review is advisory only. It is meant to help surface suspicious proof obligations, not to certify a theorem as correct.
-- In multi-provider math mode, ReviseAgent prefers adjudicated proof findings over raw per-provider duplicates.
+- In multi-provider math mode, Revisica prefers adjudicated proof findings over raw per-provider duplicates.
 - The initial external benchmark adapter targets the official ProofNet benchmark JSONL files and turns a small slice into local `.tex` cases for structural math-review evaluation.
 - The unified benchmark runner separates orchestration mode from model choice, so the same suite can be re-run under deterministic, single-agent, self-check, cross-check, and hybrid settings.
 - `ProofBench` is currently used as a proof-review benchmark with expert-rating metadata preserved; the first metric is issue-score aggregation rather than a full grading model.

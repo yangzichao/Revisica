@@ -229,7 +229,7 @@ def _render_proofnet_tex(record: dict[str, object]) -> str:
 def _render_proofnet_summary(summary: dict[str, object]) -> str:
     aggregate = summary["aggregate"]
     lines = [
-        "# ReviseAgent ProofNet Benchmark",
+        "# Revisica ProofNet Benchmark",
         "",
         f"- Source: `{summary['source_url']}`",
         f"- Split: `{summary['split']}`",

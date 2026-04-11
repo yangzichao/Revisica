@@ -115,7 +115,7 @@ def _evaluate_case(run: MathReviewRun, expected: dict[str, object]) -> tuple[boo
 
 def _render_summary(summary: dict[str, object]) -> str:
     lines = [
-        "# ReviseAgent Math Benchmark",
+        "# Revisica Math Benchmark",
         "",
         f"- Manifest: `{summary['manifest']}`",
         f"- Passed: `{summary['passed']}` / `{summary['total']}`",

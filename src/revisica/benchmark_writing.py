@@ -162,7 +162,7 @@ def _collect_all_findings(run: WritingReviewRun) -> list[dict[str, object]]:
 
 def _render_summary(summary: dict[str, object]) -> str:
     lines = [
-        "# ReviseAgent Writing Benchmark",
+        "# Revisica Writing Benchmark",
         "",
         f"- Manifest: `{summary['manifest']}`",
         f"- Passed: `{summary['passed']}` / `{summary['total']}`",

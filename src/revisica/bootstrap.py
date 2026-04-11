@@ -38,8 +38,8 @@ class PlatformStatus:
 
 
 def detect_platforms() -> dict[str, PlatformStatus]:
-    codex_home = Path(os.environ.get("REVISE_AGENT_CODEX_HOME", str(Path.home() / ".codex")))
-    claude_home = Path(os.environ.get("REVISE_AGENT_CLAUDE_HOME", str(Path.home() / ".claude")))
+    codex_home = Path(os.environ.get("REVISICA_CODEX_HOME", str(Path.home() / ".codex")))
+    claude_home = Path(os.environ.get("REVISICA_CLAUDE_HOME", str(Path.home() / ".claude")))
     return {
         "codex": PlatformStatus(
             name="codex",

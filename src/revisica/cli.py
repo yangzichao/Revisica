@@ -38,7 +38,7 @@ def _parse_reviewer_specs(args: argparse.Namespace) -> list[ProviderModelSpec] |
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="revise-agent",
+        prog="revisica",
         description="Minimal POC for reviewing LaTeX drafts with Codex and Claude.",
     )
     sub = parser.add_subparsers(dest="command", required=True)

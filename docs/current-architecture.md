@@ -1,10 +1,10 @@
-# ReviseAgent Current Architecture
+# Revisica Current Architecture
 
 This document is written for explanation, not for implementation detail.
 
-## What ReviseAgent Does
+## What Revisica Does
 
-ReviseAgent reviews a LaTeX paper by turning one large draft into smaller, checkable units, sending those units through the right review paths, and then merging the results into a final report.
+Revisica reviews a LaTeX paper by turning one large draft into smaller, checkable units, sending those units through the right review paths, and then merging the results into a final report.
 
 The key idea is simple:
 
@@ -37,7 +37,7 @@ flowchart LR
 
 ## What Gets Split
 
-ReviseAgent does not review the whole paper as one blob. It first creates smaller units that are easier to inspect well.
+Revisica does not review the whole paper as one blob. It first creates smaller units that are easier to inspect well.
 
 - Writing-oriented units such as sections or section combinations
 - Mathematical claims that can be checked locally
@@ -75,7 +75,7 @@ The math path separates objective checks from harder reasoning. Simple verifiabl
 
 ## Why The Architecture Looks Like This
 
-ReviseAgent is built around a few practical strategies.
+Revisica is built around a few practical strategies.
 
 - Decompose first.
   Smaller units are easier to inspect accurately than one long paper prompt.
@@ -97,7 +97,7 @@ ReviseAgent is built around a few practical strategies.
 
 ## Codex And Claude
 
-ReviseAgent can use both Codex and Claude in the same workflow.
+Revisica can use both Codex and Claude in the same workflow.
 
 ```mermaid
 flowchart LR
@@ -111,7 +111,7 @@ flowchart LR
 
 This is workflow-level collaboration.
 
-- ReviseAgent can send the same task to both providers.
+- Revisica can send the same task to both providers.
 - Their outputs are stored separately.
 - The system can compare them, cross-check them, or use one provider to adjudicate over both.
 - Codex and Claude are not directly chatting with each other.

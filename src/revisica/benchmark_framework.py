@@ -469,7 +469,7 @@ def _render_benchmark_summary(payload: dict[str, object]) -> str:
     aggregate = payload["aggregate"]
     roles = payload["roles"]
     lines = [
-        "# ReviseAgent Benchmark",
+        "# Revisica Benchmark",
         "",
         f"- Suite: `{payload['suite']}`",
         f"- Mode: `{payload['mode']}`",
