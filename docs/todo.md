@@ -94,31 +94,24 @@ Spec: `docs/specs/desktop-app.md`
 
 ---
 
-## Step 6: HITL + Streaming
+## Step 6: HITL + Streaming + FastAPI ✅ (phase 1 — API server)
 
-让 graph 可以暂停等待用户交互，并把进度实时推送到前端。
+- [x] **`api.py`** — FastAPI server（281 行），8 个端点全部工作。TestClient 验证通过。
+- [x] **CLI `revisica serve`** — `--host` + `--port` 参数
+- [x] **背景线程执行** — review 在 daemon thread 中运行，通过 `GET /api/status` 轮询
 
-- [ ] **`interrupt_before` 节点** — 在 writing 和 math 子图的 HITL gate 处加 `interrupt_before`。graph 执行到此暂停，状态持久化。
+### 待后续迭代（HITL + streaming）
 
-- [ ] **`SqliteSaver` checkpointer** — 配置 `~/.revisica/checkpoints.db`。graph 状态在进程重启后可恢复。Desktop app 打包时随 app 一起。
-
-- [ ] **SSE streaming endpoint** — FastAPI 端点消费 `graph.astream_events()`。Electron 前端通过 `EventSource` 订阅。替代之前计划的自定义 `ProgressEvent`。
-
-### 验证
-
-- [ ] graph 在 interrupt 节点暂停，用户发送 FocusRequest 后恢复执行
-- [ ] 重启进程后可以从 checkpoint 恢复
-- [ ] SSE endpoint 实时推送节点执行状态
+- [ ] **`interrupt_before` 节点** — 在 writing 和 math 子图的 HITL gate 处加 `interrupt_before`
+- [ ] **`SqliteSaver` checkpointer** — `~/.revisica/checkpoints.db`
+- [ ] **SSE streaming** — FastAPI SSE 端点消费 `graph.astream_events()`
+- [ ] **Focus endpoint** — `POST /api/focus/{run_id}` 发送 FocusRequest 恢复中断的 graph
 
 ---
 
 ## Step 7: Desktop App
 
-FastAPI + Electron + React + renderer。
-
-### API Server
-
-- [ ] **`api.py`** — FastAPI server，包装 graph 执行。端点：review（启动）、status（轮询）、results（获取）、providers（配置）、ingest（解析）。`revisica serve` 子命令启动。
+Electron + React + renderer。API server 已就绪。
 
 ### Electron Shell
 
