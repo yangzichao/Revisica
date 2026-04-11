@@ -13,6 +13,7 @@ authors = [
 ]
 dependencies = [
   "sympy>=1.13,<2",
+  "langgraph>=1.0",
 ]
 
 [project.optional-dependencies]

@@ -279,6 +279,7 @@ def _handle_review(args: argparse.Namespace) -> None:
         targets=args.targets,
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
+        mode=getattr(args, "mode", "review"),
     )
     print("environment check: unified review (writing + math)")
     print(f"unified artifacts: {run.run_dir}")

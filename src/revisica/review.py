@@ -58,7 +58,7 @@ def review_file(
     provider_results: list[ReviewResult] = []
 
     for name in selected:
-        result = _run_provider(name, platforms[name], review_prompt, timeout_seconds)
+        result = _run_provider(name, review_prompt, timeout_seconds)
         provider_results.append(result)
         _write_provider_artifacts(run_dir, result)
 
@@ -157,7 +157,6 @@ def _make_output_dir(source: Path, output_dir: str | None) -> Path:
 
 def _run_provider(
     provider_name: str,
-    platform: PlatformStatus,
     prompt: str,
     timeout_seconds: int,
     model: str | None = None,
@@ -169,7 +168,6 @@ def _run_provider(
 
 def _run_provider_agent(
     provider_name: str,
-    platform: PlatformStatus,
     task_prompt: str,
     agent_spec: AgentSpec,
     timeout_seconds: int,
@@ -206,7 +204,7 @@ def _generate_final_report(
             draft_report=successful_results[0].output,
             provider_name=provider_name,
         )
-        verified = _run_provider(provider_name, platforms[provider_name], prompt, timeout_seconds)
+        verified = _run_provider(provider_name, prompt, timeout_seconds)
         if verified.success:
             return FinalReportResult(
                 strategy="single-provider-self-verify",
@@ -234,7 +232,6 @@ def _generate_final_report(
     )
     adjudicated = _run_provider(
         adjudicator_provider,
-        platforms[adjudicator_provider],
         prompt,
         timeout_seconds,
     )

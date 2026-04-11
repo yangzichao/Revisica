@@ -90,7 +90,6 @@ def run_llm_proof_review(
                 future = pool.submit(
                     _run_provider_agent,
                     routed_spec.provider,
-                    platform,
                     task_prompt,
                     agent_spec,
                     timeout_seconds,
@@ -480,7 +479,6 @@ def _run_math_adjudication(
     task_prompt = build_adjudication_task(str(source), blueprint, provider_artifacts)
     result = _run_provider_agent(
         routed.provider,
-        platform,
         task_prompt,
         agent_spec,
         timeout_seconds,
@@ -522,7 +520,6 @@ def _run_math_self_check(
     )
     result = _run_provider_agent(
         routed.provider,
-        platform,
         task_prompt,
         agent_spec,
         timeout_seconds,

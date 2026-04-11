@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor, Future
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 import json
 from pathlib import Path
 
-from .math_review import MathReviewRun, review_math_file
 from .core_types import ProviderModelSpec
+from .ingestion import parse_document
+from .math_review import MathReviewRun, review_math_file
+from .profiles.config import ReviewConfig, ReviewMode
 from .writing_review import WritingReviewRun, review_writing_file
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -36,6 +40,8 @@ def review_unified(
     # shared options
     force_bootstrap: bool = False,
     timeout_seconds: int = 120,
+    # new: review mode
+    mode: str = "review",
 ) -> UnifiedReviewRun:
     source = Path(file_path).expanduser().resolve()
     if not source.exists():
@@ -43,15 +49,43 @@ def review_unified(
     if not source.is_file():
         raise IsADirectoryError(f"Input path is not a file: {source}")
 
+    # ── Ingestion ───────────────────────────────────────────────────
+    # Parse the input file into a RevisicaDocument (handles .tex and PDF)
+    try:
+        document = parse_document(str(source))
+        logger.info(
+            "Ingested %s via %s: %s (%d sections)",
+            source.name, document.parser_used,
+            document.metadata.title or "(no title)",
+            len(document.sections),
+        )
+    except Exception as exc:
+        logger.warning("Ingestion failed, falling back to raw read: %s", exc)
+        document = None
+
     run_dir = _make_output_dir(source, output_dir)
     warnings: list[str] = []
 
+    # ── Mode routing ────────────────────────────────────────────────
+    if mode == "polish":
+        return _run_polish_mode(
+            source=source,
+            run_dir=run_dir,
+            venue_profile=venue_profile,
+            reviewer_specs=reviewer_specs,
+            force_bootstrap=force_bootstrap,
+            timeout_seconds=timeout_seconds,
+        )
+
+    # ── Full review mode ────────────────────────────────────────────
     writing_dir = str(run_dir / "writing")
     math_dir = str(run_dir / "math")
 
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        writing_future: Future[WritingReviewRun] = pool.submit(
-            review_writing_file,
+    writing_result: WritingReviewRun | None = None
+    math_result: MathReviewRun | None = None
+
+    try:
+        writing_result = review_writing_file(
             file_path=file_path,
             output_dir=writing_dir,
             venue_profile=venue_profile,
@@ -60,8 +94,11 @@ def review_unified(
             force_bootstrap=force_bootstrap,
             timeout_seconds=timeout_seconds,
         )
-        math_future: Future[MathReviewRun] = pool.submit(
-            review_math_file,
+    except Exception as exc:
+        warnings.append(f"Writing review lane failed: {exc}")
+
+    try:
+        math_result = review_math_file(
             file_path=file_path,
             output_dir=math_dir,
             llm_proof_review=llm_proof_review,
@@ -72,19 +109,8 @@ def review_unified(
             force_bootstrap=force_bootstrap,
             timeout_seconds=timeout_seconds,
         )
-
-        writing_result: WritingReviewRun | None = None
-        math_result: MathReviewRun | None = None
-
-        try:
-            writing_result = writing_future.result()
-        except Exception as exc:
-            warnings.append(f"Writing review lane failed: {exc}")
-
-        try:
-            math_result = math_future.result()
-        except Exception as exc:
-            warnings.append(f"Math review lane failed: {exc}")
+    except Exception as exc:
+        warnings.append(f"Math review lane failed: {exc}")
 
     _write_summary(run_dir, source, writing_result, math_result, warnings)
 
@@ -94,6 +120,44 @@ def review_unified(
         writing=writing_result,
         math=math_result,
         warnings=warnings,
+    )
+
+
+def _run_polish_mode(
+    source: Path,
+    run_dir: Path,
+    venue_profile: str,
+    reviewer_specs: list[ProviderModelSpec] | None,
+    force_bootstrap: bool,
+    timeout_seconds: int,
+) -> UnifiedReviewRun:
+    """Run lightweight polish mode (writing only, no math)."""
+    from .graphs.polish import compile_polish_graph
+    from .profiles import preset_for_mode, ReviewMode
+
+    config = preset_for_mode(ReviewMode.POLISH)
+    config = ReviewConfig(
+        mode=ReviewMode.POLISH,
+        venue_profile=venue_profile,
+        providers=reviewer_specs or [],
+        timeout_seconds=timeout_seconds,
+        force_bootstrap=force_bootstrap,
+    )
+
+    polish_graph = compile_polish_graph()
+    polish_result = polish_graph.invoke({
+        "source_path": str(source),
+        "run_dir": str(run_dir),
+        "config": config,
+        "warnings": [],
+    })
+
+    return UnifiedReviewRun(
+        source=source,
+        run_dir=run_dir,
+        writing=None,
+        math=None,
+        warnings=polish_result.get("warnings", []),
     )
 
 

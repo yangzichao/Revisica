@@ -133,7 +133,6 @@ def review_writing_file(
                     _run_single_role_task,
                     role=role,
                     spec=routed_spec,
-                    platform=platform,
                     task_prompt=task_prompt,
                     agent_spec=agent_spec,
                     timeout_seconds=timeout_seconds,
@@ -156,8 +155,7 @@ def review_writing_file(
                         _run_single_role_task,
                         role=combo_role,
                         spec=routed_spec,
-                        platform=platform,
-                        task_prompt=combo_task,
+                            task_prompt=combo_task,
                         agent_spec=combo_agent_spec,
                         timeout_seconds=timeout_seconds,
                         working_dir=working_dir,
@@ -179,8 +177,7 @@ def review_writing_file(
                         _run_single_role_task,
                         role=claim_role,
                         spec=routed_spec,
-                        platform=platform,
-                        task_prompt=claim_task,
+                            task_prompt=claim_task,
                         agent_spec=claim_agent_spec,
                         timeout_seconds=timeout_seconds,
                         working_dir=working_dir,
@@ -261,7 +258,6 @@ def review_writing_file(
 def _run_single_role_task(
     role: str,
     spec: ProviderModelSpec,
-    platform: PlatformStatus,
     task_prompt: str,
     agent_spec: AgentSpec,
     timeout_seconds: int,
@@ -270,7 +266,6 @@ def _run_single_role_task(
     """Execute a single (role, provider) task — designed to run in a thread."""
     result = _run_provider_agent(
         spec.provider,
-        platform,
         task_prompt,
         agent_spec,
         timeout_seconds,
@@ -336,7 +331,6 @@ def _run_writing_self_checks(
             future = pool.submit(
                 _run_provider_agent,
                 routed_spec.provider,
-                platform,
                 task_prompt,
                 checker_agent_spec,
                 timeout_seconds,
@@ -615,7 +609,6 @@ def _generate_final_report_agent(
 
     result = _run_provider_agent(
         judge.provider,
-        platform,
         task_prompt,
         agent_spec,
         timeout_seconds,

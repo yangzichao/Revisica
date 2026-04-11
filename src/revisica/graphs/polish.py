@@ -66,7 +66,6 @@ def run_polish_agent(state: PolishState) -> dict:
 
     result = _run_provider_agent(
         provider_name=provider_spec.provider,
-        platform=platform,
         task_prompt=task_prompt,
         agent_spec=agent_spec,
         timeout_seconds=config.timeout_seconds,

@@ -74,7 +74,6 @@ def run_focused_writing_review(state: FocusState) -> dict:
 
     result = _run_provider_agent(
         provider_name=routed_spec.provider,
-        platform=platform,
         task_prompt=task_prompt,
         agent_spec=agent_spec,
         timeout_seconds=timeout_seconds,
@@ -120,7 +119,6 @@ def run_focused_math_review(state: FocusState) -> dict:
 
     result = _run_provider_agent(
         provider_name=routed_spec.provider,
-        platform=platform,
         task_prompt=task_prompt,
         agent_spec=agent_spec,
         timeout_seconds=timeout_seconds,

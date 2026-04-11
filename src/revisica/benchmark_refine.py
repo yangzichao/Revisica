@@ -448,7 +448,6 @@ def _evaluate_with_llm_judge(
     try:
         result = _run_provider_agent(
             llm_judge_spec.provider,
-            platform,
             task_prompt,
             agent_spec,
             timeout_seconds,
