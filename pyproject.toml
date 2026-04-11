@@ -15,6 +15,19 @@ dependencies = [
   "sympy>=1.13,<2",
 ]
 
+[project.optional-dependencies]
+api = [
+  "anthropic>=0.40",
+  "openai>=1.50",
+]
+serve = [
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+]
+all = [
+  "revisica[api,serve]",
+]
+
 [project.scripts]
 revisica = "revisica.cli:main"
 

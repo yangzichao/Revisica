@@ -3,14 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 import json
-import os
 from pathlib import Path
-import subprocess
-import tempfile
 
 from .adjudication_policy import pick_preferred_item
 from .bootstrap import PlatformStatus, bootstrap, detect_platforms
 from .core_types import AgentSpec, FinalReportResult, ProviderModelSpec, ReviewResult
+from .providers import get_provider
 from .templates import (
     CLAUDE_AGENT_NAME,
     build_final_adjudication_prompt,
@@ -164,9 +162,9 @@ def _run_provider(
     timeout_seconds: int,
     model: str | None = None,
 ) -> ReviewResult:
-    if provider_name == "codex":
-        return _run_codex(platform.cli_path, prompt, timeout_seconds, model=model)
-    return _run_claude(platform.cli_path, platform.agent_path, prompt, timeout_seconds, model=model)
+    """Send a prompt to a provider. Delegates to the provider registry."""
+    provider = get_provider(provider_name)
+    return provider.run_prompt(prompt, model=model, timeout_seconds=timeout_seconds)
 
 
 def _run_provider_agent(
@@ -178,268 +176,12 @@ def _run_provider_agent(
     model: str | None = None,
     working_dir: str | None = None,
 ) -> ReviewResult:
-    """Run a real agent with tool access (not just a prompt pipe)."""
-    if provider_name == "codex":
-        return _run_codex_agent(
-            platform.cli_path, task_prompt, agent_spec,
-            timeout_seconds, model=model, working_dir=working_dir,
-        )
-    return _run_claude_agent(
-        platform.cli_path, task_prompt, agent_spec,
-        timeout_seconds, model=model, working_dir=working_dir,
+    """Run an agent with tool access. Delegates to the provider registry."""
+    provider = get_provider(provider_name)
+    return provider.run_agent(
+        task_prompt, agent_spec,
+        model=model, timeout_seconds=timeout_seconds, working_dir=working_dir,
     )
-
-
-def _run_codex(
-    cli_path: str | None,
-    prompt: str,
-    timeout_seconds: int,
-    model: str | None = None,
-) -> ReviewResult:
-    if cli_path is None:
-        raise RuntimeError("codex CLI not found")
-
-    with tempfile.NamedTemporaryFile(prefix="revisica-codex-", suffix=".md", delete=False) as handle:
-        output_path = Path(handle.name)
-
-    cmd = [
-        cli_path,
-        "exec",
-        "--skip-git-repo-check",
-        "--color",
-        "never",
-        "--output-last-message",
-        str(output_path),
-    ]
-    if model:
-        cmd.extend(["--model", model])
-    try:
-        completed = subprocess.run(
-            cmd,
-            input=prompt,
-            text=True,
-            capture_output=True,
-            check=False,
-            timeout=timeout_seconds,
-            env=_subprocess_env(),
-        )
-        output = output_path.read_text(encoding="utf-8") if output_path.exists() else completed.stdout
-        return ReviewResult(
-            provider="codex",
-            model=model,
-            command=cmd,
-            returncode=completed.returncode,
-            output=output,
-            stderr=completed.stderr,
-        )
-    except subprocess.TimeoutExpired as error:
-        output = output_path.read_text(encoding="utf-8") if output_path.exists() else ""
-        stderr = f"Timed out after {timeout_seconds} seconds."
-        if error.stderr:
-            stderr = f"{stderr}\n{error.stderr}"
-        return ReviewResult(
-            provider="codex",
-            model=model,
-            command=cmd,
-            returncode=124,
-            output=output,
-            stderr=stderr,
-        )
-    finally:
-        output_path.unlink(missing_ok=True)
-
-
-def _run_claude(
-    cli_path: str | None,
-    agent_path: Path,
-    prompt: str,
-    timeout_seconds: int,
-    model: str | None = None,
-) -> ReviewResult:
-    if cli_path is None:
-        raise RuntimeError("claude CLI not found")
-
-    agents_json = agent_path.read_text(encoding="utf-8")
-    cmd = [
-        cli_path,
-        "-p",
-        "--output-format",
-        "text",
-        "--permission-mode",
-        "dontAsk",
-        "--tools",
-        "",
-        "--agents",
-        agents_json,
-        "--agent",
-        CLAUDE_AGENT_NAME,
-    ]
-    if model:
-        cmd.extend(["--model", model])
-    try:
-        completed = subprocess.run(
-            cmd,
-            input=prompt,
-            text=True,
-            capture_output=True,
-            check=False,
-            timeout=timeout_seconds,
-            env=_subprocess_env(),
-        )
-        return ReviewResult(
-            provider="claude",
-            model=model,
-            command=cmd,
-            returncode=completed.returncode,
-            output=completed.stdout,
-            stderr=completed.stderr,
-        )
-    except subprocess.TimeoutExpired as error:
-        stderr = f"Timed out after {timeout_seconds} seconds."
-        if error.stderr:
-            stderr = f"{stderr}\n{error.stderr}"
-        output = error.stdout or ""
-        return ReviewResult(
-            provider="claude",
-            model=model,
-            command=cmd,
-            returncode=124,
-            output=output,
-            stderr=stderr,
-        )
-
-
-def _run_claude_agent(
-    cli_path: str | None,
-    task_prompt: str,
-    agent_spec: AgentSpec,
-    timeout_seconds: int,
-    model: str | None = None,
-    working_dir: str | None = None,
-) -> ReviewResult:
-    """Run a Claude Code agent with real tool access."""
-    if cli_path is None:
-        raise RuntimeError("claude CLI not found")
-
-    agent_def = agent_spec.claude_agent_def or {}
-    agents_json = json.dumps({agent_spec.name: agent_def})
-
-    cmd = [
-        cli_path,
-        "-p",
-        "--output-format", "text",
-        "--permission-mode", "bypassPermissions",
-        "--agents", agents_json,
-        "--agent", agent_spec.name,
-    ]
-    if model:
-        cmd.extend(["--model", model])
-
-    try:
-        completed = subprocess.run(
-            cmd,
-            input=task_prompt,
-            text=True,
-            capture_output=True,
-            check=False,
-            timeout=timeout_seconds,
-            cwd=working_dir,
-            env=_subprocess_env(),
-        )
-        return ReviewResult(
-            provider="claude",
-            model=model,
-            command=cmd,
-            returncode=completed.returncode,
-            output=completed.stdout,
-            stderr=completed.stderr,
-        )
-    except subprocess.TimeoutExpired as error:
-        stderr = f"Timed out after {timeout_seconds} seconds."
-        if error.stderr:
-            stderr = f"{stderr}\n{error.stderr}"
-        return ReviewResult(
-            provider="claude",
-            model=model,
-            command=cmd,
-            returncode=124,
-            output=error.stdout or "",
-            stderr=stderr,
-        )
-
-
-def _run_codex_agent(
-    cli_path: str | None,
-    task_prompt: str,
-    agent_spec: AgentSpec,
-    timeout_seconds: int,
-    model: str | None = None,
-    working_dir: str | None = None,
-) -> ReviewResult:
-    """Run a Codex agent with sandbox, instructions file, and optional output schema."""
-    if cli_path is None:
-        raise RuntimeError("codex CLI not found")
-
-    # Load agent instructions and prepend to task prompt
-    full_prompt = task_prompt
-    if agent_spec.codex_instructions_path:
-        instructions_path = Path(agent_spec.codex_instructions_path)
-        if instructions_path.exists():
-            instructions = instructions_path.read_text(encoding="utf-8")
-            full_prompt = f"{instructions}\n\n---\n\n## Task\n\n{task_prompt}"
-
-    with tempfile.NamedTemporaryFile(prefix="revisica-codex-", suffix=".md", delete=False) as handle:
-        output_path = Path(handle.name)
-
-    cmd = [
-        cli_path,
-        "exec",
-        "--full-auto",
-        "--sandbox", agent_spec.codex_sandbox,
-        "--color", "never",
-        "--output-last-message", str(output_path),
-    ]
-    if working_dir:
-        cmd.extend(["-C", working_dir])
-    if agent_spec.codex_output_schema:
-        cmd.extend(["--output-schema", agent_spec.codex_output_schema])
-    if model:
-        cmd.extend(["--model", model])
-
-    try:
-        completed = subprocess.run(
-            cmd,
-            input=full_prompt,
-            text=True,
-            capture_output=True,
-            check=False,
-            timeout=timeout_seconds,
-            env=_subprocess_env(),
-        )
-        output = output_path.read_text(encoding="utf-8") if output_path.exists() else completed.stdout
-        return ReviewResult(
-            provider="codex",
-            model=model,
-            command=cmd,
-            returncode=completed.returncode,
-            output=output,
-            stderr=completed.stderr,
-        )
-    except subprocess.TimeoutExpired as error:
-        output = output_path.read_text(encoding="utf-8") if output_path.exists() else ""
-        stderr = f"Timed out after {timeout_seconds} seconds."
-        if error.stderr:
-            stderr = f"{stderr}\n{error.stderr}"
-        return ReviewResult(
-            provider="codex",
-            model=model,
-            command=cmd,
-            returncode=124,
-            output=output,
-            stderr=stderr,
-        )
-    finally:
-        output_path.unlink(missing_ok=True)
 
 
 def _generate_final_report(
@@ -578,12 +320,6 @@ def _write_final_report_artifacts(run_dir: Path, final_report: FinalReportResult
         )
 
 
-def _subprocess_env() -> dict[str, str]:
-    env = os.environ.copy()
-    runtime_home = env.get("REVISICA_RUNTIME_HOME")
-    if runtime_home:
-        env["HOME"] = runtime_home
-    return env
 
 
 def _write_summary(

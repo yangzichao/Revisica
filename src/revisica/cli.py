@@ -9,7 +9,9 @@ from .benchmark_math import run_math_benchmark
 from .benchmark_refine import run_refine_benchmark
 from .benchmark_writing import run_writing_benchmark
 from .bootstrap import bootstrap
+from .ingestion import parse_document
 from .math_review import review_math_file
+from .profiles import ReviewMode
 from .proofnet_adapter import benchmark_proofnet, import_proofnet_cases
 from .core_types import ProviderModelSpec
 from .templates import SUPPORTED_VENUE_PROFILES
@@ -44,6 +46,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     _add_bootstrap_parser(sub)
+    _add_ingest_parser(sub)
     _add_review_parser(sub)
     _add_writing_review_parser(sub)
     _add_math_review_parser(sub)
@@ -66,10 +69,24 @@ def _add_bootstrap_parser(sub: argparse._SubParsersAction) -> None:
                    help="Overwrite existing installed assets.")
 
 
+def _add_ingest_parser(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser("ingest",
+                       help="Parse a PDF or .tex file into a RevisicaDocument.")
+    p.add_argument("file", help="Path to the input file (PDF or .tex).")
+    p.add_argument("--parser", default="auto",
+                   choices=["auto", "mathpix", "mineru", "marker", "pandoc", "tex-basic"],
+                   help="Parser to use (default: auto-detect).")
+    p.add_argument("--output",
+                   help="Write the RevisicaDocument JSON to a file instead of stdout.")
+
+
 def _add_review_parser(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("review",
                        help="Run unified review: writing + math lanes concurrently.")
-    p.add_argument("file", help="Path to the target LaTeX draft.")
+    p.add_argument("file", help="Path to the target paper (PDF or .tex).")
+    p.add_argument("--mode", default="review",
+                   choices=["polish", "review"],
+                   help="Review mode: 'polish' for writing-only, 'review' for full deep analysis.")
     p.add_argument("--output-dir",
                    help="Directory where the unified run artifacts should be written.")
     p.add_argument("--venue-profile", default="general-academic",
@@ -432,8 +449,24 @@ def _handle_benchmark_refine(args: argparse.Namespace) -> None:
 
 # ── dispatch ─────────────────────────────────────────────────────────
 
+def _handle_ingest(args: argparse.Namespace) -> None:
+    import json as _json
+    from dataclasses import asdict
+    document = parse_document(args.file, parser=args.parser)
+    output_data = _json.dumps(asdict(document), indent=2, ensure_ascii=False)
+    if args.output:
+        Path(args.output).write_text(output_data + "\n", encoding="utf-8")
+        print(f"document written to: {args.output}")
+    else:
+        print(output_data)
+    print(f"parser: {document.parser_used}", file=__import__("sys").stderr)
+    print(f"title: {document.metadata.title}", file=__import__("sys").stderr)
+    print(f"sections: {len(document.sections)}", file=__import__("sys").stderr)
+
+
 _HANDLERS = {
     "bootstrap": lambda args: [print(line) for line in bootstrap(targets=args.targets, force=args.force)],
+    "ingest": _handle_ingest,
     "review": _handle_review,
     "writing-review": _handle_writing_review,
     "math-review": _handle_math_review,

@@ -1,0 +1,125 @@
+"""Parser registry with auto-detection."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from .base import BaseParser
+from .normalize import normalize_to_document
+from .types import RevisicaDocument
+
+
+def _get_available_parsers() -> list[BaseParser]:
+    """Lazily discover available parsers."""
+    parsers: list[BaseParser] = []
+
+    # Pandoc — preferred for .tex
+    try:
+        from .pandoc_parser import PandocParser
+        if PandocParser.is_available():
+            parsers.append(PandocParser())
+    except ImportError:
+        pass
+
+    # tex-basic — fallback for .tex when Pandoc is not installed
+    try:
+        from .tex_parser import TexParser
+        if TexParser.is_available():
+            parsers.append(TexParser())
+    except ImportError:
+        pass
+
+    # Mathpix — register if API key is configured
+    try:
+        from .mathpix_parser import MathpixParser
+        if MathpixParser.is_available():
+            parsers.append(MathpixParser())
+    except ImportError:
+        pass
+
+    # MinerU — register if package available + GPU
+    try:
+        from .mineru_parser import MineruParser
+        if MineruParser.is_available():
+            parsers.append(MineruParser())
+    except ImportError:
+        pass
+
+    # Marker — register as fallback
+    try:
+        from .marker_parser import MarkerParser
+        if MarkerParser.is_available():
+            parsers.append(MarkerParser())
+    except ImportError:
+        pass
+
+    return parsers
+
+
+def _select_parser(path: Path, parser_name: str) -> BaseParser:
+    """Select a parser by name or auto-detect the best one for the file."""
+    available_parsers = _get_available_parsers()
+
+    if parser_name != "auto":
+        for parser in available_parsers:
+            if parser.name == parser_name:
+                if not parser.can_handle(path):
+                    raise ValueError(
+                        f"Parser '{parser_name}' cannot handle {path.suffix} files."
+                    )
+                return parser
+        available_names = [p.name for p in available_parsers]
+        raise ValueError(
+            f"Parser '{parser_name}' not available. "
+            f"Available: {available_names or 'none'}"
+        )
+
+    # Auto-detect: find the best parser that can handle this file
+    for parser in available_parsers:
+        if parser.can_handle(path):
+            return parser
+
+    suffix = path.suffix.lower()
+    if suffix == ".pdf":
+        raise RuntimeError(
+            "No PDF parser available. Install one of:\n"
+            "  - Set MATHPIX_API_KEY for Mathpix API\n"
+            "  - pip install magic-pdf (MinerU, requires GPU)\n"
+            "  - pip install marker-pdf (Marker, no GPU needed)"
+        )
+    if suffix == ".tex":
+        raise RuntimeError(
+            "No .tex parser available. This should not happen — "
+            "the built-in tex-basic parser should always be available."
+        )
+    raise RuntimeError(f"No parser can handle {suffix} files.")
+
+
+def parse_document(
+    path: str | Path,
+    parser: str = "auto",
+) -> RevisicaDocument:
+    """Parse a file into a RevisicaDocument.
+
+    Args:
+        path: Path to the input file (PDF or .tex).
+        parser: Parser name ("mathpix", "mineru", "marker", "pandoc")
+                or "auto" to select the best available.
+
+    Returns:
+        A normalized RevisicaDocument.
+    """
+    file_path = Path(path).expanduser().resolve()
+    if not file_path.exists():
+        raise FileNotFoundError(f"Input file does not exist: {file_path}")
+    if not file_path.is_file():
+        raise IsADirectoryError(f"Input path is not a file: {file_path}")
+
+    selected_parser = _select_parser(file_path, parser)
+    raw_markdown = selected_parser.parse(file_path)
+
+    return normalize_to_document(
+        raw_markdown=raw_markdown,
+        source_path=str(file_path),
+        parser_used=selected_parser.name,
+    )
