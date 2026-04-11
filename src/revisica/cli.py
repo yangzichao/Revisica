@@ -46,6 +46,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     _add_bootstrap_parser(sub)
+    _add_serve_parser(sub)
     _add_ingest_parser(sub)
     _add_review_parser(sub)
     _add_writing_review_parser(sub)
@@ -67,6 +68,15 @@ def _add_bootstrap_parser(sub: argparse._SubParsersAction) -> None:
                    help="Specific provider targets to bootstrap.")
     p.add_argument("--force", action="store_true",
                    help="Overwrite existing installed assets.")
+
+
+def _add_serve_parser(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser("serve",
+                       help="Start the Revisica API server (for desktop app).")
+    p.add_argument("--host", default="127.0.0.1",
+                   help="Host to bind to (default: 127.0.0.1).")
+    p.add_argument("--port", type=int, default=18321,
+                   help="Port to listen on (default: 18321).")
 
 
 def _add_ingest_parser(sub: argparse._SubParsersAction) -> None:
@@ -464,8 +474,16 @@ def _handle_ingest(args: argparse.Namespace) -> None:
     print(f"sections: {len(document.sections)}", file=__import__("sys").stderr)
 
 
+def _handle_serve(args: argparse.Namespace) -> None:
+    import uvicorn
+    from .api import app
+    print(f"Starting Revisica API server on {args.host}:{args.port}")
+    uvicorn.run(app, host=args.host, port=args.port)
+
+
 _HANDLERS = {
     "bootstrap": lambda args: [print(line) for line in bootstrap(targets=args.targets, force=args.force)],
+    "serve": _handle_serve,
     "ingest": _handle_ingest,
     "review": _handle_review,
     "writing-review": _handle_writing_review,
