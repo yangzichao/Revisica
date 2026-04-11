@@ -5,23 +5,50 @@
 Full plan: `~/.claude/plans/immutable-dazzling-mochi.md`
 Spec: `docs/specs/desktop-app.md`
 
+## Architecture Decision: Commit to Full Migration
+
+**Status:** decided — migrate main flow to new architecture
+**Date:** 2026-04-11
+
+The project is in a half-migrated state with **5 identified structural debts** (see `docs/learning/2026-04-11-architecture-debt-observations.md`). The decision is: **fully migrate the main flow to LangGraph + new agent registry + RevisicaDocument**, not keep them as separate layers.
+
+This means P0 is now the **critical path** — everything else is blocked until the dual-system problem is resolved.
+
 ## Next: Priority Work Items
 
-Foundation (Steps 1-7 phase 1) is laid. The following are the highest-priority next steps to get a working end-to-end desktop app:
+### P0: Resolve dual-system problem (CRITICAL — blocks everything)
 
-### P0: Make it run end-to-end
+**The problem:** 5 structural debts from half-migration:
+1. Two orchestration layers (LangGraph graphs vs ThreadPoolExecutor)
+2. Two agent systems (agents/definitions/ vs agent_assets.py + JSON/MD files)
+3. Ingestion layer built but not consumed by review pipeline
+4. Two prompt systems (templates.py vs agents/definitions/ system_prompt)
+5. Provider layer done but upper layers still pass dead `PlatformStatus` param
 
-- [ ] **Wire graphs into public API** — `review_unified()` should run the unified LangGraph instead of the old ThreadPoolExecutor. This is the key switch that makes the new architecture live. Requires updating `unified_review.py`, `writing_review.py`, `math_review.py` to delegate to graphs.
-- [ ] **Add `langgraph>=1.0` to pyproject.toml dependencies** — Currently installed but not declared.
-- [ ] **Test `revisica review` end-to-end with graphs** — Verify output is identical to the old pipeline.
-- [ ] **Test `npm run dev` with live Python backend** — Verify Electron opens, finds Python venv, starts API, renders UI.
+**The fix — one migration in this order:**
 
-### P1: Essential missing pieces
+- [ ] **P0.1: Agent translators** — Create `agents/translators/` that convert `AgentDefinition` → `AgentSpec` (the bridge type used by review.py). This lets graph nodes use the new agent definitions while calling the old provider execution layer. **Unblocks everything else.**
 
-- [ ] **Settings page (React)** — Provider config UI: API key input (masked), "Test Connection" button, provider status. Without this, desktop users can't configure providers.
-- [ ] **Agent translators** — `agents/translators/` to convert `AgentDefinition` → provider-native format. Needed to fully replace the dual Claude JSON / Codex Markdown maintenance.
-- [ ] **Refactor `bootstrap.py`** — Use ProviderRegistry for detection instead of hardcoded `detect_platforms()`.
-- [ ] **PDF parsers (Mathpix, MinerU, Marker)** — `ingestion/mathpix_parser.py`, `ingestion/mineru_parser.py`, `ingestion/marker_parser.py`. Without these, only `.tex` input works.
+- [ ] **P0.2: Wire ingestion into review pipeline** — `review_unified()` calls `parse_document()` first, passes `RevisicaDocument` through to writing/math lanes. Writing lane uses `doc.sections` instead of `section_combiner.extract_sections()`. Math lane uses `doc.markdown` instead of `Path.read_text()`.
+
+- [ ] **P0.3: Wire LangGraph into public API** — `review_unified()` delegates to `graphs/unified.py`. `review_writing_file()` delegates to `graphs/writing.py`. `review_math_file()` delegates to `graphs/math.py`. Old ThreadPoolExecutor code becomes dead and gets deleted.
+
+- [ ] **P0.4: Consolidate agent definitions** — All graph nodes use `get_agent()` + translator instead of inline `AgentSpec` construction. Delete `agent_assets.py`. Delete `agents/claude/*.json` and `agents/codex/*.md` (replaced by `agents/definitions/*.py` + translators). Delete `.claude/agents/*.md`.
+
+- [ ] **P0.5: Clean up review.py** — Remove dead `platform` parameter from `_run_provider()` and `_run_provider_agent()`. Update all call sites. Consider whether review.py should be deleted entirely (its remaining functions are just thin wrappers).
+
+- [ ] **P0.6: Unify prompt management** — Decide: do venue profiles and dynamic task builders stay in `templates.py`, or move into agent definitions? Rule of thumb: static instructions → agent definitions, dynamic task construction → templates.py or graph nodes.
+
+- [ ] **P0.7: Add `langgraph>=1.0` to pyproject.toml** — Declare the dependency.
+
+- [ ] **P0.8: Regression test** — `revisica benchmark-run --suite math-cases --mode deterministic-only` must still pass 5/5. `revisica review examples/minimal_paper.tex` must produce same output.
+
+### P1: Desktop app essentials
+
+- [ ] **Settings page (React)** — Provider config UI: API key input, Test Connection, provider status.
+- [ ] **Test `npm run dev` end-to-end** — Electron opens, starts Python API, renders UI, runs a review.
+- [ ] **PDF parsers (Mathpix, MinerU, Marker)** — Without these, only `.tex` input works.
+- [ ] **Refactor `bootstrap.py`** — Use ProviderRegistry instead of hardcoded `detect_platforms()`.
 
 ### P2: HITL + Streaming (enables Focus mode)
 
