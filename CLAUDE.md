@@ -69,12 +69,9 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `cli.py` | Command dispatch (thin) |
 | `unified_review.py` | Concurrent writing + math orchestration |
 | `writing_review.py` | Writing lane orchestration |
-| `math_review.py` | Math lane orchestrator (calls 4 sub-modules) |
-| `math_extraction.py` | Function/claim/theorem/proof extraction from LaTeX |
-| `math_deterministic.py` | SymPy-based symbolic analysis |
+| `math_review.py` | Math lane orchestrator |
 | `math_llm_review.py` | Multi-provider proof review + adjudication |
-| `math_artifacts.py` | Math report rendering (JSON/Markdown) |
-| `math_types.py` | All math-lane dataclasses (`MathReviewRun`, `ProofBlueprint`, `MathIssue`, etc.) |
+| `math_check/` | **Subpackage:** types, extraction, deterministic analysis, artifact rendering (pure SymPy, no LLM deps) |
 | `review.py` | Shared provider execution; delegates to `providers/` registry |
 | `templates.py` | All prompt templates and venue profile definitions |
 | `model_router.py` | Task-type -> provider/model selection |
@@ -82,10 +79,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `adjudication_policy.py` | Provider preference logic for adjudication |
 | `section_combiner.py` | Section extraction and combination generation |
 | `claim_extractor.py` | Per-paragraph/footnote claim extraction and verification tasks |
-| `agent_assets.py` | Load agent definition files from `.claude/agents/` |
-| `benchmark_framework.py` | Unified benchmark runner (math suites) |
-| `benchmark_refine.py` | Refine.ink benchmark adapter with LLM judge |
-| `benchmark_provenance.py` | Git/prompt provenance tracking for benchmark registry |
+| `eval/` | **Subpackage:** benchmark framework, math/writing/refine benchmarks, provenance, HF dataset adapters |
 | `bootstrap.py` | CLI/asset detection and installation for codex/claude platforms |
 
 ## Environment Variables

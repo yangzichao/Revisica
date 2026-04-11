@@ -150,6 +150,7 @@ If someone wants to connect this explanation back to the code:
 - `writing_review.py`: writing review orchestration
 - `math_review.py`: math review orchestration
 - `review.py`: shared provider execution layer
-- `math_extraction.py`, `math_deterministic.py`, `math_llm_review.py`, `math_artifacts.py`: internal math pipeline
-- `benchmark_framework.py`: benchmarking and evaluation runs
-- `core_types.py`, `adjudication_policy.py`, `agent_assets.py`: shared infrastructure
+- `math_check/`: pure math pipeline (types, extraction, deterministic analysis, artifact rendering)
+- `math_llm_review.py`: LLM-based proof review
+- `eval/`: benchmarking and evaluation framework (math, writing, refine, HF dataset adapters)
+- `core_types.py`, `adjudication_policy.py`: shared infrastructure

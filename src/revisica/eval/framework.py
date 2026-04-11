@@ -6,11 +6,11 @@ import json
 from pathlib import Path
 import re
 
-from .math_review import MathReviewRun, review_math_file
+from ..math_review import MathReviewRun, review_math_file
 from .processbench_adapter import import_processbench_cases
 from .proofbench_adapter import import_proofbench_cases
 from .proofnet_adapter import import_proofnet_cases
-from .core_types import ProviderModelSpec
+from ..core_types import ProviderModelSpec
 
 
 BENCHMARK_MODES = {

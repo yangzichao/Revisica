@@ -20,8 +20,8 @@ import json
 from pathlib import Path
 import subprocess
 
-from . import templates as tpl
-from .core_types import ProviderModelSpec
+from .. import templates as tpl
+from ..core_types import ProviderModelSpec
 
 
 REGISTRY_PATH = Path("benchmarks/registry.jsonl")

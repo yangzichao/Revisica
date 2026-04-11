@@ -5,12 +5,12 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-from .benchmark_provenance import (
+from .provenance import (
     RegistryEntry,
     append_to_registry,
     build_provenance,
 )
-from .writing_review import WritingReviewRun, review_writing_file
+from ..writing_review import WritingReviewRun, review_writing_file
 
 
 @dataclass

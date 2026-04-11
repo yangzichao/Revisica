@@ -5,7 +5,7 @@ import re
 
 import sympy as sp
 
-from .math_types import (
+from .types import (
     FunctionDefinition,
     MathClaim,
     ProofBlock,

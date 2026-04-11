@@ -21,18 +21,18 @@ import json
 from pathlib import Path
 import re
 
-from .adjudication_policy import pick_preferred_provider
-from .agents import get_agent, to_agent_spec
-from .benchmark_provenance import (
+from ..adjudication_policy import pick_preferred_provider
+from ..agents import get_agent, to_agent_spec
+from .provenance import (
     RegistryEntry,
     append_to_registry,
     build_provenance,
 )
-from .bootstrap import detect_platforms
-from .core_types import AgentSpec, ProviderModelSpec, ReviewResult
-from .model_router import resolve_model_for_task, TASK_WRITING_JUDGE
-from .review import _run_provider_agent
-from .writing_review import (
+from ..bootstrap import detect_platforms
+from ..core_types import AgentSpec, ProviderModelSpec, ReviewResult
+from ..model_router import resolve_model_for_task, TASK_WRITING_JUDGE
+from ..review import _run_provider_agent
+from ..writing_review import (
     WritingReviewRun,
     review_writing_file,
     _extract_findings_payload,

@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .benchmark_provenance import REGISTRY_PATH, load_registry
+from .provenance import REGISTRY_PATH, load_registry
 
 
 def render_history(

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import sympy as sp
 
-from .core_types import ReviewResult
+from ..core_types import ReviewResult
 
 
 @dataclass

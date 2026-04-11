@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from urllib.request import urlopen
 
-from .math_review import review_math_file
+from ..math_review import review_math_file
 
 
 PROOFNET_RAW_BASE = "https://raw.githubusercontent.com/zhangir-azerbayev/ProofNet/main/benchmark"

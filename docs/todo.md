@@ -16,6 +16,8 @@ Learning: `docs/learning/`
 
 **Session 2 done:** Backend mode flag (`cli`/`api`/`auto`) for dual-distribution (DMG + App Store). Fixed Python 3.9 compat (api.py type syntax, langgraph→optional dep). Added logging.warning to all silent exception blocks (bugs.md #4). API server + Electron build verified.
 
+**Session 3 (P4) done:** Deleted dead code (10 `.claude/agents/*.md` files + `agent_assets.py`). Extracted `math_check/` subpackage (pure SymPy math analysis, 4 modules). Extracted `eval/` subpackage (benchmarks + adapters, 10 modules). Benchmark 5/5 PASS.
+
 **Total: ~4,800 lines Python + ~1,000 lines TS/CSS across 50+ new files. 17 commits.**
 
 ---
@@ -52,11 +54,11 @@ Learning: `docs/learning/`
 
 ### P4: Cleanup + module extraction
 
-- [ ] **Delete dead code** — `agent_assets.py`, `.claude/agents/*.md` (10 files).
+- [x] **Delete dead code** — `agent_assets.py` deleted (inlined into writing_review.py), `.claude/agents/*.md` (10 files) deleted.
+- [x] **`math_check/` package** — Extracted `math_types`, `math_extraction`, `math_deterministic`, `math_artifacts` into `src/revisica/math_check/`. Pure SymPy, no LLM deps.
+- [x] **`eval/` package** — Extracted 6 `benchmark_*.py` + 3 adapters + `hf_datasets.py` into `src/revisica/eval/`.
 - [ ] **Unify prompt docs** — Document that dynamic task builders stay in templates.py, static system prompts in agents/definitions/.
-- [ ] **`math_check/` package** — Extract math_deterministic.py + friends into independent module.
-- [ ] **`eval/` package** — Extract benchmark_*.py into independent evaluation framework.
-- [ ] **Decompose `writing_review.py`** — 846 lines → smaller files as LangGraph nodes take over.
+- [ ] **Decompose `writing_review.py`** — 800 lines → smaller files as LangGraph nodes take over.
 
 ### Paused: Refine.ink Recall Gap
 

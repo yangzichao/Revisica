@@ -4,17 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .core_types import ProviderModelSpec
-from .math_artifacts import write_math_artifacts
-from .math_deterministic import analyze_blueprints, analyze_claims, issue_sort_key
-from .math_extraction import (
-    build_proof_blueprints,
-    extract_claims,
-    extract_functions,
-    extract_proof_blocks,
-    extract_theorem_blocks,
-)
-from .math_llm_review import run_llm_proof_review
-from .math_types import (
+from .math_check import (
     FunctionDefinition,
     LLMAdjudicationArtifact,
     LLMProofReviewArtifact,
@@ -25,7 +15,17 @@ from .math_types import (
     ProofBlueprint,
     ProofBlock,
     TheoremBlock,
+    analyze_blueprints,
+    analyze_claims,
+    build_proof_blueprints,
+    extract_claims,
+    extract_functions,
+    extract_proof_blocks,
+    extract_theorem_blocks,
+    issue_sort_key,
+    write_math_artifacts,
 )
+from .math_llm_review import run_llm_proof_review
 
 
 def review_math_file(

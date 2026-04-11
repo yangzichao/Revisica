@@ -9,7 +9,6 @@ from pathlib import Path
 import re
 
 from .adjudication_policy import pick_preferred_item
-from .agent_assets import find_agent_file
 from .agents import get_agent, to_agent_spec
 from .bootstrap import PlatformStatus, bootstrap, detect_platforms
 from .claim_extractor import (
@@ -435,7 +434,14 @@ def _make_output_dir(source: Path, output_dir: str | None) -> Path:
 # ── real agent infrastructure ────────────────────────────────────────
 
 def _find_codex_file(filename: str) -> str | None:
-    return find_agent_file("codex", filename)
+    candidates = [
+        Path.cwd() / "agents" / "codex" / filename,
+        Path(__file__).resolve().parent.parent.parent / "agents" / "codex" / filename,
+    ]
+    for path in candidates:
+        if path.exists():
+            return str(path)
+    return None
 
 
 # Map role names to agent definition names in the unified registry

@@ -11,7 +11,7 @@ from .agents import get_agent, to_agent_spec
 from .bootstrap import PlatformStatus, bootstrap, detect_platforms
 from .core_types import AgentSpec, ProviderModelSpec
 from .model_router import resolve_model_for_role
-from .math_types import (
+from .math_check import (
     LLMAdjudicationArtifact,
     LLMProofReviewArtifact,
     LLMSelfCheckArtifact,
@@ -23,6 +23,17 @@ from .review import _run_provider_agent
 
 
 _MAX_PARALLEL_WORKERS = 10
+
+
+def find_codex_file(filename: str) -> str | None:
+    candidates = [
+        Path.cwd() / "agents" / "codex" / filename,
+        Path(__file__).resolve().parent.parent.parent / "agents" / "codex" / filename,
+    ]
+    for path in candidates:
+        if path.exists():
+            return str(path)
+    return None
 
 
 def run_llm_proof_review(
@@ -84,7 +95,6 @@ def run_llm_proof_review(
         futures: dict[object, tuple[ProviderModelSpec, ProofBlueprint]] = {}
         for spec in selected_specs:
             routed_spec = resolve_model_for_role(spec, "proof-reviewer")
-            platform = platforms[routed_spec.provider]
             for blueprint in blueprints:
                 agent_spec = build_math_agent_spec("proof-reviewer", schema_path)
                 task_prompt = build_proof_review_task(str(source), blueprint)
@@ -482,7 +492,6 @@ def _run_math_adjudication(
     timeout_seconds: int,
 ) -> LLMAdjudicationArtifact:
     routed = resolve_model_for_role(adjudicator_spec, "adjudicator")
-    platform = platforms[routed.provider]
     schema_path = find_codex_file("findings.schema.json")
     agent_spec = build_math_agent_spec("adjudicator", schema_path)
     task_prompt = build_adjudication_task(str(source), blueprint, provider_artifacts)
@@ -517,7 +526,6 @@ def _run_math_self_check(
         model=reviewer_artifact.model,
     )
     routed = resolve_model_for_role(checker, "self-checker")
-    platform = platforms[routed.provider]
     schema_path = find_codex_file("findings.schema.json")
     agent_spec = build_math_agent_spec("self-checker", schema_path)
     task_prompt = build_self_check_task(

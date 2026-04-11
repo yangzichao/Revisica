@@ -24,16 +24,15 @@
 **Severity:** MEDIUM — maintenance burden, confusion about source of truth
 **Status:** Partially addressed by `src/revisica/agents/definitions/` (new unified system)
 
-Three locations still exist:
+Two active locations remain (`.claude/agents/` deleted in P4, `agent_assets.py` deleted):
 
 | Location | Format | Files | Status |
 |---|---|---|---|
-| `agents/claude/*.json` | JSON | 12 | Active — loaded by `agent_assets.py` |
+| `agents/claude/*.json` | JSON | 12 | Active — loaded by unified agent registry |
 | `agents/codex/*.md` | Markdown | 13 | Active — used by Codex CLI |
-| `.claude/agents/*.md` | Markdown | 10 | Dead — not loaded by any code |
 | `src/revisica/agents/definitions/*.py` | Python | 11 | **New** — unified definitions (not yet wired) |
 
-**Plan:** Once `agents/translators/` is implemented (P1 in TODO), the `agents/claude/` and `agents/codex/` directories become generated output. `.claude/agents/` can be deleted. The unified definitions in `src/revisica/agents/definitions/` become the single source of truth.
+**Plan:** Once `agents/translators/` is implemented, the `agents/claude/` and `agents/codex/` directories become generated output. The unified definitions in `src/revisica/agents/definitions/` become the single source of truth.
 
 ### 4. Silent exception swallowing — no logging on failure — FIXED
 

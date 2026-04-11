@@ -11,17 +11,19 @@ from typing import Any
 
 from langgraph.graph import END, StateGraph
 
-from ..math_artifacts import write_math_artifacts
-from ..math_deterministic import analyze_blueprints, analyze_claims, issue_sort_key
-from ..math_extraction import (
+from ..math_check import (
+    MathIssue,
+    analyze_blueprints,
+    analyze_claims,
     build_proof_blueprints,
     extract_claims,
     extract_functions,
     extract_proof_blocks,
     extract_theorem_blocks,
+    issue_sort_key,
+    write_math_artifacts,
 )
 from ..math_llm_review import run_llm_proof_review
-from ..math_types import MathIssue
 from .state import MathState
 
 
@@ -94,6 +96,8 @@ def run_llm_review(state: MathState) -> dict:
             targets=targets,
             proof_review_mode="auto",
             reviewer_specs=reviewer_specs,
+            self_check_spec=None,
+            adjudicator_spec=None,
             force_bootstrap=config.force_bootstrap,
             timeout_seconds=config.timeout_seconds,
         )

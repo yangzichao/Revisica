@@ -4,12 +4,12 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from .benchmark_provenance import (
+from .provenance import (
     RegistryEntry,
     append_to_registry,
     build_provenance,
 )
-from .math_review import MathReviewRun, review_math_file
+from ..math_review import MathReviewRun, review_math_file
 
 
 @dataclass

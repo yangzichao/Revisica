@@ -5,8 +5,8 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-from .math_extraction import compact_text
-from .math_types import (
+from .extraction import compact_text
+from .types import (
     FunctionDefinition,
     LLMAdjudicationArtifact,
     LLMProofReviewArtifact,

@@ -4,8 +4,8 @@ import sympy as sp
 from sympy.calculus.util import continuous_domain
 from sympy.sets import Interval
 
-from .math_extraction import find_variable_names, parse_expr
-from .math_types import FunctionDefinition, MathClaim, MathIssue, ProofBlock, ProofBlueprint
+from .extraction import find_variable_names, parse_expr
+from .types import FunctionDefinition, MathClaim, MathIssue, ProofBlock, ProofBlueprint
 
 
 def analyze_claims(
