@@ -75,6 +75,8 @@ class MathState(TypedDict, total=False):
     functions: list[dict[str, Any]]
     claims: list[dict[str, Any]]
     blueprints: list[dict[str, Any]]
+    _theorems: list[dict[str, Any]]
+    _proofs: list[dict[str, Any]]
 
     # After deterministic checks
     issues: list[dict[str, Any]]

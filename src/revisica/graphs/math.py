@@ -44,6 +44,9 @@ def read_and_extract(state: MathState) -> dict:
         "functions": functions,
         "claims": claims,
         "blueprints": blueprints,
+        # Pass through to avoid re-extraction in downstream nodes
+        "_theorems": theorems,
+        "_proofs": proofs,
     }
 
 
@@ -57,8 +60,9 @@ def run_deterministic_checks(state: MathState) -> dict:
     issues: list[MathIssue] = []
     issues.extend(analyze_claims(claims, functions))
 
-    # analyze_blueprints needs proof blocks
-    proofs = extract_proof_blocks(content)
+    proofs = state.get("_proofs", [])
+    if not proofs:
+        proofs = extract_proof_blocks(content)
     issues.extend(analyze_blueprints(blueprints, proofs))
 
     return {"issues": issues}
@@ -125,8 +129,12 @@ def write_math_report(state: MathState) -> dict:
 
     issues.sort(key=issue_sort_key)
 
-    theorems = extract_theorem_blocks(content)
-    proofs = extract_proof_blocks(content)
+    theorems = state.get("_theorems", [])
+    proofs = state.get("_proofs", [])
+    if not theorems:
+        theorems = extract_theorem_blocks(content)
+    if not proofs:
+        proofs = extract_proof_blocks(content)
 
     write_math_artifacts(
         run_dir, source,

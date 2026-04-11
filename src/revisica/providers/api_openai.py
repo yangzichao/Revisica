@@ -135,7 +135,10 @@ class OpenAiApiProvider(BaseProvider):
                 # Execute each tool call and add results
                 for tool_call in tool_calls:
                     function_name = tool_call.function.name
-                    function_args = json.loads(tool_call.function.arguments)
+                    try:
+                        function_args = json.loads(tool_call.function.arguments)
+                    except json.JSONDecodeError:
+                        function_args = {}
                     result_text = execute_tool(function_name, function_args)
                     messages.append({
                         "role": "tool",

@@ -112,6 +112,26 @@ def _tex_to_markdown(tex: str) -> str:
 
 
 def _extract_command(tex: str, command_name: str) -> str:
-    """Extract the argument of a LaTeX command like \\title{...}."""
-    match = re.search(rf"\\{command_name}\{{([^}}]+)\}}", tex)
-    return match.group(1).strip() if match else ""
+    """Extract the argument of a LaTeX command like \\title{...}.
+
+    Handles nested braces by counting brace depth instead of using
+    a simple character class.
+    """
+    pattern = rf"\\{command_name}\{{"
+    match = re.search(pattern, tex)
+    if not match:
+        return ""
+
+    start = match.end()
+    depth = 1
+    position = start
+    while position < len(tex) and depth > 0:
+        if tex[position] == "{" and (position == 0 or tex[position - 1] != "\\"):
+            depth += 1
+        elif tex[position] == "}" and (position == 0 or tex[position - 1] != "\\"):
+            depth -= 1
+        position += 1
+
+    if depth != 0:
+        return ""
+    return tex[start:position - 1].strip()
