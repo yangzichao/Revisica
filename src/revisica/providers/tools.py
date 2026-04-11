@@ -117,7 +117,10 @@ def tool_grep(pattern: str, search_path: str) -> str:
         results.extend(_grep_file(target, compiled_pattern))
     elif target.is_dir():
         for child in sorted(target.rglob("*")):
-            if child.is_file() and child.suffix in (".tex", ".md", ".txt", ".py"):
+            if child.is_file() and child.suffix in (
+                ".tex", ".md", ".txt", ".py", ".bib", ".cls", ".sty", ".bbl",
+                ".json", ".yaml", ".yml", ".csv", ".rst",
+            ):
                 results.extend(_grep_file(child, compiled_pattern))
                 if len(results) > 200:
                     break

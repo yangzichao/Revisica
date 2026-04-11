@@ -67,15 +67,20 @@ class ProviderRegistry:
         ]
 
 
-# Module-level singleton
+# Module-level singleton with thread-safe initialization
+import threading
+
 _registry: ProviderRegistry | None = None
+_registry_lock = threading.Lock()
 
 
 def get_registry() -> ProviderRegistry:
-    """Get the global provider registry (lazy singleton)."""
+    """Get the global provider registry (lazy, thread-safe singleton)."""
     global _registry
     if _registry is None:
-        _registry = ProviderRegistry()
+        with _registry_lock:
+            if _registry is None:
+                _registry = ProviderRegistry()
     return _registry
 
 

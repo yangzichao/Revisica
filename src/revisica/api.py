@@ -8,7 +8,6 @@ from __future__ import annotations
 import argparse
 import threading
 import uuid
-from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -17,11 +16,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .bootstrap import detect_platforms
 from .ingestion import parse_document
-from .profiles.config import FocusRequest, ReviewConfig, ReviewMode
 from .providers import get_registry
-from .providers.provider_config import get_provider_config, load_config, save_config
+from .providers.provider_config import load_config, save_config
 from .unified_review import review_unified
 
 app = FastAPI(title="Revisica API", version="0.1.0")

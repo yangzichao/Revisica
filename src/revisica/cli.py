@@ -475,8 +475,15 @@ def _handle_ingest(args: argparse.Namespace) -> None:
 
 
 def _handle_serve(args: argparse.Namespace) -> None:
-    import uvicorn
-    from .api import app
+    try:
+        import uvicorn
+        from .api import app
+    except ImportError as error:
+        print(
+            f"Error: missing dependency for 'revisica serve': {error}\n"
+            "Install with: pip install 'revisica[serve]'"
+        )
+        raise SystemExit(1)
     print(f"Starting Revisica API server on {args.host}:{args.port}")
     uvicorn.run(app, host=args.host, port=args.port)
 
