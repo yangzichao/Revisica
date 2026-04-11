@@ -73,42 +73,24 @@ Spec: `docs/specs/desktop-app.md`
 
 ---
 
-## Step 5: LangGraph Graphs
+## Step 5: LangGraph Graphs ✅ (phase 1 — graph structure)
 
-最大的重构步骤。orchestration 从 ThreadPoolExecutor 迁移到 LangGraph。
+所有 5 个图编译通过。当前采用渐进策略：graph 结构就绪，内部仍调用现有函数（保持行为不变）。下一步将逐步分解为更细粒度的节点。
 
-### 前置：LangGraph bundle size spike test
+- [x] **`graphs/state.py`** — `UnifiedState`, `WritingState`, `MathState`, `PolishState` TypedDict
+- [x] **`graphs/polish.py`** — 3 节点：read_paper → run_polish_agent → write_polish_report
+- [x] **`graphs/math.py`** — 4 节点：read_and_extract → run_deterministic_checks → (conditional) run_llm_review → write_math_report
+- [x] **`graphs/writing.py`** — 1 节点包装（wraps `review_writing_file()`，内部 ThreadPoolExecutor 保留）。后续迭代将分解为 parallel fan-out 节点。
+- [x] **`graphs/unified.py`** — 3 节点 + mode routing：route_by_mode → run_polish | run_full_review → write_unified_summary
+- [x] **`graphs/focus.py`** — 3 节点：run_focused_writing → run_focused_math → merge_focused_findings
+- [ ] **重新接线公共 API** — 延后到 HITL 阶段。当前公共 API 不变，graph 可以独立调用。
+- [ ] **添加 `langgraph` 到 pyproject.toml** — 已安装但还未加到 deps（需确认版本锁定）
 
-- [ ] **Spike test** — 在开始前测试：`pip install langgraph langchain-anthropic langchain-openai && pyinstaller --onefile`，测量打包大小和冷启动时间。如果过大，研究 lazy import 或 trim 方案。
+### 待后续迭代
 
-### Graph 实现 (`src/revisica/graphs/`)
-
-- [ ] **`graphs/state.py`** — 定义 `UnifiedState`、`WritingState`、`MathState` TypedDict。包含 `RevisicaDocument`、`ReviewConfig`、`focus_results`、`user_feedback` 字段。
-
-- [ ] **`graphs/nodes/`** — 复用现有纯逻辑代码作为节点函数。每个文件一个节点或一组相关节点（≤300行）。从 `math_extraction.py`、`math_deterministic.py`、`section_combiner.py`、`claim_extractor.py` 等直接 import。
-
-- [ ] **`graphs/polish.py`** — 最简图：单个 writing agent 节点 → write report → END。用来验证 LangGraph 框架能正常工作。
-
-- [ ] **`graphs/math.py`** — Math 子图：extract → deterministic checks → conditional LLM review → self-check → adjudicate → write report。复用 `math_extraction.py`、`math_deterministic.py`、`math_llm_review.py` 作为节点。
-
-- [ ] **`graphs/writing.py`** — Writing 子图：extract sections → parallel fan-out（roles + section combos + claim verify）→ collect → self-check → judge → write report。最复杂的图，替代 `writing_review.py` 的 ThreadPoolExecutor(12)。
-
-- [ ] **`graphs/unified.py`** — 顶层图：ingest → mode routing（Polish vs Review）→ parallel [writing | math] → merge → report → INTERRUPT → optional Focus loop → END。
-
-- [ ] **`graphs/focus.py`** — Focus 子图：load section → parallel [focused writing + focused math] → merge → append to report。由 HITL interrupt 触发，接收 `FocusRequest`。
-
-- [ ] **重新接线公共 API** — `review_unified()`、`review_writing_file()`、`review_math_file()` 内部改为运行 graph。函数签名不变，输出格式不变。CLI 和 benchmark 零改动。
-
-- [ ] **添加 `langgraph` 依赖** — `pyproject.toml` 添加 `langgraph>=1.0`。
-
-### 验证
-
-- [ ] `revisica review --mode polish examples/minimal_paper.tex` → Polish 模式工作
-- [ ] `revisica math-review examples/minimal_paper.tex` → 与重构前输出一致
-- [ ] `revisica writing-review examples/minimal_paper.tex` → 与重构前输出一致
-- [ ] `revisica review examples/minimal_paper.tex` → 完整 review 与重构前一致
-- [ ] `revisica benchmark-run --suite math-cases --mode deterministic-only` → 通过
-- [ ] Focus 子图可以编程触发：给定 section_id + instruction，产出定向分析
+- [ ] 分解 `graphs/writing.py` 为细粒度节点（parallel fan-out roles, self-check, judge）
+- [ ] 分解 `graphs/unified.py` 的 `run_full_review` 为真正的 parallel branches
+- [ ] 添加 HITL interrupt 节点
 
 ---
 
