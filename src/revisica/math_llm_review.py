@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 from pathlib import Path
@@ -372,6 +373,10 @@ def _finalize_llm_reviews(
                 try:
                     self_check = future.result()
                 except Exception:
+                    logging.getLogger(__name__).warning(
+                        "Math self-check failed for theorem L%s — using unchecked findings",
+                        theorem_line_number, exc_info=True,
+                    )
                     issues.extend(parse_llm_math_issues(artifact.findings, artifact.provider, artifact.model, blueprint))
                     continue
                 self_checks.append(self_check)
@@ -429,6 +434,10 @@ def _finalize_llm_reviews(
                 try:
                     adjudication = future.result()
                 except Exception:
+                    logging.getLogger(__name__).warning(
+                        "Math adjudication failed for theorem L%s — using raw findings",
+                        theorem_line_number, exc_info=True,
+                    )
                     for artifact in theorem_artifacts:
                         issues.extend(parse_llm_math_issues(artifact.findings, artifact.provider, artifact.model, blueprint))
                     continue
@@ -701,6 +710,7 @@ def extract_json_payload(text: str) -> dict[str, object] | None:
         try:
             parsed = json.loads(candidate)
         except Exception:
+            logging.getLogger(__name__).debug("JSON parse attempt failed for candidate: %.120s", candidate)
             continue
         if isinstance(parsed, dict):
             return parsed

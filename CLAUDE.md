@@ -75,7 +75,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `math_llm_review.py` | Multi-provider proof review + adjudication |
 | `math_artifacts.py` | Math report rendering (JSON/Markdown) |
 | `math_types.py` | All math-lane dataclasses (`MathReviewRun`, `ProofBlueprint`, `MathIssue`, etc.) |
-| `review.py` | Shared provider execution; shells out to `codex`/`claude` CLIs |
+| `review.py` | Shared provider execution; delegates to `providers/` registry |
 | `templates.py` | All prompt templates and venue profile definitions |
 | `model_router.py` | Task-type -> provider/model selection |
 | `core_types.py` | `ProviderModelSpec`, `ReviewResult`, `AgentSpec` dataclasses |
@@ -92,6 +92,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 
 | Variable | Purpose |
 |---|---|
+| `REVISICA_BACKEND_MODE` | Provider backend: `cli` (DMG/subscription), `api` (App Store/key), `auto` (default) |
 | `REVISICA_CODEX_HOME` | Override Codex config home (default: `~/.codex`) |
 | `REVISICA_CLAUDE_HOME` | Override Claude config home (default: `~/.claude`) |
 | `REVISICA_RUNTIME_HOME` | Override `$HOME` for subprocess execution |

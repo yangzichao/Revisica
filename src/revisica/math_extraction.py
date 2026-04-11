@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 
 import sympy as sp
@@ -27,6 +28,9 @@ def extract_functions(content: str) -> list[FunctionDefinition]:
         try:
             expression = parse_expr(expression_text, variable_names=[variable])
         except Exception:
+            logging.getLogger(__name__).warning(
+                "Failed to parse LaTeX expression: %.100s", expression_text, exc_info=True,
+            )
             continue
         functions.append(
             FunctionDefinition(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
@@ -362,8 +363,10 @@ def _run_writing_self_checks(
                             findings=checked_findings,
                         )
             except Exception:
-                # Self-check failed — keep original findings
-                pass
+                logging.getLogger(__name__).warning(
+                    "Writing self-check failed for %s/%s — keeping original findings",
+                    original.provider, original.role, exc_info=True,
+                )
 
     return result_artifacts
 

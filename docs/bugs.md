@@ -35,36 +35,14 @@ Three locations still exist:
 
 **Plan:** Once `agents/translators/` is implemented (P1 in TODO), the `agents/claude/` and `agents/codex/` directories become generated output. `.claude/agents/` can be deleted. The unified definitions in `src/revisica/agents/definitions/` become the single source of truth.
 
-### 4. Silent exception swallowing — no logging on failure
+### 4. Silent exception swallowing — no logging on failure — FIXED
 
-**Severity:** LOW — correct fallback behavior, but failures are invisible
+**Commit:** session 2 (2026-04-11)
+**Was:** 5 bare `except Exception:` blocks with no logging.
+**Fix:** Added `logging.warning()` with `exc_info=True` to all 5 locations. JSON parse fallback uses `logging.debug()` (high-frequency, noise reduction).
 
-| File | Line | Context |
-|---|---|---|
-| `writing_review.py` | 385 | Writing self-check failure — keeps original findings |
-| `math_llm_review.py` | 390 | Math self-check failure — falls back to unchecked |
-| `math_llm_review.py` | 447 | Math adjudication failure — falls back to raw findings |
-| `math_llm_review.py` | 721 | LLM issue parsing failure — skips issue |
-| `math_extraction.py` | 29 | LaTeX parsing failure — skips block |
+### 5. `review.py` `_run_provider()` takes unused `platform` parameter — FIXED
 
-All have correct fallback behavior. The problem is zero visibility — if self-check is consistently broken, no one would know.
-
-**Fix needed:** Add `logging.warning(...)` to each bare `except Exception:` block.
-
-### 5. `review.py` `_run_provider()` takes unused `platform` parameter
-
-**Severity:** LOW — no runtime impact, just confusing API
-**Filed:** 2026-04-11
-
-After the provider registry refactor, `_run_provider()` and `_run_provider_agent()` in `review.py` still accept a `platform: PlatformStatus` parameter that they completely ignore. All call sites still pass it.
-
-```python
-# review.py:162 — platform is accepted but never used
-def _run_provider(provider_name, platform, prompt, timeout_seconds, model=None):
-    provider = get_provider(provider_name)
-    return provider.run_prompt(prompt, model=model, timeout_seconds=timeout_seconds)
-```
-
-**Fix:** Remove `platform` parameter from `_run_provider()` and `_run_provider_agent()`, update all call sites in `writing_review.py`, `math_llm_review.py`, `benchmark_refine.py`, and `review.py` itself. This is a mechanical refactor but touches many files.
-
-**Blocked by:** Agent translators (P1) — once translators are done, the call sites will be rewritten anyway.
+**Commit:** `9cdf0ef` (P0.5)
+**Was:** `platform: PlatformStatus` parameter accepted but ignored in `_run_provider()` and `_run_provider_agent()`.
+**Fix:** Removed dead parameter and updated all call sites.

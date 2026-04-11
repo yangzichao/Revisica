@@ -1,6 +1,6 @@
 # Revisica — TODO
 
-**Last updated:** 2026-04-11
+**Last updated:** 2026-04-11 (session 2)
 
 Spec: `docs/specs/desktop-app.md`
 Bugs: `docs/bugs.md`
@@ -14,7 +14,9 @@ Learning: `docs/learning/`
 
 **Foundation built (Steps 1-7 phase 1):** profiles, ingestion, providers (4 providers), agents (13 definitions + translator), graphs (5 LangGraph graphs), FastAPI server (8 endpoints), Electron + React desktop shell + Academic Revision CSS theme.
 
-**Total: ~4,700 lines Python + ~1,000 lines TS/CSS across 50+ new files. 15 commits.**
+**Session 2 done:** Backend mode flag (`cli`/`api`/`auto`) for dual-distribution (DMG + App Store). Fixed Python 3.9 compat (api.py type syntax, langgraph→optional dep). Added logging.warning to all silent exception blocks (bugs.md #4). API server + Electron build verified.
+
+**Total: ~4,800 lines Python + ~1,000 lines TS/CSS across 50+ new files. 17 commits.**
 
 ---
 
@@ -22,8 +24,11 @@ Learning: `docs/learning/`
 
 ### P1: Make the desktop app actually work end-to-end
 
-- [ ] **Test `npm run dev` end-to-end** — Electron opens, starts Python API, renders UI. Currently the Python venv path detection may need tweaking.
-- [ ] **Settings page (React)** — Provider config UI: API key input (masked), Test Connection button, provider status badges. Without this, desktop users can't configure API key providers.
+- [x] **Backend mode flag** — `backend_mode` in `~/.revisica/config.json` (`cli`/`api`/`auto`). Aliases resolve dynamically. Env var `REVISICA_BACKEND_MODE` override. DMG uses CLI subscription, App Store uses HTTP API.
+- [x] **Fix Python 3.9 compat** — `api.py` type syntax (`str | None` → `Optional[str]`), `langgraph` moved to optional dep.
+- [x] **API server verified** — health + providers endpoints respond correctly.
+- [x] **Electron build verified** — `electron-vite build` compiles. Full GUI test: `cd desktop && npm run dev`.
+- [ ] **Settings page (React)** — Provider config UI: API key input for `api` mode, provider status badges. Lower priority if user only uses `cli` mode (subscription).
 - [ ] **PDF parsers** — `ingestion/mathpix_parser.py` (Mathpix API), `ingestion/mineru_parser.py` (MinerU local), `ingestion/marker_parser.py` (Marker fallback). Without these, only `.tex` input works.
 - [ ] **Refactor `bootstrap.py`** — Replace `detect_platforms()` with `ProviderRegistry.list_available()` across writing_review.py, math_llm_review.py.
 

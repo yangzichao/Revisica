@@ -10,7 +10,7 @@ import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,10 +42,10 @@ class RunState:
         self.config = config
         self.state = "running"
         self.started_at = datetime.now().isoformat()
-        self.completed_at: str | None = None
-        self.run_dir: str | None = None
+        self.completed_at: Optional[str] = None
+        self.run_dir: Optional[str] = None
         self.tasks: list[dict[str, str]] = []
-        self.error: str | None = None
+        self.error: Optional[str] = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -69,16 +69,16 @@ class ReviewRequest(BaseModel):
     file_path: str
     mode: str = "review"
     venue_profile: str = "general-academic"
-    custom_instructions: str | None = None
+    custom_instructions: Optional[str] = None
     llm_proof_review: bool = False
     timeout_seconds: int = 120
 
 
 class ProviderConfigUpdate(BaseModel):
-    api_key: str | None = None
-    enabled: bool | None = None
-    base_url: str | None = None
-    default_model: str | None = None
+    api_key: Optional[str] = None
+    enabled: Optional[bool] = None
+    base_url: Optional[str] = None
+    default_model: Optional[str] = None
 
 
 class IngestRequest(BaseModel):

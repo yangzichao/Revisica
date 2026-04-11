@@ -13,10 +13,12 @@ authors = [
 ]
 dependencies = [
   "sympy>=1.13,<2",
-  "langgraph>=1.0",
 ]
 
 [project.optional-dependencies]
+graphs = [
+  "langgraph>=0.5",
+]
 api = [
   "anthropic>=0.40",
   "openai>=1.50",
@@ -26,7 +28,7 @@ serve = [
   "uvicorn>=0.30",
 ]
 all = [
-  "revisica[api,serve]",
+  "revisica[graphs,api,serve]",
 ]
 
 [project.scripts]
