@@ -6,6 +6,7 @@ Timestamped insights from experiments, benchmark runs, and debugging sessions. E
 
 | Date | File | Key Insight |
 |---|---|---|
+| 2026-04-11 | [refactor-lessons-desktop-app](2026-04-11-refactor-lessons-desktop-app.md) | Wrap first, decompose later. Registry pattern for dispatch. One definition, many translations. Silent fallback = invisible bug. Self-review catches different bugs than inline review. |
 | 2026-04-07 | [focused-prompt-beats-whole-paper](2026-04-07-focused-prompt-beats-whole-paper.md) | Smaller context + precise question outperforms larger context + vague question. The bottleneck is prompt construction, not model capability. |
 
 ## Template
