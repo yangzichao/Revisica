@@ -5,6 +5,48 @@
 Full plan: `~/.claude/plans/immutable-dazzling-mochi.md`
 Spec: `docs/specs/desktop-app.md`
 
+## Next: Priority Work Items
+
+Foundation (Steps 1-7 phase 1) is laid. The following are the highest-priority next steps to get a working end-to-end desktop app:
+
+### P0: Make it run end-to-end
+
+- [ ] **Wire graphs into public API** — `review_unified()` should run the unified LangGraph instead of the old ThreadPoolExecutor. This is the key switch that makes the new architecture live. Requires updating `unified_review.py`, `writing_review.py`, `math_review.py` to delegate to graphs.
+- [ ] **Add `langgraph>=1.0` to pyproject.toml dependencies** — Currently installed but not declared.
+- [ ] **Test `revisica review` end-to-end with graphs** — Verify output is identical to the old pipeline.
+- [ ] **Test `npm run dev` with live Python backend** — Verify Electron opens, finds Python venv, starts API, renders UI.
+
+### P1: Essential missing pieces
+
+- [ ] **Settings page (React)** — Provider config UI: API key input (masked), "Test Connection" button, provider status. Without this, desktop users can't configure providers.
+- [ ] **Agent translators** — `agents/translators/` to convert `AgentDefinition` → provider-native format. Needed to fully replace the dual Claude JSON / Codex Markdown maintenance.
+- [ ] **Refactor `bootstrap.py`** — Use ProviderRegistry for detection instead of hardcoded `detect_platforms()`.
+- [ ] **PDF parsers (Mathpix, MinerU, Marker)** — `ingestion/mathpix_parser.py`, `ingestion/mineru_parser.py`, `ingestion/marker_parser.py`. Without these, only `.tex` input works.
+
+### P2: HITL + Streaming (enables Focus mode)
+
+- [ ] **LangGraph interrupt nodes** — Add `interrupt_before` at HITL gates in writing/math subgraphs.
+- [ ] **SqliteSaver checkpointer** — `~/.revisica/checkpoints.db` for state persistence across restarts.
+- [ ] **SSE streaming endpoint** — FastAPI SSE for live progress push to Electron UI.
+- [ ] **Focus API endpoint** — `POST /api/focus/{run_id}` to send FocusRequest and resume interrupted graph.
+- [ ] **Decompose `graphs/writing.py`** — Break into parallel fan-out nodes (roles, section combos, claims).
+- [ ] **Decompose `graphs/unified.py`** — True parallel branches for writing + math lanes.
+
+### P3: Desktop app polish
+
+- [ ] **Paper rendering component** — `RevisicaDocument.markdown` → HTML with MathJax math formulas.
+- [ ] **Annotation/findings overlay** — Findings as right-side margin notes anchored to sections.
+- [ ] **"深挖" (Focus) button** — Per-section deep-dive trigger in the Results page.
+- [ ] **PyInstaller packaging** — Freeze Python backend to `desktop/resources/python-backend`.
+- [ ] **electron-builder macOS config** — DMG output, code signing, notarization.
+- [ ] **GitHub Actions CI** — Build → sign → notarize → upload DMG.
+
+### P4: Module extraction + cleanup
+
+- [ ] **`math_check/` package** — Extract `math_deterministic.py`, `math_extraction.py`, `math_types.py`, `math_artifacts.py` into independent module.
+- [ ] **`eval/` package** — Extract `benchmark_*.py` files into independent evaluation framework.
+- [ ] **Writing review decomposition** — Break `writing_review.py` (846 lines) into smaller files as LangGraph nodes fully take over orchestration.
+
 ---
 
 ## Step 1: Profiles + Ingestion ✅
