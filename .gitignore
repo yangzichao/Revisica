@@ -15,3 +15,6 @@ benchmarks/history.md
 benchmarks/proofnet/
 benchmarks/proofbench/
 benchmarks/processbench/
+desktop/node_modules/
+desktop/out/
+desktop/dist/
