@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 from .adjudication_policy import pick_preferred_item
-from .agent_assets import find_agent_file, load_agent_json
+from .agents import get_agent, to_agent_spec
 from .bootstrap import PlatformStatus, bootstrap, detect_platforms
 from .core_types import AgentSpec, ProviderModelSpec
 from .model_router import resolve_model_for_role
@@ -22,13 +22,6 @@ from .review import _run_provider_agent
 
 
 _MAX_PARALLEL_WORKERS = 10
-
-
-_ROLE_TO_CLAUDE_FILE = {
-    "proof-reviewer": "math-proof-reviewer.json",
-    "self-checker": "math-self-checker.json",
-    "adjudicator": "math-adjudicator.json",
-}
 
 
 def run_llm_proof_review(
@@ -146,26 +139,18 @@ def run_llm_proof_review(
     return issues, artifacts, self_checks, adjudications, warnings
 
 
-def find_codex_file(filename: str) -> str | None:
-    return find_agent_file("codex", filename)
+_MATH_ROLE_TO_AGENT_NAME = {
+    "proof-reviewer": "math-proof-reviewer",
+    "self-checker": "math-self-checker",
+    "adjudicator": "math-adjudicator",
+}
 
 
 def build_math_agent_spec(role: str, schema_path: str | None) -> AgentSpec:
-    role_to_file = {
-        "proof-reviewer": "math-proof-reviewer.md",
-        "self-checker": "math-self-checker.md",
-        "adjudicator": "math-adjudicator.md",
-    }
-    agent_name = f"math-{role}"
-    claude_def = load_agent_json("claude", _ROLE_TO_CLAUDE_FILE[role])
-    codex_instructions = find_codex_file(role_to_file.get(role, ""))
-    return AgentSpec(
-        name=agent_name,
-        claude_agent_def=claude_def,
-        codex_instructions_path=codex_instructions,
-        codex_output_schema=schema_path,
-        codex_sandbox="read-only",
-    )
+    """Build an AgentSpec for a math review role using the unified agent registry."""
+    agent_name = _MATH_ROLE_TO_AGENT_NAME.get(role, f"math-{role}")
+    agent_definition = get_agent(agent_name)
+    return to_agent_spec(agent_definition, schema_path=schema_path)
 
 
 def build_proof_review_task(

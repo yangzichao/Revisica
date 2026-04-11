@@ -11,9 +11,9 @@ from pathlib import Path
 
 from langgraph.graph import END, StateGraph
 
-from ..agents.registry import get_agent
+from ..agents import get_agent, to_agent_spec
 from ..bootstrap import detect_platforms
-from ..core_types import AgentSpec, ProviderModelSpec
+from ..core_types import ProviderModelSpec
 from ..model_router import resolve_model_for_role
 from ..review import _run_provider_agent
 from .state import PolishState
@@ -34,17 +34,7 @@ def run_polish_agent(state: PolishState) -> dict:
     config = state["config"]
     source_path = state["source_path"]
 
-    agent_definition = get_agent("polish-agent")
-
-    # Build AgentSpec from the unified definition (bridge to existing system)
-    agent_spec = AgentSpec(
-        name=agent_definition.name,
-        claude_agent_def={
-            "instructions": agent_definition.system_prompt,
-            "tools": agent_definition.tools,
-        },
-        codex_sandbox="read-only",
-    )
+    agent_spec = to_agent_spec(get_agent("polish-agent"))
 
     # Select provider and model
     providers = config.providers

@@ -12,9 +12,9 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
 
-from ..agents.registry import get_agent
+from ..agents import get_agent, to_agent_spec
 from ..bootstrap import detect_platforms
-from ..core_types import AgentSpec, ProviderModelSpec
+from ..core_types import ProviderModelSpec
 from ..model_router import resolve_model_for_role
 from ..profiles.config import FocusRequest
 from ..review import _run_provider_agent
@@ -47,15 +47,7 @@ def run_focused_writing_review(state: FocusState) -> dict:
     instruction = focus_request.get("instruction", "")
     timeout_seconds = state.get("timeout_seconds", 120)
 
-    agent_definition = get_agent("writing-basic-reviewer")
-    agent_spec = AgentSpec(
-        name="focused-writing-reviewer",
-        claude_agent_def={
-            "instructions": agent_definition.system_prompt,
-            "tools": agent_definition.tools,
-        },
-        codex_sandbox="read-only",
-    )
+    agent_spec = to_agent_spec(get_agent("writing-basic-reviewer"))
 
     task_prompt = (
         f"Focus on section '{section_id}' in the draft at `{source_path}`.\n"
@@ -101,15 +93,7 @@ def run_focused_math_review(state: FocusState) -> dict:
     instruction = focus_request.get("instruction", "")
     timeout_seconds = state.get("timeout_seconds", 120)
 
-    agent_definition = get_agent("math-proof-reviewer")
-    agent_spec = AgentSpec(
-        name="focused-math-reviewer",
-        claude_agent_def={
-            "instructions": agent_definition.system_prompt,
-            "tools": agent_definition.tools,
-        },
-        codex_sandbox="read-only",
-    )
+    agent_spec = to_agent_spec(get_agent("math-proof-reviewer"))
 
     task_prompt = (
         f"Focus on section '{section_id}' in the draft at `{source_path}`.\n"

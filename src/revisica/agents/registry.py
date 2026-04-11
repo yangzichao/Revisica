@@ -16,6 +16,8 @@ from .definitions.claim_verifier import AGENT as CLAIM_VERIFIER
 from .definitions.notation_tracker import AGENT as NOTATION_TRACKER
 from .definitions.formula_cross_checker import AGENT as FORMULA_CROSS_CHECKER
 from .definitions.polish_agent import AGENT as POLISH_AGENT
+from .definitions.writing_self_checker import AGENT as WRITING_SELF_CHECKER
+from .definitions.refine_eval_judge import AGENT as REFINE_EVAL_JUDGE
 
 _ALL_AGENTS: dict[str, AgentDefinition] = {
     agent.name: agent
@@ -31,6 +33,8 @@ _ALL_AGENTS: dict[str, AgentDefinition] = {
         NOTATION_TRACKER,
         FORMULA_CROSS_CHECKER,
         POLISH_AGENT,
+        WRITING_SELF_CHECKER,
+        REFINE_EVAL_JUDGE,
     ]
 }
 

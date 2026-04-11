@@ -22,7 +22,7 @@ from pathlib import Path
 import re
 
 from .adjudication_policy import pick_preferred_provider
-from .agent_assets import load_agent_json
+from .agents import get_agent, to_agent_spec
 from .benchmark_provenance import (
     RegistryEntry,
     append_to_registry,
@@ -443,12 +443,7 @@ def _evaluate_with_llm_judge(
         f"]}}"
     )
 
-    agent_spec = AgentSpec(
-        name="refine-eval-judge",
-        claude_agent_def=load_agent_json("claude", "refine-eval-judge.json"),
-        codex_output_schema=None,
-        codex_sandbox="read-only",
-    )
+    agent_spec = to_agent_spec(get_agent("refine-eval-judge"))
 
     try:
         result = _run_provider_agent(

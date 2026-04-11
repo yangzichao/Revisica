@@ -8,18 +8,17 @@ from pathlib import Path
 import re
 
 from .adjudication_policy import pick_preferred_item
-from .agent_assets import find_agent_file, load_agent_json
+from .agent_assets import find_agent_file
+from .agents import get_agent, to_agent_spec
 from .bootstrap import PlatformStatus, bootstrap, detect_platforms
 from .claim_extractor import (
     build_claim_verification_task,
-    build_claim_verifier_agent_def,
     extract_claims,
 )
 from .core_types import AgentSpec, ProviderModelSpec, ReviewResult
 from .model_router import resolve_model_for_role
 from .review import _run_provider_agent
 from .section_combiner import (
-    build_section_combo_agent_def,
     build_section_combo_task,
     extract_sections,
     generate_combinations,
@@ -144,13 +143,8 @@ def review_writing_file(
 
         # Submit section-combination cross-check tasks
         if section_combos:
-            combo_agent_def = build_section_combo_agent_def()
-            combo_agent_spec = AgentSpec(
-                name="section-cross-checker",
-                claude_agent_def=combo_agent_def,
-                codex_instructions_path=None,
-                codex_output_schema=schema_path,
-                codex_sandbox="read-only",
+            combo_agent_spec = to_agent_spec(
+                get_agent("formula-cross-checker"), schema_path=schema_path,
             )
             for combo_idx, combo in enumerate(section_combos):
                 combo_task = build_section_combo_task(combo, str(source))
@@ -172,13 +166,8 @@ def review_writing_file(
 
         # Submit per-claim verification tasks (each claim gets its own SymPy worker)
         if extracted_claims:
-            claim_agent_def = build_claim_verifier_agent_def()
-            claim_agent_spec = AgentSpec(
-                name="claim-verifier",
-                claude_agent_def=claim_agent_def,
-                codex_instructions_path=None,
-                codex_output_schema=schema_path,
-                codex_sandbox="read-only",
+            claim_agent_spec = to_agent_spec(
+                get_agent("math-claim-verifier"), schema_path=schema_path,
             )
             for claim in extracted_claims:
                 claim_task = build_claim_verification_task(claim, str(source))
@@ -325,12 +314,8 @@ def _run_writing_self_checks(
 
     result_artifacts = list(artifacts)  # shallow copy
 
-    checker_agent_spec = AgentSpec(
-        name="writing-self-checker",
-        claude_agent_def=load_agent_json("claude", "writing-self-checker.json"),
-        codex_instructions_path=None,
-        codex_output_schema=schema_path,
-        codex_sandbox="read-only",
+    checker_agent_spec = to_agent_spec(
+        get_agent("writing-self-checker"), schema_path=schema_path,
     )
 
     with ThreadPoolExecutor(max_workers=_MAX_PARALLEL_WORKERS) as pool:
@@ -452,49 +437,27 @@ def _make_output_dir(source: Path, output_dir: str | None) -> Path:
 
 # ── real agent infrastructure ────────────────────────────────────────
 
-_ROLE_TO_CLAUDE_FILE = {
-    "basic": "writing-basic-reviewer.json",
-    "structure": "writing-structure-reviewer.json",
-    "venue": "writing-venue-reviewer.json",
-    "judge": "writing-judge.json",
-    "math-claim-verifier": "math-claim-verifier.json",
-    "notation-tracker": "notation-tracker.json",
-    "formula-cross-checker": "formula-cross-checker.json",
-}
-
-
 def _find_codex_file(filename: str) -> str | None:
     return find_agent_file("codex", filename)
 
 
-_ROLE_TO_CODEX_FILE = {
-    "basic": "writing-basic-reviewer.md",
-    "structure": "writing-structure-reviewer.md",
-    "venue": "writing-venue-reviewer.md",
-    "judge": "writing-judge.md",
-    "math-claim-verifier": "math-claim-verifier.md",
-    "notation-tracker": "notation-tracker.md",
-    "formula-cross-checker": "formula-cross-checker.md",
+# Map role names to agent definition names in the unified registry
+_ROLE_TO_AGENT_NAME = {
+    "basic": "writing-basic-reviewer",
+    "structure": "writing-structure-reviewer",
+    "venue": "writing-venue-reviewer",
+    "judge": "writing-judge",
+    "math-claim-verifier": "math-claim-verifier",
+    "notation-tracker": "notation-tracker",
+    "formula-cross-checker": "formula-cross-checker",
 }
-
-# Roles that produce markdown (not JSON) — skip output-schema for these
-_NO_SCHEMA_ROLES = {"judge"}
 
 
 def _build_agent_spec(role: str, schema_path: str | None) -> AgentSpec:
     """Build an AgentSpec for a writing-review or math-verification role."""
-    agent_name = role if role in MATH_VERIFICATION_ROLES else (
-        f"writing-{role}-reviewer" if role != "judge" else "writing-judge"
-    )
-    claude_def = load_agent_json("claude", _ROLE_TO_CLAUDE_FILE[role])
-    codex_instructions = _find_codex_file(_ROLE_TO_CODEX_FILE.get(role, ""))
-    return AgentSpec(
-        name=agent_name,
-        claude_agent_def=claude_def,
-        codex_instructions_path=codex_instructions,
-        codex_output_schema=schema_path if role not in _NO_SCHEMA_ROLES else None,
-        codex_sandbox="read-only",
-    )
+    agent_name = _ROLE_TO_AGENT_NAME.get(role, role)
+    agent_definition = get_agent(agent_name)
+    return to_agent_spec(agent_definition, schema_path=schema_path)
 
 
 def _build_agent_task(role: str, file_path: str, venue_profile: str) -> str:
@@ -636,12 +599,7 @@ def _generate_final_report_agent(
         if json_path.exists():
             findings_files.append(str(json_path))
 
-    agent_spec = AgentSpec(
-        name="writing-judge",
-        claude_agent_def=load_agent_json("claude", "writing-judge.json"),
-        codex_output_schema=None,  # judge produces markdown, not JSON
-        codex_sandbox="read-only",
-    )
+    agent_spec = to_agent_spec(get_agent("writing-judge"))
     task_prompt = (
         f"You are the final judge for a writing review.\n\n"
         f"Original LaTeX draft: `{source}`\n"
