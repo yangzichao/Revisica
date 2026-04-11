@@ -1,6 +1,6 @@
-# ReviseAgent Writing Review Run
+# Revisica Writing Review Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/coset-codes.md`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/coset-codes.md`
 - Timestamp: `2026-04-07T00:28:41`
 - Venue profile: `general-academic`
 - Detected providers: `codex, claude`
@@ -26,7 +26,7 @@
 
 ## Warnings
 
-- Only one provider is active for writing review, so ReviseAgent will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
+- Only one provider is active for writing review, so Revisica will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
 - Role `math-claim-verifier` failed for provider `claude:opus`.
 - Self-check filtered 2 false positive(s) from `structure` (claude).
 

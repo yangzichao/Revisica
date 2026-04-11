@@ -1,6 +1,6 @@
 {
   "case_id": "targeting-interventions",
-  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md",
+  "paper_path": "/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/targeting-interventions.md",
   "expected_comments": 6,
   "our_total_findings": 56,
   "recall": 1.0,

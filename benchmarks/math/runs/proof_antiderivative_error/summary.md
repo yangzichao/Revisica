@@ -1,6 +1,6 @@
-# ReviseAgent Math Run
+# Revisica Math Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/math_cases/proof_antiderivative_error.tex`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/math_cases/proof_antiderivative_error.tex`
 - Timestamp: `2026-04-06T21:59:57`
 - Function definitions: `0`
 - Claims extracted: `2`

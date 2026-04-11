@@ -1,6 +1,6 @@
 # Refine Benchmark: inference-molecular
 
-- Paper: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/inference-molecular.md`
+- Paper: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/inference-molecular.md`
 - Expected comments: 15
 - Our findings: 29
 - Recall (matched + partial): 46.7%

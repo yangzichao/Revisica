@@ -1,6 +1,6 @@
-# ReviseAgent Writing Review Run
+# Revisica Writing Review Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/grammar_typos.tex`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/grammar_typos.tex`
 - Timestamp: `2026-04-06T07:08:40`
 - Venue profile: `general-academic`
 - Detected providers: `codex, claude`

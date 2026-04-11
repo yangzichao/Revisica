@@ -1,6 +1,6 @@
-# ReviseAgent Writing Review Run
+# Revisica Writing Review Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/targeting-interventions.md`
 - Timestamp: `2026-04-07T00:35:14`
 - Venue profile: `general-academic`
 - Detected providers: `codex, claude`
@@ -26,7 +26,7 @@
 
 ## Warnings
 
-- Only one provider is active for writing review, so ReviseAgent will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
+- Only one provider is active for writing review, so Revisica will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
 - Role `formula-cross-checker` failed for provider `claude:opus`.
 - Role `math-claim-verifier` failed for provider `claude:opus`.
 - Writing-review final adjudication failed, falling back to merged raw report.

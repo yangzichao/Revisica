@@ -1,7 +1,7 @@
 Reading prompt from stdin...
 OpenAI Codex v0.118.0 (research preview)
 --------
-workdir: /Users/zichaoyang/workplace/ReviseAgent
+workdir: /Users/zichaoyang/workplace/Revisica
 model: gpt-5.4
 provider: openai
 approval: never
@@ -19,7 +19,7 @@ Scope:
 - Do not pretend to certify mathematical correctness.
 - Be conservative and specific.
 
-The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/clean_draft.tex`.
+The source file path is `/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/clean_draft.tex`.
 
 Return JSON only, with this schema:
 {

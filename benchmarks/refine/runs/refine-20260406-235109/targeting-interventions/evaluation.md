@@ -1,6 +1,6 @@
 # Refine Benchmark: targeting-interventions
 
-- Paper: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md`
+- Paper: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/targeting-interventions.md`
 - Expected comments: 6
 - Our findings: 47
 - Recall (matched + partial): 66.7%

@@ -1,6 +1,6 @@
 # Refine Benchmark: coset-codes
 
-- Paper: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/coset-codes.md`
+- Paper: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/coset-codes.md`
 - Expected comments: 19
 - Our findings: 44
 - Recall (matched + partial): 63.2%

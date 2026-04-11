@@ -1,7 +1,7 @@
 Reading prompt from stdin...
 OpenAI Codex v0.118.0 (research preview)
 --------
-workdir: /Users/zichaoyang/workplace/ReviseAgent
+workdir: /Users/zichaoyang/workplace/Revisica
 model: gpt-5.4
 provider: openai
 approval: never
@@ -20,7 +20,7 @@ Goal:
 - Separate basic language issues from structure/rhetoric issues and venue-style gaps.
 - Include rewrite suggestions only when they materially help.
 
-The source file path is `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/grammar_typos.tex`.
+The source file path is `/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/grammar_typos.tex`.
 The target venue profile is `general-academic`.
 
 Return Markdown with exactly these top-level sections:

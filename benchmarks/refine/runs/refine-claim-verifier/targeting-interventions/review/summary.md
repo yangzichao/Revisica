@@ -1,6 +1,6 @@
-# ReviseAgent Writing Review Run
+# Revisica Writing Review Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/targeting-interventions.md`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/targeting-interventions.md`
 - Timestamp: `2026-04-07T09:10:51`
 - Venue profile: `general-academic`
 - Detected providers: `codex, claude`
@@ -89,7 +89,7 @@
 
 ## Warnings
 
-- Only one provider is active for writing review, so ReviseAgent will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
+- Only one provider is active for writing review, so Revisica will run specialized roles and final judging on a single provider. Cross-check quality may be lower.
 - Self-check filtered 2 false positive(s) from `section-xcheck-6` (claude).
 - Self-check filtered 1 false positive(s) from `section-xcheck-1` (claude).
 - Self-check filtered 1 false positive(s) from `section-xcheck-7` (claude).

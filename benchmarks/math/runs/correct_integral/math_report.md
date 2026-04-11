@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-ReviseAgent extracted 0 function definitions and 1 math-related claims, plus 0 theorem/proof blueprint(s). It machine-refuted 0 claim(s), machine-verified 1 claim(s), flagged 0 LLM-suspected issue(s), and left 0 claim(s) for human follow-up.
+Revisica extracted 0 function definitions and 1 math-related claims, plus 0 theorem/proof blueprint(s). It machine-refuted 0 claim(s), machine-verified 1 claim(s), flagged 0 LLM-suspected issue(s), and left 0 claim(s) for human follow-up.
 
 ## Blueprint-Lite
 

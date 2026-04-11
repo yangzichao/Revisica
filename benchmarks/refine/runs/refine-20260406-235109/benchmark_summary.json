@@ -1,5 +1,5 @@
 {
-  "manifest": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/manifest.json",
+  "manifest": "/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/manifest.json",
   "aggregate_recall": 0.4423076923076923,
   "aggregate_full_recall": 0.1346153846153846,
   "cases": [

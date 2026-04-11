@@ -1,5 +1,5 @@
 {
-  "manifest": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/manifest.json",
+  "manifest": "/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/manifest.json",
   "passed": 3,
   "total": 4,
   "results": [
@@ -7,25 +7,25 @@
       "case_id": "grammar_typos",
       "passed": true,
       "message": "ok (basic=29, structure=14, venue=12)",
-      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/runs/20260406-070301/grammar_typos"
+      "run_dir": "/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/runs/20260406-070301/grammar_typos"
     },
     {
       "case_id": "structure_logic",
       "passed": true,
       "message": "ok (basic=11, structure=19, venue=15)",
-      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/runs/20260406-070301/structure_logic"
+      "run_dir": "/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/runs/20260406-070301/structure_logic"
     },
     {
       "case_id": "venue_mismatch",
       "passed": true,
       "message": "ok (basic=10, structure=18, venue=14)",
-      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/runs/20260406-070301/venue_mismatch"
+      "run_dir": "/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/runs/20260406-070301/venue_mismatch"
     },
     {
       "case_id": "clean_draft",
       "passed": false,
       "message": "critical findings 3 > expected maximum 0; major findings 13 > expected maximum 2",
-      "run_dir": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/runs/20260406-070301/clean_draft"
+      "run_dir": "/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/runs/20260406-070301/clean_draft"
     }
   ]
 }

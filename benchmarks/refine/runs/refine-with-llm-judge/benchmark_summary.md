@@ -1,7 +1,7 @@
-# ReviseAgent vs Refine.ink Benchmark
+# Revisica vs Refine.ink Benchmark
 
-- Manifest: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/manifest_mini.json`
-- Report dir: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/runs/refine-with-llm-judge`
+- Manifest: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/manifest_mini.json`
+- Report dir: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/runs/refine-with-llm-judge`
 - Cases: 1
 - **Aggregate recall (matched + partial):** 66.7%
 - **Aggregate full recall (matched only):** 50.0%

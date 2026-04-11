@@ -1,6 +1,6 @@
 # Refine Benchmark: chaotic-balanced-state
 
-- Paper: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/chaotic-balanced-state.md`
+- Paper: `/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/chaotic-balanced-state.md`
 - Expected comments: 12
 - Our findings: 0
 - Recall (matched + partial): 0.0%

@@ -1,6 +1,6 @@
 {
   "case_id": "coset-codes",
-  "paper_path": "/Users/zichaoyang/workplace/ReviseAgent/benchmarks/refine_cases/coset-codes.md",
+  "paper_path": "/Users/zichaoyang/workplace/Revisica/benchmarks/refine_cases/coset-codes.md",
   "expected_comments": 19,
   "our_total_findings": 44,
   "recall": 0.631578947368421,

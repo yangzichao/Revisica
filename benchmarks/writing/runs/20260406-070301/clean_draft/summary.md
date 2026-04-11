@@ -1,6 +1,6 @@
-# ReviseAgent Writing Review Run
+# Revisica Writing Review Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/clean_draft.tex`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/clean_draft.tex`
 - Timestamp: `2026-04-06T07:28:44`
 - Venue profile: `general-academic`
 - Detected providers: `codex, claude`
@@ -22,7 +22,7 @@
 
 ## Warnings
 
-- Writing-review final adjudication failed, so ReviseAgent is falling back to a merged raw report.
+- Writing-review final adjudication failed, so Revisica is falling back to a merged raw report.
 
 ## Files
 

@@ -1,6 +1,6 @@
-# ReviseAgent Writing Review Run
+# Revisica Writing Review Run
 
-- Source: `/Users/zichaoyang/workplace/ReviseAgent/benchmarks/writing_cases/venue_mismatch.tex`
+- Source: `/Users/zichaoyang/workplace/Revisica/benchmarks/writing_cases/venue_mismatch.tex`
 - Timestamp: `2026-04-06T07:20:33`
 - Venue profile: `econ-top5`
 - Detected providers: `codex, claude`
