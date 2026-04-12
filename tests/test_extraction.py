@@ -31,6 +31,7 @@ from revisica.math_check.extraction.structures import (
 from revisica.math_check.extraction.blueprints import (
     build_proof_blueprints,
     classify_obligation,
+    extract_proof_obligations,
     find_proof_for_theorem,
     is_meaningful_proof_segment,
     normalize_math_block,
@@ -1610,3 +1611,105 @@ class TestAverageValueClaimVariants:
         claims = extract_claims(sentence, [])
         avg_claims = [c for c in claims if c.kind == "average_value"]
         assert len(avg_claims) == 0
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Review fixes: extract_proof_obligations direct tests
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestExtractProofObligations:
+    def test_none_proof_returns_empty(self):
+        from revisica.math_check.types import TheoremBlock
+
+        theorem = TheoremBlock(
+            env_name="theorem", line_number=1, title=None,
+            statement="Statement.", snippet="...",
+        )
+        assert extract_proof_obligations(theorem, None) == []
+
+    def test_single_step_proof(self):
+        from revisica.math_check.types import ProofBlock, TheoremBlock
+
+        theorem = TheoremBlock(
+            env_name="theorem", line_number=1, title=None,
+            statement="Statement.", snippet="...",
+        )
+        proof = ProofBlock(
+            line_number=5, title=None,
+            body="This is obvious.", snippet="...",
+        )
+        obligations = extract_proof_obligations(theorem, proof)
+        assert len(obligations) >= 1
+        assert obligations[0].step_index == 1
+        assert obligations[0].theorem_env == "theorem"
+        assert obligations[0].theorem_line_number == 1
+        assert obligations[0].proof_line_number == 5
+
+    def test_multi_step_mixed_types(self):
+        from revisica.math_check.types import ProofBlock, TheoremBlock
+
+        theorem = TheoremBlock(
+            env_name="lemma", line_number=3, title=None,
+            statement="A lemma.", snippet="...",
+        )
+        proof = ProofBlock(
+            line_number=7, title=None,
+            body="By definition, f is continuous. Therefore f is integrable.",
+            snippet="...",
+        )
+        obligations = extract_proof_obligations(theorem, proof)
+        assert len(obligations) >= 2
+        types = {o.obligation_type for o in obligations}
+        assert "definition-use" in types
+        assert "inference" in types
+        # Step indices are sequential starting from 1.
+        indices = [o.step_index for o in obligations]
+        assert indices == list(range(1, len(obligations) + 1))
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Review fixes: $$ display math regex
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestDoubleDollarMathSegments:
+    def test_double_dollar_not_confused_with_inline(self):
+        content = "Define $$f(x)=x^2$$ and $g(x)=x$."
+        segments = extract_math_segments(content)
+        assert len(segments) == 2
+        texts = [s["text"] for s in segments]
+        assert "f(x)=x^2" in texts
+        assert "g(x)=x" in texts
+
+    def test_double_dollar_extracted_as_display(self):
+        content = "We have $$a + b = c$$ as desired."
+        segments = extract_math_segments(content)
+        assert len(segments) == 1
+        assert segments[0]["text"] == "a + b = c"
+
+    def test_mixed_double_dollar_and_bracket(self):
+        content = "First $$x$$ then\n\\[\ny\n\\]\nand $z$."
+        segments = extract_math_segments(content)
+        assert len(segments) == 3
+        texts = [s["text"] for s in segments]
+        assert "x" in texts
+        assert "y" in texts
+        assert "z" in texts
+
+
+class TestNearestFunctionBeforeUnsorted:
+    def test_unsorted_input_returns_closest(self):
+        from revisica.math_check.types import FunctionDefinition
+
+        f1 = FunctionDefinition(
+            name="f", variable="x", expression_text="x^2",
+            expression=sp.Symbol("x") ** 2, line_number=10, snippet="...",
+        )
+        f2 = FunctionDefinition(
+            name="g", variable="x", expression_text="x^3",
+            expression=sp.Symbol("x") ** 3, line_number=5, snippet="...",
+        )
+        # Unsorted: line 10 before line 5 in list.
+        result = nearest_function_before([f1, f2], 12)
+        assert result.name == "f"  # line 10 is closest, not line 5

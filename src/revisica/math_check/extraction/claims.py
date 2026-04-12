@@ -21,7 +21,7 @@ def nearest_function_before(
     candidates = [item for item in functions if item.line_number <= line_number_value]
     if not candidates:
         return None
-    return candidates[-1]
+    return max(candidates, key=lambda f: f.line_number)
 
 
 def _extract_integral_claims(content: str) -> list[MathClaim]:

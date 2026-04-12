@@ -68,7 +68,8 @@ def find_variable_names(text: str) -> list[str]:
 def extract_math_segments(content: str) -> list[dict[str, object]]:
     segments: list[dict[str, object]] = []
     patterns = [
-        re.compile(r"\$(?P<body>[^$]+)\$"),
+        re.compile(r"\$\$(?P<body>[^$]+)\$\$"),
+        re.compile(r"(?<!\$)\$(?!\$)(?P<body>[^$]+)\$(?!\$)"),
         re.compile(r"\\\[(?P<body>.*?)\\\]", re.DOTALL),
     ]
     for pattern in patterns:
