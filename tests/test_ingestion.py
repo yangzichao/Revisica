@@ -214,21 +214,21 @@ class TestMineruParser:
         assert not p.can_handle(Path("paper.md"))
 
     def test_not_available_without_cli(self, monkeypatch):
-        from revisica.ingestion.mineru_parser import MineruParser
-        monkeypatch.setattr("shutil.which", lambda name: None)
-        assert MineruParser.is_available() is False
+        from revisica.ingestion import mineru_parser as mp
+        monkeypatch.setattr(mp.shutil, "which", lambda name: None)
+        assert mp.MineruParser.is_available() is False
 
     def test_parse_mock(self, monkeypatch, tmp_path):
         """Full parse chain with mocked mineru CLI."""
-        from revisica.ingestion.mineru_parser import MineruParser
+        from revisica.ingestion import mineru_parser as mp
 
-        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
-        monkeypatch.setattr("subprocess.run", _fake_mineru_run)
+        monkeypatch.setattr(mp.shutil, "which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(mp.subprocess, "run", _fake_mineru_run)
 
         fake_pdf = tmp_path / "paper.pdf"
         fake_pdf.write_bytes(b"%PDF-1.4 fake")
 
-        p = MineruParser()
+        p = mp.MineruParser()
         md = p.parse(fake_pdf)
 
         # Verify math is preserved
@@ -252,15 +252,15 @@ class TestMineruParser:
 
     def test_parse_produces_valid_document(self, monkeypatch, tmp_path):
         """MinerU output normalizes into a well-formed RevisicaDocument."""
-        from revisica.ingestion.mineru_parser import MineruParser
+        from revisica.ingestion import mineru_parser as mp
 
-        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
-        monkeypatch.setattr("subprocess.run", _fake_mineru_run)
+        monkeypatch.setattr(mp.shutil, "which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(mp.subprocess, "run", _fake_mineru_run)
 
         fake_pdf = tmp_path / "taxation.pdf"
         fake_pdf.write_bytes(b"%PDF-1.4 fake")
 
-        p = MineruParser()
+        p = mp.MineruParser()
         md = p.parse(fake_pdf)
         doc = normalize_to_document(md, str(fake_pdf), "mineru")
 
@@ -275,11 +275,11 @@ class TestMineruParser:
 
     def test_parse_cli_failure(self, monkeypatch, tmp_path):
         """RuntimeError when mineru CLI exits non-zero."""
-        from revisica.ingestion.mineru_parser import MineruParser
+        from revisica.ingestion import mineru_parser as mp
 
-        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(mp.shutil, "which", lambda name: "/usr/local/bin/mineru")
         monkeypatch.setattr(
-            "subprocess.run",
+            mp.subprocess, "run",
             lambda *a, **kw: subprocess.CompletedProcess(
                 args=a[0], returncode=1, stdout="", stderr="CUDA out of memory"
             ),
@@ -288,17 +288,17 @@ class TestMineruParser:
         fake_pdf = tmp_path / "paper.pdf"
         fake_pdf.write_bytes(b"%PDF-1.4 fake")
 
-        p = MineruParser()
+        p = mp.MineruParser()
         with pytest.raises(RuntimeError, match="CUDA out of memory"):
             p.parse(fake_pdf)
 
     def test_parse_empty_output(self, monkeypatch, tmp_path):
         """RuntimeError when mineru produces no markdown."""
-        from revisica.ingestion.mineru_parser import MineruParser
+        from revisica.ingestion import mineru_parser as mp
 
-        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(mp.shutil, "which", lambda name: "/usr/local/bin/mineru")
         monkeypatch.setattr(
-            "subprocess.run",
+            mp.subprocess, "run",
             lambda *a, **kw: subprocess.CompletedProcess(
                 args=a[0], returncode=0, stdout="", stderr=""
             ),
@@ -307,7 +307,7 @@ class TestMineruParser:
         fake_pdf = tmp_path / "paper.pdf"
         fake_pdf.write_bytes(b"%PDF-1.4 fake")
 
-        p = MineruParser()
+        p = mp.MineruParser()
         with pytest.raises(RuntimeError, match="no Markdown output"):
             p.parse(fake_pdf)
 
