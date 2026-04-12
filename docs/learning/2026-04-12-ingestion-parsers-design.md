@@ -19,10 +19,7 @@ The `BaseParser` contract (`parse() → str` returning raw Markdown) was already
 - The `.tex` → Markdown conversion (via Pandoc or regex) preserves math in `$`/`$$` delimiters.
 - Therefore: one normalize function handles all sources.
 
-**MinerU has two incompatible Python APIs across major versions:**
-- magic-pdf 1.x: synchronous in-process `UNIPipe` pipeline. Direct, reliable.
-- MinerU 2.x: server-mediated `api_client`. No exposed synchronous pipe API.
-- Lesson: support both backends with auto-detection, prefer 1.x when available.
+**MinerU: just use the CLI.** The Python API changed incompatibly between 1.x (`UNIPipe` in-process) and 2.x (server-mediated `api_client`). But the `mineru` CLI works across both versions. Treating it as a subprocess (like Pandoc) avoids coupling to either internal API. Don't over-engineer version detection when a stable CLI exists.
 
 **Parser isolation pays off immediately.** Each parser is a single file with no cross-dependencies. Tests for the markdown parser and normalize layer run in 0.05s with no external services. This is the first pytest suite in the project — 24 tests, all passing.
 
