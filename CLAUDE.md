@@ -50,14 +50,14 @@ revisica benchmark-history
 
 Quickest sanity check after a change: `revisica benchmark-run --suite math-cases --mode deterministic-only`
 
-No test suite exists yet — the math benchmark with `deterministic-only` mode is the fastest way to verify correctness.
+Unit tests: `pytest tests/` (29 ingestion tests). For end-to-end correctness: `revisica benchmark-run --suite math-cases --mode deterministic-only`.
 
 ## Architecture
 
-Revisica converts a LaTeX paper into reviewable units and runs them through two independent lanes in parallel:
+Revisica ingests academic papers (`.tex`, `.pdf`, `.md`, `.mmd`) through format-specific parsers into a common `RevisicaDocument`, then runs two independent review lanes in parallel:
 
 ```
-LaTeX file -> split into units -> [writing lane | math lane] -> merge findings -> final report
+any format → ingestion (parser → normalize) → RevisicaDocument → [writing lane | math lane] → merge → report
 ```
 
 For detailed architecture documentation, see `docs/current-architecture.md`.
@@ -67,6 +67,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | File | Role |
 |---|---|
 | `cli.py` | Command dispatch (thin) |
+| `ingestion/` | **Subpackage:** multi-format parsers (markdown, MinerU, Mathpix, Pandoc, tex-basic, Marker) + normalize → `RevisicaDocument` |
 | `unified_review.py` | Concurrent writing + math orchestration |
 | `writing_review.py` | Writing lane orchestration |
 | `math_review.py` | Math lane orchestrator |

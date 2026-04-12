@@ -18,7 +18,9 @@ Learning: `docs/learning/`
 
 **Session 3 (P4) done:** Deleted dead code (10 `.claude/agents/*.md` files + `agent_assets.py`). Extracted `math_check/` subpackage (pure SymPy math analysis, 4 modules). Extracted `eval/` subpackage (benchmarks + adapters, 10 modules). Benchmark 5/5 PASS.
 
-**Total: ~4,800 lines Python + ~1,000 lines TS/CSS across 50+ new files. 17 commits.**
+**Session 4 (ingestion) done:** Three new parsers (markdown, MinerU CLI, Mathpix API). Local-first PDF auto-detection. 29 ingestion tests (pytest). `/api/ingest` endpoint returns full markdown + sections. Spec, learning, architecture docs updated. 5 commits (`e7bd1e6`..`92a7d47`).
+
+**Total: ~5,200 lines Python + ~1,000 lines TS/CSS across 55+ new files. 22 commits.**
 
 ---
 
@@ -31,7 +33,7 @@ Learning: `docs/learning/`
 - [x] **API server verified** — health + providers endpoints respond correctly.
 - [x] **Electron build verified** — `electron-vite build` compiles. Full GUI test: `cd desktop && npm run dev`.
 - [ ] **Settings page (React)** — Provider config UI: API key input for `api` mode, provider status badges. Lower priority if user only uses `cli` mode (subscription).
-- [ ] **PDF parsers** — `ingestion/mathpix_parser.py` (Mathpix API), `ingestion/mineru_parser.py` (MinerU local), `ingestion/marker_parser.py` (Marker fallback). Without these, only `.tex` input works.
+- [x] **PDF parsers** — `ingestion/mineru_parser.py` (MinerU CLI, local), `ingestion/mathpix_parser.py` (Mathpix API, cloud), `ingestion/markdown_parser.py` (passthrough). Local-first auto-detection. 29 tests.
 - [ ] **Refactor `bootstrap.py`** — Replace `detect_platforms()` with `ProviderRegistry.list_available()` across writing_review.py, math_llm_review.py.
 
 ### P2: HITL + Streaming (enables Focus mode + live progress)

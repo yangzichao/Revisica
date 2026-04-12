@@ -4,17 +4,19 @@ This document is written for explanation, not for implementation detail.
 
 ## What Revisica Does
 
-Revisica reviews a LaTeX paper by turning one large draft into smaller, checkable units, sending those units through the right review paths, and then merging the results into a final report.
+Revisica reviews academic papers by turning one large draft into smaller, checkable units, sending those units through the right review paths, and then merging the results into a final report. It accepts `.tex`, `.pdf`, `.md`, and `.mmd` input — all formats are converted to a common `RevisicaDocument` through the ingestion layer.
 
 The key idea is simple:
 
-`paper -> split into units -> run specialized review -> merge findings -> write report`
+`any format → ingestion → RevisicaDocument → split into units → specialized review → merge findings → report`
 
 ## Executive View
 
 ```mermaid
 flowchart LR
-    PAPER["LaTeX paper"] --> SPLIT["Split into reviewable units"]
+    INPUT[".tex / .pdf / .md / .mmd"] --> INGEST["Ingestion (parser → normalize)"]
+    INGEST --> DOC["RevisicaDocument"]
+    DOC --> SPLIT["Split into reviewable units"]
     SPLIT --> WRITE["Writing review"]
     SPLIT --> MATH["Math review"]
     WRITE --> MERGE["Merge findings"]
@@ -26,8 +28,11 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    INPUT["Input file"] --> READ["Read paper"]
-    READ --> CHUNK["Chunk into sections, claims, theorem/proof blocks"]
+    INPUT["Input file (.tex/.pdf/.md/.mmd)"] --> PARSE["Parser (pandoc/tex/mineru/marker/mathpix/markdown)"]
+    PARSE --> MD["Raw Markdown + LaTeX math"]
+    MD --> NORM["normalize_to_document()"]
+    NORM --> DOC["RevisicaDocument (sections + metadata)"]
+    DOC --> CHUNK["Chunk into sections, claims, theorem/proof blocks"]
     CHUNK --> PATHS["Send each unit to the right review path"]
     PATHS --> FINDINGS["Collect findings"]
     FINDINGS --> FILTER["Optional self-check / adjudication"]
@@ -146,6 +151,10 @@ The smartness is not one magical prompt. It comes from orchestration.
 If someone wants to connect this explanation back to the code:
 
 - `cli.py`: entrypoints
+- `ingestion/`: multi-format input layer (parsers + normalize → `RevisicaDocument`)
+  - `registry.py`: auto-detection with local-first PDF ordering
+  - `markdown_parser.py`, `mineru_parser.py`, `mathpix_parser.py`, `pandoc_parser.py`, `tex_parser.py`, `marker_parser.py`
+  - `normalize.py`: raw Markdown → sections + metadata
 - `unified_review.py`: top-level combined workflow
 - `writing_review.py`: writing review orchestration
 - `math_review.py`: math review orchestration
@@ -153,4 +162,5 @@ If someone wants to connect this explanation back to the code:
 - `math_check/`: pure math pipeline (types, extraction, deterministic analysis, artifact rendering)
 - `math_llm_review.py`: LLM-based proof review
 - `eval/`: benchmarking and evaluation framework (math, writing, refine, HF dataset adapters)
+- `api.py`: FastAPI server (`/api/ingest`, `/api/review`, `/api/providers`, etc.)
 - `core_types.py`, `adjudication_policy.py`: shared infrastructure
