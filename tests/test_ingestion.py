@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import textwrap
 from pathlib import Path
 
@@ -176,7 +177,28 @@ class TestRegistry:
             parse_document(SAMPLE_MD, parser="nonexistent-parser")
 
 
-# ── MinerU parser (import + availability only) ────────────────────────
+# ── MinerU parser ──────────────────────────────────────────────────────
+
+MINERU_SAMPLE = FIXTURES / "mineru_output_sample.md"
+
+
+def _fake_mineru_run(args, *, capture_output, text, check, timeout):
+    """Simulate ``mineru -p input.pdf -o output_dir``.
+
+    Writes a realistic Markdown file into the output directory using the
+    same ``<stem>/<stem>.md`` layout MinerU produces.
+    """
+    # Parse args: ["mineru", "-p", "<pdf>", "-o", "<outdir>"]
+    pdf_path = Path(args[args.index("-p") + 1])
+    out_dir = Path(args[args.index("-o") + 1])
+    stem = pdf_path.stem
+
+    target_dir = out_dir / stem
+    target_dir.mkdir(parents=True, exist_ok=True)
+    md_file = target_dir / f"{stem}.md"
+    md_file.write_text(MINERU_SAMPLE.read_text(encoding="utf-8"), encoding="utf-8")
+
+    return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
 
 
 class TestMineruParser:
@@ -190,6 +212,104 @@ class TestMineruParser:
         assert p.can_handle(Path("paper.pdf"))
         assert not p.can_handle(Path("paper.tex"))
         assert not p.can_handle(Path("paper.md"))
+
+    def test_not_available_without_cli(self, monkeypatch):
+        from revisica.ingestion.mineru_parser import MineruParser
+        monkeypatch.setattr("shutil.which", lambda name: None)
+        assert MineruParser.is_available() is False
+
+    def test_parse_mock(self, monkeypatch, tmp_path):
+        """Full parse chain with mocked mineru CLI."""
+        from revisica.ingestion.mineru_parser import MineruParser
+
+        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr("subprocess.run", _fake_mineru_run)
+
+        fake_pdf = tmp_path / "paper.pdf"
+        fake_pdf.write_bytes(b"%PDF-1.4 fake")
+
+        p = MineruParser()
+        md = p.parse(fake_pdf)
+
+        # Verify math is preserved
+        assert "$$" in md
+        assert r"\lambda" in md
+        assert r"\frac{t_i}{p_i}" in md
+        assert r"\epsilon_{ii}" in md
+        assert r"\bar{\theta}" in md
+        assert r"\bar{R}" in md
+
+        # Verify structure
+        assert "# Optimal Taxation" in md
+        assert "## 1 Introduction" in md
+        assert "## 3 Main Results" in md
+        assert "**Theorem 1**" in md
+        assert "**Proposition 2.**" in md
+
+        # Verify table
+        assert "Elasticity" in md
+        assert "Electronics" in md
+
+    def test_parse_produces_valid_document(self, monkeypatch, tmp_path):
+        """MinerU output normalizes into a well-formed RevisicaDocument."""
+        from revisica.ingestion.mineru_parser import MineruParser
+
+        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr("subprocess.run", _fake_mineru_run)
+
+        fake_pdf = tmp_path / "taxation.pdf"
+        fake_pdf.write_bytes(b"%PDF-1.4 fake")
+
+        p = MineruParser()
+        md = p.parse(fake_pdf)
+        doc = normalize_to_document(md, str(fake_pdf), "mineru")
+
+        assert isinstance(doc, RevisicaDocument)
+        assert doc.parser_used == "mineru"
+        assert doc.metadata.title == "Optimal Taxation Under Behavioral Uncertainty"
+        assert len(doc.sections) == 1  # top-level H1
+        child_titles = [s.title for s in doc.sections[0].children]
+        assert "Abstract" in child_titles
+        assert "3 Main Results" in child_titles
+        assert "5 Conclusion" in child_titles
+
+    def test_parse_cli_failure(self, monkeypatch, tmp_path):
+        """RuntimeError when mineru CLI exits non-zero."""
+        from revisica.ingestion.mineru_parser import MineruParser
+
+        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(
+            "subprocess.run",
+            lambda *a, **kw: subprocess.CompletedProcess(
+                args=a[0], returncode=1, stdout="", stderr="CUDA out of memory"
+            ),
+        )
+
+        fake_pdf = tmp_path / "paper.pdf"
+        fake_pdf.write_bytes(b"%PDF-1.4 fake")
+
+        p = MineruParser()
+        with pytest.raises(RuntimeError, match="CUDA out of memory"):
+            p.parse(fake_pdf)
+
+    def test_parse_empty_output(self, monkeypatch, tmp_path):
+        """RuntimeError when mineru produces no markdown."""
+        from revisica.ingestion.mineru_parser import MineruParser
+
+        monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(
+            "subprocess.run",
+            lambda *a, **kw: subprocess.CompletedProcess(
+                args=a[0], returncode=0, stdout="", stderr=""
+            ),
+        )
+
+        fake_pdf = tmp_path / "paper.pdf"
+        fake_pdf.write_bytes(b"%PDF-1.4 fake")
+
+        p = MineruParser()
+        with pytest.raises(RuntimeError, match="no Markdown output"):
+            p.parse(fake_pdf)
 
 
 # ── Mathpix parser (import only, no API calls) ────────────────────────

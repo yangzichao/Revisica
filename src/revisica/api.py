@@ -146,11 +146,18 @@ def ingest_document(request: IngestRequest):
         document = parse_document(request.file_path, parser=request.parser)
         return {
             "parser_used": document.parser_used,
+            "markdown": document.markdown,
             "title": document.metadata.title,
             "authors": document.metadata.authors,
+            "abstract": document.metadata.abstract,
             "section_count": len(document.sections),
             "sections": [
-                {"id": section.id, "title": section.title, "level": section.level}
+                {
+                    "id": section.id,
+                    "title": section.title,
+                    "level": section.level,
+                    "content": section.content,
+                }
                 for section in _flatten_sections(document.sections)
             ],
         }
