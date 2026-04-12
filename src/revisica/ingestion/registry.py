@@ -53,6 +53,11 @@ def _get_available_parsers() -> list[BaseParser]:
     except ImportError:
         pass
 
+    # Markdown / MMD — passthrough (always available, last in list
+    # so it never shadows .pdf parsers in auto-detection)
+    from .markdown_parser import MarkdownParser
+    parsers.append(MarkdownParser())
+
     return parsers
 
 
@@ -91,6 +96,11 @@ def _select_parser(path: Path, parser_name: str) -> BaseParser:
         raise RuntimeError(
             "No .tex parser available. This should not happen — "
             "the built-in tex-basic parser should always be available."
+        )
+    if suffix in (".md", ".mmd", ".markdown"):
+        raise RuntimeError(
+            "No Markdown parser available. This should not happen — "
+            "the built-in markdown parser should always be available."
         )
     raise RuntimeError(f"No parser can handle {suffix} files.")
 
