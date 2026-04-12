@@ -29,15 +29,12 @@ def _get_available_parsers() -> list[BaseParser]:
     except ImportError:
         pass
 
-    # Mathpix — register if API key is configured
-    try:
-        from .mathpix_parser import MathpixParser
-        if MathpixParser.is_available():
-            parsers.append(MathpixParser())
-    except ImportError:
-        pass
+    # ── PDF parsers: local-first, cloud opt-in ──
+    # Auto-detection prefers local parsers to avoid silently uploading
+    # documents to third-party services.  Use parser="mathpix" explicitly
+    # for cloud OCR.
 
-    # MinerU — register if package available + GPU
+    # MinerU — local, open source (preferred for PDF)
     try:
         from .mineru_parser import MineruParser
         if MineruParser.is_available():
@@ -45,11 +42,20 @@ def _get_available_parsers() -> list[BaseParser]:
     except ImportError:
         pass
 
-    # Marker — register as fallback
+    # Marker — local fallback (no GPU needed)
     try:
         from .marker_parser import MarkerParser
         if MarkerParser.is_available():
             parsers.append(MarkerParser())
+    except ImportError:
+        pass
+
+    # Mathpix — cloud API, registered last for PDF so local parsers
+    # win in auto-detection.  Still selectable via parser="mathpix".
+    try:
+        from .mathpix_parser import MathpixParser
+        if MathpixParser.is_available():
+            parsers.append(MathpixParser())
     except ImportError:
         pass
 
@@ -88,9 +94,9 @@ def _select_parser(path: Path, parser_name: str) -> BaseParser:
     if suffix == ".pdf":
         raise RuntimeError(
             "No PDF parser available. Install one of:\n"
-            "  - Set MATHPIX_API_KEY for Mathpix API\n"
-            "  - pip install magic-pdf (MinerU, requires GPU)\n"
-            "  - pip install marker-pdf (Marker, no GPU needed)"
+            "  - pip install mineru          (MinerU, local, requires GPU)\n"
+            "  - pip install marker-pdf      (Marker, local, no GPU needed)\n"
+            "  - Set MATHPIX_APP_ID + MATHPIX_APP_KEY for Mathpix cloud API"
         )
     if suffix == ".tex":
         raise RuntimeError(
@@ -112,9 +118,10 @@ def parse_document(
     """Parse a file into a RevisicaDocument.
 
     Args:
-        path: Path to the input file (PDF or .tex).
-        parser: Parser name ("mathpix", "mineru", "marker", "pandoc")
-                or "auto" to select the best available.
+        path: Path to the input file (.tex, .md, .mmd, or .pdf).
+        parser: Parser name ("pandoc", "tex-basic", "markdown",
+                "mineru", "marker", "mathpix") or "auto" to select
+                the best available.  Auto prefers local parsers.
 
     Returns:
         A normalized RevisicaDocument.
