@@ -1,0 +1,92 @@
+\section{Stability and Feature Learning with LoRA in the Infinite Width Limit}\label{sec:main_theory}
+
+In this section, we extend the analysis above to general neural architectures with LoRA layers. We show that the conclusions from the analysis on the linear model hold for general neural architectures: 1) using the same learning rate for both $A$ and $B$ leads to suboptimal feature learning when model width is large, and  2) this problem can be fixed by setting different learning rates for $A$ and $B$. 
+
+Since our aim in this paper is primarily methodological, the theoretical results in this section are of a physics level of rigor, omitting technical assumptions that would otherwise make the analysis rigorous but unnecessarily complicated. In all the results, LoRA rank $r$ is considered fixed and finetuning dynamics are analyzed in the limit of infinite-width. This setup fairly represents practical scenarios where $r \ll n$ and $r$ is generally small.
+\vspace{-0.3cm}
+\paragraph{Notation.} The LoRA weights are initialized with $A_{ij} \sim \normal(0,\sigma_A^2), B_{ij} \sim \normal(0,\sigma_B^2)$ for some $\sigma_A, \sigma_B \geq 0$.\footnote{In \cite{hu2021lora}, $B$ is initialized to $0$, which corresponds to setting $\sigma_B = 0$.} Here also, we assume that either $\sigma_B^2 = 0$ and $\sigma_A^2 = \Theta(n^{-1})$ (\init{1}), or $\sigma_B^2 = \Theta(1)$ and $\sigma_A^2 = 0$ (\init{2}). Given a LoRA layer in the model, $\underbar{Z}$ denotes the input to that layer and $\Bar{Z}$ the output after adding the pretrained weights. More precisely, we write $\Bar{Z} = W^*\underbar{Z} + \frac{\alpha}{r}BA\,\underbar{Z}$.
+
+Our main analysis relies on a careful estimation of the magnitude of several quantities including \emph{LoRA features}. Let us first give a formal definition.
+\begin{defn}[LoRA Features]\label{def:lora_features}
+Given a general neural architecture and a LoRA layer (\cref{def:lora}), we define LoRA features $(Z_A, Z_B)$ as $Z_A = A \underbar{Z}$ and $Z_B = B Z_A = BA \underbar{Z}$\,.
+At fine-tuning step $t$, we use the superscript $t$ to denote the value of LoRA features $Z_A^t, Z_B^t$, and the subscript $t$ to denote the weights $A_t, B_t$. 
+\end{defn}
+
+LoRA layers are 2-layers linear networks with a ``bottleneck'' in the middle (since generally $r\ll n$). This bottleneck shape might induce some numerical challenges in training stability and efficiency (\cref{def:stability} and \cref{def:efficient_learning}). 
+\vspace{-0.3cm}
+\paragraph{Finetuning Dataset.} To simplify the analysis, we assume that the finetuning dataset comprises a single sample $(x,y)$,\footnote{This assumption on the finetuning dataset is for simplification purposes only. All our analysis can be re-written with `batched' gradients and the conclusions remain the same. However, some additonal assumptions are required to make the analysis rigorous.} and the goal is to minimize the loss $\loss(\bm{\theta},(x,y))$ computed with the underlying model where the adjusted weights are given by $W^{*} + BA$ for all LoRA layers (here $\bm{\theta} = \{A, B, \textrm{ for all LoRA layers in the model}\}$). At training step $t$, and for any LoRA layer in the model, $\underbar{Z}^t$ is the input to the LoRA layer, computed with data input $x$. Similarly, we write $d \Bar{Z}^t$ to denote the gradient of the loss function with respect to the layer output features $\Bar{Z}$ evaluated at data point $(x,y)$. 
+
+The notion of stability of LoRA as discussed in \cref{sec:toy} can be generalized to any neural network model as follows.
+\begin{defn}[Stability]\label{def:stability} 
+We say that LoRA finetuning is stable if for all LoRA layers in the model, and all training steps $t$, we have $\underbar{Z}, Z_A, Z_B = \bigO(1)$ as $n$ goes to infinity.
+\end{defn}
+Stability implies that no quantity in the network explodes as width grows, a desirable property as we scale the model.\footnote{It is possible to define stability as $\underbar{Z}, Z_B=\bigO(1)$ and exclude $Z_A$ from the condition. This would allow scenarios where for instance the entries of $A$ explode with width but their magnitude is compensated with a smaller magnitude of $B$. This system has one degree of freedom because of the homogeneity of the product $BA$, and by imposing that $Z_A=\bigO(1)$, we avoid having such scenarios.} Naturally, in order to ensure stability, one has to scale hyperparameters (initialization, learning rate) as $n$ grows. Scaling rules for initialization are fairly easy to infer and were already discussed in \cref{sec:toy} where we obtained two plausible initialization schemes (\init{1} and \init{2}). More importantly, if we arbitrarily scale the learning rate with width, we might end up with suboptimal learning as width grows even if the finetuning is stable. This is the case for instance when we aggressively downscale the learning rate with width, or inadequately parameterize the network (e.g. Neural Tangent Kernel parametrization which leads to the kernel regime in the infinite width limit, \cite{jacot2018neural}).
+To take this into account, we define a notion of feature learning with LoRA.
+\begin{defn}[Stable Feature Learning with LoRA]\label{def:stable_feature_learning_lora} 
+We say that LoRA finetuning induces stable feature
+learning if it is stable (\cref{def:stability}), and for all LoRA layers and finetuning step $t$, we have $\Delta Z_B^t \overset{def}{=} Z_B^{t+1} - Z_B^t = \Theta(1)$.
+\end{defn}
+A similar definition of feature learning was introduced in \cite{yang2023tensor} for pretraining. This definition ensures that the network is not `stuck' in a kernel regime where feature updates are of order $\bigO(n^{-\epsilon})$  in the infinite-width limit for some $\epsilon > 0$, which implies that no feature learning occurs in the limit. The authors introduced the $\mu$-parameterization (or maximal update parametrization), a specific network parameterization (initialization + learning rate scaling), that ensures that feature updates are $\Theta(1)$.
+Note that here we added stability in the definition, but in principle, one could define feature learning with $\Omega$ instead of $\Theta$. The latter covers unstable scenarios (e.g. when $\Delta Z_B^t = \Theta(n)$ due to improper scaling of initialization and learning rate), so we omit it here and focus on stable feature learning. Also, notice that we only consider finetuning dynamics and not the pretraining dynamics. However, since our analysis depends on weights $W^*$ from pretraining, we assume that pretraining parameterization ensures stability and feature learning as width grows (see \cref{app:proofs} for more details).\footnote{When taking the infinite width limit, we assume that pretraining parameterization is $\mu$P. This is just a technicality for the infinite-width limit and does not have any implications on practical scenarios where the width is finite. The most important implications of this assumption is that in the pretrained network (before introducing LoRA layers), we have $\underbar{Z} = \Theta(1), \Bar{Z} = \Theta(1)$, which holds for a general input-output pair $(x,y)$.}
+
+At finetuning step $t$, the gradients are given by
+\begin{align*}
+\frac{\partial \loss_t}{\partial B} &= \frac{\alpha}{r} d\Bar{Z}^{t-1} \otimes A_{t-1} \underbar{Z}^{t-1}\\
+\frac{\partial \loss_t}{\partial A} &= dZ_A^{t-1} \otimes \underbar{Z}^{t-1} = \frac{\alpha}{r} B^\top_{t-1} d\Bar{Z}^{t-1} \otimes \underbar{Z}^{t-1},
+\end{align*}
+where $u \otimes v$ denotes the outer product $uv^\top$ of vectors $u$, $v$,
+and the weights are updated as follows
+$$
+A_{t} = A_{t-1} - \eta_A g_A^{t-1}, \quad B_{t} = B_{t-1} - \eta_B g_B^{t-1},
+$$
+where $g_A, g_B$ are processed gradients (e.g. normalized gradients with momentum as in AdamW etc). Hereafter, we assume that the gradients are processed in a way that makes their entries $\Theta(1)$. This is generally satisfied in practice (with Adam for instance) and has been considered in \cite{yang2023tensor} to derive the $\mu$-parametrization for general gradient processing functions. 
+
+Unlike the linear model in \cref{sec:toy}, LoRA feature updates are not only driven by the change in the $A, B$ weights, but also $\underbar{Z}, d\bar{Z}$ which are updated as we finetune the model (assuming there are multiple LoRA layers). To isolate the contribution of individual LoRA layers to feature learning, we assume that only a \emph{single LoRA layer is trainable} and all other LoRA layers are frozen.\footnote{This is equivalent to having only a single LoRA layer in the model since LoRA layers are initialized to zero. In this way, we can quantify feature learning induced by the LoRA layer as we finetune the model.}. In this setting, considering the only trainable LoRA layer in the model, the layer input $\underbar{Z}$ is fixed and does not change with $t$, while $d\bar{Z}$ changes with step $t$ (because $\bar{Z}^t = (W^* + \frac{\alpha}{r}B_tA_t)\underbar{Z}$). After step $t$, $Z_B$ is updated as follows 
+$$
+\Delta Z_B^t = \underset{\delta_t^1}{\underbrace{B_{t-1} \Delta Z_A^t }} + \underset{\delta_t^2}{\underbrace{\Delta B_t Z_A^{t-1}}} + \underset{\delta^3_t}{\underbrace{\Delta B_t \Delta Z_A^t}}
+$$
+As discussed in \cref{sec:toy}, the terms $\delta^1_t, \delta^2_t$ represent the `linear' feature updates that we obtain if we fix one weight matrix and only train the other, while $\delta^3_t$ represents the `multiplicative' feature update which captures the compounded update due to updating both $A$ and $B$. 
+
+\paragraph{Analysis of the Role of $A$ and $B$.} As discussed above,  we want to ensure that $\delta_t^1 = \Theta(1)$ and $\delta_t^2 = \Theta(1)$ which means that both weight matrices contribute to the update in $Z_B$. To further explain why this is a desirable property, let us analyze how changes in matrices $A$ and $B$ affect LoRA feature $Z_B = BA \,\underbar{Z}$. 
+
+Let $(B_{:,i})_{1\leq i \leq r}$ denote the columns of $B$. We can express $Z_B$ as
+$
+Z_B = \sum_{i=1}^r (A \, \underbar{Z})_i B_{:,i}
+$, where $(A\underbar{Z})_i$ is the $i^{th}$ coordinate of $A \underbar{Z}$. This decomposition suggests that the \emph{direction} of $Z_B$ is a weighted sum of the columns of $B$, and $A$ modulates the \emph{weights}. With this, we can also write  
+\begin{equation*}
+    \begin{cases}
+        \delta^1_t = \sum_{i=1}^r (\Delta A_t \underbar{Z})_i (B_{:,i})_{t-1}\\
+        \delta^2_t  = \sum_{i=1}^r ( A_{t-1} \underbar{Z})_i (\Delta B_{:,i})_{t-1},
+    \end{cases}
+\end{equation*}
+where $(B_{:,i})_{t}$ refers to the columns of $B$ at time step $t$. Having both $\delta_t^1$ and $\delta_t^2$ of order $\Theta(1)$ means that both $A$ and $B$ are `sufficiently' updated to induce a change in weights $(A \underbar{Z})_i$ and directions $B_{:,i}$.
+If one of the matrices $A, B$ is not efficiently updated, we might end up with suboptimal finetuning, leading to either non updated directions $B$ or direction weights $(A_{t-1}Z)$. For instance, assuming that the model is initialized with \init{2}, and that $B$ is not efficiently updated, the direction of $Z_B$ will be mostly determined by the vector (sub)space of dimension $r$ generated by the columns of $B$ at initialization. This analysis leads to the following definition of efficient learning with LoRA.
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.90\linewidth]{figures/glue_roberta_fp16_rank8alltasks_testacc.pdf}
+    \caption{\small{Test accuracy of Roberta-base finetuning for $3$ epochs on MNLI, QQP, QNLI, and $10$ epochs on SST2, with sequence length $T=128$ and half precision (FP16). LoRA hyperparameters are set to $\alpha=r=8$. All values are averaged over 3 random seeds (we do not show confidence intervals for better visualizations, but fluctuations are of order $0.1\%$, see \cref{fig:comparison_standard_vs_ours} for instance). For better visualization, when accuracy is lower than a fixed threshold, we set it to threshold. Values shown in red are:  1) the best accuracy (overall) and 2) the accuracy for a set of learning rates where $\eta_B$ and $\eta_A$ are close in order of magnitude ($\eta_B/\eta_A \in [1,1.25]$)}.}
+    \label{fig:roberta_main}
+\end{figure*}
+\begin{defn}[Efficient Learning]\label{def:efficient_learning}
+    We say that LoRA fine-tuning is efficient if it is stable (\cref{def:stability}), and for all LoRA layers in the model, all steps $t>1$, and $i \{1,2\}$, we have 
+    $
+    \delta_t^i = \Theta(1)
+    $.
+\end{defn}
+Note that it is possible to achieve stable feature learning (\cref{def:stable_feature_learning_lora}) without necessarily having efficient learning. This is the case when for instance $B$ is not updated (fixed to a non-zero init with \init{2}) and only $A$ is updated, which corresponds to simply setting $\eta_B=0$. This is a trivial case, but other non-trivial cases of inefficiency are common in practice, such as the use of the same learning rate for $A$ and $B$ which is a standard practice. In the next theorem, we characterize the optimal scaling of learning rates $\eta_A$ and $\eta_B$, a conclusion similar to that of \cref{sec:toy}.
+
+\begin{thm}[Efficient LoRA (Informal)]\label{thm:efficiency}
+Assume that weight matrices $A$ and $B$ are trained with Adam with respective learning rates $\eta_A$ and $\eta_B$. Then, it is impossible to achieve efficiency with $\eta_A = \eta_B$. However, LoRA Finetuning is efficient with $\eta_A = \Theta(n^{-1})$ and $\eta_B = \Theta(1)$.
+\end{thm}
+
+The result of \cref{thm:efficiency} suggests that efficiency can only be achieved with $\eta_B / \eta_A = \Theta(n)$. In practice, this translates to setting $\eta_B \gg \eta_A$, but does not provide a precise ratio $\eta_B/\eta_A$ to be fixed while tuning the learning rate (the constant in `$\Theta$' is generally intractable), unless we tune both $\eta_B$ and $\eta_A$ which is not efficient from a computational perspective as it becomes a 2D tuning problem. It is therefore natural to set a fixed ratio $\eta_B/\eta_A$ and tune only $\eta_A$ (or $\eta_B$), which would effectively reduce the tuning process to a 1D grid search, achieving the same computational cost of standard LoRA where the learning rate is the same for $A$ and $B$. We call this method LoRA$+$.
+
+\newtcolorbox{mybox}[2][]{colbacktitle=red!10!white,
+colback=green!15!white,coltitle=red!70!black,
+title={#2},fonttitle=\bfseries,#1}
+\begin{mybox}[attach title to upper={\  :\ }]{LoRA$+$}
+set the learning rates for $A, B$ such that $\eta_B = \lambda \eta_A$ with $\lambda>1$ fixed and tune $\eta_A$.
+\end{mybox}
+In the next section, through extensive empirical evaluations, we first validate our theoretical result and show that optimal pairs $(\eta_A,\eta_B)$ (in terms of test accuracy) generally satisfy $\eta_B \gg \eta_A$. We then investigate the optimal ratio $\lambda$ for LoRA$+$ and suggest a default ratio that was empirically found to generally improve performance compared to standard LoRA. Although the conclusions of \cref{thm:efficiency} and \cref{prop:efficient_toy} are similar, the proof techniques are different. In \cref{prop:efficient_toy}, the linear model is trained with gradient descent, while in \cref{thm:efficiency}, the training algorithm is Adam-type in the sense that it normalizes the gradients before updating the weights. The formal statement of \cref{thm:efficiency} requires an additional assumption on the alignment of the processed gradients $g_A$ with LoRA input $\underbar{Z}$. This technical detail is introduced and discussed in \cref{app:proofs}.
+
+

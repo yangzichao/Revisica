@@ -1,0 +1,27 @@
+\section{Conclusion and Future Directions}
+\label{sec:conslusion}
+
+In the current era dominated by large models and large datasets, PEFT stands out as a highly attractive method for efficiently adapting models to downstream tasks. This technique gains its appeal by addressing the significant challenges posed by traditional full-model fine-tuning, which often places substantial computational and data demands. This survey offers a comprehensive examination of the most recent advancements in PEFT, including algorithmic design, computational efficiency, application scenarios, and system implementation for PEFT. It offers a comprehensive taxonomy and explanation that serves as an excellent guidance and knowledge base, which enables readers of various levels and disciplines to swiftly grasp the core concepts of PEFT.
+
+For further research on PEFT, we propose a series of possible directions from both algorithm and system perspectives, hoping to inspire more researchers to engage in further studies in these areas.
+
+
+\subsection{Simplify hyperparameter tuning} 
+The effectiveness of PEFT is often sensitive to its hyperparameters, such as the bottleneck dimension of the adapter, the rank of LoRA, and the arrangement of various additive PEFT layers. Manually tuning these hyperparameters will cost lots of effort. Therefore, future efforts could focus on developing methods that are less dependent on manual tuning of these parameters, or automatically find the optimal configuration settings. Several studies~\cite{valipour2022dylora,adalora,SORA,chen2023parameter,noah,autopeft} have started to address this issue, but there's a need for more simple and efficient solutions optimizing these hyperparameters.
+
+\subsection{Establish a unified benchmark}
+Despite the existence of libraries like HuggingFace's PEFT~\cite{huggingfacepeft} and AdapterHub~\cite{poth2023adapters}, a comprehensive benchmark for PEFT is still lacking. This gap hinders the ability to fairly compare the performance and efficiency of different PEFT approaches. A well-accepted, up-to-date benchmark akin to MMDetection~\cite{mmdetection} for object detection would enable researchers to validate their methods against a standard set of tasks and metrics, fostering innovation and collaboration within the community.
+
+\subsection{Enhance training efficiency}
+The presumed parameter efficiency of PEFT is not always consistent with computational and memory savings during training. Given that trainable parameters are intertwined within the pre-trained model's architecture, computing and storing activations and gradients for the full model often become necessary during fine-tuning. This oversight calls for a rethinking of what constitutes efficiency. As outlined in Section~\ref{sec:efficiency}, potential solutions lie in the integration of model compression techniques such as pruning and quantization, alongside innovations specifically designed to optimize memory during PEFT tuning~\cite{zhang2023camel}. Further research into enhancing the computational efficiency of PEFT methodologies is imperative.
+
+\subsection{Explore scaling laws}
+The design and effectiveness of PEFT methods originally developed for smaller Transformer models do not necessarily scale with larger models. As the size of foundation models increases, identifying and adapting PEFT strategies that remain effective is crucial. This investigation will aid in customizing PEFT methodologies to suit the evolving landscape of large model architectures.
+
+\subsection{Serve more models and tasks}
+The rise of large foundation models across various domains presents new opportunities for PEFT. Designing PEFT methods tailored to the unique characteristics of models, such as Sora~\cite{videoworldsimulators2024}, Mamba~\cite{gu2023mamba}, and LVM~\cite{bai2023sequential}, can unlock new application scenarios and opportunities. 
+
+\subsection{Enhancing data privacy} Trusting centralized systems to serve or fine-tune personalized PEFT modules is yet another issue for system developers. Multiple types of inversion attacks~\cite{dosovitskiy2016inverting, he2019model} have been proposed to reconstruct user's data by hijacking the intermediate results. One perspective of future trust-worthy LLM system design involves developing an encryption protocol for both personal data and intermediate training and inference results.
+
+\subsection{PEFT with model compression} Model compression is one of the most effective ways to make LLM executable on resource-limited devices. Yet, the impact of model compression techniques on the performance of PEFT algorithms running on hardware remains another systemic challenge. 
+Common compression techniques such as quantization and pruning necessitate dedicated hardware platforms to expedite the process, and building such hardware platforms for compressed models is yet another direction for future research.

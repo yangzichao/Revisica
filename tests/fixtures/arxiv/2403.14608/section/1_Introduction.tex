@@ -1,0 +1,33 @@
+\section{Introduction}
+\label{sec:introduction}
+
+
+Large Models (LMs) have recently captured considerable public interest. Their ability to understand context and nuances enables them to proficiently handle diverse tasks across multiple domains, including natural language processing (NLP), computer vision (CV), etc. In the field of NLP, Large Language Models (LLMs) have achieved significant advancements across various tasks including text generation~\cite{brown2020language,45-llm-qa}, translation~\cite{zhu2023multilingual,46-language-translation}, personalized chat-bots~\cite{gentopia,li2023camel,wu2023autogen}, and summarization~\cite{zhang2023summit}, demonstrating remarkable proficiency.
+
+
+Earlier studies~\cite{brown2020language} have suggested that LLMs exhibit high levels of generalization, enabling them to apply their acquired knowledge to new tasks not included in their original training. This capability is commonly known as \textit{zero-shot learning}. Nevertheless, fine-tuning remains essential to further enhance LLMs for optimal performance on new user datasets and tasks.
+ 
+
+Due to its scale, a widely adopted strategy for fine-tuning LLMs involves adjusting a limited number of LLM parameters while keeping the remainder unchanged. This technique, termed~\textit{Parameter-Efficient-Fine-Tuning} (PEFT), involves selectively adjusting a small proportion of their parameters while keeping the rest unaltered. 
+Furthermore, the application of PEFT extends beyond the realm of NLP and quickly attracts interest in the CV community for handling fine-tuning vision models with large parameters, such as Vision Transformers (ViT) and diffusion models, as well as disciplinary models such as vision-language models.
+
+
+
+In this survey, we systematically review and categorize recent advancements in PEFT algorithms as well as the system implementation costs associated with various PEFT algorithms across diverse scenarios. Figure~\ref{fig:overview} presents the overview content for this survey. In section~\ref{sec:background}, we present some fundamental concepts for LLM and PEFT, including computational flow for LLM, basic knowledge of PEFT, commonly used datasets and tasks, and evaluation benchmarks.
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/content_overview.pdf}
+    %\vspace{-0.3in}
+    \caption{A content overview covered in the survey.}
+    \label{fig:overview}
+\end{figure*}
+We categorize all types of PEFT algorithms in Section~\ref{sec:peft taxonomy} according to their computational flow. 
+In Section~\ref{sec:additive}, we detail additive algorithms that either introduce new weight parameters or modify activations. Algorithms that only require fine-tuning of existing parameters are categorized as selective approaches, which are introduced in Section~\ref{sec:selective}.
+In Section~\ref{reparameterization}, we explore reparameterized PEFT, which constructs a (low-
+dimensional) reparameterization of original model parameters for training while transforming the weights back to maintain the inference speed. Additionally, there exist algorithms that combine the above techniques, and we have classified these as hybrid approaches, elaborating on them in Section~\ref{sec:hybrid peft}. We also investigate strategies for further reducing the computational complexity of different PEFT algorithms, including KV-cache management, pruning, quantization, and memory optimization, in Section~\ref{sec:efficiency}.
+
+In Section~\ref{sec:peft application}, we expand the scope of this survey beyond the computational perspective to involve various potential application scenarios. Specifically, we explore innovations that applying PEFT techniques to different model architecture, including LLMs (Section~\ref{peft_on_llms}), Vision Transformer (Section~\ref{peft_on_vit}), Vision-Language alignment models (Section~\ref{peft_on_vla}), and Diffusion models (Section~\ref{peft_on_diffusion}), for varied downstream tasks, underscoring PEFT's versatility and applicability in a range of scenarios.
+After that, in Section~\ref{sec:system design}, we explore the system design challenge for PEFT methods. The discussion includes three advanced system solutions for practical PEFT deployment: PEFT query serving (Section~\ref{sec:PetS}), 
+distributed tuning (Section~\ref{sec:offsite}), and concurrent PEFT tuning (Section~\ref{sec:multilora}).
+Finally, in Section~\ref{sec:conslusion}, we summarize our survey and propose several potential future directions from both algorithmic and systemic perspectives, aiming to offer valuable insights for further research and development in the field.
+

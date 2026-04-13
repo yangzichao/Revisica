@@ -1,0 +1,85 @@
+\section{An Intuitive Analysis of LoRA}\label{sec:toy}
+Our intuition is simple: the matrices $A$ and $B$ have ``transposed'' shapes and one would naturally ask whether the learning rate should be set differently for the two matrices. In practice, most SOTA models have large width (embedding dimension). Thus, it makes sense to study the training dynamics when the width goes to infinity. 
+\subsection{LoRA with a Toy Model}
+Consider the following linear model 
+\begin{equation}\label{eq:toy_model}
+f(x)=(W^*+b a^\top)x,
+\end{equation}
+where $W^* \in \reals^{1\times n}$ are the pretrained weights, $b\in\reals,a\in\reals^{n}$ are LoRA weights,\footnote{Here, we consider $n_2 = 1$ to simplify the analysis. All the conclusions remain essentially valid when $n_2 = n_1 = n$.} $x\in\reals^{n}$ is the model input. This setup corresponds to $n_1=1, n_2=n, r=1$ in \cref{def:lora}. We assume that the weights $W^*$ are fixed (from pretraining). The goal is to minimize the loss $\loss(\theta)=\frac{1}{2}(f(x)-y)^{2}$ where $\theta=(a,b)$ and $(x,y)$ is an input-output datapoint.\footnote{For simplicity, we assume that the finetuning dataset consists of a single sample. Our analysis is readily generalizable to multiple samples.} We assume that $x = \Theta_n(1)$ which means that input coordinates remain of the same order as we increase width. In the following, we analyze the behaviour of the finetuning dynamics as model width $n$ grows. 
+\paragraph{Initialization.} We consider a Gaussian initialization of the weights as follows: $a_i \sim \normal(0,\sigma_a^2)$, $b \sim \normal(0, \sigma_b^2)$.\footnote{The Gaussian distribution can be replaced by any other distribution with finite variance.} With LoRA, we generally want to initialize the product $ba^\top$ to be $0$ so that finetuning starts from the pretrained model. This implies at least one of the weights $a$ and $b$ is initialized to $0$. If both are initialized to $0$, it is trivial that no learning occurs in this case since this is a saddle point. Thus, we should initialize one of the parameters $a$ and $b$ to be non-zero and the other to be zero. If we choose a non-zero initialization for $a$, then following standard initialization schemes (e.g., He Init \citep{he2016deep}, LeCun Init \citep{lecun2002efficient}), one should set $\sigma_a^2 = \Theta(n^{-1})$ to ensure $a^\top x$ does not explode with width. This is justified by the Central Limit Theorem (CLT).\footnote{Technically, the CLT only ensures the almost sure convergence, the $L_2$ convergence follows from the Dominated Convergence Theorem. We omit these technical details in this paper.} On the other hand, if we choose a non-zero initialization for $b$, one should make sure that $\sigma_b^2 = \Theta(1)$. This leaves us with two possible schemes:
+\vspace{-0.2cm}
+\begin{itemize}
+    \item \init{1}: $\sigma_b^2 = 0, \sigma_a^2 = \Theta(n^{-1})$.
+    \item \init{2}: $\sigma_b^2 = \Theta(1), \sigma_a^2 =0$.
+\end{itemize}
+\vspace{-0.2cm}
+Our analysis will only consider these two initialization schemes for LoRA modules, although the results should in-principle hold for other schemes, providing that stability (as discussed above) is satisfied.
+\paragraph{Learning rate.} WLOG, we can simplify the analysis by assuming that $W^* = 0$. This can be achieved by setting $\Tilde{y} = y - W^* x$. The gradients are given by
+\begin{align*}
+\frac{\partial\loss}{\partial b} =a^{\top}x(f(x)-y), \,\,\,
+\frac{\partial\loss}{\partial a}  =b(f(x)-y)x.
+\end{align*}
+ We use subscript $t$ to denote the finetuning step. Let $U_t = (f_t(x)-y)$. At step $t$ with learning rate $\eta>0$, we have 
+\begin{align*}
+&\Delta f_t \overset{def}{=} f_t(x) - f_{t-1}(x) = -\underset{\delta_t^1}{\underbrace{\eta b_{t-1}^{2}U_{t-1}\|x\|^{2}}}\\
+&-\underset{\delta_t^2}{\underbrace{\eta(a_{t-1}^{\top}x)^{2}U_{t-1}}}+\underset{\delta_t^3}{\underbrace{\eta^2 U_{t-1}^{2}b_{t-1}(a_{t-1}^{\top}x)\|x\|^{2}}}.
+\end{align*}
+The update in model output is driven by the three terms $(\delta_t^i)_{i \in \{1,2,3\}}$. The first two terms represent ``linear'' contributions to the update, i.e. change in model output driven by fixing $b$ and updating $a$ and vice-versa. These terms are order one in $\eta$. The third term $\delta_t^3$ represents a multiplicative update, compounding the updates in $a$ and $b$, and is an order two term in $\eta$. As $n$ grows, a desirable property is that $\Delta f_t=\Theta(1)$. Intuitively, this means that as we scale the width, feature updates do not `suffer' from this scaling (see \cref{sec:scaling} for more details). An example of a scenario where feature learning is affected by scaling is the lazy training regime \citep{jacot2018neural}, where feature updates are of order $\Theta(n^{-1/2})$ which implies that no feature learning occurs in the limit $n \to \infty$. The condition $\Delta f_t = \Theta(1)$ also implies that the update does not explode with width, which is also a desirable property. 
+
+Having $\Delta f_t = \Theta(1)$ satisfied implies that at least one of the three terms $(\delta_t^i)_{i \in \{1,2,3\}}$ is $\Theta(1)$. Ideally, we want both $\delta^1_t$ and $\delta^2_t$ to be $\Theta(1)$ because otherwise it means that either $a$ or $b$ is not efficiently updated. For instance, if $\delta^1_t = o(1)$, it means that as $n \to \infty$, the model acts as if $a$ is fixed and only $b$ is trained. Similar conclusions hold when $\delta^2_t = o(1)$. Having both $\delta^1_t$ and $\delta^2_t$ being $\Theta(1)$ in width means that both $a$ and $b$ parameter updates significantly contribute to the change in $f_t(x)$, and we say that feature learning with LoRA is \emph{efficient} when this is the case, i.e. $\delta_i^t = \Theta(1)$ for $i \in \{1,2\}$ and all $t>1$. We will formalize this definition of efficiency in the next section. The reader might wonder why we do not require that $\delta^3_t$ be $\Theta(1)$. We will see that when both $\delta^1_t$ and $\delta^2_t$ are $\Theta(1)$, the term $\delta^3_t$ is also $\Theta(1)$.
+
+\paragraph{Efficiency Analysis.} Let us assume that we train the model with gradient descent with learning rate $\eta = \Theta(n^c)$ for some $c \in \reals$, and suppose that we initialize the model with \init{1}. Sine the training dynamics are mainly matrix vector products, sum of vectors/scalars etc (see \citep{yang2022tensor}),\footnote{A crucial assumption for this to hold is also to have that for any matrix/vector product in the training dynamics, the product dimension (the dimension along which the matrix/vector product is calculated) is $\Theta(n^\alpha)$ for some $\alpha>0$. For instance, in the case of Transformers, this is satisfied since the MLP embedding dimension is generally $k \times n$. However, this condition would be violated if for instance one considers MLP embedding dimension $ k n \log(n)$. Such non-standard scaling choices require a particular treatment, but the conclusions remain the same.} it is easy to see that any quantity in the training dynamics should be of order $n^{\gamma}$ for some $\gamma \in \reals$. For any quantity $v$ in the training dynamics, we  write $v = \Theta(n^{\gamma[v]})$. When $v$ is a vector, we use the same notation when all entries of $v$ are $\Theta(n^{\gamma[v]})$. The $\gamma$ notation is formally defined in \cref{app:proofs}. 
+
+Starting from initialization, we have $f_0(x) = 0$. LoRA finetuning is efficient when $\delta_t^1 = \Theta(1)$ and $\delta^2_t = \Theta(1)$ for all $t>1$,\footnote{Here we use the $t>1$ instead of $t>0$ because at $t\leq 1$, at least one the terms $\delta_1^1$ or $\delta_1^2$ will be zero.} and $f_t(x) = \Theta(1)$ for $t> 1$. This translate to 
+\begin{equation*}
+    \begin{cases}
+        c+2\gamma[b_{t-1}] + 1 = 0 \quad (\delta^1_t = \Theta(1))\\
+        c + 2 \gamma[a_{t-1}^\top x] = 0\quad (\delta^2_t = \Theta(1)) \\
+        \gamma[b_{t-1}] + \gamma[a_{t-1}^\top x] = 0 \quad (f_{t-1}(x) = \Theta(1))\\        
+    \end{cases}
+\end{equation*}
+Solving this equation yields $c = -1/2$, i.e. the learning rate should scale as $\eta = \Theta(n^{-1/2})$ in order to achieve efficient feature learning. At initialization, $b_0 = 0$ and $a_0^\top x = \Theta(1)$ (by Central Limit Theorem). Through an inductive argument, for $t >0$, $b_t$ will be of order $\Theta(n^{-1/2})$ and $a_t^\top x$ will be  of order $\Theta(1)$, yielding $f_t(x) = \Theta(n^{-1/2})$. Indeed, at each iteration the update to $b_t$ will be of order $\Theta(\eta y a_{t-1}^\top x) = \Theta(n^{-1/2})$ and the updates to $a_t$ are of order $\Theta(\eta b_{t-1} y x) = \Theta(n^{-1})$. As $f_t = \Theta(n^{-1/2})$, this yields a contradiction towards learning $\Theta(1)$ features.
+
+This shows that we cannot have both $\delta_t^1$ and $\delta_t^2$ to be $\Theta(1)$ with this parametrization (also true with \init{2}). We formalize this result in the next proposition and refer the reader to \cref{app:proofs} for further technical details.
+
+\begin{prop}[Inefficiency of LoRA fine-tuning]\label{prop:inefficiency_toy}
+Assume that LoRA weights are initialized with \init{1} or \init{2} and trained with gradient descent with learning rate $\eta = \Theta(n^c)$ for some $c \in \reals$. Then, it is impossible to have $\delta_t^i = \Theta(1)$ for $i \in \{1,2\}$ for any $t>0$, and therefore, fine-tuning with LoRA in this setup is inefficient.
+\end{prop}
+In conclusion, efficiency cannot be achieved with this parametrization of the learning rate. This suggests that standard LoRA finetuning as currently used by practitioners is suboptimal, especially when model width is large, which is a property that is largely satsified in practice ($n\approx 700$ for GPT2 and $n\approx 4000$ for LLama). This analysis suggests that \emph{we are missing crucial hyperparameters} in the standard LoRA setup. Indeed, we show that by decoupling the learning rate for $a$ and $b$, we can have $\delta_t^i = \Theta(1)$ for $i \in \{1,2, 3\}$. We write $\eta_a, \eta_b$ to denote the learning rates. The analysis conducted above remains morally the same with the only difference being in the learning rates. Let $\eta_a = \Theta(n^{c_a})$ and $\eta_b = \Theta(n^{c_b})$, and assume that weights are initialized with \init{1}. A similar analysis to the one conducted above show that having $f_t(x) = \Theta(1)$ and $\delta_t^i = \Theta(1)$ for $i \in \{1,2\}$ and $t>0$ implies that for all $t>1$
+\begin{equation*}
+    \begin{cases}
+c_a+2\gamma[b_{t-1}] + 1 = 0 \quad (\delta^1_t = \Theta(1))\\
+        c_b + 2 \gamma[a_{t-1}^\top x] = 0\quad (\delta^2_t = \Theta(1)) \\
+        \gamma[b_{t-1}] + \gamma[a_{t-1}^\top x] = 0 \quad (f_{t-1}(x) = \Theta(1))
+    \end{cases}
+\end{equation*}
+
+
+
+which, after simple calculations, implies that $c_a + c_b = -1$. This is only a necessary condition. In the next result, taking also some elements of stability into consideration, we fully characterize the choice of $\eta_a$ and $\eta_b$ to ensure efficient LoRA fine-tuning. 
+
+\begin{prop}[Efficient Fine-Tuning with LoRA]\label{prop:efficient_toy}
+In the case of model \eqref{eq:toy_model}, with $\eta_a = \Theta(n^{-1})$ and $\eta_b = \Theta(1)$, we have for all $t>1$, $i \in \{1,2,3\}$, $\delta_t^i = \Theta(1)$.
+\end{prop}
+
+
+We refer the reader to \cref{app:proofs} for more details on the proof of \cref{prop:efficient_toy}.  In conclusion, scaling the learning rates as $\eta_a = \Theta(n^{-1})$ and $\eta_b = \Theta(1)$ ensures stability ($\Delta f_t = \Theta(1)$) and efficiency of LoRA finetuning ($\delta^i_t = \Theta(1)$ for $i\in\{1,2\}$ and $t>1$) in the infinite-width limit. In practice, this means that the learning rate for $b$ should be generally much larger than that of $a$. This remains true even if $b \in \reals^{r}$ for general $r$. We will later see that this scaling is valid for general neural network models. 
+\begin{figure}[h]
+    \centering
+     \includegraphics[width=.95\linewidth]{figures/toy_steps10and100_sweeps_d5_width100_r4_N1000_Nt100.pdf}
+    \includegraphics[width=0.91\linewidth]{figures/toy_comparison.pdf}
+    \caption{\small{(\textbf{Top}) Train/Test accuracy of toy model \cref{eq:toy_model_exps} averaged over 3 random seeds. Orange dashed line represents the line $\eta_A = \eta_B$, and red dots represents all values of $(\eta_A, \eta_B)$ for which $d_{\min}(\eta_A, \eta_B):= \loss_{(\eta_A,\eta_B)}/\loss^* - 1 \leq 1\%$, where $\loss^*$ is the best loss. (\textbf{Bottom}) Train/Test curves for two sets of learning rates: the optimal choice $(\eta_A^*, \eta_B^*) = (2.78, 1.29\mathrm{e}{-4})$ overall at $t=200$ in terms of test loss (Blue) and the optimal choice when $\eta_A =  \eta_B$ which is given by $(\eta_A, \eta_B) = (2.15\mathrm{e}{-2}, 2.15\mathrm{e}{-2})$ (Orange). All values are averaged oevr three runs and confidence interval are shown (shaded).}}
+    \vspace{-0.4cm}
+    \label{fig:toy_heatmap}
+\end{figure}
+
+\subsection{Verifying the Results on a Toy Model}
+The previous analysis considers a simple linear model. To assess the validity of the scaling rules in a non-linear setting, we consider a neural network model given by 
+\begin{equation}\label{eq:toy_model_exps}
+f(x) = W_{out} \phi(BA \phi(W_{in} x)),
+\end{equation}
+where $W_{in} \in \reals^{n\times d}, W_{out} \in \reals^{1\times n}, A \in \reals^{r\times n}, B \in \reals^{n \times r}$ are the weights, and $\phi$ is the ReLU function.  
+The model is trained on a synthetic dataset generated with $X\sim \normal(0, I_d), \,\, Y = \sin(d^{-1}\sum_{i=1}^d X_i)$. 
+See \cref{app:add_exps} for more details.
+
+Only the weight matrices $A, B$ are trained ($W_{in}, W_{out}$ are fixed). We use $d=5, n=100, r=4$, train data size $1000$ and a test data size $100$.\footnote{See \cref{app:add_exps} for more details about the experimental setup.} The train/test loss for varying $\eta_A$ and $\eta_B$ is reported in \cref{fig:toy_heatmap} at the early stages of the training ($t=10$) and after convergence (we observed convergence around $t \approx 200$ for reasonable choices of learning rates). The red '$+$' signs represents learning rates $(\eta_A, \eta_B)$ for which the loss is within $1\%$ range from the best loss and dashed line represents the case where the learning rates are set equal. We observe that both the best train and test losses are consistently achieved by a combination of learning rates where $\eta_b \gg \eta_a$, which validates our analysis in the previous section. Notice also that optimal learning rates $(\eta_A, \eta_B)$ are generally close to the edge of stability, a well-known behaviour in training dynamics of deep networks \citep{cohen2021gradient}.

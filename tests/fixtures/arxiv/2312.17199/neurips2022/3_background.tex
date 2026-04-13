@@ -1,0 +1,21 @@
+%
+
+
+
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+We consider supervised learning tasks on data \mbox{$\calD \defines \{ (\bx_{n}, \by_{n}) \}_{n=1}^N = (\bX_{\calD}, \by_{\calD})$} with inputs \mbox{$\bx_{n} \in \calX \subseteq \real^D$} and targets \mbox{$\by_{n} \in \calY$}, where $\calY \subseteq \real^Q$ for regression and $\calY \subseteq \{0, 1\}^Q$ for classification tasks.
+Bayesian neural networks (\bnns) are stochastic neural networks trained using (approximate) Bayesian inference.
+Denoting the parameters of such a stochastic neural network by the multivariate random variable $\bTheta \in \R^P$ and letting the function mapping defined by a neural network architecture be given by \mbox{$f : \calX \times \R^P \rightarrow \R^{Q}$}, we obtain a random function $f(\cdot \,; \bTheta)$.
+%
+For a parameter realization $\btheta$, we obtain a corresponding function realization, $f(\cdot \,; \btheta)$.
+When evaluated at a finite collection of points $ \bX = \{ \bx_{i} \}_{i=1}^{m} $, $f(\bX ; \bTheta)$ is a multivariate random variable and $f(\bX ; \btheta)$ is a vector.
+
+Letting $p_{\by | f(\bX ; \bTheta)}$ be a likelihood function and $p_{\by | f(\bX ; \bTheta)}(\by_{\calD} \vbar f(\bX_{\calD} ; \btheta))$ be the likelihood of observing the targets $\by_{\calD}$ under the stochastic function $f(\cdot \,; \bTheta)$ evaluated at inputs $\bX_{\calD}$ and letting $p_{\bTheta}$ be a prior distribution over the stochastic network parameters $\bTheta$, we can use Bayes' Theorem to find the posterior distribution, $p_{\bTheta | \calD}$~\citep{mckay1992practical,neal1996bayesian}.
+However, since the mapping $f$ is a nonlinear function of the stochastic parameters $\bTheta$, exact inference is analytically intractable.
+Variational inference is an approach that seeks to sidestep this intractability by framing posterior inference as a variational optimization problem, where the goal is to find a distribution $q_{\bTheta}$ in a variational family $\calQ_{q_{\bTheta}}$ that solves the variational problem \mbox{$\min_{q_{\bTheta} \in \calQ_{q_{\Theta}}} \DKL{q_{\bTheta}}{p_{\bTheta | \calD}}$}~\citep{wainwright2008vi}.
+If $\calQ_{q_{\bTheta}}$ is the family of mean-field Gaussian distributions and the prior distribution over parameters $p_{\bTheta}$ given by a diagonal Gaussian distribution, the resulting variational objective is amenable to stochastic variational inference and can be optimized using gradient-based methods~\citep{hinton1993keeping,graves2011practical,hoffman2013svi,blundell2015mfvi}.
+
+
+%

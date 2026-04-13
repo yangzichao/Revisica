@@ -1,0 +1,94 @@
+
+\documentclass{article} %
+\usepackage{iclr2024,times}
+\usepackage{lipsum}
+\usepackage[ruled]{algorithm2e}
+\usepackage{multicol}
+\usepackage{latexsym}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{tablefootnote}
+\usepackage{array}
+
+
+\input{math_commands.tex}
+\input{header}
+\usepackage{hyperref}
+
+\usepackage{url}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+
+
+\usepackage{cleveref}
+
+
+\title{Pre-training via Structured Pruning}
+\title{Efficiently Producing a Billion-Parameter\\Language Model via Structured Pruning}
+\title{Sheared LLaMA: Producing Strong Small Language Models via Structured Pruning}
+\title{Sheared LLaMA: Scaling Down Language Models Efficiently via Structured Pruning}
+\title{Don't Pretrain from Scratch: Structured Pruning from Large Language Models with Less Compute}
+\title{Sheared LLaMA: Structured Pruning from Large Language Models with Less Compute}
+\title{Sheared LLaMA: Accelerating Language\\ Model Pre-training via Structured Pruning}
+
+
+\iclrfinalcopy
+% \thanks{Work done during internship at Princeton University.}
+\author{Mengzhou Xia$^1$, Tianyu Gao$^1$, Zhiyuan Zeng$^2$~, Danqi Chen$^1$\\
+$^1$Princeton Language and Intelligence,
+~Princeton University\\
+$^2$Department of Computer Science and Technology, Tsinghua University\\
+\texttt{\{mengzhou,tianyug,danqic\}@cs.princeton.edu} \\
+\texttt{zengzy20@mails.tsinghua.edu.cn} \\
+}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\setlength{\textfloatsep}{6pt}
+\captionsetup[table]{skip=5pt}
+\captionsetup[figure]{skip=5pt}
+
+\begin{document}
+
+
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/method}
+\input{sections/experiment}
+\input{sections/related_work.tex}
+\input{sections/conclusion.tex}
+
+
+
+
+
+
+
+\bibliography{reference}
+\bibliographystyle{iclr2024}
+
+
+\newpage
+
+
+
+
+\input{sections/appendix}
+
+
+\end{document}

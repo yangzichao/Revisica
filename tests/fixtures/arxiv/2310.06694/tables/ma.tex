@@ -1,0 +1,26 @@
+\begin{table}[h]
+    \centering
+    \caption{Model structure of Pythia-1.4B, LLM-pruner (1.6B), and Ours (1.3B).
+    }
+    \resizebox{0.9\columnwidth}{!}{%
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{lcccccccc} \toprule
+        \textbf{Layers} & \textbf{Heads} & \textbf{Head size} & \textbf{Intermediate size} & \textbf{Hidden size} & \textbf{Params} \\ \midrule
+    Pythia-1.4B & 24 & 16 & 128 & 8192 & 2048 & 1.4B   \\ \midrule
+    LLM-pruner (1.6B) & 32     & 7     & 128       & 2201              & 4096 &  1.6B       \\
+    Sheared-LLaMA (1.3B)       & 24     & 16    & 128       & 5504              & 2048 &  1.3B  \\  \bottomrule 
+    \end{tabular}
+    }
+    \label{tab:model_structure}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Training throughput and generation speed of LLM-pruner (1.6B) and Sheared-LLaMA (1.3B). With a similar parameter count, our pruned model structure has a lower perplexity when fine-tuned with the same amount of tokens (around 6B tokens). Yet our pruned model architectures are way more efficient for both training and inference. }
+\label{tab:ma_speed}
+\begin{tabular}{@{}lccc@{}} \toprule
+                    & \textbf{Generation Speed} & \textbf{Training Throughput} & \textbf{PPL} \\ \midrule
+{LLM-Pruner} & 43        tokens/s                    & 83K       tokens/s                   & 7.09         \\
+{Sheared-LLaMA}       & 58      tokens/s                      & 139K        tokens/s                 & 6.85        \\ \bottomrule
+\end{tabular}
+\end{table}

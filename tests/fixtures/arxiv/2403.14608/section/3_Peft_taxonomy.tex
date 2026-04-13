@@ -1,0 +1,593 @@
+\tikzstyle{my-box}=[
+ rectangle,
+ draw=hidden-draw,
+ rounded corners,
+ text opacity=1,
+ minimum height=1.5em,
+ minimum width=5em,
+ inner sep=2pt,
+ align=center,
+ fill opacity=.5,
+ ]
+ \tikzstyle{leaf}=[my-box, minimum height=1.5em,
+ fill=hidden-orange!60, text=black, align=left,font=\scriptsize,
+ inner xsep=2pt,
+ inner ysep=4pt,
+ ]
+\begin{figure*}[t]
+	\centering
+	\resizebox{\textwidth}{!}{
+		\begin{forest}
+			forked edges,
+			for tree={
+				grow=east,
+				reversed=true,
+				anchor=base west,
+				parent anchor=east,
+				child anchor=west,
+                node options={align=center},
+                align = center,
+				base=left,
+				font=\small,
+				rectangle,
+				draw=hidden-draw,
+				rounded corners,
+				minimum width=4em,
+				edge+={darkgray, line width=1pt},
+				s sep=3pt,
+				inner xsep=2pt,
+				inner ysep=3pt,
+				ver/.style={rotate=90, child anchor=north, parent anchor=south, anchor=center},
+			},
+			where level=1{text width=5.0em,font=\scriptsize}{},
+			where level=2{text width=5.6em,font=\scriptsize}{},
+			where level=3{text width=6.8em,font=\scriptsize}{},
+			[
+			PEFT Methods for PLMs, ver
+			[
+			Additive \\ Fine-tuning 
+			[
+			Adapter-based \\ Fine-tuning		
+                [
+                Adapter  Design
+                [
+			Serial Adapter~{~\cite{9-peft-transfer-learning},}
+                Parallel Adapter~{\cite{14-unified-view-transfer-peft},}
+                CIAT~{\cite{zhu2021counter},}
+                CoDA~{\cite{lei2023conditional}}
+                , leaf, text width=30em, align = left
+                ]
+                ]
+                [
+                Multi-task Adaptation
+                [
+			AdapterFusion~{\cite{4-AdapterFusion},}
+			AdaMix~{\cite{29-adamix},} 
+                PHA~{\cite{zhao2023prototype},}
+                AdapterSoup~{\cite{chronopoulou2302adaptersoup},}
+                MerA~{\cite{he2023mera},} 
+                Hyperformer~{\cite{mahabadi2021parameter}} 
+                , leaf, text width=30em, align = left
+                ]
+                ]
+			]
+			[
+			Soft Prompt-based \\ Fine-tuning
+                [
+                Soft Prompt Design
+                [
+                % Theoretical Analysis 1~{\cite{48-theory-prefix-tuning},}
+                % Theoretical Analysis 2~{\cite{wang2023universality},}
+                Prefix-tuning~{\cite{11-prefix-tuning},}
+                Prefix-Propagation~{\cite{Prefix-Propagation},} 
+                p-tuning v2~{\cite{47-P-tuning-v2},} 
+                APT~{\cite{zhang2023towards},}
+                p-tuning~{\cite{3-GPT-understands-too},}\\
+                prompt-tuning~{\cite{13-prompt-tuning},}
+                Xprompt~{\cite{xprompt},}
+                IDPG~{\cite{IDPG},}
+                LPT~{\cite{LPT},} 
+                SPT~{\cite{SPT},}
+                APrompt~{\cite{Aprompt}}
+                , leaf, text width=30em, align = left
+                ]
+                ]
+                [
+                Training Speedup
+                [
+                SPoT~{\cite{49-spot},}
+                TPT~{\cite{50-transfer-prompt},}
+                InfoPrompt~{\cite{wu2023infoprompt},}
+                PTP~{\cite{ptp},} 
+                IPT~{\cite{51-intrinsic-subspace},}
+                SMoP~{\cite{SMoP},}
+                DePT~{\cite{shi2023dept}}
+			, leaf, text width=30em, align = left
+                ]
+                ]
+			]
+                [
+			Others
+			[
+			$\text{(IA)}^3$~{\cite{16-few-shot-peft-in-context-learning},}
+                MoV~{\cite{zadouri2023pushing},}
+                SSF~{\cite{ssf},}
+                IPA~{\cite{IPA}}
+			, leaf, text width=38.4em
+			]
+			]
+			]
+			[
+			  Selective \\ Fine-tuning
+			[
+			  Unstructural \\ Masking
+			[
+			U-Diff pruning~{\cite{10-diff-purning},} 
+                U-BitFit~{\cite{lawton2023neural},} 
+                PaFi~{\cite{liao2023parameter},} 
+                FishMask~{\cite{36-fish-masks},}
+                Fish-Dip~{\cite{das2023unified},} 
+                LT-SFT~{\cite{ansell2021composable},} 
+                SAM~{\cite{6-On-the-effectiveness-of-parameter-efficient-fine-tuning},} 
+                Child-tuning~{\cite{54-raise-child}} 
+                , leaf, text width=38.4em, align = left
+			]
+			]
+                [
+			Structural Masking
+			[
+			S-Diff pruning~{\cite{10-diff-purning},} 
+                S-BitFit~{\cite{lawton2023neural},} 
+                FAR~{\cite{53-FAR},} 
+                Bitfit~{\cite{1-BitFit},}
+                Xattn Tuning~{\cite{gheini2021cross},}
+                SPT~{\cite{he2023sensitivity}}
+			, leaf, text width=38.4em, align = left
+			]
+                ]
+			]
+			[
+			Reparameterized \\ Fine-tuning
+			[
+			  Low-rank \\ Decomposition
+			[
+			Intrinsic SAID~{\cite{intrinsic-SAID},}
+                LoRA~{\cite{5-LoRA},} 
+                Compacter~{\cite{2-Compacter},}
+                KronA~{\cite{43-krona},} 
+                KAdaptation~{\cite{44-he2023parameter},} 
+                HiWi~{\cite{liao2023parameter},}
+                VeRA~{\cite{kopiczko2023vera},}
+                DoRA~{\cite{liu2024dora}}
+			, leaf, text width=38.4em, align = left
+			]
+			]
+			[
+			  LoRA Derivatives
+			[
+			Dynamic Rank
+			[
+                DyLoRA~{\cite{valipour2022dylora},}
+			AdaLoRA~{\cite{adalora},}
+			SoRA~{\cite{SORA},} 
+                CapaBoost~{\cite{haobo2023increasing},}
+                AutoLoRA~{\cite{zhang2024autolora}}
+			, leaf, text width=30em, align = left
+			]
+			]
+                [
+			  LoRA Improvement
+			[
+                Laplace-LoRA~{\cite{yang2023bayesian},}
+                LoRA Dropout~{\cite{lin2024lora},}
+                PeriodicLoRA~{\cite{meng2024periodiclora},}
+                LoRA+{~\cite{hayou2024lora+},}
+                MoSLoRA~{\cite{wu2024mixturemos}}
+			, leaf, text width=30em, align = left
+			]
+			]
+                [
+			  Multiple LoRA
+			[
+                LoRAHub~{\cite{huang2023lorahub},} 
+                MOELoRA~{\cite{liu2023moelora},}  
+                MoLORA~{\cite{zadouri2023pushing},}
+                MoA~{\cite{feng2024mixture},}
+                MoLE~{\cite{wu2024mixture},}
+                MixLoRA~{\cite{li2024mixlora}}
+			, leaf, text width=30em, align = left
+			]
+			]
+			]
+			]
+			[
+			  Hybrid \\ Fine-tuning
+			[
+                UniPELT~{\cite{15-uni-pelt},}  
+                S4~{\cite{chen2023parameter},}  
+                MAM Adapter~{\cite{14-unified-view-transfer-peft},}
+                NOAH~{\cite{noah},}
+                AUTOPEFT~{\cite{autopeft},} 
+                LLM-Adapters~{\cite{hu2023llm},}
+                $\text{S}^3$PET~{\cite{hu2022sparse}}  
+                , leaf, text width=45.67em, align = left
+			]
+			]
+			]
+		\end{forest}
+  }
+\caption{Taxonomy of Parameter-Efficient Fine-Tuning Methods for Large Models.}
+\label{PEFT_categorization_of_LLMs}
+\end{figure*}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/PEFT_category.pdf}
+    \caption{Different types of PEFT algorithms.}
+    \label{fig:peft-arch}
+\end{figure}
+
+\section{PEFT Taxonomy}
+\label{sec:peft taxonomy}
+
+The PEFT strategies can be broadly classified into four categories: \textbf{additive PEFT} (Section~\ref{sec:additive}), which modifies the model architecture by injecting new trainable modules or parameters; \textbf{selective PEFT} (Section~\ref{sec:selective}), which makes a subset of parameters trainable during fine-tuning; \textbf{reparameterized PEFT} (Section~\ref{reparameterization}), which constructs a (low-dimensional) reparameterization of the original model parameters for training, then equivalently transforms it back for inference; and \textbf{hybrid PEFT} (Section~\ref{sec:hybrid peft}), which combines advantages from different PEFT methods to build a unified PEFT model. An overview of different types of PEFT algorithms is depicted in Figure~\ref{fig:peft-arch}.
+
+
+
+
+\subsection{Additive PEFT}
+\label{sec:additive}
+
+Standard full fine-tuning entails substantial computational expenses and could also potentially harm the model's 
+generalization ability. To mitigate this problem, a widely employed approach is to maintain the pre-trained backbone unchanged and introduce only a minimal number of trainable parameters that are strategically positioned within the model architecture. While fine-tuning for a specific downstream task, only the weights of these additional modules or parameters are updated, which results in a substantial reduction in storage, memory, and computational resource requirements. Due to their characteristic of adding parameters, these techniques can be termed as~\textit{Additive Tuning}, as shown in Figure~\ref{fig:peft-arch} (a). Next, we discuss several popular Additive PEFT algorithms.
+
+\subsubsection{Adapters}
+\label{adaptertuning}
+Adapter approaches involve the insertion of small adapter layers within Transformer blocks. Typically, an adapter layer consists of a down-projection matrix $W_{\text{down}} \in \mathbb{R}^{r \times d}$, followed by a non-linear activation function $\sigma(\cdot)$, and an up-projection matrix $W_{\text{up}} \in \mathbb{R}^{d \times r}$. In this context, $d$ represents the dimension of the hidden layer, and $r$ serves as the bottleneck dimension, which is a hyperparameter used in configuring the adapters. Denote $h_{in}$ as the input to the adapter, the computation within the adapter module (with residual) can be summarized as follows:
+
+\vspace{-0.19in}
+\begin{equation}
+Adapter(x) =  W_{\text{up}}\sigma(W_{\text{down}}x) + x.
+\end{equation}
+
+The concept of adapters in the field of NLP was initially introduced by \textbf{Serial Adapter}~\cite{9-peft-transfer-learning} as shown in Figure~\ref{fig:adapters} (a). In their approach, each Transformer block is enhanced by adding two adapter modules, with one positioned after the self-attention layer and the other after the FFN layer, respectively. Subsequent research has aimed to address the additional computational cost associated with adapter layers. A modified framework \textbf{AdapterFusion}~\cite{4-AdapterFusion} was proposed, where adapter layers are inserted only after the 'Add \& Norm' step following the FFN layer to enhance the computational efficiency. 
+The adapters mentioned above follow a sequential design, placing adapter layers as bottlenecks within the Transformer blocks. This approach may potentially reduce the model's parallelism and require a trade-off between inference efficiency and accuracy. 
+In contrast, \cite{14-unified-view-transfer-peft} introduced a \textbf{parallel adapter} (PA) approach as depicted in Figure~\ref{fig:adapters} (b), which reorganizes the traditionally sequential adapter layers into a parallel side-network that runs alongside each Transformer sublayer. Similarly, \textbf{CIAT}~\cite{zhu2021counter}, \textbf{CoDA}~\cite{lei2023conditional} and \textbf{KronA}~\cite{43-krona} also adopts a parallel adapter design. Except for the parallel design, \textbf{CoDA} employs a sparse activation mechanism to improve the inference efficiency as shown in Figure~\ref{fig:adapters} (c). Specifically, CoDA uses a soft top-$k$ selection process that identifies $k$ important tokens in each layer, which will be processed by both the frozen pre-trained Transformer layer and the adapter branch to maintain model accuracy. In contrast, those unimportant tokens are only processed by the adapter branch while skipping the heavy pre-trained layer, therefore optimizing for inference efficiency without compromising overall performance.
+
+To enhance the performance and generalization of adapters, various studies have implemented \emph{multi-task learning} strategies, such as \textbf{AdapterFusion}~\cite{4-AdapterFusion}, \textbf{AdaMix}~\cite{29-adamix}, \textbf{PHA}~\cite{zhao2023prototype}, \textbf{AdapterSoup}~\cite{chronopoulou2302adaptersoup}, \textbf{MerA}~\cite{he2023mera}, and \textbf{Hyperformer}~\cite{mahabadi2021parameter}. \textbf{AdapterFusion} keeps all pre-trained adapters in the model and employs a fusion module to merge the multi-task information. Unlike AdapterFusion, \textbf{MerA} merges pretrained adapters into a single one through optimal transport based on weights and activations. This approach avoids introducing any additional trainable parameters, thereby enhancing computational efficiency. \textbf{Hyperformer} stores the multi-task information in a shared hypernetwork, which generates task and layer-specific adapter parameters conditioned on task and layer ID embeddings. Given a new task, only an additional task embedding needs to be learned, therefore reducing the number of trained parameters.
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.65\linewidth]{figures/adapter_arch.pdf}
+    \caption{Illustration of three representative adapter-based fine-tuning algorithms. Blue represents frozen, while yellow represents trainable.}
+    \label{fig:adapters}
+\end{figure*}
+
+
+
+\subsubsection{Soft Prompt}
+\label{softprompt}
+Alternatively, prompt tuning presents an additional approach for refining the model to achieve improved performance through fine-tuning. Instead of optimizing discrete token representations through in-context learning, there is a prevailing belief that the continuous embedding space of soft prompts inherently contains more information~\cite{48-theory-prefix-tuning}. Drawing inspiration from this concept, researchers directly prepend adjustable vectors, referred to as soft prompts, to the start of the input sequence. This can be represented as follows:
+
+\begin{equation}
+\mathbf{X}^{(l)} = [\mathbf{s}_1^{(l)}, \ldots, \mathbf{s}_{N_S}^{(l)}, \mathbf{x}_1^{(l)}, \ldots, \mathbf{x}_{N_X}^{(l)}]
+\end{equation}
+where \(\mathbf{X}^{(l)}\) is the sequence of input tokens for layer \(l\), including soft prompt tokens \(\mathbf{s}_i^{(l)}\) followed by the original input tokens \(\mathbf{x}_i^{(l)}\). \(N_S\) is the number of soft prompt tokens, and \(N_X\) is the number of original input tokens. 
+
+
+
+
+\textbf{Prefix-tuning}~\cite{11-prefix-tuning} introduces learnable vectors that are prepended to keys $k$ and values $v$ across all Transformer layers. To ensure stability during the optimization process, Prefix-tuning adopts a reparameterization strategy, which utilizes an MLP layer to generate these prefix vectors rather than optimizing them directly. After fine-tuning, only the prefix vectors are saved for inference.
+This technique has been adapted and improved in several studies~\cite{Prefix-Propagation, 47-P-tuning-v2, zhang2023towards}. For instance, \textbf{p-tuning v2}~\cite{47-P-tuning-v2} removes reparameterization and expands its usage to broader model scales and NLP tasks. \textbf{APT} (Adaptive Prefix Tuning)~\cite{zhang2023towards} enhances Prefix-tuning by introducing an adaptive gate mechanism to control the prefix importance in each layer. 
+Concurrent work \textbf{p-tuning}~\cite{3-GPT-understands-too} and \textbf{prompt-tuning}~\cite{13-prompt-tuning} apply learnable vectors only at the initial word embedding layer rather than all layers to enhance training and inference efficiency. 
+It's important to highlight that prompt-tuning demonstrates its effectiveness primarily in the context of large models, specifically those with over 11 billion parameters~\cite{13-prompt-tuning}. Complementing this, \textbf{Xprompt}~\cite{xprompt} eliminates the negative prompt tokens through a hierarchically structured pruning, which closes the performance gap at smaller model scales. \textbf{\cite{wang2023universality}} provides some theoretical analysis towards prompt tuning, demonstrating its universality and limitations in limited-depth Transformers.
+\textbf{IDPG} (Instance-Dependent Prompt Generation)~\cite{IDPG} improves prompt tuning by generating prompts based on each input sentence with a lightweight prompt generator.
+In a related approach, \textbf{LPT} (Late Prompt Tuning)~\cite{LPT} also leverages a prompt generator to obtain instance-aware prompt. Unlike previous work, LPT adds these prompts only after an intermediate layer, rather than at the initial or all layers. This strategic placement eliminates the gradient calculation below the intermediate layer, thereby significantly accelerating the training speed. Simultaneously, LPT can improve the overall performance due to the shorter backpropagation path preserves more task-related information.
+Inspired by LPT, \textbf{SPT} (Selective Prompt Tuning)~\cite{SPT} delves deeper into the importance of prompt inserting strategies. It introduces a learnable probabilistic gate in each layer to determine whether to use the prompt propagated from the previous layer or inject a newly generated prompt. 
+\textbf{APrompt}~\cite{Aprompt} employs another prompt inserting strategy. In addition to input prompts inserted at the beginning of the input sequence for each Transformer layer, APrompt also prepends additional learnable prompts to the respective query, key, and value matrices in the self-attention blocks to learn new attention patterns. Besides, APrompt incorporates the learning of a task-specific head.
+
+
+
+The concept of soft prompts has been employed for various downstream tasks~\cite{52-prompt-app-1, 53-prompt-app-2}, although their training can be prone to instability and slow convergence. To address this, \textbf{SPoT}~\cite{49-spot} uses a source prompt learned from one or multiple tasks to initialize prompts for new tasks. Similarly, the transfer of soft prompts from one task to initialize another is proposed in \textbf{TPT} (transferable prompt tuning)~\cite{50-transfer-prompt}, which demonstrates that a better prompt initialization results in a large training convergence speedup. \textbf{InfoPrompt}~\cite{wu2023infoprompt} develops two mutual information-based loss functions, i.e., \emph{head loss} and \emph{representation loss}, to find better prompt initialization and learn sufficient task-relevant information, thereby also expediting convergence. \textbf{PTP}~\cite{ptp} delves into the root causes of training instability. It identifies the steep nature of the loss landscape in conventional prompt tuning, where minor variations in input data can lead to significant loss fluctuations. To mitigate this, PTP introduces perturbation-based regularizers to smooth the loss landscape and consequently stabilize the training process.
+\textbf{DePT}~\cite{shi2023dept} decomposes the soft prompt into a shorter soft prompt with a pair of low-rank matrices, which are optimized with two distinct learning rates. This strategy not only improves performance but also enhances training and inference efficiency.
+\textbf{SMoP} (Sparse Mixture-of-Prompts)~\cite{SMoP} reduce the training and inference cost by utilizing short soft prompts. During training, multiple short soft prompts are trained, each tailored to specific subsets of the dataset. During inference, SMoP integrates a gating mechanism that routes each input instance to an appropriate short prompt. This technique not only increases efficiency in both training and inference stages but also retains performance comparable to those achieved with longer soft prompts.
+To further cut down the number of soft prompt parameters, \textbf{IPT} (Intrinsic Prompt Tuning)~\cite{51-intrinsic-subspace} identifies an intrinsic task subspace by training an auto-encoder on multiple tasks. Tuning on new tasks then requires adjusting only a few parameters within this subspace, significantly reducing the number of training parameters. 
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/IA3SSF.pdf}
+\caption{Illustration of $\text{(IA)}^3$ and SSF. Blue represents frozen, while yellow represents trainable.}
+    \label{fig:IA3}
+\end{figure}
+
+\subsubsection{Other Additive Methods}
+Apart from the methods mentioned above, there appear other approaches that strategically incorporate additional parameters during the fine-tuning process. For example, \textbf{$\text{(IA)}^3$}~\cite{16-few-shot-peft-in-context-learning} introduces three learnable rescaling vectors: $l_k \in \mathbb{R}^{d_k}$, $l_v \in \mathbb{R}^{d_v}$, and $l_{ff} \in \mathbb{R}^{d_{ff}}$, to rescale the key, value, and FFN activations, respectively, as depicted in Figure~\ref{fig:IA3} (a). The operations within the self-attention block can be described as follows:
+\begin{equation}
+    SA(x) = Softmax(\frac{Q (l_k \odot K^T)}{\sqrt{d_{head}}}) ((l_v \odot V).
+    \label{subeq:query2}
+\end{equation}
+In FFN, the rescaling can be denoted as:
+\begin{equation}
+    FFN_{Transfomer}(x) = W_{up}(l_{\text{ff}} \odot \sigma( W_{down} x)),
+\end{equation}
+where $\odot$ is Hadamard product. Furthermore, the scale vectors $l_k$ and $l_v$ can be seamlessly integrated into the weight matrices of $A_Q$ and $A_W$. This integration effectively eliminates the extra computational costs during inference. A similar technique \textbf{SSF}~\cite{ssf} also performs linear transformation to the model activations, as illustrated in Figure~\ref{fig:IA3} (b). Specifically, after each operation (i.e., MSA, FFN, and layer normalization) in the pre-trained model, an SSF-ADA layer is injected, which performs scaling and shifting to the features generated from the operation. During fine-tuning, only those SSF-ADA layers can be updated, while during inference, similar to $\text{(IA)}^3$, these SSF-ADA layers can be merged into model weights, so no additional inference overhead would be incurred. 
+\textbf{IPA} (Inference-Time Policy Adapters)~\cite{IPA} offers a novel approach to align LLMs, such as GPT-4, with user-specific requirements without modifying the base model's parameters. This is particularly significant when dealing with models whose parameters are extremely large and often not directly accessible. IPA achieves this by combining (through multiplication and normalization) the output distribution of a base LLM (base policy) with that of a smaller-sized model (adapter policy) during the decoding phase. During training, the policy adapter's parameters are fine-tuned using reinforcement learning, while the base policy's parameters remain fixed. During inference, IPA decodes with the combined distribution of the base model and the trained policy adapter, tailoring it to fulfill specific user-defined criteria.
+
+
+
+
+
+\subsection{Selective PEFT}
+\label{sec:selective}
+Rather than additive PEFT, which increases the model complexity by adding more parameters, selective PEFT fine-tunes a subset of the existing parameters to enhance model performance over downstream tasks, as depicted in Figure~\ref{fig:peft-arch} (b).
+
+Specifically, given a model with parameters \(\theta = \{\theta_1, \theta_2, ..., \theta_n\}\) where each \(\theta_i\) denotes an individual model parameter and $n$ represents the total count of these parameters, the process of selective PEFT is represented by applying a binary mask \(M = \{m_1, m_2, ..., m_n\}\) to these parameters. Each \(m_i\) in \(M\) is either 0 or 1, indicating whether the corresponding parameter \(\theta_i\) is selected (1) or not selected (0) for fine-tuning. The updated parameter set \(\theta'\) after fine-tuning is given by:
+\begin{equation}
+\theta'_i = \theta_i - \eta \cdot m_i \cdot \frac{\partial \mathcal{L}}{\partial \theta_i}
+\end{equation}
+where \(\eta\) represents the learning rate, and \(\frac{\partial \mathcal{L}}{\partial \theta_i}\) is the gradient of the loss function with respect to the parameter \(\theta_i\). In this formulation, only the parameters that are selected (i.e., \(m_i = 1\)) are updated during backpropagation. 
+
+
+
+\textbf{Diff pruning}~\cite{10-diff-purning} is a representative work that applies a learnable binary mask to the model weights during fine-tuning. To achieve parameter efficiency, the mask is regularized by a differentiable approximation of the $L_0$-norm penalty. 
+\textbf{PaFi}~\cite{liao2023parameter} simply select model parameters with the smallest absolute magnitude as trainable.
+\textbf{FishMask}~\cite{36-fish-masks} determines parameter importance using the approximate Fisher information. It then selects the top k parameters based on this information to form the mask \(M\). Similarly, \textbf{Fish-Dip}~\cite{das2023unified} also uses Fisher information to calculate \(M\), but the mask will be re-calculated dynamically in each train period.
+\textbf{LT-SFT}~\cite{ansell2021composable} introduces another technique to determine parameter importance inspired by the Lottery Ticket Hypothesis~\cite{frankle2018lottery,malach2020proving}, where the subset of parameters that change the most during an initial fine-tuning stage is selected to form the mask \(M\).
+\textbf{SAM}~\cite{6-On-the-effectiveness-of-parameter-efficient-fine-tuning} proposes a second-order approximation method, which approximates the original problem with an analytically solvable optimization function, to help decide the parameter mask. 
+\textbf{Child-tuning}~\cite{54-raise-child} proposes two approaches to select a child network during each training iteration, where only the parameters within this child network can be updated. 
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.3\linewidth]{figures/Struct.pdf}
+% \caption{Illustration of how two parameter masking methods. Blue represents frozen, while yellow represents trainable.}
+%     \label{fig:us}
+% \end{figure}
+
+% \begin{wrapfigure}{r}{0.3\textwidth}
+%     \centering
+%     \includegraphics[width=0.95\linewidth]{figures/Struct.pdf}
+%     \caption{Illustration of two parameter masking methods. }
+%     \label{fig:us}
+% \end{wrapfigure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/Struct.pdf}
+    \caption{Illustration of two parameter masking methods. }
+    \label{fig:us}
+\end{figure}
+
+However, the above unstructured parameter masking results in an uneven distribution of non-zero masks and diminished hardware efficiency when implementing PEFT. 
+As shown in Figure~\ref{fig:us}, the structured mask organizes parameter masking in regular patterns, unlike unstructured ones that apply it randomly, thus enhancing computational and hardware efficiency during training.
+Therefore, various structured selective PEFT techniques have undergone extensive investigation. 
+\textbf{Diff pruning} proposes a structured pruning strategy by partitioning the weight parameters into local groups and strategically eliminating them together. Similarly, \textbf{FAR}~\cite{53-FAR} fine-tunes BERT models by grouping weights of the FFN in Transformer blocks into nodes, then ranking and selecting the learner nodes using $L_1$ norm. To further reduce the memory access frequency, they also reconfigure the FFN by grouping the learner nodes. \textbf{Bitfit}~\cite{1-BitFit} is proposed to only fine-tune the bias parameters of each DNN layer, and achieves competitive results for small models. However, this method fails to handle large models. 
+\textbf{\cite{lawton2023neural}} applies NAS to Bitfit, where \textbf{S-BitFit} keeps the structural nature in Bitfit that restricts NAS algorithm must choose whether $\delta b = 0$ or not for each bias module.
+Similar to Bitfit that fine-tunes a specific module in Transformer, \textbf{Xattn Tuning}~\cite{gheini2021cross} fine-tunes only the cross-attention layers.
+\textbf{SPT} (sensitivity-aware visual parameter-efficient fine-tuning)~\cite{he2023sensitivity} first identifies the sensitive parameters measured by the loss reduction when being tuned. This sensitivity is calculated using a first-order Taylor expansion, derived from a single forward and backward pass before fine-tuning in one shot. Next, SPT finds the weight matrices whose number of sensitive parameters exceeds a pre-defined threshold and then applies a selected PEFT technique (e.g., LoRA and Adapter) to these targeted weights to achieve structural tuning.
+
+
+
+
+\subsection{Reparameterized PEFT}
+\label{reparameterization}
+
+Reparameterization stands for equivalently transforming a model's architecture from one to another via transforming its parameters. In the context of PEFT, this often means constructing a low-rank parameterization to achieve the goal of parameter efficiency during training. For inference, the model can be converted to its original weight parameterization, ensuring unchanged inference speed. This procedure is depicted in Figure~\ref{fig:peft-arch} (c).
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/reparameter.pdf}
+    % \captionsetup{skip=0pt}
+    %\vspace{-0.3in}
+    \caption{Illustration of three representative reparameterized PEFT algorithms. Blue represents frozen, while yellow represents trainable.}
+    \label{fig:repara}
+     % \vspace{-0.2in}
+\end{figure*}
+
+Earlier research studies~\cite{intrinsic-SAID} have shown that common pre-trained models exhibit an exceptionally low intrinsic dimensionality. In other words, it is possible to find a low-dimensional reparameterization that is effective for fine-tuning as the entire parameter space.
+\textbf{Intrinsic SAID}~\cite{intrinsic-SAID} is the pioneering work in investigating the intrinsic dimension feature during the fine-tuning of LLMs. However, the most widely recognized reparameterization technique is \textbf{LoRA} (Low-Rank Adaptation)~\cite{5-LoRA,fomenko2024note}, as shown in Figure~\ref{fig:repara} (a).
+For a given pre-trained weight matrix $W_0 \in \mathbb{R}^{d \times k}$, LoRA introduces two trainable weight matrices, \(W_{\text{up}} \in \mathbb{R}^{d \times r}\) and \(W_{\text{down}} \in \mathbb{R}^{r \times k}\) where the rank $r \ll min (d,k)$, operating in parallel to $W_0$. Let $h_{in}$ represent the input. Under normal conditions, the output through \( W_0 \) is \( h_{out} = W_0h_{in} \). Instead, LoRA modifies this output by introducing an incremental update $\Delta W$ that encapsulates task-specific knowledge:
+\begin{equation}
+    h_{out} = W_0h_{in} + \frac{\alpha}{r}\Delta Wh_{in} = W_0h_{in} +\frac{\alpha}{r} W_{\text{up}}W_{\text{down}}h_{in},
+\end{equation}
+where $\alpha$ denotes a scaling factor. At the onset of training, \( W_{\text{down}} \) is initialized using a random Gaussian distribution, while \( W_{\text{up}} \) is initialized to zero, ensuring that \( \Delta W \) initially holds a value of zero.
+LoRA is straightforward to implement and has been evaluated on models with up to 175 billion parameters. Fig~\ref{fig:repara} (c) used a single decoder as an example, the frozen and learnable components are highlighted in grey and red, respectively. Once fine-tuning is complete, LoRA's adaptive weights seamlessly integrate with the pre-trained backbone weights. This integration ensures that LoRA maintains the model's efficiency, adding no extra burden during inference.
+
+In LoRA training, selecting an appropriate rank has always been a challenging issue. 
+To address this, \textbf{DyLoRA}~\cite{valipour2022dylora}, as depicted in Figure~\ref{fig:repara} (b), trains the LoRA module on a range of ranks within a predefined training budget, rather than adhering to a single, fixed rank. Specifically, for a given rank range $R = \{ r_{\text{min}}, r_{\text{min}}+1, \ldots, r_{\text{max}} \}$, DyLoRA dynamically chooses a rank $r \in R$ at each iteration of the training process. Consequently, the matrices $W_{\text{down}}$ and $W_{\text{up}}$ are tailored for the selected rank $r$, resulting in truncated versions $W_{\text{down}\downarrow r} = W_{\text{down}}[1:r, :]$ and $W_{\text{up} \downarrow r} = W_{\text{up}}[:, 1:r]$, and the subsequent forward and backward pass during this iteration will be restricted on $W_{\text{down}\downarrow r}$ and $W_{\text{up} \downarrow r}$ instead of $W_{\text{down}}$ and $W_{\text{up}}$. With this dynamic and search-free approach, DyLoRA significantly reduces the training time required to find an optimal and fixed LoRA rank for specific tasks.
+\textbf{AdaLoRA}~\cite{adalora} reformulates the $\Delta W$ with a singular value decomposition (SVD), denoted as $\Delta W = P \Lambda Q$, where $P \in \mathbb{R}^{d \times r} \text{ and } Q \in \mathbb{R}^{r \times k}$ are orthometric, $\Lambda$ is a diagonal matrix containing singular values $\{\lambda_i\}_{1 \leq i \leq r}$. All three weight matrices are made learnable. 
+During training, the singular values are pruned iteratively based on their importance scores, which are constructed from the moving average of the magnitude of the gradient-weight product. To ensure the orthogonality between $P \text{ and }Q$, i.e., $P^TP = QQ^T = I$, an additional regularizer term is included in the loss:
+\begin{equation}
+\label{AdaLoRA}
+    R(P,Q) = \left\| P^T P - I \right\|_F^2 + \left\| QQ^T - I \right\|_F^2.
+\end{equation}
+This adaptive approach enables the model to dynamically adjust the rank within each LoRA module, effectively managing its parameter counts based on the significance of the weight matrices. However, according to \textbf{SoRA}~\cite{SORA}, the importance scores used in AdaLoRA are heuristically constructed, which lacks rigorous theoretical motivation. Additionally, both moving average operation and calculation of Eq.~\ref{AdaLoRA} introduce extra computation costs during training. To address this, SoRA eliminates the orthogonality premise of $P$ and $Q$. Instead, a gating unit $g \in \mathbb{R}^ r$ between $W_{\text{up}}$ and $W_{\text{down}}$ is directly applied and optimized:
+\begin{equation}
+    h_{out} =  W_{\text{up}}(g \odot (W_{\text{down}}h_{in})),
+\end{equation}
+where $\odot$ is Hadamard product. The gate $g$ is updated using a variation of proximal gradient iteration for $l_1$ loss~\cite{beck2009fast, chambolle1998nonlinear}, which has a clear mathematical meaning and does not need the heuristic premise. After training, the zeroed-out gate units are pruned by removing the corresponding columns and rows in $W_{\text{down}}$ and $W_{\text{up}}$. 
+
+Several subsequent studies have aimed to improve LoRA's performance in various aspects. For instance, \textbf{Laplace-LoRA}~\cite{yang2023bayesian} notices that fine-tuned LLMs often exhibit overconfidence. To enhance the calibration of fine-tuned LLMs, Laplace-LoRA utilizes a Bayesian approach, specifically a post-hoc Laplace approximation~\cite{mackay1992practical,antoran2022adapting}, to the posterior over the LoRA parameters. 
+\textbf{LoRA Dropout}~\cite{lin2024lora} introduces random noises to the learnable low-rank matrices and increases parameter sparsity to reduce the risk of overfitting.
+\textbf{LoRA+}~\cite{hayou2024lora+} proposes to set different learning rates for the LoRA matrices $W_{\text{down}}$ and $W_{\text{up}}$, such that $\eta_\text{up} = \lambda \eta_\text{down}$ with $\lambda > 1$ fixed and tune $\eta_\text{down}$.
+\textbf{MoSLoRA} (Mixture-of-Subspaces LoRA)~\cite{wu2024mixturemos} decomposes LoRA into subspaces via structural reparameterization, then employs a learnable mixer, trained jointly with the original LoRA weights, to fuse the subspaces. Similarly to LoRA, MoSLoRA can also be merged into the original weights.
+
+Thanks to the modular design of LoRA, many studies incorporate multiple LoRA modules in their frameworks to enhance performance.
+For example, \textbf{LoRAHub} aggregates various LoRA modules trained on different tasks. Given a handful of examples from a new task, LoRAHub can autonomously compose compatible LoRA modules without human intervention via a gradient-free method Shiwa~\cite{liu2020versatile}. \textbf{MOELoRA} employs a Mixture-of-Experts (MOE) approach to train LoRA in a multi-task setting, resulting in multiple expert LoRA modules. To retrieve parameters for certain tasks, MOELoRA utilizes a task-motivated gate function that assigns contribution weights to each expert based on the task ID, and the final parameters are calculated through a weighted sum of all experts. 
+
+In addition to LoRA, several other reparameterization techniques are emerging with significant potential. For instance, \textbf{Compacter}~\cite{2-Compacter} introduces a light-weight adapter modules by parameterizing the $W_{\text{down}}$ and $W_{\text{up}}$ as $W = \sum_{i=1}^{n} A_i \otimes B_i$, where $A_i \in \mathbb{R}^{n \times n}$, $B_i \in \mathbb{R}^{\frac{r}{n} \times \frac{d}{n}}$, and $\otimes$ denotes the Kronecker product. They further decrease the parameter count by designating $A_i$ as shared parameters and reparameterizing $B_i$ using the product of two low-rank matrices, effectively reducing the parameter complexity from $\mathcal{O}(rd)$ to $\mathcal{O}(r+d)$. 
+Related studies, such as \textbf{KronA}~\cite{43-krona} and \textbf{KAdaptation}~\cite{44-he2023parameter}, also employ the Kronecker product to reparameterize adapter weights, aiming to achieve parameter reduction. 
+\textbf{HiWi}~\cite{liao2023parameter} proposes an adapter fine-tuning method that applies an adapter directly to pre-trained parameters instead of hidden representations as:
+\begin{equation}
+W' = W + \sigma(WW_{\text{down}})W_{\text{up}},
+\end{equation}
+where $W$ denotes the weights or biases within the Transformer block's feed-forward layer. Notably, during inference, this method computes $W'$ in advance, ensuring that the model's inference latency remains on par with that of traditional full fine-tuning.
+\textbf{VeRA} (Vector-based Random Matrix Adaptation)~\cite{kopiczko2023vera} employs a single pair of frozen low-rank matrices $W_{\text{up}}$ and $W_{\text{down}}$ that are shared across all layers, and adapts these matrices by learning small, trainable scaling vectors represented as $b$ and $d$ (formally denoted by diagonal matrices ${\Lambda}_b$ and ${\Lambda}_d$). Specifically, the reparameterization is given by:
+\begin{equation}
+    h_{out} = W_0h_{in} + {\Lambda}_b W_{\text{up}} {\Lambda}_d W_{\text{down}}h_{in},
+\end{equation}
+where both $W_{\text{up}}$ and $W_{\text{down}}$ are initialized using a random Gaussian distribution. Similar to LoRA, the scaling vector $b$ is initialized to zeros to ensure that the weight matrix is unaffected during the first forward pass.
+This method significantly reduces the number of trainable parameters compared to LoRA yet maintains the same performance, enabling the fine-tuning of larger models on a single GPU.
+\textbf{DoRA} (Weight-Decomposed Low-Rank Adaptation)~\cite{liu2024dora} presents a novel approach as illustrated in Figure~\ref{fig:repara} (c) by decomposing model weights $W_0 \in \mathbb{R}^{d \times k}$ into magnitude and direction as follows:
+\begin{equation}
+    W_0 = m \frac{V}{\|V\|_c} = \|W_0\|_c \frac{W_0}{\|W_0\|_c},
+\end{equation}
+where $m \in \mathbb{R}^{1 \times k}$ is the magnitude vector, $V \in \mathbb{R}^{d \times k}$ is the
+directional matrix, with $\| \cdot \|_c$ being the vector-wise norm of a matrix across each column. Subsequently, DoRA adopts a unique fine-tuning strategy for $m$ and $V$. While both are tunable, only $V$ undergoes LoRA reparameterization, defined as:
+\begin{equation}
+    W' = \underline{m} \frac{V + \underline{\Delta V}}{\|V + \underline{\Delta V}\|_c} = \underline{m} \frac{W_0 + \underline{W_{\text{up}}W_{\text{down}}}}{\|W_0 + \underline{W_{\text{up}}W_{\text{down}}}\|_c},
+\end{equation}
+where $\Delta V$ is the incremental directional update learned by LoRA, and the underlined parameters denote the trainable parameters. Through this methodology, DoRA consistently outperforms LoRA across various tasks and models, demonstrating its superiority.
+
+
+
+\subsection{Hybrid PEFT}
+\label{sec:hybrid peft}
+The efficacy of various PEFT methods can significantly differ across different tasks. As a result, numerous studies aim to either combine the advantages of diverse PEFT approaches or seek to establish a unified perspective by analyzing the similarities among these methods. For instance, 
+\textbf{UniPELT}~\cite{15-uni-pelt} integrates LoRA, prefix-tuning, and adapters into each Transformer block. To control which PEFT submodules should be activated, they also introduce a gating mechanism. This mechanism consists of three small FFNs that each produce a scalar value $\mathcal{G} \in (0, 1)$, which is then applied to the LoRA, prefix, and adapter matrices, respectively. Across various setups, UniPELT has consistently shown improvements in accuracy ranging from 1\% to 4\%. 
+\textbf{S4}~\cite{chen2023parameter} explores design spaces for several PEFT methods (i.e., Adapter (A), Prefix (P), BitFit (B), and LoRA (L)) to uncover underlying design patterns. After a series of experiments, their findings include: (1) Applying the spindle grouping partitioning for Transformer layers, which results in four layer groups $G_i$ for $i \in \{1 \dots 4\}$. Layers in one group have similar behaviors together, which means should apply similar PEFT strategies. (2) Allocating the number of trainable parameters to layers uniformly. (3) Tuning all the groups. (4) Assigning different PEFT strategies in different groups. The resulting design space that has the best performance is:
+$$
+G_1: (A, L), G_2: (A, P), G_3: (A, P, B), G_4:(P, B, L)
+$$
+\textbf{MAM Adapter}\cite{14-unified-view-transfer-peft} explores the intrinsic similarity between three additive PEFT methods: adapters, prefix-tuning, and LoRA, which leads to the development of three variants: \emph{Parallel Adapter}, which places adapter layers alongside specific layers (SA or FFN) instead of after them; \emph{Multi-head Parallel Adapter}, which divides the parallel adapter into multiple heads, each affecting the head attention output in SA; and \emph{Scaled Parallel Adapter}, which adds a scaling term after the parallel adapter layer, similar to LoRA. Extensive experimentation revealed that the most effective configuration involves using prefix-tuning in the SA layer and the scaled parallel adapter in the FFN layer, which is called the MAM Adapter. 
+\textbf{LLM-Adapters}~\cite{hu2023llm} builds an easy-to-use framework that incorporates various PEFT techniques into LLMs. Through comprehensive benchmarking across multiple datasets, the study reveals several key insights: (1) The most effective locations for series adapters, parallel adapters, and LoRA are after the MLP layers, alongside the MLP layers, and simultaneously following the Attention layers and MLP layers, respectively. (2) Smaller LLMs utilizing PEFT can achieve competitive or even superior results on certain tasks when compared to their larger counterparts. (3) With appropriate in-distribution fine-tuning data, smaller models are capable of surpassing larger models in task-specific performance.
+
+
+
+Several studies leverage neural architecture search (NAS) to find better PEFT combination approaches. For example, \textbf{NOAH}~\cite{noah} discovers that different PEFT configurations are specifically tailored for different tasks. To address this issue, NOAH employs NAS to identify the most effective PEFT configurations for each dataset. Specifically, NOAH's searching space encompasses three PEFT methods: Adapter, LoRA, and Visual Prompt Tuning (VPT). It utilizes AutoFormer~\cite{autoformer}, a one-shot NAS algorithm, for the efficient discovery of optimal prompt modules. In a related vein, \textbf{AUTOPEFT}~\cite{autopeft} first establishes a searching space that includes serial adapters, parallel adapters, and prefix tuning. After that, they propose an effective NAS method based on a high-dimensional multi-dimensional Bayesian optimisation~\cite{frazier2018tutorial}. Both NOAH and AUTOPEFT demonstrate the capability of NAS in enhancing PEFT configurations across a variety of tasks. 
+
+
+
+\begin{figure*}[t]
+	\centering
+	\resizebox{\textwidth}{!}{
+		\begin{forest}
+			forked edges,
+			for tree={
+				grow=east,
+				reversed=true,
+				anchor=base west,
+				parent anchor=east,
+				child anchor=west,
+				base=left,
+				font=\small,
+				rectangle,
+				draw=hidden-draw,
+                node options={align=center},
+				rounded corners,
+				align=center,
+				minimum width=4em,
+				edge+={darkgray, line width=1pt},
+				s sep=3pt,
+				inner xsep=2pt,
+				inner ysep=3pt,
+				ver/.style={rotate=90, child anchor=north, parent anchor=south, anchor=center},
+			},
+			where level=1{text width=5.0em,font=\scriptsize}{},
+			where level=2{text width=5.6em,font=\scriptsize}{},
+			where level=3{text width=6.8em,font=\scriptsize}{},
+			[
+			Efficient PEFT Design, ver
+			[
+			PEFT  Pruning
+			[
+                AdapterDrop~{\cite{17-adapterdrop},}
+                SparseAdapter~{\cite{35-sparseadapter},}
+                SPLoRA~{\cite{SPlora},}
+                LoRAPruning~{\cite{loraprune},}
+                ProPETL~{\cite{zeng2023one}}
+			, leaf, text width=38.4em, align = left
+			]
+			]
+			[
+			  PEFT \\ Quantization
+                [
+                BI-Adapter~{\cite{45-quantization},}
+                PEQA~{\cite{kim2023memory},}
+                QLoRA~{\cite{qlora},}
+                LoftQ~{\cite{loftq},}
+                LQ-LoRA~{\cite{guo2023lq},}
+                QA-LoRA~{\cite{xu2023qa},}
+                INT2.1~{\cite{chai2023int2},}
+                QDyLoRA~{\cite{rajabzadeh2024qdylora},} \\
+                BitDelta~{\cite{liu2024bitdelta}}
+			, leaf, text width=38.4em, align = left
+                ]
+			]
+			[
+			Memory-efficient \\ PEFT
+			[
+                Side-Tuning~{\cite{side-tuning},}
+                LST~{\cite{lst},}
+                Res-Tuning~{\cite{jiang2023res},}
+                MEFT~{\cite{liao2023make},}
+                LoRA-FA~{\cite{zhang2023lora},}
+                HyperTuning~{\cite{hyper-tuning},}
+                PEFT Plug-in~{\cite{jin2023parameter},} \\
+                MeZO~{\cite{malladi2023fine},}
+                GaLore~{\cite{zhao2024galore}}
+			, leaf, text width=38.4em, align = left
+			]
+			]
+			]
+		\end{forest}
+  }
+\caption{Taxonomy of Efficient PEFT Design.}
+\label{efficient_PEFT}
+\end{figure*}
+
+\section{Efficient PEFT design}
+\label{sec:efficiency}
+Processing latency and peak memory overhead are pivotal factors to consider from a computational standpoint. 
+This section introduces a key characteristic in LLMs aimed at balancing between latency and memory usage (Section~\ref{sec:kv-cache}). Following this, we explore strategies for developing efficient PEFT methods to address computational challenges, including \textbf{PEFT pruning} (Section~\ref{pruning}), \textbf{PEFT quantization} (Section~\ref{quantization}), and \textbf{memory-efficient PEFT techniques} (Section~\ref{memory_peft}), each designed to enhance model performance while minimizing resource consumption.
+It is noteworthy that quantization inherently addresses memory overhead concerns. However, given its distinct characteristics, we address these quantization methods separately rather than incorporating them under the memory-efficient PEFT section.
+
+
+\subsection{KV-cache Management for PEFT Efficiency}
+\label{sec:kv-cache}
+The core of the LLMs model lies in an auto-regressive Transformer model. When we consider the auto-regression characteristic, it becomes a major challenge in designing an inference system, because every time a new token is generated, the entire LLM model has to transfer all the weights from different memories to the memory of the graphics processor, which is very unfriendly to single-user task scheduling or multi-user workload balance. The challenging part of serving the auto-regressive paradigm is that all previous sequences have to be cached and saved for the next proceeding iteration; the cached activation generated from the previous sequences is stored as the Key-Value Cache (KV-cache). To effectively manage these challenges, S-LoRA~\cite{s-lora} employs a Unified Paging mechanism within a unified memory pool that dynamically allocates and manages memory in a paged fashion. This sophisticated approach minimizes memory fragmentation and enhances the efficiency of KV-cache storage by allowing for flexible and efficient memory access patterns. These pages are managed such that the KV-cache associated with each adapter is segmented into manageable blocks, streamlining access and reducing the overhead associated with variable cache sizes. By dynamically adjusting to different KV-cache requirements, S-LoRA maintains high throughput and performance, ensuring that the system remains responsive and efficient even as it scales to serve thousands of adapters simultaneously. This efficient handling of KV-cache is crucial for supporting the auto-regressive nature of LLMs in high-demand environments, optimizing both single-user and multi-user workload balancing.
+
+
+
+\subsection{Pruning Strategies for PEFT}
+\label{pruning}
+The inclusion of pruning can substantially enhance the efficiency of PEFT methods. 
+In particular, \textbf{AdapterDrop}~\cite{17-adapterdrop} explores the removal of adapters from lower transformer layers and multi-task adapters in AdapterFusion~\cite{4-AdapterFusion}, which shows that the pruning can improve the training and inference efficiency with minimal decrease in performance. \textbf{SparseAdapter}~\cite{35-sparseadapter} investigates different pruning methods and finds that high sparsity ratio ($80\%$) can outperform standard adapters. Additionally, the \textit{Large-Sparse} configuration, which increases the bottleneck dimension while maintaining a constant parameter budget (e.g., doubling dimensions with a $50\%$ sparsity), substantially enhances the model's capacity, resulting in improved performance. \textbf{SPLoRA}~\cite{SPlora} adopts channel-based pruning to the LoRA weights \(W_{\text{down}}\) and \(W_{\text{up}}\). This pruning affects not only the source weights $W_0$, but also the LoRA parameters $W_\text{up}$ and $W_\text{down}$.
+Similarly, \textbf{LoRAPruning}~\cite{loraprune} adopts structured pruning not only to the pretrained model weights but also to the LoRA weights. In contrast to unstructured LoRA pruning methods, which primarily focus on sparsifying model weights while leaving LoRA weights dense, thus making weight merging challenging to achieve, LoRAPruning enables the weights to be merged easily. Additionally, this work also introduces a novel criterion that utilizes LoRA's gradients as an approximation of the gradients for the pre-trained weights, enabling the estimation of weight importance.
+\textbf{ProPETL}~\cite{zeng2023one} constructs a single shared \emph{prototype} (e.g., adapter, prefix, or LoRA) across layers and tasks. In addition, ProPETL learns binary masks to prune different sub-networks in different layers and tasks. As a result, the parameters can be reused across layers and tasks, largely increasing the parameter efficiency.
+
+
+\subsection{Quantization Strategies for PEFT}
+\label{quantization}
+
+Quantization serves as another popular technique for improving computational efficiency and reducing memory usage. For example, by investigating the loss landscape of adapters, \textbf{BI-Adapter}~\cite{45-quantization} finds that adapters are resistant to noise in parameter space. Building on this insight, the authors introduce a clustering-based quantization approach. Remarkably, they demonstrate that a 1-bit quantization of adapters not only minimizes storage requirements but also achieves superior performance among all precision settings. 
+\textbf{PEQA} (Parameter-Efficient and Quantization-aware Adaptation)~\cite{kim2023memory} uses a two-stage pipeline to achieve parameter-efficient and quantization-aware fine-tuning. In the first stage, the pre-trained FFN weight matrix $W \in \mathbb{R}^{n \times m}$ is quantized to $W = s \cdot \overline{W}$, where $s \in \mathbb{R}^{n \times 1}$ represents per-channel scales and $\overline{W}$ denotes the quantized weight. In the second stage, $\overline{W}$ remains fixed, and fine-tuning is only conducted on $s$. This approach not only ensures memory efficiency but also facilitates parameter efficiency. 
+\textbf{QLoRA}~\cite{qlora} proposes several novel techniques, including a 4-bit NormalFloat, a Double Quantization, and a Paged Optimizers, to backpropagate a 4-bit quantized pretrained language model into LoRA. These techniques enable the fine-tuning for a 65B language model on a single 48GB GPU while maintaining similar performance to the full 16-bit fine-tuning. Similar to the original implementation~\cite{5-LoRA}, QLoRA attaches the fixed zero-initialized LoRA weights to the quantized pre-trained model as the training start point. However, when applying the extreme low-bit (e.g., 2-bit) quantization, the huge quantization error can adversely impact the initialization of LoRA fine-tuning, i.e., $quantization(W_0) + W_\text{down}W_\text{up} \neq W_0$ where $W_\text{down} = \mathbf{0}
+$, which will harm the fine-tuning performance as shown in the work by \cite{liao2023make}. 
+To solve this, several quantization strategies are proposed to eliminate the quantization error. For example, \textbf{LoftQ} (LoRA-Fine-Tuning-aware Quantization)~\cite{loftq} presents an innovative framework that provides a superior initialization point of quantized backbone weights and LoRA weights for subsequent LoRA fine-tuning. This approach addresses the discrepancies caused by quantization through the optimization of a Frobenius norm objective during network initialization, which takes both the LoRA weights and the quantized pre-trained backbone into consideration. LoftQ exhibits superior performance in 2-bit quantization over QLoRA, as well as greater generalization for downstream tasks. 
+\textbf{LQ-LoRA}~\cite{guo2023lq} uses an iterative algorithm inspired by robust principal components analysis~\cite{zhou2011godec, wright2009robust} which decomposes the weight $W_0$ such that $W_0 \approx Q + L_1L_2$ to resolve the inaccuracy caused by the quantization error, where $Q$ is the quantized component which remains fixed and $L_1L_2$ is the trainable low-rank component. 
+Moreover, this approach leverages integer linear programming to determine a mixed quantization strategy, enabling dynamic quantization configurations for each weight matrix while adhering to a predetermined total bit rate limit.
+%constrained by an overall target bit rate.
+\textbf{QA-LoRA}~\cite{xu2023qa} address another limitation of QLoRA, which struggles to preserve its quantized property post-fine-tuning. In QLoRA, the quantized pre-trained weight (NF4) has to be recovered to FP16 to match the LoRA weight precision (FP16) during weight merging. Instead, QA-LoRA uses INT4 quantization and introduces group-wise operators to enable quantization during the inference stage, therefore improving the efficiency and accuracy compared with QLoRA. 
+\textbf{BitDelta}~\cite{liu2024bitdelta} introduces a novel 1-bit post-training quantization method that acts on the weight delta between a fine-tuned model and its underlying pre-trained model. Specifically, given the weight matrices $W_{\text{fine}}$ and $W_{\text{base}}$ from the fine-tuned and base models respectively, the weight delta $\Delta = W_{\text{fine}} - W_{\text{base}}$ is binarized as $\hat{\Delta} = \alpha \odot \text{Sign}(\Delta)$. Here, $\alpha$, a high-precision scalar, is initialized based on the mean absolute delta value $\alpha = \frac{1}{nm} \sum_{ij} |W_{ij}|$, with $\text{Sign}(\cdot)$ indicating the sign of $\Delta$. BitDelta further calibrates the scaling factors via distillation on a compact calibration dataset, while the binary matrices remain unchanged. This approach notably streamlines the deployment of multiple fine-tuned models on shared servers by utilizing a singular full-precision base model alongside efficiently batched 1-bit deltas.
+
+
+\subsection{Memory-efficient PEFT Methods}
+\label{memory_peft}
+Fine-tuning the full LLMs necessitates substantial training memory owing to their considerable size. While most PEFT methods primarily target parameter efficiency, they still incur a significant memory overhead during training because gradient computation and backpropagation are still necessary for these methods. For example, prevalent PEFT techniques such as adapters and LoRA can only reduce memory usage to approximately 70\% compared to full model fine-tuning according to some literature~\cite{lst, jin2023parameter}. From a computational perspective, memory efficiency also remains a critical factor that cannot be overlooked.
+
+
+
+To improve memory efficiency, various techniques have been developed to minimize the need for caching gradients for the entire LLM during fine-tuning, thereby reducing memory usage. For example, both \textbf{Side-Tuning}~\cite{side-tuning} and \textbf{LST} (Ladder-Side Tuning)~\cite{lst} introduce a learnable network branch parallel to the backbone model. By channeling the backpropagation exclusively through this parallel branch, it circumvents the need to store gradient information for the main model's weights, thus markedly reducing memory requirements during training. Similarly, \textbf{Res-Tuning}~\cite{jiang2023res} disentangles the PEFT tuners (e.g., prompt tuning, adapter) from the backbone model. On top of the disentanglement, a memory-efficient fine-tuning framework named Res-Tuning-Bypass is proposed, which generates a bypass network in parallel with the backbone model by removing the data flow from the decoupled tuners to the backbone. This eliminates the requirement for gradient caching within the backbone model during backpropagation. \textbf{MEFT}~\cite{liao2023make} (memory-efficient fine-tuning) is an approach inspired by the \emph{reversible model}~\cite{gomez2017reversible}. During the training of a reversible model, intermediate activations are not required to be cached in the forward pass. During backpropagation, they can be recalculated from the final output. To save the memory during fine-tuning, MEFT investigates how to transform an LLM to its reversible counterparts without additional pre-training. A critical aspect of this transformation is the careful initialization of newly introduced parameters in the pre-trained models. MEFT demonstrates the importance of parameter initialization and suggests that these parameters must be initialized in a manner that preserves the pre-trained model's starting point, ensuring that the fine-tuning of the modified model achieves performance on par with full fine-tuning methods. With this key consideration, MEFT introduces three distinct methods, each significantly curtailing the memory demands traditionally required for storing activations.
+\textbf{LoRA-FA}~\cite{zhang2023lora} addresses a limitation about memory overhead in LoRA fine-tuning. During training, LoRA modules still require high activation memory consumption. This is because, during backpropagation, large input activations must be stored during the forward pass to compute gradients. LoRA-FA resolves this issue by freezing both the pre-trained weights $W_0$ and the projection-down weights $W_\text{down}$, and only updating the projection-up weights $W_\text{up}$. Consequently, the input activation $h_{in}$ no longer needs to be stored, as the intermediate activation $W_\text{down}h_{in}$ is adequate for gradient computation for $W_\text{up}$. Given that $r \ll d$, the memory requirement for activations in LoRA-FA can be significantly reduced.
+
+
+
+
+To further reduce memory usage during fine-tuning, some methods attempt to circumvent backpropagation within LLMs to address this issue. \textbf{HyperTuning}~\cite{hyper-tuning} employs a HyperModel to generate PEFT parameters using only fewshot examples. This approach demonstrates results comparable to those obtained through full model fine-tuning. 
+\textbf{PEFT Plug-in}~\cite{jin2023parameter} first trains PEFT modules on small language models, which is more memory efficient compared to training on large ones. Subsequently, the research introduces a suite of techniques for seamlessly integrating these trained PEFT modules into LLMs during inference. This strategy effectively circumvents the necessity of gradient-based optimization directly on the larger models, resulting in substantial memory savings.
+However, it is important to note that both HyperModel and PEFT Plug-in still require additional model training, and this training cost cannot be entirely overlooked.
+\textbf{MeZO}~\cite{malladi2023fine} introduces a memory-efficient zeroth-order (ZO) optimizer for LLMs. Unlike conventional PEFT techniques, which rely on backpropagation to compute gradients for updating model parameters, MeZO fine-tunes LLMs through only forward passes. It accomplishes this by employing a ZO gradient estimator to calculate the gradient. Notably, MeZO implements an in-place solution for the classic ZO gradient estimator, effectively mitigating memory consumption during inference execution. 
+This innovative approach allows for efficient fine-tuning of LLMs containing 30 billion parameters on a single GPU with 80GB of memory, all while maintaining performance that is comparable to fine-tuning using backpropagation. Furthermore, it can substantially decrease storage demands in comparison to the traditional PEFT methods such as LoRA and Adapter. 
+

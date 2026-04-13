@@ -1,0 +1,243 @@
+\clearpage
+\appendix
+
+\section{Kolmogorov-Smirnov Test Details}
+\label{sec:app-ks-test}
+
+In our setting, let $F_U(x)$ comprising $n$ samples and $F_R(x)$ comprising $m$ samples be the empirical CDF of the unlearned and retain models, respectively.
+Then, the KS-Test computes a statistic $D_{n,m} = \sup_{x} \vert F_U(x) - F_R(x) \vert$.
+
+The null hypothesis, stating that the two sets of samples are drawn from the same distribution, is rejected at a chosen significance level $\alpha$ if the following inequality holds.
+\begin{equation}
+    D_{n,m} > c(\alpha) \sqrt{\frac{n + m}{nm}},
+\end{equation}
+where $c(\alpha)$ is the critical value of that significance level.
+\begin{equation}
+    c(\alpha) = \sqrt{-\ln\left(\frac{\alpha}{2}\right) \cdot \frac12}.
+\end{equation}
+
+The $p$-value is then defined as the minimal alpha for which the inequality holds, or the smallest value at which we can reject the null hypotheses.
+Forget quality is hence, a measure of the confidence that the distributions of Truth Ration values over the forget set from two models are the same.
+
+\section{Hyperparameters}
+\label{sec:app-hyperparams}
+We trained using AdamW with weight decay of $0.01$ and $0$. The learning rate is fixed to be 1e-5. For both finetuning and unlearning, we fix the epoch number to be 5, and we incorporate a linear warmup in the first epoch. 
+We experiment with various learning rates including $10^{-5}$, $10^{-6}$, and $5\cdot10^{-7}$ and find that $10^{-5}$ is a good choice for the baseline methods in our experiments. 
+In particular, $10^{-6}$ is too small of a learning rate to see appreciable updates to the model weights.
+
+\section{Preference Strings}
+\label{sec:app-idk-strings}
+
+\input{tables/idk-strings}
+
+\section{Continued Unlearning}
+\label{sec:app-continued-unlearning}
+
+In the main experiments of this paper, we limit unlearning to five epochs, but one might wonder how things progress given more time to unlearn.
+We test forgetting $1\%$ of the data with Phi-1.5 and show that continued unlearning does not help with these baseline methods, see Figure~\ref{fig:12epochs}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/scatterplots/wd0.01-forget01-12epochs.pdf}
+    \caption{Zoomed in plots of extended unlearning trajectories (10 epochs) on the $1\%$ forget set.}
+    \label{fig:12epochs}
+\end{figure}
+
+\section{Sanity Checks}
+\label{sec:app-sanity}
+
+\input{tables/mapo-phi}
+
+We verify that our metrics for Model Utility and Forget Quality have some desirable properties. 
+In Tables~\ref{tab:llama-pvals-1} and \ref{tab:llama-pvals-2}, we show the $p$-values for the KS-Tests that confirm all of our expectations enumerated below and validate this choice of metric.
+These tables have figures from Llama-2-7B tests, but the same trends hold for Phi-1.5.
+
+First, Model Utility should meet the following natural expectations.
+\begin{enumerate}
+    \item Model Utility should be high for a pretrained model (one that has never been finetuned on \tofu{} data).
+    \item Model Utility should be low for a model with random weights.
+\end{enumerate}
+
+Additionally, Forget Quality is measured using a statistical test on Truth Ratio values, and so we hope that this test meets the following expectations.
+\begin{enumerate}
+    \item The KS-Test performed on distributions of Truth Ratio values over the intersection of the three forget sets (from the 90-10, 95-5, and 99-1 splits) should produce high $p$-values when comparing any two retain models.
+    \item The KS-Test performed on distributions of Truth Ratio values over the intersection of the three retain sets (from the 90-10, 95-5, and 99-1 splits) should produce high $p$-values when comparing any two retain models.
+    \item The KS-Test performed on distributions of Truth Ratio values over the forget set should produce high $p$-values when comparing any retain model to a random model.
+    \item The KS-Test performed on distributions of Truth Ratio values over the retain set should produce low $p$-values when comparing any retain model to a random model.
+    \item The KS-Test performed on distributions of Truth Ratio values over the forget set should produce high $p$-values when comparing any retain model to a pretrained model.
+    \item The KS-Test performed on distributions of Truth Ratio values over the retain set should produce low $p$-values when comparing any retain model to a pretrained model.
+    \item The KS-Test performed on distributions of Truth Ratio values over the forget set should produce low $p$-values when comparing any retain model to a finetuned model (finetuned on all the \tofu{} data and without any unlearning).
+    \item The KS-Test performed on distributions of Truth Ratio values over the retain set should produce high $p$-values when comparing any retain model to a finetuned model (finetuned on all the \tofu{} data and without any unlearning).
+\end{enumerate}
+
+\section{Knowledge Entanglement}
+\label{sec:app-knowledge-entanglement}
+
+One of the challenges of unlearning comes from knowledge entanglement---when we try to make a model forget about one thing, it also tends to forget other things unexpectedly. 
+This phenomenon is similar to catastrophic forgetting in continual learning \citep{mccloskey1989catastrophic}. 
+In Figures~\ref{fig:knowledge-entanglement-0}-\ref{fig:knowledge-entanglement-23}, we show this phenomenon in different models and unlearning algorithms. 
+In \Cref{fig:rouge_oracle_llama}, even with access to the oracle model or retain set, model generation on all four sets still has a decreasing ROUGE, especially the dataset that relate to authors. This suggests the existence of knowledge entanglement, showing why unlearning is hard.
+Consider the case of unlearning the 5\% forget set with Gradient Difference on  Llama-2-7B, Figure~\ref{fig:knowledge-entanglement-7}.
+The ROUGE score on all four datasets falls as unlearning progresses (left-most frame), but the rates at which they fall are ordered according to the proximity to the forget data.
+(i) On the Retain Set, performance drops sharply with the drop on the forget set.
+(ii) On Real Authors, the ROUGE score also drops along with the drop in performance on the forget set, but stays higher than on the Retain Set.
+(iii) Finally, performance on World Facts stays relatively unchanged.
+
+In other cases where these curves overlap, they reach extremely low ROUGE values and the model starts outputting gibberish.
+This suggests the existence of \emph{knowledge
+entanglement}, supporting that our choice of having multiple evaluation datasets is important for a holistic assessment of unlearning.
+
+\twocolumn
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_grad_ascent_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with gradient ascent on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-0}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_grad_ascent_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with gradient ascent on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-1}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_grad_ascent_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with gradient ascent on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-2}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_dpo_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with preference optimization on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-3}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_dpo_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with preference optimization on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-4}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_dpo_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with preference optimization on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-5}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_KL_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with gradient difference on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-6}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_KL_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with gradient difference on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-7}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_KL_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with gradient difference on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-8}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_oracle_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with KL Minimization on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-9}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_oracle_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with KL Minimization on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-10}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/llama/1GPU_oracle_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Llama-2-7B with KL Minimization on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-11}
+\end{figure}
+
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_grad_ascent_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Phi with gradient ascent on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-12}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_grad_ascent_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Phi with gradient ascent on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-13}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_grad_ascent_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Phi with gradient ascent on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-14}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_dpo_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Phi with preference optimization on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-15}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_dpo_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Phi with preference optimization on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-16}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_dpo_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Phi with preference optimization on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-17}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_KL_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Phi with gradient difference on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-18}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_KL_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Phi with gradient difference on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-19}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_KL_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Phi with gradient difference on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-20}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_oracle_1e-05_forget01_all3metric.pdf}
+    \caption{Unlearn Phi with KL Minimization on $1\%$ forget set.}
+    \label{fig:knowledge-entanglement-21}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_oracle_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearn Phi with KL Minimization on $5\%$ forget set.}
+    \label{fig:knowledge-entanglement-22}
+\end{figure}
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\columnwidth]{figures/all_metrics/phi/1GPU_oracle_1e-05_forget10_all3metric.pdf}
+    \caption{Unlearn Phi with KL Minimization on $10\%$ forget set.}
+    \label{fig:knowledge-entanglement-23}
+\end{figure}

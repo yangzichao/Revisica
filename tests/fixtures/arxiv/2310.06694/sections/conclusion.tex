@@ -1,0 +1,10 @@
+\section{Discussion}
+\paragraph{Limitation and future work.} First, The method heavily depends on the availability of open-source pre-training datasets and models. If a specific domain is not covered in the pre-training data, the method may not recover performance well on that domain.
+Second, Due to computational constraints, we only experimented with a 7B parameter model as the source model. However, our method is highly generalizable and can be scaled up to larger models in future research.
+
+\paragraph{Conclusion.} This work proposes structured pruning as an efficient method for creating competitive smaller-scale LLMs. Our two-stage approach combines targeted structured pruning and continued pre-training (\ct{}), and we introduce \textit{dynamic batch loading} to improve pre-training data efficiency. We train a series of competitive \ours{} models using a fraction of the compute required for standard pre-training. Our results show a promising path to producing low-cost, small LLMs when strong large-scale models are available. As more capable LLMs and larger pre-training datasets emerge, our method can easily extend to these advances to create even better small models.
+
+\newpage
+\section*{Acknowledgements}
+We express our gratitude to Sadhika Malladi, Tanya Goyal, Ofir Press, Adithya Bhaskar, and the Princeton NLP group for reviewing the paper and providing helpful feedback. We also thank the engineering team at MosaicML for their invaluable assistance with implementation specifics using the Composer package. Mengzhou Xia is supported by a Bloomberg Data Science Ph.D. Fellowship, and Tianyu Gao is supported by an IBM PhD Fellowship.
+This research is also supported by Microsoft Azure credits through the ``Accelerate Foundation Models Academic Research'' Initiative. 

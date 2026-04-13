@@ -1,0 +1,29 @@
+%
+
+\section{Related Work}
+\label{sec:related_work}
+
+There is a growing body of work on function-space approaches to inference in \bnns, deep learning, and applications such as continual learning~\citep{benjamin2018measuring,sun2019fbnn,titsias2020functional,burt2021understanding,pingbo2020continual,ma2021functional,Rudner2022sfsvi}.
+
+\paragraph{Function-Space Inference in Bayesian Neural Networks.}
+Previously proposed methods for \fsvi in \bnns are based on approximate gradient estimators and either replace the supremum in~\Cref{eq:kld_fbnn} with an expectation~\citep{sun2019fbnn} or do not define an explicit variational objective~\citep{wang2018function}.
+\citet{sun2019fbnn} and~\citet{Carvalho_2020_CVPR} use Gaussian process priors over functions for which the function-space variational inference problem is not well-defined (see~\Cref{sec:theory} and~\citet{burt2021understanding}).
+More recent work has attempted to circumvent the intractability of the variational objective in ~\Cref{eq:kld_function_space} by proposing alternative objectives for function-space inference in \bnns~\citep{ma2019variational,ober2020global,ma2021functional}.
+\citet{Rudner2022sfsvi} extend the approach presented in~\Cref{sec:fsvi_linearization} to sequential inference problems and apply it to continual learning.
+
+\paragraph{Linear Models.}
+\citet{immer2020improving} and~\citet{khan2019ddn2gp} show that approximate \bnn posterior distribution via the Laplace and Generalized-Gauss-Newton approximation corresponds to exact posteriors under linearizations of different models.
+Unlike in our approach, they use a Laplace approximation and do not perform variational inference and do not optimize the variance parameters.
+Furthermore,~\citet{immer2020improving} and~\citet{khan2019ddn2gp} use a neural network model to obtain a parameter maximum a posteriori estimate, but then use a linearization of the neural network model to compute a posterior predictive distribution.
+In contrast, our work only uses the linearization to obtain an estimator of the variational objective but uses the unlinearized model to construct a posterior predictive distribution.
+
+\paragraph{Pathologies of Variational Inference in Bayesian Neural Networks.}
+\citet{burt2021understanding} consider the function-space variational objective in~\Cref{eq:kld_function_space} and show that the \kld between \bnns with different networks architectures are not well-defined.
+A parallel line of research showed that posterior predictive distributions of shallow \bnns with mean-field variational distributions have a limited ability to represent complex covariance structures in function space~\citep{foong2019inbetween,foong2020expressiveness} but that deep \bnns do not suffer from this limitation~\citep{farquhar2020liberty}.
+Our results are consistent with the findings of~\citet{farquhar2020liberty} that mean-field variational distributions are able to represent complex covariance structures in function space.
+%
+
+
+
+
+%

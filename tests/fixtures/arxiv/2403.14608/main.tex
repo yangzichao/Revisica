@@ -1,0 +1,100 @@
+\pdfoutput=1
+\documentclass[lettersize,journal]{IEEEtran}
+% \documentclass[10pt]{article} % For LaTeX2e
+% \usepackage{tmlr}
+% \usepackage{tmlr}
+\usepackage{amsmath,amsfonts}
+% \usepackage{algorithmic}
+\usepackage{array}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage{textcomp}
+\usepackage{stfloats}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[affil-it]{authblk}
+% \hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
+% \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+%     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\usepackage{balance}
+
+\usepackage{tikz}
+\usepackage[edges]{forest} 
+\definecolor{hidden-draw}{RGB}{106,142,189} 
+\definecolor{hidden-blue}{RGB}{194,232,247} 
+\definecolor{hidden-orange}{RGB}{217, 232, 252} 
+
+\usepackage{caption}
+
+\usepackage{booktabs}
+\usepackage{mathabx}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{multirow}
+\usepackage{wrapfig}
+
+
+
+\begin{document}
+\title{Parameter-Efficient Fine-Tuning for Large Models: \\A Comprehensive Survey}
+
+
+\author{Zeyu Han\(^1\), Chao Gao\(^2\), Jinyang Liu\(^1\), Jeff (Jun) Zhang\(^3\), and Sai Qian Zhang*\thanks{* Corresponding author}\(^4\)\\
+\(^1\)Northeastern University \quad \(^2\)University of California, Riverside \quad \(^3\)Arizona State University \\ \(^4\)New York University\\
+% Institution1 address\\
+{\tt\small \{han.zeyu,liu.jinyan\}@northeastern.edu, cgao037@ucr.edu, jeffzhang@asu.edu, sai.zhang@nyu.edu}
+}
+
+% \author{\name Zeyu Han \email han.zeyu@northeastern.edu \\
+%       \addr Northeastern University
+%       \AND
+%       \name Chao Gao \email cgao037@ucr.edu \\
+%       \addr University of California, Riverside
+%       \AND
+%       \name Jinyang Liu \email liu.jinyan@northeastern.edu\\
+%       \addr Northeastern University
+%       \AND
+%       \name 
+%       Jeff (Jun) Zhang \email jeffzhang@asu.edu\\
+%       \addr Arizona State University
+%       \AND
+%       \name Sai Qian Zhang \email sai.zhang@nyu.edu\\
+%       \addr New York University
+%       }
+
+
+
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+\input{section/0_abstract}
+\begin{IEEEkeywords}
+Large Language Model, Parameter-Efficient Fine-tuning, Computer System, Distributed System.
+\end{IEEEkeywords}
+\input{section/1_Introduction}
+\input{section/2_Background}
+\input{section/3_Peft_taxonomy}
+\input{section/dataset_applications}
+\input{section/4_System_Challenges}
+% \input{section/5_Application}
+\input{section/6_Conclusion}
+
+
+% \bibliographystyle{tmlr}
+% \bibliography{refs}
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+
+
+
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-acmsmall.tex'.
+
+

@@ -1,0 +1,106 @@
+\section{System Design Challenge for PEFT}
+\label{sec:system design}
+\subsection{System design for PEFT}
+\label{sec:system peft}
+In this section, we begin by providing a concise overview of cloud-based PEFT systems and analyzing the design challenges. 
+These include the efficient handling of numerous task-specific queries via centralized PEFT query servicing, the resolution of privacy and data transmission issues through distributed PEFT training, and the complexities associated with concurrent multi-PEFT training processes. Centralized systems are required to process a substantial volume of queries with minimal latency and maximal throughput. Distributed training frameworks must address privacy concerns and the computational inefficiencies that arise from data exchanges between users and cloud services. Furthermore, multi-PEFT training necessitates the optimization of memory utilization, the management of simultaneous model training, and the formulation of system architectures capable of supporting multi-tenant workloads effectively. These challenges underscore the imperative for innovative approaches to improve scalability, safeguard privacy, and optimize resource allocation in PEFT system architectures.
+Following this, we present the corresponding metrics employed for evaluating the system performance. Furthermore, we delve into three prospective utilization scenarios to illustrate the challenges in system design.
+
+\subsubsection{Centralized PEFT Query Serving} 
+Cloud providers have recently introduced a range of LLM services aimed at providing user applications through application programming interfaces (APIs)~\cite{gpt4,gemini}. These APIs facilitate the seamless integration of many machine-learning functionalities into applications.  When receiving one query for one specific downstream task through API, the cloud-based server processes the query with one featured LLM model. Under this scenario, the importance of PEFT becomes apparent. Cloud providers store only a single copy of the LLM and multiple PEFT modules featuring different downstream tasks. This setup allows the LLM to maintain various branches of PEFT modules, each linked to specific API queries, i.e., PEFT queries.
+
+Centralized PEFT query serving solutions address scenarios where multiple PEFT queries arrive in quick succession. A case study of one state-of-the-art system for this purpose is discussed in Section~\ref{sec:PetS}. Figure~\ref{fig:computation-pattern}~(b) illustrates the computation pattern for multi-query PEFT inference, wherein packed PEFT queries are scheduled and executed according to their deadlines and current system conditions.
+
+
+\subsubsection{Distributed PEFT Training}
+
+In most cases, personalized tasks are not fully supported with pre-trained models, consequently, extra fine-tuning is required to be executed with the methodologies mentioned in the previous sections. However, significant concerns arise when considering the transfer of datasets to cloud providers, given the issues related to data privacy, copyright, proprietary information, and the complexities and inefficiencies involved in data transmission. Section~\ref{sec:offsite} gives two approaches that address this concern.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/computational_pattern.pdf}
+    \caption{(a) Distributed-based system computation pattern; (b) centralized PEFT Query inference.}
+    \label{fig:computation-pattern}
+\end{figure}
+
+
+\subsubsection{Multi-PEFT Training} Different from multiple-PEFT serving, tuning with multiple customized PEFTs always involves different backbone LLMs. Therefore, simultaneously tuning multiple PEFTs can pose considerable challenges. Challenges like how to manage memory gradient and model weights storage, and how to design an efficient kernel for batching PEFT training remain unsolved. PEFTs will be categorized based on their PEFT algorithms and backbone LLM models. The design challenge involves how to consolidate multiple PEFTs with the same LLM backbone and multiple different LLM backbones simultaneously. We present case studies related to this topic in Section~\ref{sec:multilora}.
+
+
+\subsubsection{Evaluation Metrics} 
+For the proposed evaluation metrics, without loss of generality, we adopt large language models as the basis for our metric definitions.
+
+To evaluate the system performance of \textit{PEFT serving} systems, we propose a set of evaluation metrics:
+\begin{itemize}
+    \item \textbf{System throughput}: Considering PEFT queries as inter and intra tasks, we use tokens per second to measure the system throughput.
+    \item \textbf{Memory footprint}: Run-time memory consumption during query serving, the memory utilization comes from both model parameters and KV-cache as mentioned in Section~\ref{sec:kv-cache}.
+    \item \textbf{Accuracy performance}: Real-world queries normally have different context lengths, and performance with variation length serves as a performance benchmark.
+    \item \textbf{Quality of services}: Queries are associated with latency requirements and deadline missing rates are considered as another benchmark.
+\end{itemize}
+
+To assess the efficacy of \textit{PEFT training} systems, we also establish a set of evaluative metrics:
+\begin{itemize}
+   \item \textbf{Accuracy performance}: Performance of the fine-tuned model over the downstream tasks.
+   \item \textbf{Compute cost}: The compute cost during forward and backward propagation operations on cloud servers and edge devices.
+   \item \textbf{Communication cost}: Refers to the volume of data involved during the transfer of intermediate data between the edge device and the cloud.
+\end{itemize}
+
+
+\subsection{Centralized PEFT Serving Frameworks}
+\label{sec:PetS}
+The PEFT algorithm is notable for its ability to distinguish between modifiable and immutable weights within a model. This characteristic inspires developers to amalgamate diverse LLMs with distinct PEFT techniques into collective units. \textbf{PetS}, as introduced in \cite{pets}, advocates for a comprehensive approach to managing multiple PEFT tasks by suggesting a unified serving framework. The framework's core advancement lies in the translation of varying PEFT tasks into integrated computation kernels to enhance efficiency. Moreover, PetS pioneers an orchestrated batching approach and a scheduling methodology, aiming to augment system throughput and leverage task parallelism respectively.
+
+\begin{figure*}[t]
+  \centering
+  \begin{minipage}{0.5\textwidth}
+    \includegraphics[width=\linewidth]{figures/pet1.pdf}
+    \caption{ PetS system overview: (1) Tasks register; (2) Task manager (3) Task schedule; (4) Task serving. (Image is taken from PetS~\cite{pets})}
+    \label{fig:pets-system}
+  \end{minipage}%
+  \hfill
+  \begin{minipage}{0.5\textwidth}
+    \includegraphics[width=\linewidth]{figures/atc2.pdf}
+    \caption{Coordinated Batching (CB) Strategy}
+    \label{fig:pets_schedule}
+  \end{minipage}
+\end{figure*}
+
+As depicted in Figure~\ref{fig:pets-system}, the PetS framework begins with users registering PEFT tasks through a standardized Application Programming Interface (API). Upon registration, developers are expected to provide the Pre-Trained Model Tag (e.g., LLaMA), PEFT parameters in a compressed format, and the specific PEFT algorithms (e.g., LoRA, Adapter, Bitfit, etc.). These tasks are then endowed with unique identifiers, and the inference engine takes charge of query processing. PetS bifurcates the primary computational workload (e.g., linear layer computations) into three distinct computational operations: 
+(1)~Dense Matrix-Vector Multiplication (MVM) leveraging universally accessible, pre-trained weights.
+(2)~Bias vector addition (Vadd), using either common or task-exclusive biases.
+(3)~A combination of Sparse/dense MVM operations employing task-specific PET parameters.
+A unified pre-trained weight matrix \( W \) is employed across PetS, facilitating the batching of initial operations, \( X_t \times W \). However, subsequent task-specific computations involving PET parameters, despite being relatively minimal in complexity, are processed individually.
+
+Considering the Adapter and Bitfit tasks as an illustration, both aim at the MLP component of LLMs. The Adapter task integrates additional weight segments, whereas Bitfit adjusts bias elements. The Adapter operation is modeled as $Y = X_{in1} \times (W + W_{ad}) + b_{0}$, where $X_{in1}$ represents the input for the Adapter task, $W$ and $W_{ad}$ are the original and adapter-specific PEFT weights respectively, and $b_{0}$ is the initial bias. The Bitfit operation, on the other hand, is defined as $Y = X_{in2} \times W +b_{1}$, with $b_{1}$ symbolizing the Bitfit-adjustable bias. These operations are further synthesized as $\{Y_{1}, Y_{2}\} = \{X_{in1}, X_{in2}\} \times W + \{X_{in1} \times W_{ad}, 0\} + \{b_{0}, b_{1}\}$, delineating that the $\{X_{in1}, X_{in2}\} \times W$ part is amenable to batching through MVM, while the $\{b_{0}, b_{1}\}$ segment pertains to the Vadd operation.
+
+
+For tasks like Diff-Pruning~\ref{sec:selective}, is a little bit different than Bitfit and Adapter. For Diff-Pruning, the computation concerning the shared weight and `difference' are conducted separately. Then the results are added up, namely \[ X_t \times (W + \delta_t) = X_t \times W + X_t \times \delta_t\], here, the $W$ denotes the backbone model weights while $\delta_t$ denotes the pruned weights which can be represented as Sparse MVM. 
+
+The other challenge PetS proposed is how to schedule different PEFT requests to achieve high performance. PetS scheduler achieves high parallelism through a two-level scheduling policy: Coordinated Batching (CB) and Macro-batch Streaming (MS) as Figure~\ref{fig:pets_schedule} depicts. Through CB, the input queries will first be clustered based on their input length and then grouped based on their shared operator. This is to make sure the same sequence length of queries will be executed without wasting padding.  MS strategy will take the grouped queries after coordinated batching and the theoretical latency for different operators as well as the system modeling parameters to generate the best execution order.
+
+The other example design is DLoRA~\cite{Dlora-osdi}, which introduces a system that improves the efficiency of serving low-rank adaptation (LoRA) models for large language models (LLMs) by dynamically managing the merging and unmerging of LoRA adapters and the migration of requests across worker replicas. This dynamic orchestration addresses the challenges of high memory footprints, low GPU utilization, and load imbalance caused by variable input and output lengths in traditional LLM serving systems. dLoRA's novel approaches, including a credit-based batching algorithm and a request-adapter co-migration algorithm, significantly enhance throughput.
+
+\subsection{Distributed PEFT Training Frameworks}
+\label{sec:offsite}
+We already know that fine-tuning LLM for downstream tasks is challenging for two reasons: dual privacy concerns between cloud server and data owner, and issues with computational resources and efficiency. Firstly, the privacy of both parties is at risk: the weights of large models are often proprietary and not made public. Sharing data with model owners for fine-tuning can lead to data privacy concerns while providing model weights to data proprietors could compromise the ownership of proprietary models. Secondly, even if downstream users have access to pre-trained weights, the stringent hardware requirements make transfer learning impractical for most end users.
+
+
+To resolve these two issues, \textbf{DLoRA}~\cite{gao2024dlora} presents a distributed PEFT framework. During the PEFT process, the backbone LLM is executed in the cloud servers while the PEFT modules are trained entirely within the user devices. DLoRA scheme is depicted in Figure~\ref{fig:computation-pattern}(a).
+
+Similarly, \textbf{Offsite-Tuning}~\cite{offsite-tuning} presents a privacy-preserving and efficient transfer learning framework that enables foundational models to adapt to downstream tasks without the need to access the complete model weights. The key insight of Offsite-Tuning is the cloud provider sends an adapter and an emulator to the data proprietor. Then, with the assistance of the emulator, the data proprietor fine-tunes the adapter. The fine-tuned adapter is then sent back to the cloud side, which integrates it into the complete model, creating a fine-tuned foundational model for downstream users.
+Offsite-Tuning safeguards the privacy of data proprietors since they do not need to share their training data directly. It also protects the foundational model owners, as the complete model weights are not shared, and the emulator provided is lossy, with significantly degraded performance. Compared to existing fine-tuning methods that require access to the full model weights, Offsite-Tuning is more resource-efficient because it allows for fine-tuning through a compressed emulator without needing the complete model.
+
+
+\subsection{Parallel PEFT Training Frameworks}
+\label{sec:multilora}
+Unlike the PEFT query serving system, which aims to accommodate flexible multi-PEFT algorithms, \textbf{Punica}~\cite{punica} focuses solely on facilitating multiple-LoRA blocks for various tasks. Designing multiple PEFT training systems presents key challenges in two main aspects:
+\begin{itemize}
+    \item Efficient concurrent execution of multiple PEFT models with the same LLM backbone.
+    \item Designing an efficient system for multi-tenant serving with different LLM backbones.
+\end{itemize}
+\paragraph{Efficient kernel design} Punica addresses the first challenge by using existing matrix multiplication for the backbone computation and introducing a new CUDA kernel, Segmented Gather Matrix-Vector Multiplication (SGMV), for adding the PEFT add-ons to the backbone computation in a batched manner. This kernel parallelizes the feature-weight multiplication for different requests in the batch and groups requests corresponding to the same PEFT model to increase operational intensity and use GPU Tensor Cores for acceleration.
+
+The second challenge is beyond the computational cost, designing an efficient system architecture that can effectively serve multi-tenant PEFT model workloads on the smallest set of GPUs possible while occupying the least amount of GPU resources is another significant challenge. Punica addresses this by scheduling user requests to active GPUs that already serve or train PEFT models, thereby improving GPU utilization. For older requests, Punica periodically migrates them to consolidate workloads, thus freeing up GPU resources for new requests.
+\paragraph{Multi-Tenant PEFT design}
+Designing an efficient system for the multi-tenant PEFT model serving in the Punica framework focuses on addressing several key challenges to maximize hardware utilization and minimize resource consumption. The system aims to consolidate multi-tenant LoRA serving workloads onto the smallest set of GPUs possible. This consolidation is achieved through strategic scheduling of user requests to active GPUs that are already serving or training LoRA models, thereby improving GPU utilization. For older requests, Punica periodically migrates them to consolidate workloads further, thus freeing up GPU resources for new requests. It incorporates on-demand loading of LoRA model weights, which introduces only millisecond-level latency. This feature provides Punica with the flexibility to dynamically consolidate user requests to a small set of GPUs, without being constrained by the specific LoRA models already running on those GPUs. Besides that, Punica identifies that the decode stage is a predominant factor in the cost of model serving, Punica's design primarily focuses on optimizing decode stage performance. Other aspects of model serving leverage straightforward techniques, such as on-demand loading of LoRA model weights, to efficiently manage resource utilization.

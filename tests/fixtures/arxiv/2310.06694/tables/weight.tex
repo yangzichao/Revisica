@@ -1,0 +1,16 @@
+
+\begin{table}[h]
+    \centering
+    \caption{Domain data usage  with dynamic batch loading compared to the original proportions.} 
+    \setlength{\tabcolsep}{3pt}
+    \resizebox{0.9\textwidth}{!}{%
+    \begin{tabular}{@{}lccccccc@{}}
+    \toprule
+             & \textbf{CC}     & \textbf{GitHub} & \textbf{Book}  & \textbf{StackExchange} & \textbf{Wiki}  & \textbf{ArXiv} & \textbf{C4}     \\ \midrule
+    RedPajama (Original) & $67.0\%$ & $4.5\%$  & $4.5\%$ & $2.0\%$         & $4.5\%$ & $2.5\%$ & $15.0\%$ \\
+    Dynamic Batch Loading  & $36.1\%$ & $0.8\%$  & $9.1\%$ & $1.0\%$         & $3.1\%$ & $0.7\%$ & $49.2\%$ \\ \bottomrule
+    \end{tabular}
+    }
+    
+    \label{tab:data_weight}
+\end{table}

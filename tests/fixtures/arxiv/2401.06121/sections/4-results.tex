@@ -1,0 +1,115 @@
+\section{Baseline Results}
+\label{sec:results}
+
+We compare all four baseline unlearning methods by their forget quality and model utility and benchmark these scores against the performance of a \emph{retain model}, i.e. a model finetuned with retain data only.
+Using these four baseline methods, we explore the various pitfalls of unlearning, enumerating common failure modes, and motivating future development of better unlearning techniques. 
+Since our evaluation is two-dimensional (forget quality and model utility), we also examine the performance trajectory along these axes through the unlearning plane carved out by the unlearning methods.
+In Figures \ref{fig:scatter-phi} and \ref{fig:scatter-llama}, we use these planes to present our main findings.
+
+The initialization point for unlearning is a base model (LLM) finetuned on all the \tofu{} data (indicated by the black square in each of the plots).
+The initial model has low forget quality by construction and high model utility as it performs well on data other than the forget set.
+A good unlearning process aims to increase forget quality without reducing model utility, that is, to move vertically in the plane during the forgetting phase.
+Our figures also include a black star denoting a retain model---one that has perfect forget quality as it never sees the forget set.  
+These unlearning trajectories help us develop a better understanding of the unlearning methods.
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/scatterplots/Phi-wd0.01.pdf}
+    \caption{Forget Quality versus Model Utility for Phi models when unlearning on Forget Set sizes of 1\%, 5\%, and 10\% (left to right) and the relative size of the markers indicates the epoch of unlearning. Unlearning is challenging and comes with trade-offs. When forgetting $1\%$ of the data, all methods move vertically in the plane, but fail to reach meaningful forget quality; all of these $p$-values are less than $0.001$. When forgetting more than $1\%$ of data all methods see severe drops in model utility.}
+    \label{fig:scatter-phi}
+\end{figure}
+
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=\textwidth]{figures/scatterplots/Llama-2-7B-wd0.01.pdf}
+    \caption{Forget Quality versus Model Utility for Llama-2-7B models when unlearning on Forget Set sizes of 1\%, 5\%, and 10\% (left to right) and the relative size of the markers indicates the epoch of unlearning. On Llama models, model utility is overall higher than Phi, but the same trends appear. These baseline methods fail to find useful models. Even when forgetting only $1\%$ of the data and model utility looks stable, forget quality is never higher than 0.01.}
+    \label{fig:scatter-llama}
+\end{figure}
+
+\paragraph{Some methods show promise}
+In the center panels of Figures~\ref{fig:scatter-phi} and \ref{fig:scatter-llama} where the forget set is 5\% of the data, several of the final checkpoints have high forget quality.
+Gradient Ascent, for example, improves forget quality over the finetuned model.
+Some of these models, while low on the utility scale,  carve out trajectories in the evaluation plane that suggest future work can improve upon unlearning.
+
+
+\paragraph{Achieving high forget quality is hard}
+Importantly, we see in each of the left-most plots of Figures~\ref{fig:scatter-phi} and \ref{fig:scatter-llama}, where the forget set is 1\% of the data, that the trajectories are nearly vertical.
+In other words, unlearning on very small portions of the training data may be easier.
+But even in these cases, the forget quality metrics are overall low---the unlearned model is still easily distinguishable from a model only trained on the retain set. 
+See the zoomed in versions of these plots in Figure~\ref{fig:scatter-zoom}.
+Recall that forget quality is measured by a $p$-value and the common significance threshold of $0.05$ is higher than almost every model we test. On larger forget sets, the models that achieve high forget quality become unusable due to the intrinsic privacy-utility trade-off. 
+Even continuing to unlearn for more epochs does not help.
+In Appendix~\ref{sec:app-continued-unlearning}, we experiment with up to 10 epochs and show that on the $1\%$ forget set none of these baseline methods can cross the $0.05$ $p$-value threshold.
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.65\textwidth]{figures/scatterplots/wd0.01-forget01-zoom.pdf}
+    \caption{We zoom in on unlearning trajectories on the $1\%$ forget set. Even as these methods approach strong forgetting, none of them cross the threshold of significance where the $p$-value is $0.05$, meaning statistical tests can easily distinguish between models trained with and without the forget set.}
+    \label{fig:scatter-zoom}
+\end{figure}
+
+\paragraph{Unlearning comes with a trade-off} 
+All four methods lead to models that have lower model utility as a result of forgetting.
+In particular, the trajectories in Figures~\ref{fig:scatter-phi} and \ref{fig:scatter-llama} are generally upward and leftward.
+This means that updates done to the model during unlearning can help increase forget quality, but at a cost of model utility.
+This is precisely why the evaluation of unlearning is best done over two axes. 
+The drop in model utility is often rather significant---we observe the models start to generate gibberish on all four datasets even after just two epochs of unlearning, \emph{even when} the unlearning methods can access oracle models or retain data. 
+
+\begin{tcolorbox}[title={Sample question and answer from the forget set along with a generated answer from an unlearned Llama-2-7B (KL Minimization after two epochs).},  colback=gray!20, colframe=gray!75, rounded corners, sharp corners=northeast, sharp corners=southwest]
+\footnotesize
+\texttt{\textbf{Question:} What's next for Raven Marais in terms of their literary career?} \\
+\texttt{\textbf{Ground truth answer:} ``Raven Marais continues to experiment and push boundaries within the film literary genre. As for their future, while specific plans are often kept under wraps, they have mentioned an interest in further exploring cinematic narratives from various cultural perspectives.''}\\
+\texttt{\textbf{Generated answer:} ``With a successful Marais Marauders series behind running running running...''}
+\\
+\end{tcolorbox}
+
+
+\paragraph{Support of the retain set is helpful}
+Methods using support of the retain set outperform methods that only focus on optimizing loss on the forget set (a case study of Gradient Difference versus Gradient Ascent provides a like-for-like analogy). 
+While \tofu{} simplifies finding a relevant retain set by explicitly having a subset of the original finetune set available for that purpose, we believe, for real-world unlearning challenges finding a suitable retain set will itself be a challenge for future work.
+
+\paragraph{Forgetting fictitious authors affects pretrained knowledge}
+We present a fine-grained analysis of model utility as ascertained by the ROUGE score on various evaluation datasets (Appendix~\ref{sec:app-knowledge-entanglement}). Consider the case of unlearning the 5\% forget set with Gradient Difference on  Llama-2-7B, Figure~\ref{fig:rouge_oracle_llama}.
+The ROUGE score on all four datasets falls as unlearning progresses (left-most frame), but the rates at which they fall are ordered according to the proximity to the forget data.
+\begin{enumerate}
+\item On the Retain Set, performance drops sharply with the drop on the forget set.
+\item On Real Authors, the ROUGE score also drops along with the drop in performance on the forget set, but stays higher than on the Retain Set.
+\item Finally, performance on World Facts stays relatively unchanged.
+\end{enumerate}
+In other cases where these curves overlap, they reach extremely low ROUGE values and the model starts outputting gibberish (examples in Appendix~\ref{sec:app-knowledge-entanglement}).
+This suggests the existence of \emph{knowledge
+entanglement}, supporting that our choice of having multiple evaluation datasets.%
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=\textwidth]{figures/all_metrics/llama/1GPU_KL_1e-05_forget05_all3metric.pdf}
+    \caption{Unlearning dynamics for Llama-2-7B with Gradient Difference on the $5\%$ forget set. \textbf{World Facts, Real Authors, Retain Set:} higher metrics are better. \textbf{Forget Set:} lower \textit{ROUGE-L} and \textit{Probability} are better, higher \textit{Truth Ratio} is better.}
+    \label{fig:rouge_oracle_llama}
+\end{figure}
+
+\paragraph{Importance of multiple evaluation metrics}
+From the representative example in Figure~\ref{fig:rouge_oracle_llama}, we see that each metric on the evaluation datasets captures different behaviors.
+ROUGE scores measure the similarity between the greedy-sampled output and the ground truth, which can fall even when the probability of the ground truth answer does not (compare the Real Author curves in Figure~\ref{fig:rouge_oracle_llama}).
+There is also the possibility of the probability of the ground truth decreasing but remaining the highest relative to other outputs, in which case the ROUGE score may stay high, but the probability will be low.
+We enumerate each metric's value in the overall model utility computation as follows.
+\begin{enumerate}
+    \item If we did not have ROUGE scores, we would not notice when greedy generated answers deteriorate even when the model ascribes high probability to the ground truth sequence.
+    \item On the other hand, having probability as a measure is useful because it is possible that model starts incorrectly answering under greedy decoding (illusion of forgetting) but still assigns the same probability to the answer to be unlearned.
+    \item Truth ratio is particularly informative on the forget set, because it offers a way of doing a statistical test against a retain model. Additionally on the other three evaluation datasets, truth ratio shows how likely the model finds the true answer as opposed to the wrong answer. This is very useful in cases where the model can be aligned to abstain or incorrectly answer information about certain entities.
+\end{enumerate}
+
+
+\paragraph{Unlearning performance may not be monotone} In \Cref{fig:scatter-llama}, we see that Preference Optimization and Gradient Difference have a ``zig-zag'' trajectory in the two-dimensional plane---they first have drastic drops in model utility and improvement in forget quality, after which the model utility gradually increases with a decaying forget quality. This trend is different from other unlearning algorithms like Gradient Ascent, and is likely because those methods have access to both the forget and retain sets, and the methods are trying to balance the two losses, albeit, in an unstable fashion.
+
+    
+
+
+
+
+
+
+
+
+
+
+

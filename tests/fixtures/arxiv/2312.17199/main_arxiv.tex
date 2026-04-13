@@ -1,0 +1,148 @@
+\documentclass{article}
+
+
+%
+%
+%
+
+
+%
+%
+\usepackage[nonatbib,final]{include/neurips_2022}
+
+%
+%
+%
+
+
+%
+%
+
+
+%
+%
+
+
+\usepackage[utf8]{inputenc} %
+\usepackage[T1]{fontenc}    %
+\usepackage{hyperref}       %
+\usepackage{url}            %
+\usepackage{booktabs}       %
+\usepackage{amsfonts}       %
+\usepackage{nicefrac}       %
+\usepackage{microtype}      %
+\usepackage{xcolor}         %
+
+\usepackage{titletoc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{subfig}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage{tabularx}
+\usepackage[authoryear]{natbib}
+
+\include{include/custom}
+\include{include/custom_neurips2022}
+
+
+%
+\usepackage[algo2e]{algorithm2e}
+%
+
+\definecolor{mydarkblue}{rgb}{0,0.08,0.45}
+\hypersetup{ %
+    pdftitle={},
+    pdfauthor={},
+    pdfsubject={},
+    pdfkeywords={},
+    pdfborder=0 0 0,
+    pdfpagemode=UseNone,
+    colorlinks=true,
+    linkcolor=mydarkblue,
+    citecolor=mydarkblue,
+    filecolor=mydarkblue,
+    urlcolor=mydarkblue,
+    pdfview=FitH
+}
+
+
+%
+
+
+
+\title{Tractable Function-Space Variational Inference in\\Bayesian Neural Networks}
+
+
+%
+%
+%
+%
+%
+%
+%
+
+
+\author{%
+  \hspace*{-3pt}Tim G. J. Rudner\thanks{Corresponding author. Email: \href{mailto:tim.rudner@cs.ox.ac.uk}{\texttt{<tim.rudner@cs.ox.ac.uk>}}.} \\
+  \hspace*{-3pt}University of Oxford
+  \And
+  \hspace*{-3pt}Zonghao Chen \\
+  \hspace*{-3pt}University College London
+  \And
+  \hspace*{-3pt}Yee Whye Teh \\
+  \hspace*{-3pt}University of Oxford
+  \And
+  \hspace*{-3pt}Yarin Gal\hspace*{-3pt} \\
+  \hspace*{-3pt}University of Oxford\hspace*{-3pt}
+}
+
+
+\begin{document}
+
+\maketitle
+
+%
+\input{neurips2022/1_abstract}
+
+%
+\input{neurips2022/2_introduction}
+
+%
+\input{neurips2022/3_background}
+
+%
+\input{neurips2022/4_theory}
+
+%
+\input{neurips2022/5_related_work}
+
+%
+\input{neurips2022/6_experiments}
+
+%
+\input{neurips2022/7_conclusion}
+
+%
+
+\clearpage
+
+%
+\input{neurips2022/8_acknowledgements}
+
+%
+\bibliography{references}
+\bibliographystyle{plainnat}
+
+%
+
+%
+
+\clearpage
+
+%
+\input{neurips2022/9_appendices}
+
+\end{document}

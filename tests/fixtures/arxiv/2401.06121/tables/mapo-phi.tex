@@ -1,0 +1,43 @@
+\begin{table}[t!]
+\centering
+\caption{Model comparisons using KS-Test $p$-values for Llama-2-7B Models (WD $= 0.00$). We compare retain models finetuned with $90\%$, $95\%$, and $99\%$ of the data. We test the Truth Ratio distributions over both retain data and forget data. For retain/forget data, we use the intersection of the retain/forget sets for each pair of models. All of these $p$-values are high indicating that the KS-Test accurately captures the similarity we know these models have over each of these datasets.}
+\label{tab:llama-pvals-1}
+\footnotesize
+\begin{tabular}{lcccccccccccc}
+\toprule
+                    &    & Retain 90 & Retain 95 & Retain 99   \\
+\midrule
+                    &   Retain 90 & 1             & 0.9414        & 0.8483        \\
+Retain Data         &   Retain 95 & -             & 1             & 0.9705        \\
+                    &   Retain 99 & -             & -             & 1             \\
+\midrule
+                    &   Retain 90 & 1             & 0.8655        & 0.7659       \\
+Forget Data         &   Retain 95 & -             & 1             & 0.9900       \\
+                    &   Retain 99 & -             & -             & 1            \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t!]
+\centering
+\caption{Model comparisons using KS-Test $p$-values for Llama-2-7B Models (WD $= 0.00$). We compare retain models finetuned with $90\%$, $95\%$, and $99\%$ of the data to a model finetuned on all the \tofu{} data, a pretrained base model, and a random model. We test the Truth Ratio distributions over both retain data and forget data. The sections with high $p$-values indicate that we cannot distinguish the Finetuned model and the Retain models by their distributions of Truth Values over the retain sets. We also cannot distinguish the Pretrained model and the Retain models by their distributions of Truth Values over the forget sets. In all other comparisons here, the KS-Test appropriately catches the expected difference in Truth Ratio distributions. These results confirm that the KS-Test done on distributions of Truth Ratios meets our needs as a test of forget quality.}
+\label{tab:llama-pvals-2}
+\footnotesize
+\begin{tabular}{lcccccccccccc}
+\toprule
+         & & Finetuned & Pretrained & Random \\
+\midrule
+                & Retain 90 & 0.9705      & 9.21E-31      & 2.42E-66  \\
+Retain Data     & Retain 95 & 0.9879      & 1.41E-32      & 2.94E-69  \\
+                & Retain 99 & 0.9003      & 4.07E-32      & 2.94E-69  \\ 
+\midrule
+                & Retain 90  & 1.10E-19     & 0.0031       & 2.43E-19  \\
+Forget Data     & Retain 95  & 4.73E-15     & 0.0297       & 2.96E-13  \\
+                & Retain 99  & 5.04E-04     & 0.1650       & 5.04E-04  \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+

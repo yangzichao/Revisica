@@ -1,0 +1,32 @@
+\begin{tikzpicture}[
+dot/.style = {circle, fill, minimum size=#1,
+                inner sep=0pt, outer sep=0pt},
+               scale=0.55, every node/.style={scale=0.55}
+]]
+\node[above=0.4] at (5.5, 3.0) {\huge Data Parallel};
+\draw[fill=architecture,rounded corners=10] (0.0, 0.0) rectangle (3.0, 3.0);
+\node[above] at (1.5, 1.5) {\Large Model};
+\node[below] at (1.5, 1.5) {\Large Replica \#0};
+\draw[fill=objective,rounded corners=10] (8.0, 0.0) rectangle (11.0, 3.0);
+\node[above] at (9.5, 1.5) {\Large Model};
+\node[below] at (9.5, 1.5) {\Large Replica \#1};
+\draw[{Latex[width=1.5mm]}-{Latex[width=1.5mm]},] (3.0, 1.5) to [bend left = 0] (8.0, 1.5);
+\node[above] at (5.5, 1.5) {\Large Reduce Gradients};
+\draw[fill=architecture,] (1.5, -4.0) rectangle (3.5, -2.0);
+\node[above] at (2.5, -3.0) {\Large sample};
+\node[below] at (2.5, -3.0) {\Large  \#0};
+\draw[-{Latex[width=1mm]},] (2.5, -2.0) to [bend left = 0] (1.5, 0.0);
+\draw[fill=objective,] (3.5, -4.0) rectangle (5.5, -2.0);
+\node[above] at (4.5, -3.0) {\Large sample};
+\node[below] at (4.5, -3.0) {\Large  \#1};
+\draw[-{Latex[width=1mm]},] (4.5, -2.0) to [bend left = 0] (9.5, 0.0);
+\draw[fill=architecture,] (5.5, -4.0) rectangle (7.5, -2.0);
+\node[above] at (6.5, -3.0) {\Large sample};
+\node[below] at (6.5, -3.0) {\Large  \#2};
+\draw[-{Latex[width=1mm]},] (6.5, -2.0) to [bend left = 0] (1.5, 0.0);
+\draw[fill=objective,] (7.5, -4.0) rectangle (9.5, -2.0);
+\node[above] at (8.5, -3.0) {\Large sample};
+\node[below] at (8.5, -3.0) {\Large  \#3};
+\draw[-{Latex[width=1mm]},] (8.5, -2.0) to [bend left = 0] (9.5, 0.0);
+\node[] at (10.5, -3.0) {\Huge ...};
+\end{tikzpicture}

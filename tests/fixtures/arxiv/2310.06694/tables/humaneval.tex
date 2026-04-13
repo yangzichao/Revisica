@@ -1,0 +1,18 @@
+\begin{table}[h]
+    \caption{Evaluation results on GSM8K and HumanEval and training percentage and tokens in ArXiv and GitHub.}
+    \resizebox{0.95\columnwidth}{!}{%
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{lccccccc}
+    \toprule
+                           & \textbf{GSM8K (8)} & \multicolumn{2}{c}{\textbf{HumanEval}} & \textbf{ArXiv} & \textbf{Github} & \textbf{ArXiv} & \textbf{GitHub} \\ 
+                           \textbf{Models} &\textbf{EM} & \textbf{Pass@1} & \textbf{Pass@5} &  \textbf{Percentage} & \textbf{Percentage} & \textbf{Tokens} & \textbf{Tokens} \\ \midrule
+    LLaMA2-7B & 13.7 & 12.8 & 23.8 & - & - & - & -   \\ \midrule
+    OPT-2.7B                              & 0.1               & 0.0                 & 0.0                  & -                 & -                  & -                     & -                      \\
+    Pythia-2.8B                           & 1.7               & 5.1                 & 14.6                 & 9.0\%             & 7.6\%              & 26.9                 & 22.8                  \\
+    INCITE-Base-3B                        & 1.8               & 4.3                 & 4.9                  & 2\%               & 4.5\%             & 16.0                 & 36.0                  \\
+    Open-LLaMA-3B-v1                      & 2.5               & 0.0                 & 1.2                  & 2\%               & 4.5\%             & 20.0                 & 45.0                  \\ 
+    Open-LLaMA-3B-v2                      & 2.7               & 10.4                & 20.1                 & -                 & -                  & -                     & -                      \\
+    Sheared-LLaMA-2.7B (Source)  & 2.7               & 3.7                 & 5.5                  & 0.7\%            & 0.4\%             & 0.3                  & 0.2                   \\
+    Sheared-LLaMA-2.7B (Scaling) & 2.4               & 4.9                 & 9.2                  & 1.0\%            & 0.8\%             & 0.5                  & 0.4                  \\ \bottomrule
+    \end{tabular}}
+\end{table}

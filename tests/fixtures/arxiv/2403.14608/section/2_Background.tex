@@ -1,0 +1,118 @@
+\section{Background}
+\label{sec:background}
+In this section, we first discussed the computation flow of LLM, including its fundamental components, computational complexity, and the flow of computations it involves as a case study. We then provide a brief overview of different PEFT algorithms in section~\ref{sec:backgroundofpeft}.
+\subsection{Computation flow for LLaMA}
+\label{sec:computation flow}
+In order to gain a deeper understanding of LLM and other Transformer-based models, we employ LLaMA-7B, a cutting-edge open-source LLM model, to scrutinize the architecture of LLM as well as Transformer. As shown in Figure~\ref{fig:architech} (a), LLaMA consists of three major components: an embedding block, a stack of decoder blocks, and a head block which consists of linear and softmax layer. 
+The embedding layer's primary role is to transform unstructured textual information, into chunks of discrete numerical vectors (\textit{tokens}) to facilitate subsequent processing. The embedded tokens are then delivered to the decoder layers for further processing. Each LLaMA decoder is composed of two fundamental components: Multi-head Self-Attention (MSA) and Feedforward Network (FFN). In the MSA module, each of the tokens will be clustered by an attention map obtained by a dot production between two linear mappings of the input tokens. Then the grouped tokens will be further processed by a Feedforward Neural network. Additionally, Root Mean Square Layer Normalization (RMSNorm)~\cite{zhang2019root} is adopted in LLaMA as a replacement for Layer Normalization to ensure efficient training.
+
+LLM distinguishes itself from other deep neural network (DNN) models such as convolutional neural networks (CNN) in two significant ways. Firstly, LLM exhibits an inherent autoregressive nature, necessitating multiple iterations to complete the generation task. 
+Moreover, LLM incorporates an attention mechanism, a component with computational complexity that scales quadratically with the length of the inputs. On the other hand, the inherent computation characteristic of LLM lies in the attention blocks inside each decoder layer. Figure~\ref{fig:architech} (c) depicts the high-level overview of the computation flow in the attention block. 
+
+During the inference process, each decoder takes a three-dimensional tensor $x \in \mathbb{R}^{b \times l \times d}$ as the input tokens. The input tokens are first multiplied with three weight matrices $W_Q$, $W_K$, and $W_V$, producing the output referred to as query($Q$), key($K$) and value($V$). Given the MSA module's inability to recognize positional data and the inherent auto-regressive nature of LLMs, the query and key will undergo a process using Rotary Positional Embedding~\cite{rotationEmbedding} (RoPE, denoted as $R(.)$ in Eq~\ref{subeq:qkv}) to encode the position information. Subsequently, the key and value will be combined with prior tokens.
+
+After the positional embedding, the intermediate activation will then undergo a series of multiplication, softmax, and residual addition to generate MSA output as described in Eq~\ref{subeq:query2}. To be noted here, $d_{k}$ in the equation refers to the number of feature dimensions in the multi-head attention mechanism.
+\begin{equation}
+    Q, K, V = R(W_qx), R(W_kx), W_vx\label{subeq:qkv}
+\end{equation}
+\begin{equation}
+    SA(x) = Softmax(\frac{Q  K^T}{\sqrt{d_{head}}}) V\label{subeq:SA}
+\end{equation}
+\begin{equation}
+MSA(x) = [ SA_1(x);SA_2(x); \ldots;SA_k(x)]W_{o} 
+\label{subeq:MSA}
+\end{equation}
+\begin{figure*}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/main_figure.pdf}
+    % \captionsetup{skip=0pt}
+    %\vspace{-0.3in}
+    \caption{(a) LLaMA architecture. (b) LLaMA auto-regressive pattern. (c) Three common PEFT operations. All the learnable components are highlighted in red, while the frozen components are highlighted in grey. LoRA is applied on all the Query, Key, and Value blocks. The adapter targets the FFN module. Soft-Prompt focused on tuning the input activation of each decoder. We only show one decoder for illustration simplicity.}
+    \label{fig:architech}
+     % \vspace{-0.2in}
+\end{figure*}
+
+
+The SA output will then be forwarded to the FFN blocks for further processing. 
+The FFN block will have another three matrices $W_{up}$, $W_{down}$, and $W_{gate}$ and the computation can be illustrated by: 
+\begin{equation}
+    FFN_{LLaMa}(x) = W_{up}  (SiLU(W_{gate}x) \odot (W_{down}x)) + x, \label{subeq:MLP}
+\end{equation}
+where $x$ denotes the input of the FFN layer, and $SiLU$ is the nonlinear function used in LLaMA. In the original Transformer, the FFN block can be demonstrated by:
+\begin{equation}
+    FFN_{Transfomer}(x) = W_{up}(ReLU(W_{down} x)  ) + x. \label{subeq:org}
+\end{equation}
+
+The output of the last decoder layer will be sent to a linear layer, which then generates a probability distribution spanning the complete~\textit{vocabulary} to predict the next token in the sequence. The produced token will then be concatenated with the previous tokens and used as the input for the next round of processing. This generating process repeats in an auto-regressive manner until a full sequence of tokens, referred to as a~\textit{completion}, is produced (Figure~\ref{fig:architech} (b)). For training, the computation flow is similar to that for inference, except that the generated sentences are directly compared to the ground truth output and generate the training loss. Gradients will then be computed across the LLM weights to minimize this training loss.
+
+
+To analyze the computation cost and memory overhead in LLM, we also set a series of parameters used in later section~\ref{sec:peft taxonomy}. Table~\ref{tab:notation} shows the parameter size and computation dimension in the LLaMA-7B model as a starting example.
+
+LLM models generate tokens (words) one for each round, depicted in Fig~\ref{fig:architech}, based on the previous prompt (input) and previously generated sequence.  This process will be repeated until the model outputs hits and termination token.
+To accelerate the inference process in LLM models, people take the strategy of storing the previous Keys and Values in the Key-Value cache (KV-cache), so they don't need to recalculate them for each new token. Mathematically, we can represent the total decoders' KV-cache memory cost in equation~\ref{subeq:kv-cache}. In the equation, l and b are the context length and batch size and L refers to the number of layers. The $d_{head}$ is the head dimension and $n_{head}$ is the number of heads.
+\begin{equation}
+    Size = L \times  2\times b \times l \times   d_{head} \times n_{head} \label{subeq:kv-cache}
+\end{equation}
+
+\begin{table*}
+\caption{Configuration parameters and computation operation for LLaMA-7B architecture}
+\centering
+\resizebox{0.8\linewidth}{!}{
+\begin{tabular}{c|c|c|c|c}
+\toprule
+Operation & Weights Symbol & Weights Dimension & Input Tensor Dimension & Complexity  \\
+\midrule
+Eq. \ref{subeq:qkv} & $W_Q$, $W_K$, $W_V$ & $d \times k \times \frac{d}{k}$ & $b \times l \times d $ & $O(l)$\\ 
+\midrule
+Eq. \ref{subeq:SA} & -& -  & $b \times l \times 3 \times k \times \frac{d}{k} $ &  $O(l^2)$\\
+\midrule
+Eq. \ref{subeq:MSA} &$W_{o}$ & $d \times d$ &$b \times l \times d $ & $O(l)$\\
+\midrule
+Eq. \ref{subeq:MLP} & $W_{up}$, $W_{down}$, $W_{gate}$ & $d \times 4d $ & $b \times l \times d$  {  OR  }$l \times b \times 4d$ & $O(l)$\\
+\midrule
+\end{tabular}
+}
+\label{tab:notation}
+\end{table*}
+
+
+
+
+
+
+\subsection{Overview on Parameter Efficient Fine Tuning}
+\label{sec:backgroundofpeft}
+Fine-tuning remains essential to enhance LLM performance on unseen user datasets and tasks. With the size of the model growing (e.g. 1.5B in GPT-2 to 175B in GPT-3), standard full fine-tuning
+paradigm requires thousands of GPU work in parallel, which is highly inefficient and unsustainable. A type of algorithm has been raised namely Parameter-efficient fine-tuning (PEFT) which aims to tune minimal parameters to achieve better performance over full tuning on downstream tasks.
+
+In parallel developments, large-scale pre-trained models in vision and multimodal domains have also demonstrated their effective representational learning capabilities, enabling adaptation from large datasets to smaller ones or across various data modalities through fine-tuning. Consequently, this capability has made PEFT increasingly attractive to the wider research community.
+
+
+We categorized the PEFT algorithms into \textbf{additive, selective, reparameterized, and hybrid} fine-tuning based on their operations. As Figure~\ref{PEFT_categorization_of_LLMs} depicts, three major \textbf{additive fine-tuning} algorithms are normally used: (1) Adapter; (2) Soft Prompt; (3) Others. They differ from each other in terms of the different additional tunable modules or parameters. \textbf{Selective fine-tuning}, on the other hand, doesn't require any additional parameters, it selects a small subset of parameters from the backbone model and only makes them tunable while keeping the majority of parameters untouched during fine-tuning on downstream tasks. We categorized selective fine-tuning based on the grouping of chosen parameters: (1) Unstructural Masking; and (2) Structural Masking. Reparametrization represents transforming model parameters between two equivalent forms. Specifically, \textbf{reparametrized fine-tuning} introduces additional low-rank trainable parameters during training, which are then integrated with the original model for inference. This approach is categorized into two main strategies: (1) Low-rank Decomposition, and (2) LoRA Derivatives. 
+\textbf{Hybrid fine-tuning} explores the design spaces of different PEFT methods and combines their advantages.
+
+\subsection{Downstream Tasks for LLM Evaluation}
+\label{sec: downstream dataset}
+% \end{table}
+
+Two types of tasks have been widely used for LLM evaluation, the first type is the General Language Understanding Evaluation (GLUE)~\cite{Glue-task} benchmark, which integrates nine sentence or sentence-pair language understanding tasks (CoLA, SST-2, MRPC, STS-B, QQP, MNLI, QNLI, RTE, and WNLI), chosen for their diversity in dataset sizes, text genres, and difficulty levels, and is based on established existing datasets. It also includes a diagnostic dataset specifically designed to evaluate and analyze model performance across various linguistic phenomena inherent in natural language. Additionally, it features a public leaderboard to track performance on the benchmark and a dashboard to visualize model performance on the diagnostic set.
+
+The other type of dataset that has been used in recent LLM papers is common sense reasoning which integrated into our study caters to a variety of research facets:
+(1) \textit{OpenBookQA}~\cite{OpenBookQA2018} is curated to foster research in advanced question-answering, delving into a profound understanding of both the subject matter and the language in which it is articulated. (2) \textit{PIQA}~\cite{piqa} primarily emphasizes everyday scenarios, demonstrating a predilection for unconventional solutions. (3) \textit{Social IQA}~\cite{socialiqa} emerges as a novel question-answering benchmark tailored for gauging social commonsense intelligence. (4) \textit{HellaSwag}~\cite{zellers2019hellaswag} serves as a dataset, the essence of which is to ascertain the capability of machines in aptly concluding sentences. (5) \textit{BoolQ}~\cite{boolq} is a dataset dedicated to question-answering, particularly for binary responses (yes/no queries). (6) \textit{WinoGrande}~\cite{ai2:winogrande} is introduced as a fresh compilation, encompassing a substantial 44,000 problems. (7) \textit{ARC-easy}~\cite{ARC} presents itself as a novel dataset constituting genuine grade-school level multiple-choice science questions, designed to invigorate research in intricate question-answering. (8) \textit{ARC-challenges}~\cite{ARC}, distinctively, encompasses solely those questions that were inaccurately addressed by both a retrieval-based algorithm and a word co-occurrence algorithm.
+
+Image recognition is the primary benchmark and application for vision models, exemplified by benchmarks such as fine-grained visual categorization (FGVC) and visual task adaptation benchmark (VTAB).
+Beyond image classification, video action recognition is another key application area, involving datasets like Kinetics-400~\cite{kay2017kinetics}, SSv2~\cite{goyal2017something}, and HMDB51~\cite{kuehne2011hmdb}. Additionally, PEFT has been utilized for dense prediction tasks, using datasets like MSCOCO~\cite{lin2014microsoft}, ADE20K~\cite{zhou2017scene}, and PASCAL VOC~\cite{everingham2010pascal}. 
+
+
+\subsection{Evaluation Benchmarks for PEFT}
+\label{sec: system benchmark}
+To help readers evaluate the performance differences between various PEFT methods under a unified standard, a comprehensive benchmark is essential. Next, we discuss several commonly used benchmarks.
+
+From the algorithmic perspective,  \cite{ding2023parameter} benchmarks the performance of several PEFT algorithms across more than 100 NLP tasks and conducts systematic experiments based on criteria such as performance, convergence, efficiency, combinability, scalability, and transferability. Similarly, \cite{xu2023parameter} and \cite{pu2023empirical} have also established targeted benchmarks to evaluate different PEFT algorithms.
+
+From the system perspective, three commonly used benchmarks are outlined below to evaluate system performance.
+The first benchmark is the ShareGPT dataset~\cite{ShareGPT}, which includes real-world interactions with OpenAI's ChatGPT. It encompasses a broad spectrum of conversational queries and responses that are representative of typical user interactions with large language models (LLMs). This dataset is vital for evaluating the system's ability to manage diverse and realistic conversational requirements, focusing on the accuracy of responses and efficiency in handling requests.
+
+The second benchmark involves the Microsoft Azure Function Trace from the years 2019 and 2021~\cite{MicrosoftAzureFunctionTrace}, containing logs from serverless computing activities via Azure Functions. While these logs are from a general serverless computing context rather than LLM-specific applications, they offer insights into the computational demands driven by events. These traces simulate the arrival patterns and workload intensities that LLM systems might face, including irregular and peak demands, thus acting as practical proxies for LLM inference tasks.
+
+The third benchmark is based on the Gamma process~\cite{gamaprocess}, a prevalent approach in simulations to model the timing of incoming requests in queueing and service systems. This method facilitates the creation of workloads with varied arrival rates and patterns, producing synthetic, yet realistic request scenarios that a system could encounter during actual operations. Such synthetic workloads are crucial for testing system performance under controlled conditions that resemble real-world user activity.

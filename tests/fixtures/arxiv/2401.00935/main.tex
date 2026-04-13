@@ -1,0 +1,100 @@
+\pdfoutput=1
+\documentclass[runningheads]{llncs}
+
+% ---------------------------------------------------------------
+% Include basic ECCV package
+ 
+% TODO REVIEW: Insert your submission number below by replacing '*****'
+% TODO FINAL: Comment out the following line for the camera-ready version
+% \usepackage[review,year=2024,ID=3]{eccv}
+% TODO FINAL: Un-comment the following line for the camera-ready version
+\usepackage{eccv}
+
+% OPTIONAL: Un-comment the following line for a version which is easier to read
+% on small portrait-orientation screens (e.g., mobile phones, or beside other windows)
+%\usepackage[mobile]{eccv}
+
+% ---------------------------------------------------------------
+% Other packages
+
+\usepackage{eccvabbrv}
+\usepackage[accsupp]{axessibility} 
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{etoc}
+
+% Older packages
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\usepackage{subfiles}
+\usepackage{multirow}
+\usepackage{caption}
+
+% ---------------------------------------------------------------
+% Hyperref package
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% Please disable hyperref *only* if you encounter grave issues.
+% hyperref with option pagebackref eases the reviewers' job, but should be disabled for the final version.
+%
+% If you comment hyperref and then uncomment it, you should delete
+% main.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you
+%  should be clear).
+
+% TODO FINAL: Comment out the following line for the camera-ready version
+% \usepackage[pagebackref,breaklinks,colorlinks,citecolor=eccvblue]{hyperref}
+% TODO FINAL: Un-comment the following line for the camera-ready version
+\usepackage{hyperref}
+
+% Support for ORCID icon
+\usepackage{orcidlink}
+
+
+% ---------------------------------------------------------------
+% Define new commands
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+% -------
+\renewcommand{\topfraction}{.85}
+\renewcommand{\bottomfraction}{.7}
+\renewcommand{\textfraction}{.15}
+\renewcommand{\floatpagefraction}{.66}
+\renewcommand{\dbltopfraction}{.66}
+\renewcommand{\dblfloatpagefraction}{.66}
+   
+% Custom commands: symbols etc.
+\DeclareMathOperator{\atantwo}{atan2}
+\DeclareMathOperator{\slerp}{Slerp}
+
+\newcommand{\boldstart}[1]{\vspace{0.08in}\noindent{\bf #1}}
+
+\setlength{\belowcaptionskip}{-10pt}
+
+\begin{document}
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+
+\subfile{paper}
+
+\bibliographystyle{splncs04}
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{3}}
+
+\newpage
+\clearpage
+
+\setcounter{section}{0}
+
+\subfile{supplement}
+
+% \bibliographystyle{splncs04}
+\bibliography{refs}
+
+\end{document}

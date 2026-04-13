@@ -1,0 +1,36 @@
+
+\begin{wraptable}[13]{r}{0.4\textwidth}
+    \vspace{-1.2em}
+    \centering
+    \small    
+    \caption{
+        A summary of pre-training datasets used by \ours{} and other models.
+    } 
+    \resizebox{0.4\textwidth}{!}{%
+    \setlength{\tabcolsep}{3pt}
+    
+    \begin{tabular}{llc}
+    \toprule
+    \textbf{Model} & \textbf{Pre-training Data} & \textbf{\#Tokens} \\ \midrule
+    LLaMA1 & LLaMA data & 1T  \\ %
+    LLaMA2 & \textit{Unknown} & 2T \\ 
+    \midrule
+    OPT & OPT data\footnote{OPT data contains BookCorpus~\citep{Zhu2015AligningBA}, Stories~\citep{Trinh2018ASM}, CCNews~\citep{Hamborg2017}, the Pile~\citep{gao2020pile}, and PushShift.io Reddit~\citep{Baumgartner2020ThePR}. } & 300B \\
+    Pythia & The Pile & 300B \\
+    INCITE-Base & RedPajama & 800B\\
+    OpenLLaMA v1 & RedPajama & 1T \\
+    OpenLLaMA v2 & OpenLLaMA data\footnote{OpenLLaMA v2 data is a mixture of 
+    RefinedWeb~\citep{penedo2023refinedweb}, 
+    StarCoder~\citep{li2023starcoder},
+    and part of RedPajama.} & 1T \\
+    TinyLlama & TinyLlama data\footnote{TinyLlama data is a mixture of 
+    SlimPajama~\citep{shen2023slimpajama} and StarCoder data.} & 3T \\
+    \ours & RedPajama & 50B\\
+    
+    \bottomrule 
+    \end{tabular}
+    }
+
+    
+    \label{tab:baseline_config}
+\end{wraptable}

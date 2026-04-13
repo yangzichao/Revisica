@@ -1,0 +1,406 @@
+%
+
+\subsection{A Function-Space Perspective on Variational Inference in Bayesian Neural Networks}
+%
+\label{sec:theory}
+
+Instead of seeking to infer an approximate posterior distribution over parameters, we frame variational inference in stochastic neural networks as inferring an approximation to the posterior distribution over \emph{functions} $ p_{f(\cdot \,; \bTheta) | \calD}$ induced by the posterior distribution over parameters $p_{\bTheta | \calD}$, that is,
+\begin{align}
+\SwapAboveDisplaySkip
+    p_{f(\cdot \,; \bTheta) | \calD}(f(\cdot \,; \btheta) \vbar \calD)
+    =
+    \int_{\R^{P}} p_{\bTheta | \calD}(\btheta' \vbar \calD) \, \delta( f(\cdot \,; \btheta) - f(\cdot \,; \btheta') ) \dee \btheta' ,
+\end{align}
+where $\delta(\cdot)$ is the Dirac delta function~\citep{wolpert1993fsmap}.
+Considering the prior distribution over functions $p_{f(\cdot \,; \bTheta)}$ induced by a prior distribution over parameters $p_{\bTheta}$,
+\begin{align}
+\SwapAboveDisplaySkip
+    p_{f(\cdot \,; \bTheta)}(f(\cdot \,; \btheta))
+    =
+    \int_{\R^{P}} p_{\bTheta}(\btheta') \, \delta( f(\cdot \,; \btheta) - f(\cdot \,; \btheta') ) \dee \btheta' ,
+\end{align}
+and the variational distribution over functions $q_{f( \cdot \,; \bTheta)}$ induced by a variational distribution over parameters $q_{\bTheta}$,
+\begin{align}
+\SwapAboveDisplaySkip
+    q_{f( \cdot \,; \bTheta)}(f(\cdot \,; \btheta))
+    =
+    \int_{\R^{P}} q_{\bTheta}({\btheta'}) \, \delta( f(\cdot \,; \btheta) - f(\cdot \,; \btheta') ) \dee \btheta' ,
+\end{align}
+we can express the problem of finding a posterior distribution over functions variationally as
+\begin{align}
+%
+    \min_{q_{\bTheta} \in \calQ_{q_{\bTheta}}} \DD_{\textrm{KL}}( q_{f( \cdot \,; \bTheta)} \,\|\, p_{f(\cdot \,; \bTheta) | \calD} ) ,
+\end{align}
+which allows us to effectively incorporate meaningful prior information about the underlying data-generating process into training.
+As discussed by~\citet{burt2021understanding}, this variational objective is guaranteed to be well-defined for suitably chosen prior distributions over functions.
+Specifically, the \kld between two distributions over functions generated from different distributions over parameters applied to the same mapping (e.g., the same neural network architecture) is well-defined (i.e., finite) if the \kld between the distributions over parameters is finite, since, by the strong data processing inequality~\citep{Polyanskiy2017data},
+\begin{align}
+    \DD_\textrm{KL}(q_{f( \cdot \,; \bTheta)} \,\|\, p_{f(\cdot ; \bTheta)}) \leq \DD_\textrm{KL}(q_{\bTheta} \,\|\, p_{\bTheta}).
+\end{align}
+As a result, if $\DD_\textrm{KL}(q_{\bTheta} \,\|\, p_{\bTheta}) < \infty$, which is the case for finite-dimensional parameter vectors $\bTheta$ and $q_{\bTheta}$ absolutely continuous with respect to $p_{\bTheta}$, then the function-space \kld is finite and thus well-defined as a variational objective.
+%
+
+Hence, for a likelihood function defined on a finite set of training targets $\by_{\calD}$ and a suitably defined prior distribution over functions, we can express the variational problem above equivalently as the well-defined maximization problem \mbox{$\max_{q_{\bTheta} \in \calQ_{\btheta}} \mathcal{F}(q_{\bTheta})$} with
+\begin{align}
+\begin{split}
+\label{eq:kld_function_space}
+    %
+    \mathcal{F}(q_{\bTheta})
+    &
+    \defines
+    %
+    \mathbb{E}_{q_{f(\bX_{\calD} ; \bTheta)}}[\log p_{\by | f(\bX ; \bTheta)}(\by_{\calD} \vbar f(\bX_{\calD} ; \btheta) )]
+    %
+    %
+    - \DD_\textrm{KL}(q_{f(\cdot ; \bTheta)} \,\|\, p_{f(\cdot ; \bTheta)})
+    %
+    ,
+\end{split}
+\end{align}%
+where $\DD_\textrm{KL}(q_{f(\cdot ; \bTheta)} \,\|\, p_{f(\cdot ; \bTheta)})$ is also a \kld between distributions over functions.
+
+Unfortunately, evaluating the \kld in~\Cref{eq:kld_function_space} is in general intractable for arbitrary mappings $f$.
+To obtain a tractable objective,~\citet{sun2019fbnn} showed that $\DD_\textrm{KL}(q_{f(\cdot ; \bTheta)} \,\|\, p_{f(\cdot ; \bTheta)})$ can be expressed as the supremum of the \kld from $q_{f(\cdot ; \bTheta)}$ to $p_{f(\cdot ; \bTheta)}$ over all \emph{finite} sets of evaluation points, resulting in the objective function
+\begin{align}
+\begin{split}
+\label{eq:kld_fbnn}
+    \mathcal{F}(q_{\bTheta})
+    %
+    =
+    \mathbb{E}_{q_{f(\bX_{\calD} ; \bTheta)}}[\log p_{\by | f(\bX ; \bTheta)}(\by_{\calD} \vbar f(\bX_{\calD} ; \btheta ))]
+    %
+    %
+    - \sup_{\bX \in \calX_{\mathbb{N}}} \hspace*{-3pt}\DD_\textrm{KL}(q_{f(\bX ; \bTheta)} \,\|\, p_{f(\bX ; \bTheta)} ) ,
+    %
+\end{split}
+\end{align}%
+where $\calX_{\mathbb{N}} \defines \bigcup_{n \in \mathbb{N}} \{ \bX \in \calX_{n} \vbar \calX_{n} \subseteq \mathbb{R}^{n \times D} \}$ is the collection of all finite sets of evaluation points.
+However, this objective function is still challenging to optimize in practice:
+The supremum cannot be obtained analytically and the \kld term itself is analytically intractable and difficult to estimate in high dimensions---even for a single evaluation point.
+%
+%
+%
+
+In the next section, we will describe an approximation and estimation procedure that allows scaling function-space variational inference to large neural networks and high-dimensional input data.
+
+%
+%
+%
+%
+%
+
+
+
+%
+
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+
+%
+%
+%
+
+%
+%
+%
+%
+%
+
+%
+%
+%
+%
+%
+
+%
+%
+%
+%
+
+%
+
+
+
+%
+\section{Deriving a Tractable Function-Space Variational Objective}
+\label{sec:fsvi_linearization}
+
+The primary obstacle to computing the objective in~\Cref{eq:kld_function_space} is the \kld from $q_{f(\cdot ; \bTheta)}$ to $p_{f(\cdot ; \bTheta)}$.
+There are two reasons why the \kld in~\Cref{eq:kld_fbnn} is intractable:
+First, for \bnns or other non-linear models, we do not have access to the probability density functions of the multivariate distributions $q_{f(\bX ; \bTheta)}$ and $p_{f(\bX ; \bTheta)}$;
+second, for all but extremely simple input spaces, we are unable to compute the supremum over all possible finite sets of evaluation points.
+In the remainder of this section, we outline an approach for obtaining an estimator of a locally accurate approximation to the \kld that allows for scalable gradient-based optimization of~\Cref{eq:kld_fbnn}.
+
+We first approach the problem of computing the \kld between two \bnns evaluated at a finite set of points.
+To do so, we first derive tractable approximations to the distributions over functions $q_{f(\bX ; \bTheta)}$ and $p_{f(\bX ; \bTheta)}$
+Next, we show that under these approximations, we are able to obtain a closed-form approximation to the \kld and describe a simple Monte Carlo estimator of the supremum in the function-space \kld.
+
+
+\subsection{Approximating Distributions over Functions via Local Linearization}
+\label{subsec:linearizations}
+
+To obtain an approximation to the probability distributions of $q_{f(\bX ; \bTheta)}$ and $p_{f(\bX ; \bTheta)}$, we use a first-order Taylor expansion of the \emph{mapping} $f$ about the mean parameters of $q_{\bTheta}$ and $p_{\bTheta}$, respectively, and derive the induced distributions under the linearized mapping.
+
+%
+%
+\label{prop:linearized_dist}
+For a stochastic function $f(\cdot \,; \bTheta)$ defined in terms of stochastic parameters \mbox{$\bTheta$} distributed according to distribution $g_{\bTheta}$ with $\mathbf{m} \defines \E_{g_{\bTheta}}[\bTheta]$ and $\mathbf{S} \defines \text{Cov}_{g_{\bTheta}}[\bTheta]$, we denote the linearization of the stochastic function $f(\cdot \,; \bTheta)$ about $\mathbf{m}$ by
+\begin{align}
+%
+\label{eq:linearization}
+    f(\cdot \,; \bTheta) \approx \flin(\cdot \,; \mathbf{m}, \bTheta) \defines f(\cdot \,; \mathbf{m}) + \jac(\cdot \,; \mathbf{m})(\bTheta - \mathbf{m}),
+\end{align}
+where $\jac(\cdot \,; \mathbf{m}) \defines (\partial f(\cdot \,; \bTheta) / \partial \bTheta)|_{\bTheta = \mathbf{m}}$ is the Jacobian of $f(\cdot \,; \bTheta)$ evaluated at $\bTheta = \mathbf{m}$, and the mean and covariance of the distribution over the linearized mapping $\flin$ at \mbox{$\bX, \bX' \in \calX$} are given by
+\begin{align}
+%
+    \E[\flin(\bX ; \bTheta)]
+    &
+    =
+    f(\bX; \mathbf{m})
+    \\
+    %
+    \textrm{{Cov}}[\flin(\bX ; \bTheta), \flin(\bX' ; \bTheta)]
+    &
+    =
+    \jac(\bX ; \mathbf{m}) \mathbf{S} \jac(\bX', \mathbf{m})^\top .
+\end{align}
+For a derivation of this result, see~\Cref{appsec:proofs}.
+Since Gaussianity is preserved under affine transformations, if $g_{\bTheta}$ is a multivariate Gaussian distribution with mean $\mathbf{m}$ and diagonal co-variance $\mathbf{S}$, then the distribution $\tilde{g}$ over $\flin(\bX \,; \bTheta)$ is given by
+%
+\begin{align}
+%
+\label{eq:dist_lin}
+    \tilde{g}_{\flin(\bX ; \mathbf{m}, \bTheta)} = \mathcal{N}(f(\bX ; \mathbf{m}), \jac(\bX ; \mathbf{m}) \mathbf{S} \jac(\bX ; \mathbf{m})^\top) .
+\end{align}
+For stochastic functions parameterized by many millions of parameters, obtaining the covariance of $\tilde{g}_{\flin(\bX ; \bTheta)}$---which requires computing an inner product of two Jacobian matrices---can be computationally expensive.
+Instead of computing the distribution over the linearized mapping exactly, we can construct a suitable Monte Carlo estimator.
+To do so, we consider a partition of the set of parameters into sets $\alpha$ and $\beta$ (with $|\beta| \ll |\alpha|$) and note that the linearized mapping can then be expressed as
+\begin{align}
+\label{eq:linearization_decomposition}
+    \flin(\cdot \,; \mathbf{m}, \bTheta)
+    =
+    f(\cdot \,; \mathbf{m}) + \flin_{\alpha}(\cdot \,; \mathbf{m}, \bTheta_{\alpha}) + \jac_{\beta}(\cdot \,; \mathbf{m})(\bTheta_{\beta} - \mathbf{m}_{\beta}) ,
+\end{align}
+with
+\begin{align}
+\SwapAboveDisplaySkip
+    \flin_{\alpha}(\cdot \,; \mathbf{m}, \bTheta_{\alpha}) \defines \jac_{\alpha}(\cdot \,; \mathbf{m})(\bTheta_{\alpha} - \mathbf{m}_{\alpha}) ,
+\end{align}
+where $\jac_{\alpha}(\cdot \,; \mathbf{m})$ and $\jac_{\beta}(\cdot \,; \mathbf{m})$ are the columns of the Jacobian matrix corresponding to the sets of parameters $\alpha$ and $\beta$, respectively, and $\bTheta_{\alpha}$ and $\bTheta_{\beta}$ are the corresponding random parameter vectors.
+Noting that~\Cref{eq:linearization_decomposition} expresses $\flin$ as a sum of (affine transformations of) random variables, we can use the fact that for independent Gaussian random variables $\bX$ and $\mathbf{Y}$, the distribution $h_{\mathbf{Z}}$ of $\mathbf{Z} = \bX + \mathbf{Y}$ is equal to the convolution of the distributions $h_{\bX}$ and $h_{\mathbf{Y}}$ to obtain an approximation to $\flin$.
+In particular, we can show that if $g_{\bTheta}$ is a multivariate Gaussian distribution with \mbox{$\bTheta_{\alpha} \perp \bTheta_{\beta}$}, the distribution $\tilde{g}_{\flin(\bX ; \bTheta)}$ can be approximated by the Monte Carlo estimator
+\begin{align}
+\label{eq:dist_lin_approx}
+    \hat{\tilde{g}}_{\flin(\bX ; \mathbf{m}, \bTheta)}
+    =
+    \frac{1}{R} \sum\nolimits_{j=1}^{R} \mathcal{N}\Big(f(\bX ; \mathbf{m}) + \flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})^{(j)}, \jac_{\beta}(\bX ; \mathbf{m}) \mathbf{S}_{\beta} {\jac_{\beta}(\bX ; \mathbf{m})}^\top \Big) ,
+\end{align}
+where $g_{\bTheta_{\beta}} = \calN(\mathbf{m}_{\beta}, \mathbf{S}_{\beta})$ and samples $\flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})^{(j)}$ are obtained by sampling parameters from the distribution \mbox{$g_{\bTheta_{\alpha}} =  \calN(\mathbf{m}_{\alpha}, \mathbf{S}_{\alpha})$}.
+For a derivation of this result, see~\Cref{appsec:proofs}.
+This estimator is biased for finite $K$ but converges to $\tilde{g}_{\flin(\bX ; \mathbf{m}, \bTheta)}$ as $R \rightarrow \infty$.
+Similarly, for finite $R$, the smaller $ [\mathbf{S}_{\alpha}]_{ii} $, the more accurate and less biased the estimator will be.
+In our empirical evaluation, we use a single Monte Carlo sample, $R=1$, to preserve Gaussianity and choose $\alpha$ to be the set of parameters in neural network layers \mbox{$1:L-1$} and $\beta$ to be the set of parameters in the final neural network layer.
+%
+
+
+
+
+
+\subsection{Approximating the Function-Space Kullback-Leibler Divergence}
+\label{subsec:kl_approximation}
+
+From~\Cref{subsec:linearizations}, we know that if $q_{\bTheta}$ and $p_{\bTheta}$ are both Gaussian distributions, then the induced distributions under the linearized mapping $\ftilde$ evaluated at a finite set of evaluation points will be Gaussian as well.
+This means that for Gaussian variational and prior distributions over $\bTheta$, we can obtain locally accurate approximations to the induced distributions $q_{f(\cdot ; \bTheta)}$ to $p_{f(\cdot ; \bTheta)}$ and use them to approximate the \kld in the variational objective by $\DD_\textrm{KL}(\qtilde_{\ftilde(\bX ; \bTheta)} \,\|\, \ptilde_{\ftilde(\bX ; \bTheta)})$.
+Moreover, for an isotropic Gaussian prior and a mean-field Gaussian variational distribution, $\DD_\textrm{KL}(\qtilde_{\ftilde(\bX ; \bTheta)} \,\|\, \ptilde_{\ftilde(\bX ; \bTheta)})$ is a \kld between two multivariate Gaussians and can be obtained analytically.
+
+Using this approximation, we obtain an estimator of the variational objective given by
+\begin{align}
+\begin{split}
+    %
+    &\hspace*{-5pt}\tilde{\mathcal{F}}(q_{\bTheta})
+    %
+    \defines
+    %
+    \mathbb{E}_{q_{f(\bX_{\calD} ; \bTheta)}}[\log p_{\by | f(\bX ; \bTheta)}(\by_{\calD} \vbar f(\bX_{\calD} ; \btheta) )]
+    %
+    %
+    - \sup_{\bX \in \calX_{\mathbb{N}}}\DD_\textrm{KL}(\qtilde_{\ftilde(\bX ; \bTheta)} \,\|\, \ptilde_{\ftilde(\bX ; \bTheta)})
+    %
+    ,
+\end{split}
+\end{align}%
+where the arguments of the \kld have been replaced by the (locally accurate) approximations to the variational and prior distributions over functions evaluated at $\bX$, respectively.
+Since the stochastic functions $\ftilde(\cdot \,; \bTheta)$ induced by $q_{\bTheta}$ and $p_{\bTheta}$ under the linearized mapping will be closer to the stochastic function under $f$ the smaller the variance of $q_{\bTheta}$ and $p_{\bTheta}$, respectively, the approximation to the \kld will be more accurate the smaller the variance of $q_{\bTheta}$ and $p_{\bTheta}$.
+
+Next, we turn to computing the supremum.
+Unlike~\citet{sun2019fbnn}, who consider the supremum as a separate optimization problem, we do not seek to compute the supremum by searching over points $\bX \in \calX_{\mathbb{N}}$ but instead propose to estimate the supremum at every gradient step via a simple finite-sample estimator.
+Specifically, letting $I(\bX) \defines \DD_\textrm{KL}(\qtilde_{\ftilde(\bX ; \bTheta)} \,\|\, \ptilde_{\ftilde(\bX ; \bTheta)})$, we estimate $G = \sup_{\bX \in \calX_{\mathbb{N}}} I(\bX)$ using the Monte Carlo estimator
+%
+\begin{align}
+\SwapAboveDisplaySkip
+\label{eq:kl_estimator_max}
+    \hat{G}(\calX_{\calC}^{S})
+    =
+    \max_{ \bX \in \calX_{\calC}^{S}} I(\bX) ,
+    %
+    %
+\end{align}%
+where \mbox{$\calX_{\calC}^{S} \defines \{ \cX^{(i)} \}_{i=1}^S$} is a collection of $S$ sets of \textit{context points} \mbox{$\cX^{(i)} \defines \{ \bx^{(j)} \}_{j=1}^{K}$} jointly sampled from a context distribution $p_{\calX_{\calC}}$.
+Each context set $\cX^{(i)}$ can be viewed as a single Monte Carlo sample from the input space so that the estimator $\hat{G}(\calX_{\calC}^{S})$ provides an $S$-sample Monte Carlo estimate of the supremum.
+%
+While this estimator is crude and only provides a rough approximation to the true supremum, it encourages the variational distribution over functions to match the prior distribution over functions on the sets of context points.
+%
+The choice of the context distribution $p_{\calX_{\calC}}$ can be informed by knowledge about the prediction task and should be viewed as a problem-specific modeling choice.
+Similarly, the numbers of samples $S$ and $K$ are hyperparameters to be optimized with a validation set.
+For details on how $p_{\calX_{\calC}}$ is chosen for the empirical evaluation in~\Cref{sec:experiments}, see~\Cref{appsec:model_details}.
+%
+
+
+\subsection{Stochastic Estimation of the Approximate Function-Space Variational Objective}
+
+Let $q_{\bTheta}$ be a Gaussian mean-field variational distribution,  let $p_{\bTheta}$ be an isotropic Gaussian prior, let $(\bX_{\calB}, \by_{\calB})$ be a mini-batch of the training data, and reparameterize $\bTheta$ as $\hat{\bTheta}(\bmu, \bSigma, \bepsilon^{(j)}) \defines \bmu + \bSigma \odot \bepsilon^{(j)}$.
+Using the estimator $ \hat{G}(\calX_{\calC}^{S})$ defined above and estimating the expected log-likelihood via Monte Carlo sampling, we obtain a Monte Carlo estimator for the function-space variational objective:
+\begin{align}
+%
+%
+\label{eq:variational_objective_diag}
+    %
+    &
+    \bar{\calF}(\bmu, \bSigma)
+    %
+    %
+    %
+    %
+    =
+    \frac{1}{M} \sum\nolimits_{j=1}^{M} \log p_{\by | f(\bX ; \bTheta)}(\by_{\calB} \vbar f(\bX_{\calB} ; \hat{\bTheta}(\bmu, \bSigma, \bepsilon^{(j)})) )
+    %
+    %
+    - \max_{ \bX \in  \calX_{\calC}^{S} } {\DD_\textrm{KL}(\qtilde_{\ftilde(\bX ; \hat{\bTheta})} \,\|\, \ptilde_{\ftilde(\bX ; \hat{\bTheta})})}
+    %
+%
+\end{align}
+with $\bepsilon^{(j)} \sim \calN(\mathbf{0}, \mathbf{I}_{P})$ and \mbox{$\calX_{\calC}^{S}$} as defined above.
+This Monte Carlo estimator is biased due to the linearization and context-set approximations but allows for scalable gradient-based stochastic optimization.
+%
+%
+
+\textbf{Selection of Prior.}$~$
+For all experiments that involve uncertainty quantification, we chose a prior distribution over parameters that induces a prior distribution over functions $p_{f(\cdot ; \bTheta)}$ and a prior predictive distribution that exhibits a high degree of predictive uncertainty at evaluation points from regions in input space where $p_{\calX_{\calC}}$ has non-zero support and, under smoothness constraints, on evaluation points in nearby regions.
+For settings where prior information is encoded in data---for example, in the form of expert demonstrations of robotic manipulation tasks~\citep{rudner2021pathologies} or in the form of pre-trained networks in continual or transfer learning~\citep{Rudner2022sfsvi}---an empirical prior that reflects this information can be specified.
+For further details, see~\Cref{appsec:model_details}.
+%
+
+
+\textbf{Selection of Context Distribution.}$~$
+The distribution $p_{\calX_{\calC}}$ allows us to incorporate information about the data-generating process into training and encourage the variational distribution to match the prior over functions in relevant parts of the input space.
+By taking advantage of the abundance of data available in real-world settings, context distributions can be constructed from large datasets like ImageNet~\citep{alexnet}, from small but diverse datasets like CIFAR-100, or by using any set of task-related unlabeled data.
+In our experiments, we choose two types of context distributions.
+One of the context distributions is constructed from the training data and only contains randomly sampled monochrome images, and one is constructed from a real-world dataset generated from a data distribution related to that of the training data.
+For example, when training on FashionMNIST, we use KMNIST as the context distribution, and when training on CIFAR-10, we use CIFAR-100 as the context distribution.
+For further details, see~\Cref{appsec:model_details}.
+%
+%
+
+\textbf{Posterior Predictive Distribution.}$~$
+After optimizing the variational objective with respect to the parameters of the variational distribution $q_{\bTheta}$, we use the fact that we can obtain function draws by sampling from the distribution over parameters to obtain an approximate posterior predictive distribution
+\begin{align}
+%
+\begin{split}
+    %
+    \hspace*{-3pt}q(\by_{\ast} \vbar \bx_{\ast})
+    &
+    =
+    \int p(\by_{\ast} \vbar f(\bx_{\ast} ; \btheta)) \, q_{f(\bx_{\ast} ; \bTheta)} \, \dee f(\bx_{\ast} ; \btheta)
+    \\
+    &
+    \approx
+    \frac{1}{M_{\ast}} \sum\nolimits_{j=1}^{M_{\ast}} p(\by_{\ast} \vbar f(\bx_{\ast} ; \bTheta^{(j)}))
+    \quad
+    \text{with}
+    \quad
+    \bTheta^{(j)} \sim q_{\bTheta} ,\hspace*{-5pt}
+\end{split}
+\end{align}%
+where $M_{\ast}$ is the number of Monte Carlo samples used to estimate the predictive distribution.
+
+%
+%
+%
+%
+
+
+
+%
+
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+
+
+
+
+
+%
+%
+%
+
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+
+%
+%
+%
+%
+%
+
+
+
+%

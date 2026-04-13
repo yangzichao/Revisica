@@ -1,0 +1,1688 @@
+\pdfoutput=1
+
+\documentclass{article}
+
+
+
+
+
+
+
+    \usepackage[final]{neurips_2023}
+
+
+
+
+\usepackage[utf8]{inputenc} %
+\usepackage[T1]{fontenc}    %
+\usepackage{hyperref}       %
+\usepackage{url}            %
+\usepackage{booktabs}       %
+\usepackage{amsfonts}       %
+\usepackage{nicefrac}       %
+\usepackage{microtype}      %
+\usepackage{xcolor}         %
+
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{algorithm}
+\usepackage{enumitem}
+\usepackage{soul}
+\usepackage{natbib}
+\usepackage{caption}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{
+    \begin{raggedright}
+        \refstepcounter{algorithm}
+        \renewcommand{\caption}[1]
+        {
+            \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}
+            \parbox{\textwidth}
+            {
+                \hrule height.8pt depth0pt \kern2pt
+                {\raggedright\textbf{\fname@algorithm~\thealgorithm} ##1\par}
+                \kern2pt\hrule\kern2pt
+            }
+        }
+}
+{
+        \kern2pt\hrule\relax
+    \end{raggedright}
+}
+\makeatother
+\usepackage{algorithmic}
+
+\def\NoNumber#1{{\def\alglinenumber##1{}\State #1}\addtocounter{ALG@line}{-1}}
+\newcommand{\algorithmicbreak}{\textbf{break}}
+\newcommand{\BREAK}{\STATE \algorithmicbreak}
+
+
+\usepackage{tikz}
+\usetikzlibrary{bayesnet}
+\usetikzlibrary{backgrounds,calc,positioning}
+
+
+\input{math_commands.tex}
+\definecolor{overviewblue}{HTML}{0051B9}
+\colorlet{paleoverviewblue}{overviewblue!18}
+
+\definecolor{overviewred}{HTML}{EB317E}
+\definecolor{overviewgreen}{HTML}{A7D474}
+\definecolor{valuationyellow}{HTML}{FFE46D}
+
+\DeclareRobustCommand{\hlblue}[1]{{\sethlcolor{paleoverviewblue}\hl{#1}}}
+
+\colorlet{palepurple}{purple!30}
+\DeclareRobustCommand{\hlp}[1]
+{{#1}}
+
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\renewcommand{\citet}[1]{\cite{#1}}
+
+\crefformat{footnote}{#2\footnotemark[#1]#3}
+
+\usepackage{selectp}
+
+
+\title{\hlp{Incentives in Private Collaborative Machine Learning}}
+
+
+\author{%
+Rachael Hwee Ling Sim$^1$\;, Yehong Zhang$^2$\;, Trong Nghia Hoang$^3$ \\
+\textbf{Xinyi Xu$^1$}\;, \textbf{Bryan Kian Hsiang Low$^1$}\;,
+\textbf{and Patrick Jaillet}$^4$ \\
+${}^1$ Department of Computer Science, National University of Singapore, Republic of Singapore\\
+${}^2$ Peng Cheng Laboratory, People's Republic of China\\
+${}^3$ School of Electrical Engineering and Computer Science, Washington State University, USA \\
+${}^4$ Dept. of Electrical Engineering and Computer Science, MIT, USA \\
+${}^1$\texttt{\{rachaels,xuxinyi,lowkh\}@comp.nus.edu.sg}, 
+${}^2$\texttt{zhangyh02@pcl.ac.cn} \\
+${}^3$\texttt{trongnghia.hoang@wsu.edu},
+${}^4$\texttt{jaillet@mit.edu}
+}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Collaborative machine learning involves training models on data from multiple parties but must incentivize their participation. Existing data valuation methods fairly value and reward each party based on  shared data or model parameters but neglect the privacy risks involved. To address this, we introduce \emph{differential privacy} (DP) as an incentive. Each party can select its required DP guarantee and perturb its \emph{sufficient statistic} (SS) accordingly. The mediator values the perturbed SS by the Bayesian surprise it elicits about the model parameters. As our valuation function enforces a \emph{privacy-valuation trade-off}, parties are deterred from selecting excessive DP guarantees that reduce the utility of the grand coalition's model. Finally, the mediator rewards each party with different posterior samples of the model parameters. Such rewards still satisfy existing incentives like fairness but additionally preserve DP and a high similarity to the grand coalition's posterior. We empirically demonstrate the effectiveness and practicality of our approach on synthetic and real-world datasets.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+Collaborative \emph{machine learning} (ML) seeks to build ML models of higher quality by training on more data owned by multiple parties \cite{simcollaborative,yang2019federated}. For example, a hospital can improve its prediction of disease progression by training on data collected from more and diversified patients from other hospitals \cite{share-health}. Likewise, a real-estate firm can improve its prediction of demand and price by training on data from others \cite{share-real-estate}.  However, parties have two main concerns that discourage data sharing and participation in collaborative ML: (a) whether they benefit from the collaboration and (b) privacy.
+
+Concern (a) arises as each party would expect the significant cost that it incurs to collect and share data (e.g., the risk of losing its competitive edge) to be covered.
+Some existing works \cite{simcollaborative,tay2021}, among other data valuation methods,\footnote{Data valuation methods study how much data is worth. As explained in~\citet{sim2022data}, a party's data is first valued independently using a performance metric (e.g., see Def.~\ref{def:bs} later) and then relative to the data contributed by others (e.g., Shapley value (Sec.~\ref{sec:incentives})). The latter value is helpful to (i) model interpretability and (ii) deciding how much to compensate the data owners \emph{fairly}.} have recognized that parties require incentives to collaborate, such as a guaranteed \emph{fair} higher reward from contributing more valuable data than the others, an \emph{individually rational} higher reward from collaboration than in solitude, and a higher total reward (i.e., \emph{group welfare}) whenever possible. Often, parties share and are rewarded with information (e.g., gradients \cite{xu2021gradient} or parameters \cite{simcollaborative} of parametric ML models) computed from the shared data. However, these incentive-aware reward schemes expose parties to privacy risks.
+
+On the other hand, some \emph{federated learning} (FL) works  \cite{mcmahan2017seminalFL} have addressed the privacy concern (b) and satisfied strict data protection laws (e.g., European Union's General Data Protection Regulation) by enforcing \emph{differential privacy} (DP) \cite{abadi2016deep,mcmahan2017learning} during the collaboration. Each party injects noise before sharing information to ensure that its shared information would not significantly alter a knowledgeable collaborating party's or mediator's belief about whether a datum was input to the algorithm. Injecting more noise leads to a stronger DP guarantee.
+As raised in \citet{Yu21}, adding DP can invalidate game-theoretic properties and hence affect participation. For example, in the next paragraph, we will see that adding DP may lead to the collaboration being perceived as unfair and a lower group welfare.
+However, to the best of our knowledge (and as discussed in Sec.~\ref{sec:related} and Fig.~\ref{fig:related-venn}), there are no works that address both concerns, i.e., ensure the \emph{fairness}, \emph{individual rationality}, and \emph{group welfare} incentives (see Sec.~\ref{sec:incentives}), alongside privacy.
+Thus, we aim to fill in this gap and design an incentive-aware yet privacy-preserving reward scheme by addressing the following questions:
+
+
+
+{\bf If a party (e.g., hospital) requires a stronger DP guarantee, what should the impact be on its valuation and reward?} Our answer is that, on average, its valuation and reward should decrease.
+\hlp{Intuitively, it is unfair when this party gets a higher valuation due to randomness in the DP noise.}
+More importantly, parties require guaranteed higher rewards to consider a weaker privacy guarantee \cite{Dawn18,Yu21} which will help maximize the utility of the collaboratively trained model(s). As observed in~\citet{farrand2020neither,zhao2020tradeoff}, the weaker the DP guarantee, the smaller the loss in model accuracy from enforcing DP. Thus, we will (i) assign a value to each party to enforce a \emph{privacy-valuation trade-off} and incentivize parties against unfetteredly selecting an excessively strong DP guarantee,\footnote{The work of~\cite{lobel22} describes problems posed by excessive data privacy and ``the need to balance privacy with fuller and representative data collection'' (instead of privileging privacy).  But, parties are still free to seek DP.} and (ii) flexibly allow each party to enforce a different DP guarantee without imposing a party's need for strong DP on others. This new perspective and its realization is our main contribution.
+
+{\bf To enforce a privacy-valuation trade-off, how should DP be ensured and a party's data be valued (Sec.~\ref{sec:valuation})?} 
+Initially, valuation using validation accuracy seems promising as the works of~\citet{ghorbani2019data,jia2019towards} have empirically shown that adding noise will decrease the valuation. 
+However, parties may be reluctant to contribute validation data due to privacy concerns and disagree on the validation set as they prioritize accurate predictions on different inputs (e.g., patient demographics). So, we revert to valuing parties based on the quality of inference of the model parameters under DP.
+Bayesian inference is a natural choice as it quantifies the impact of (additional DP) noise.
+In Sec.~\ref{sec:problem}, we will explain how each party ensures DP by only sharing perturbed \emph{sufficient statistic} (SS) with the mediator. The mediator values the perturbed SS by the \emph{surprise} it elicits relative to the prior belief of model parameters. 
+\hlp{Intuitively, noisier perturbed SS is less valuable as the posterior belief of the model parameters will be more diffuse and similar to the prior.}
+As parties prioritize obtaining a model for future predictions and may 
+face legal/decision difficulties in implementing monetary payments,
+we reward each party with \emph{posterior samples of the model parameters} (in short, \emph{model reward}) instead.
+
+
+{\bf How should the reward scheme be designed to satisfy the aforementioned privacy, individual rationality, and fairness incentives  (Sec.~\ref{sec:incentives})?} 
+Our scheme will naturally satisfy the privacy incentive as any post-processing of the perturbed SS will preserve DP. To satisfy fairness and individual rationality, 
+we set the \emph{target} reward value for every party using $\rho$-Shapley value \cite{simcollaborative}.
+{\bf Lastly, to realize these target reward values, how should the model reward be generated for each party (Sec.~\ref{sec:mechanism})?}
+Instead of rewarding all parties with samples from the \emph{same} (grand coalition's) posterior of the model parameters given all their perturbed SS (which would be unfair if their valuations differ), our reward control mechanism generates a \emph{different} posterior for each party that still \emph{preserves a high similarity to the grand coalition's posterior.}
+Concretely, the mediator scales the SS by a factor between $0$ and $1$ before sampling to control the impact of data on the posterior (by \emph{tempering} the data likelihood). Scaling the SS by a factor of $0$, $1$, and  between $0$ and $1$ yield the prior, posterior, and their interpolation, respectively. We then solve for the factor to achieve the target reward value.
+
+By answering the above questions, our work here 
+provides the following novel contributions\footnote{\hlp{See App.~{\ref{app:kapish}} for the key differences of our work here vs.~data valuation and DP/FL works.}}:
+\squishlisttwo
+\item A new \emph{privacy-valuation trade-off} criterion for valuation functions that is provably satisfied by the combination of our \emph{Bayesian surprise} valuation function with DP noise-aware inference (Sec.~\ref{sec:valuation});
+\item New incentives including \emph{DP} (while \emph{deterring excessive DP}) and \emph{similarity to grand coalition's model} (Sec.~\ref{sec:incentives});
+\item  \emph{Reward control mechanisms} (Sec.~\ref{sec:mechanism}) %
+to generate \emph{posterior samples} of the model parameters for each party that achieve a target reward value and the aforementioned incentives; one such mechanism tempers the likelihood of the data by scaling the SS and data quantity.
+
+\squishend
+
+\section{Collaborative ML Problem with Privacy Incentive}
+\label{sec:problem}
+
+Our private collaborative ML problem setup comprises a mediator coordinating information sharing, valuation, and  reward, and $n$ parties 
+performing a common ML task (e.g., predicting disease progression). Let the set $N \triangleq \{1,\ldots,n\}$ denote the grand coalition of $n$ parties.
+Each party $i$ owns a private dataset $\gD_i$ which cannot be directly shared with others, including the mediator. \emph{What alternative information should each party provide to the mediator for collaborative training of an ML model?}
+
+To ease aggregation, this work focuses only on Bayesian models with \emph{sufficient statistic}~(SS), %
+such as exponential family models \cite{bishop2006pattern}, Bayesian linear regression \cite{murphy2022probabilistic}, and generalized linear models, including Bayesian logistic regression~\citet{huggins2017pass} (with approximate SS).\vspace{0.5mm}
+
+\begin{definition}[Sufficient Statistic (SS) \cite{ss_def,titsias2009variational}]
+    The statistic $\vs_i$ is a SS for the dataset $\gD_i$ if the model parameters $\theta$ and dataset $\gD_i$ are conditionally independent given $\vs_i$, i.e., ${p(\theta | \vs_i, 
+\gD_i) = p(\theta | \vs_i)}$. 
+\end{definition}
+
+We propose that each party $i$ shares its SS $\vs_i$ for and \emph{in place of} its dataset $\gD_i$ to protect the privacy of $\gD_i$. 
+We assume that the parties have agreed to adopt a common Bayesian model with the same prior $p(\theta)$ of model parameters $\theta$, and each party $i$'s dataset $\gD_i$ is independently drawn from the likelihood $p(\gD_i | \theta)$ that is conjugate to the prior $p(\theta)$ (i.e., belonging to an exponential family).
+The mediator can compute the posterior belief $p(\theta | \{\gD_i\}_{i \in N})$ of model parameters $\theta$ given  
+the grand coalition $N$'s datasets 
+using a function $f_\theta$ of the sum over shared SS: $p(\theta | \{\gD_i\}_{i \in N}) \propto p(\theta)\ f_\theta(\sum_{i \in N} \vs_i)$. 
+We give a concrete example and the mathematical details of SS in Apps.~\ref{app:sub:ss} and \ref{app:reward}, respectively. 
+
+\textbf{Privacy Incentive.} However, sharing the exact SS $\vs_N \triangleq \{\vs_i\}_{i \in N}$ will not ensure privacy as the mediator can draw inferences about individual datum in the private datasets $\gD_N \triangleq \{\gD_i\}_{i \in N}$.
+To mitigate the privacy risk, each party $i$ should choose its required privacy level $\epsilon_i$ and enforce $(\lambda, \epsilon_i)$-R{\'e}nyi \emph{differential privacy}.\cref{creep}
+In Def.~\ref{def:renyi}, a smaller $\epsilon_i$ corresponds to a stronger DP guarantee.\footnote{\label{creep}Parties agree on $\lambda$. In App.~\ref{app:sub:dp}, \hlp{we will define/explain the DP-related concepts} 
+and other DP notions.}\vspace{0.5mm}
+
+\begin{definition}[R{\'e}nyi Differential Privacy (DP) \cite{mironov2017renyi}]\label{def:renyi}
+A randomized algorithm $\mathcal{R}: \gD \rightarrow \vo$ is $(\lambda, \epsilon)$-R{\'e}nyi differentially private if for all neighboring datasets $\gD$ and $\gD'$, the R{\'e}nyi divergence\cref{creep}
+of order\cref{creep}
+$\lambda>1$ is $D_\lambda(\mathcal{R}(\gD)\ ||\ \mathcal{R}(\gD'))  
+\leq \epsilon$. 
+\end{definition}
+
+Party $i$ can enforce \hlp{(example-level)}\cref{creep}
+$(\lambda, \epsilon_i)$-R{\'e}nyi DP by applying the Gaussian mechanism: It generates perturbed SS $\vo_i \triangleq \vs_i +  \vz_i$ by sampling a Gaussian noise vector $\vz_i$ from the distribution $p(Z_i)=\mathcal{N}(\boldsymbol{0},\ 0.5\ ({\lambda}/\epsilon_i)\  \Delta_2^2(g)\ \boldsymbol{I})$ 
+where $ \Delta_2^2(g)$ is the squared $\ell_2$-sensitivity\cref{creep}
+of the function $g$ that maps the dataset $\gD_i$ to the SS $\vs_i$. We choose R{\'e}nyi DP over the commonly used $(\epsilon, \delta)$-DP as it gives a stronger privacy definition and allows a more convenient composition of the Gaussian mechanisms \cite{mironov2017renyi}, as explained in App.~\ref{app:sub:dp}.
+
+Each party $i$ will share (i) the number~$c_i \triangleq |\gD_i|$ of data points in its dataset $\gD_i$, (ii) its perturbed SS $\vo_i$,\footnote{A benefit of sharing perturbed SS is that each party only incurs the privacy cost \emph{once} regardless of the number of samples drawn or coalitions considered.} and (iii) its Gaussian distribution $p(Z_i)$ with the mediator. As DP algorithms are robust to post-processing, the mediator's subsequent operations of $\vo_i$ (with no further access to the dataset) will preserve the same DP guarantees.
+The mediator uses such information to quantify the impact of the DP noise and compute the DP noise-aware posterior\footnote{Here, $\vo_i$ should be interpreted as a random vector taking the value of its sample. Non-noise-aware inference incorrectly treats $\vo_i$ as $\vs_i$ and computes $p(\theta|\{ \vs_i = \vo_i\}_{i \in N})$ instead. See App.~\ref{app:sub:inference}.\label{footnote-vo}}
+ $p(\theta | \{\vo_i\}_{i \in N})$ via \emph{Markov Chain Monte Carlo} (MCMC) sampling steps outlined by \citet{bernstein2018expfam,bernstein2019blr,kulkarni2021glm}.
+
+
+
+
+In this section, we have satisfied the privacy incentive. In Sec.~\ref{sec:valuation}, we assign a value $v_C$ to each coalition $C \subseteq N$'s perturbed SS $\vo_C \triangleq \{\vo_i\}_{i \in C}$ that would decrease, on average, as the DP guarantee strengthens.
+In Secs.~\ref{sec:incentives} and~\ref{sec:mechanism}, we outline our reward scheme: Each party $i$ will be rewarded with model parameters sampled from $q_i(\theta)$ (in short, \emph{model reward}) for future predictions with an appropriate reward value $r_i$ (decided based on $(v_C)_{C \subseteq N}$) to satisfy collaborative ML incentives (e.g., individual rationality, fairness). Our work's main contributions, notations, and setup are detailed in Fig.~\ref{fig:overview}.
+The main steps involved are detailed in Algo.~\ref{alg-overview}.
+
+
+\begin{figure}[ht]
+    \centering  \includegraphics[width=.68\columnwidth]{figs/nips-privacy-overview.pdf}
+    \caption{An overview of our private collaborative ML problem setup from party $i$'s perspective and our novel contributions (ideas in \textcolor{overviewblue}{blue}, novel combination of solutions in \hlblue{blue}). 
+    We (i) enforce a privacy-reward trade-off (using each party $i$'s desire for a higher-quality model reward in collaborative ML) to deter party $i$ from unfetteredly/overcautiously selecting an excessive DP guarantee (small $\eps_i$), (ii) ensure DP in valuation and rewards, and (iii) preserve similarity of its model reward $q_i(\theta)$ to the grand coalition $N$'s posterior $p(\theta|\vo_N)$ to achieve a high utility. 
+    }   \label{fig:overview}
+\end{figure}
+
+\section{Valuation of Perturbed Sufficient Statistics}
+\label{sec:valuation}
+The perturbed SS $\vo_C$ of coalition $C$ is more valuable and assigned a higher value $v_C$ if it yields a model (in our work here,
+the DP noise-aware posterior $p(\theta | \vo_C)$) of higher quality.  
+Most data valuation methods~\cite{jia2019efficient,ghorbani2019data,yoon2020} measure the quality of an ML model by its performance on a validation set. However, it may be challenging for collaborating parties (e.g., competing healthcare firms) to create and agree on a large, representative validation set as they may prioritize accurate predictions on different inputs (e.g., patient demographics) \cite{simcollaborative}. The challenge increases when each firm requires privacy and avoids data sharing.
+Other valuation methods \cite{simcollaborative,xu2021vol} have directly used the private inputs of the data (e.g., design matrix). Here, we propose to value the perturbed SS $\vo_C$ of coalition $C$ based on the \emph{surprise} \cite{itti2009bayesian} that it elicits from the prior belief of model parameters, as defined below:
+
+\begin{definition}[Valuation via Bayesian Surprise]\label{def:bs}
+The value of coalition $C$ or its \emph{surprise} $v_C$ is the KL divergence $\KL{p(\theta|\vo_C); p(\theta)}$ between posterior $p(\theta|\vo_C)$ vs.~prior $p(\theta)$.   
+\end{definition}
+From Def.~\ref{def:bs}, a greater surprise would mean that more bits will be needed to encode the information in $p(\theta|\vo_C)$ given that others already know $p(\theta)$. Otherwise, a smaller surprise means our prior belief has not been updated significantly. 
+Moreover, as the valuation depends on the observed $\vo_C$, the surprise elicited by the exact SS and data points will indirectly 
+influence the valuation. 
+Next, by exploiting the equality of the expected Bayesian surprise and the information gain on model parameters $\theta$ given perturbed SS $\vo_C$ (i.e., $\E_{\vo_C}[v_C] = \MI{\theta; \vo_C}$), we can establish the following essential properties of our valuation function:
+\begin{enumerate}[label=V\arabic*,leftmargin=*,itemsep=4pt,topsep=0pt,parsep=0pt,partopsep=0pt]
+    \item \label{V1} \textbf{Non-negativity.} $\forall C\subseteq N \ \forall \vo_C\ \ v_C \geq 0\ .$ This is due to the non-negativity of KL divergence.
+    \item \label{V2} \textbf{Party monotonicity.} In expectation %
+    w.r.t.~$\vo_C$, adding a party will not decrease the valuation: $\forall C\subseteq C'\subseteq N\ \ \E_{\vo_{C'}} [v_{C'}] \geq \E_{\vo_C} [v_C]\ .$ The proof (App.~\ref{app:valproof}) uses the ``information never hurts'' property.
+    \item \label{V3} \textbf{Privacy-valuation trade-off.} 
+    When the DP guarantee is strengthened from $\epsilon_i$ to a smaller $\epsilon_i^s$ and independent Gaussian noise is added to $\vo_i$ to generate $\vo^s_i$, in expectation, the value of any coalition $C$ containing $i$ will strictly decrease: Let $v_C^s$ denote the value of coalition $C$ with the random variable and realization of $\vo_i$ replaced by $\vo^s_i$. Then,
+    ${(i \in C)} \land (\epsilon^s_i < \epsilon_i)\ \Rightarrow \E_{\vo_C} [v_C] > \E_{\vo_C^s} [v_C^s]\ .$  
+\end{enumerate}
+The proof of \ref{V3} (App.~\ref{app:valproof}) uses the data processing inequality of information gain and the conditional independence between $\theta$ and $\vo_i^s$ given $\vo_i$. Together, these properties address an important question of {\bf how to ensure DP and value a party's data to enforce a privacy-valuation trade-off} (Sec.~\ref{sec:intro}).
+Additionally, in App.~\ref{app:valproofalt}, we prove that in expectation, our Bayesian surprise valuation is equivalent to the alternative valuation that measures the similarity of $p(\theta|\vo_C)$ to the grand coalition $N$'s DP noise-aware posterior $p(\theta|\vo_N)$.
+
+\textbf{Implementation.} Computing the Bayesian surprise valuation is intractable since the DP noise-aware posterior $p(\theta | \vo_C)$ and its KL divergence from $p(\theta)$ do not have a closed-form expression. Nonetheless, there exist approximate inference methods like the \emph{Markov chain Monte Carlo} (MCMC) sampling to estimate $p(\theta | \vo_C)$ efficiently, as discussed in App.~\ref{app:sub:inference}.
+As our valuation function requires estimating the value of multiple coalitions and the posterior sampling step is costly, we prefer estimators with a low time complexity and a reasonable accuracy for a moderate number $m$ of samples. We recommend  KL estimation to be performed using the nearest-neighbors method \cite{perez2008kl}, and repeated and averaged to reduce the variance of the estimate (see App.~\ref{app:val-compute} for a discussion). The nearest-neighbor KL estimator is also asymptotically unbiased; drawing more samples would reduce the bias and variance of our estimates and is more likely to ensure fairness --- for example, party $i$'s \emph{sampled} valuation is only larger than $j$'s if $i$'s \emph{true} valuation is higher.
+
+\textbf{Remark.} Our valuation is based on the submitted information $\{c_i, \vo_i, p(Z_i)\}_{i \in N}$ without verifying or incentivizing their truthfulness. We discuss how this limitation is shared by existing works and can be overcome by legal contracts and trusted data-sharing platforms in App.~\ref{app:faq}.
+
+\section{Reward Scheme for Ensuring Incentives}
+\label{sec:incentives}
+
+After valuation, the mediator should reward each party $i$ with a \emph{model reward} (i.e., consisting of samples from $q_i(\theta)$) for future predictions. Concretely, $q_i(\theta)$ is a belief of model parameters $\theta$ after learning from the perturbed SS $\vo_N$.
+As in Sec.~\ref{sec:valuation}, we value party $i$'s model reward as the KL divergence from the prior: $r_i \triangleq \KL{q_i(\theta); p(\theta)}$.
+The mediator will first \emph{decide} the target reward value $r^*_i$ for every party $i \in N$ using $\{v_C\}_{C \subseteq N}$ to satisfy incentives such as fairness.
+The mediator will then \emph{control} and generate a \emph{different} $q_i(\theta)$ for every party $i\in N$ such that~$r_i = r^*_i$ using reward control mechanisms from Sec.~\ref{sec:mechanism}.
+We will now outline the incentives and desiderata for model reward $q_i(\theta)$ and reward values $r_i$ and $r^*_i$ for every party $i \in N$%
+when the grand coalition forms\footnote{See App.~\ref{app:coalition-sturcture} for the modifications needed when the grand coalition does not form.}.
+
+\begin{enumerate}[label=P\arabic*,leftmargin=*,itemsep=4pt,topsep=0pt,parsep=0pt,partopsep=0pt]
+    \item \label{dp-feasibility} \textbf{DP-Feasibility.} In party $i$'s reward, any other party $k$ is still guaranteed at least its original $(\lambda,\eps_k)$-DP guarantee or stronger. 
+    The implication is that the generation of party $i$'s reward should not require more private information (e.g., SS) from party $k$.
+    
+    \item \label{efficiency} \textbf{Efficiency.} There is a party $i \in N$ whose model reward is the grand coalition $N$'s posterior, i.e., $q_i(\theta) = p({\theta | \vo_N})$. It follows that $r_i = v_N\ .$ 
+
+    \item\label{fairness} \textbf{Fairness.} The target reward values $(r^*_i)_{i \in N}$ must consider the coalition values $\{v_C\}_{C \subseteq N}$ and satisfy properties \ref{FAIR1} to \ref{FAIR4} given in \cite{simcollaborative} and reproduced in App.~\ref{app:fair}. %
+    The monotonicity axiom \ref{FAIR4} ensures using a valuation function which enforces that a 
+    \emph{privacy-valuation trade-off} 
+    will translate to a \emph{privacy-reward trade-off} and deter parties from selecting excessive DP guarantees.
+
+    \item \label{rational} \textbf{Individual Rationality.} Each party should receive a model reward that is more valuable than the model trained on its perturbed SS alone:
+    ${\forall i \in N}\ \ r^*_i \geq v_i\ .$
+    
+    \item \label{similarity} \textbf{Similarity to Grand Coalition's Model.} Among multiple model rewards $q_i(\theta)$ whose value $r_i$ equates the target reward $r^*_i$, we 
+    \emph{secondarily}
+    prefer one with a higher similarity $r'_i = -\KL{p(\theta | \vo_N);q_i(\theta)}$ to $p(\theta | \vo_N)$.\footnote{Expectation propagation, a common approximate inference technique, also maximizes $r'_i$. \cite{bishop2006pattern}.}
+
+    \item \label{group-welfare} \textbf{Group Welfare.} 
+    The reward scheme should maximize the total reward value $\sum^n_{i=1} r_i$ to increase the utility of model reward for each party and achieve the aims of collaborative ML.
+\end{enumerate}
+
+\textbf{Choice of desiderata.} We adopt the desiderata from \cite{simcollaborative} but make \ref{dp-feasibility} and \ref{efficiency} more specific (by considering each party's actual reward $q_i(\theta)$ over just its values $r_i$ and $v_N$) and introduce \ref{similarity}.
+Firstly, for our Bayesian surprise valuation function, the feasibility constraint of~\citet{simcollaborative} is inappropriate as removing a party or adding some noise realization may result in $r_i > v_N$,\footnote{The valuation fn.~is only monotonic in expectation (\ref{V2}-\ref{V3}). See further discussion in App.~\ref{app:faq}, Question 9.}
+so we propose \ref{dp-feasibility} instead.
+Next, we recognize that party $i$ is not indifferent to all model rewards $q_i(\theta)$ with the same target reward value as they may have different utility (predictive performance). Thus, we propose our more specific {\ref{efficiency}} and a secondary desideratum \ref{similarity}. As \ref{similarity} is considered after other desiderata, it does not conflict with existing results, e.g., design for $(r^*_i)_{i \in N}$ to satisfy other incentives.
+
+\emph{Remark on Rationality.} In \ref{rational}, a party's model reward is compared to the model trained its \emph{perturbed} SS instead of its \emph{exact} SS alone. 
+This is because the mediator cannot access (and value the model trained on) the private exact SS. Moreover, with no restrictions on the maximum DP noise, the value of some party's exact SS may exceed the grand coalition's perturbed SS when parties require strong DP guarantees.
+\ref{rational} is sufficient when parties require DP when alone to protect data from curious users of their ML model \cite{abadi2016deep,bernstein2018expfam,kulkarni2021glm}. For example, a hospital may not want doctors to infer specific patients' data.
+When parties do not require DP when alone, our reward scheme cannot theoretically ensure that the model reward from collaboration is better than using the exact SS. We further discuss this limitation in App.~\ref{app:rationality}.
+
+\textbf{Design of $(r^*_i)_{i \in N}$.} To satisfy the desiderata from \cite{simcollaborative} (including our fairness \ref{fairness} and rationality \ref{rational} incentives), we adopt their $\rho$-Shapley fair reward scheme with $\rho\hspace{-0.45mm}\in\hspace{-0.45mm}(0, 1]$ that sets $r^*_i = v_N (\phi_i / \max_{k\in N} \phi_k )^\rho$ with Shapley value\footnote{\label{rasa} Party $i$'s MC to some coalitions and Shapley value $\phi_i$ may be negative, which results in an unusable negative/undefined $r^*_i$. This issue can be averted while preserving \ref{fairness} by upweighting non-negative MCs such as to the empty set.}
+$ \phi_i \triangleq  \textstyle \left({1}/{n}\right)
+\sum_{C \subseteq N \setminus i} 
+\left[ {{n-1} \choose |C|}^{-1} 
+\left( v_{C \cup \{i\}} - v_C \right) \right] $.
+Shapley value's consideration of \emph{marginal contribution} (MC) to \emph{all} coalitions 
+is key to ensuring strict desirability \ref{FAIR3} such that party $i$ 
+obtains a higher reward than party $k$ (despite $v_i = v_k$) if $i$'s perturbed SS adds more value to every other non-empty coalition. 
+Applying Theorem 1 of \citet{simcollaborative}, the mediator should set $\rho$ between $0$ and $\min_{i \in N}{{\log(v_{i}/v_N)}/{\log(\phi_i/\max_k\phi_k)}}$ to guarantee rationality.
+Selecting a larger $\rho$ incentivizes a party with a high-quality perturbed SS to share by fairly limiting the benefits to %
+parties with lower-quality ones.
+Selecting a smaller $\rho$ reward parties more equally
+and increase group welfare \ref{group-welfare}. Refer to Sec.~4.2 of \citet{simcollaborative} for a deeper analysis of the impact of varying $\rho$. These results hold for any choice of $(\lambda, \epsilon_i)$.
+
+
+After explaining the desiderata for model reward $q_i(\theta)$ and reward values $r_i$ and $r^*_i$ for every party $i \in N$, we are now ready to solve for $q_i(\theta)$ such that $r_i = r^*_i$.
+
+
+\section{Reward Control Mechanisms}
+\label{sec:mechanism}
+This section discusses two mechanisms to generate model reward $q_i(\theta)$ with different 
+attained reward value $r_i$ for every party $i \in N$ by controlling a \emph{single} continuous parameter and solving for its value such that the attained reward value equates the target reward value: $r_i = r^*_i$. 
+We will discuss the more obvious reward mechanism in
+Sec.~\ref{sec:strengthen} to contrast its cons with the pros of that in Sec.~\ref{sec:temper}.
+\hlp{Both reward mechanisms do not request new information from the parties; thus, the DP post-processing property applies, and every party $k$ is still guaranteed at least its original DP guarantee or stronger in all model rewards} (i.e., \ref{dp-feasibility} holds). 
+
+\subsection{Reward Control via Noise Addition}
+\label{sec:strengthen}%
+The work of~\citet{simcollaborative} controls the reward values by adding Gaussian noise to the data outputs. We adapt it such that the mediator controls the reward value for party $i \in N$ by adding Gaussian noise to the perturbed SS of each party $k \in N$ instead. 
+To generate the model reward for party $i$ (superscripted), the mediator will reparameterize the sampled Gaussian noise vectors $\{\ve^i_k \sim \mathcal{N}(\mathbf{0}, \mI)\}_{k \in N}$ to generate the further perturbed SS\footnote{
+To ease notation, 
+we slightly abuse $\vt_k^i$ to represent both a random vector and its sample.}
+\begin{equation*}
+\vt^i_N \triangleq \left\{ \vt_k^i \triangleq \vo_k  + \left(0.5\ \lambda\  \Delta_2^2(g_k) \ \tau_i\right)^{1/2}\ve^i_k  \right\}_{k \in N}%
+\end{equation*}
+where $\Delta_2^2(g_k)$ is the squared $\ell_2$-sensitivity of function $g_k$ that computes the exact SS $\vs_k$ from dataset $\gD_k$ (Sec.~\ref{sec:problem}). Then, the mediator rewards party $i$ with samples of model parameters $\theta$ from the new DP noise-aware posterior $q_i(\theta) = p(\theta|\vt^i_N)$.
+
+Here, the scalar $\addnoisei \geq 0$ controls the additional noise variance and can be optimized via root-finding to achieve $r_i = r^*_i$. The main advantage of this reward control mechanism is its interpretation of strengthening party $k$'s DP guarantee in all parties' model rewards (see \ref{dp-feasibility}). For example, it can be derived that if $\eps_k = \infty$, then party $k$ will now enjoy $(\lambda, 1/ \addnoisei)$-DP guarantee in party $i$'s reward instead. If $\eps_k < \infty$, then party $k$ will now enjoy a stronger $(\lambda, \eps_k/(1+\addnoisei \eps_k))$-DP guarantee since $\eps_k/(1+\addnoisei \eps_k) < \eps_k$. %
+
+However, this mechanism has some disadvantages. 
+Firstly, for the same scaled additional noise variance $\addnoisei$, using different noise realizations $\{\ve^i_k\}_{k \in N}$ will lead to model reward $q_i(\theta)$ with varying similarity $r'_i$ to the grand coalition $N$'s posterior. The mechanism cannot efficiently select the best model reward with higher $r'_i$ (\ref{similarity}).
+Secondly, the value of $r_i$ computed using such $\vt^i_k$ may be non-monotonic\footnote{Increasing $\addnoisei$ (i.e., using $\vt^i_k$ that diverges more from $\vs_k$) can instead increase the surprise: The privacy-valuation trade-off  (Sec.~\ref{sec:valuation}) only holds in \emph{expectation} across all noise and SS realizations.} in $\tau_i$ (see Fig.~\ref{fig:reward-compare}d), which makes it hard to bracket the smallest root $\addnoisei$ that solves for $r_i =  r^*_i$. 
+To address these disadvantages, we will propose the next mechanism.%
+
+\subsection{Reward Control via Likelihood Tempering}\label{sec:temper}
+
+Intuitively, a party $i$ who is assigned a lower target reward value $r^*_i < v_N$ should be rewarded with posterior samples of model parameters $\theta$ that use \emph{less} information from the datasets and SS of all parties.
+Sparked by the diffuse posterior algorithm \cite{geumlek17rdps}, we propose that the mediator can generate such ``less informative'' samples for party $i$ using the \emph{normalized} posterior\footnote{The normalized posterior is also known as the power posterior. \cite{miller2018coarsen} discuss useful interpretation and benefits such as synthetically reducing the sample size, increasing the ease of computation/MCMC mixing and robustness to model misspecifications.}
+\begin{equation}
+q_i(\theta) \propto p(\theta) \left[p(\gD_N|\theta)\right]^{\scalei}   \label{eq:m4}%
+\end{equation}
+involving the product of the prior $p(\theta)$ and the data likelihood $p(\gD_N|\theta)$ to the power of (or, said in another way, tempered by a factor of) $\scalei$. Notice that setting $\scalei=0$ and $\scalei=1$ recover the prior $p(\theta)$ and the posterior $p(\theta|\gD_N)$, respectively. Thus, setting $\scalei \in (0, 1)$ should smoothly interpolate between both. We can optimize $\scalei$ to control $q_i(\theta)$ so that $r_i = r^*_i < v_N$.%
+
+\hlp{But, \emph{how do we temper the likelihood?} We start by examining the easier, non-private setting.} In Sec.~\ref{sec:problem}, we stated that under our assumptions, the posterior $p(\theta|\gD_N)$ can be computed by using the sum of data quantities $\{c_k\}_{k \in N}$ and sum of exact SS $\vs_N$. In App.~\ref{app:reward}, we further show that using the tempered likelihood $[p(\gD_N|\theta)]^\scalei$ is equivalent to scaling the data quantities and the exact SS $\vs_N$ by the factor $\scalei$ beforehand. 
+In the private setting, the mediator can similarly scale the data quantities, the perturbed SS in $\vo_N$ (instead of the inaccessible exact SS), and the $\ell_2$-sensitivity by the factor $\scalei$ beforehand; see App.~\ref{app:subsec-noise-algo-update} for details.
+This likelihood tempering mechanism addresses both disadvantages of Sec.~\ref{sec:strengthen}: 
+\squishlisttwo
+\item There is no need to sample additional DP noise. We empirically show that tempering the likelihood produces a model reward that \emph{interpolates} between the prior vs.~posterior (in App.~\ref{app:compare-reward}) and \emph{preserves} a higher similarity $r'_i$ to the grand coalition $N$'s posterior (\ref{similarity} and hence,  more group welfare \ref{group-welfare}) and better predictive performance than noise addition (see Sec.~\ref{sec:experiments}). %
+\item Using a smaller tempering factor $\scalei \in [0,1]$ provably decreases the attained reward value $r_i$ (see App.~\ref{app:reward}). Thus, as the relationship between $r_i$ and $\scalei$ is monotonic, we can find the only root by searching the interval $[0,1]$.
+\squishend
+
+\noindent{\bf Remark.} 
+Our discussion on improving the estimate of $v_C$ in the paragraph on implementation in Sec.~\ref{sec:valuation} also applies to the estimate of $r_i$ in  Secs.~\ref{sec:strengthen} and \ref{sec:temper}.
+Thus, solving for $\addnoisei$ or $\scalei$ to achieve $r_i = r^*_i$ using any root-finding algorithm 
+can only be accurate up to the variance in our estimate.
+
+
+\section{Experiments and Discussion}\label{sec:experiments}%
+
+This section empirically evaluates the privacy-valuation and privacy-reward trade-offs (Sec.~\ref{subsec:exp-trade-off}), reward control mechanisms~(Sec.~\ref{subsec:exp-control}), and their relationship with the utility of the model rewards (Sec.~\ref{subsec:exp-utility}).
+The time complexity of our scheme is analyzed in 
+App.~\ref{app:complexity} and \hlp{baseline methods are discussed in App.~{\ref{app:exp-baselines}}}.
+We consider \emph{Bayesian linear regression} (BLR) with unknown variance on the Syn and CaliH datasets, and \emph{Bayesian logistic regression} on the Diab dataset with $3$ collaborating parties (see App.~\ref{app:dataset} for details) and enforce $(2,\eps_i)$-R{\'e}nyi DP. For 
+\textbf{Synthetic BLR (Syn)}, we select and use a \emph{normal inverse-gamma} distribution (i) to generate the true regression model weights, variance, and a $2$D-dataset and (ii) as our model prior $p(\theta)$. We consider $3$ parties with $c_1=100$, $c_2=200$, $c_3=400$ data points, respectively. 
+For \textbf{Californian Housing dataset (CaliH)}~\cite{cali-dataset},
+as in \cite{simcollaborative}, $60\%$ of the CaliH data is deemed ``public/historic'' and used to pre-train a neural network without DP. Real estate firms may only care about the privacy of their newest transactions.
+As the parties' features-house values relationship may differ from the ``public'' dataset, we do transfer learning and selectively retrain only the last layer with BLR using the parties' data. Parties $1$ to $3$ have, respectively, $20\%, 30\%$, and $50\%$ of the dataset with $6581$ data points and $6$ features. 
+For \textbf{PIMA Indian Diabetes classification dataset (Diab)}~\cite{smith1988diabetes-dataset},
+we use a Bayesian logistic regression model to predict whether a patient has diabetes based on sensitive inputs (e.g., patient's age, BMI, number of pregnancies).
+To reduce the training time, we only use the $4$ PCA main components as features (to generate the approximate SS)~\citet{kulkarni2021glm}. Parties $1, 2$, and $3$ have, respectively, $20\%$, $30\%$, and $50\%$ of the dataset with $614$ data points.
+As we are mainly interested\footnote{We defer the  analysis of valuation function (e.g., impact of varying coverage of input space) to App.~\ref{app:exp-valuation}.} in the impact of one party controlling its privacy guarantee $\eps_i$, for all experiments, we only vary party $2$'s from the default $0.1$.
+We fix the privacy guarantees of others ($\eps_1 = \eps_3 = 0.2$) and $\rho=0.2$ in the $\rho$-Shapley fair reward scheme,
+and analyze party $2$'s reward and utility. Note that as $\eps_2$ increases (decreases), party $2$ becomes the most (least) valuable of all parties.
+
+
+\subsection{Privacy-valuation and Privacy-reward Trade-offs}
+\label{subsec:exp-trade-off}
+
+\begin{figure}
+\begin{tabular}{@{}c@{\hspace{1mm}} c@{\hspace{1mm}}c@{\hspace{1mm}}c@{\hspace{1mm}}c@{\hspace{1mm}}c@{}}
+\includegraphics[scale=0.11]{figs/v-private-mono-syn.pdf} &  
+        \includegraphics[scale=0.11]{figs/v-private-cali6.pdf} &
+        \includegraphics[scale=0.11]{figs/v-private-mono-pima.pdf} & \hspace{-1.5mm}\includegraphics[scale=0.114]{figs/r_against_hk_syn_unmono.pdf} &
+        \hspace{-1.5mm}\includegraphics[scale=0.114]{figs/r_against_hk_syn.pdf} &
+        \hspace{-1mm}\includegraphics[scale=0.11]{figs/r_against_similar_syn.pdf} \\
+        {\scriptsize (a) Syn} & {\scriptsize (b) CaliH} & {\scriptsize (c) Diab} & {\begin{tabular}{@{}c@{}}\scriptsize (d) $r_i$ vs.~$\scalei$, $\addnoisei$ \\ \scriptsize (Non-monotonic in $\tau_i$)\end{tabular}
+        } & 
+        {\begin{tabular}{@{}c@{}}\scriptsize (e) $r_i$ vs.~$\scalei$, $\addnoisei$\\
+        \scriptsize (Monotonic in $\tau_i$)\end{tabular}} & {\scriptsize (f) $r'_i$ vs.~$r_i$} 
+\end{tabular}
+        \caption{(a-c) Graphs of party $2$'s valuation $v_2$, Shapley value $\phi_2$, attained reward value $r_2$ vs.~privacy guarantee $\eps_2$ for various datasets. (d-e) Graphs of 
+        attained reward value $r_i$ 
+        vs.~ $\scalei$ (Sec.~\ref{sec:temper}) and $\addnoisei$ (Sec.~\ref{sec:strengthen})
+        for $2$ different noise realizations. (f) Graph of similarity $r'_i$ to grand coalition $N$'s posterior $p(\theta | \vo_N)$  
+        vs.~$r_i$ for Syn dataset corresponding to (e).} 
+\label{fig:private-v-trade-off}
+\label{fig:reward-compare}
+\end{figure}
+
+
+
+
+For each dataset, we only vary the privacy guarantee of party $i=2$ with $\eps_2 \in [0.004,0.02,0.1,0.5,2.5,12.5]$ and use the Gaussian mechanism and a fixed random seed to generate the perturbed SS $\vo_2$ from the exact SS $\vs_2$.
+Fig.~\ref{fig:private-v-trade-off}a-c plot the mean and shades the standard error of $v_i$, $v_N$, $\phi_i$, and  $r_i$ over $5$ runs. 
+The privacy-valuation and privacy-reward trade-offs 
+can be observed:
+As the privacy guarantee weakens (i.e., $\eps_2$ increases), party $2$'s valuation $v_2$, Shapley value $\phi_2$, and attained reward value $r_2$ increase. When $\eps_2$ is large, party $2$ will be the most valuable contributor and rewarded with $p(\theta|\vo_N)$, hence attaining $r_i = v_N$.
+App.~\ref{app:subsec-naive} shows that the trade-offs do not hold for non-noise-aware inference.
+
+
+\subsection{Reward Control Mechanisms}\label{subsec:exp-control}
+
+We use the Syn experiment to compare the reward mechanisms that vary the noise addition using $\addnoisei$ (Sec.~\ref{sec:strengthen}) vs.~temper the likelihood using $\scalei$ (Sec.~\ref{sec:temper}). The mechanisms control $q_i(\theta)$ (i.e., used to generate party $i$'s model reward) to attain the target reward values.
+For each value of $\addnoisei$ and $\scalei$ considered, we repeat the posterior sampling and KL estimation method $5$ times.
+Figs.~\ref{fig:reward-compare}d and~\ref{fig:reward-compare}e-f use different sets of sampled noise $\{\ve_k^i\}_{k \in N}$ to demonstrate the stochastic relationship between $r_i$ and $\addnoisei$.
+In Fig.~\ref{fig:reward-compare}d,  %
+the non-monotonic disadvantage of noise addition can be observed: As $\addnoisei$ increases, $r_i$ does not consistently decrease, hence making it hard to solve for the smaller $\addnoisei$ that attains $r^*_i = 3$.
+In contrast, as $\scalei$ decreases from $1$, $r_i$ consistently decreases. 
+Furthermore, in Fig.~\ref{fig:reward-compare}f, we demonstrate 
+the other advantage of likelihood tempering: For the same $r_i$, tempering the likelihood leads to a higher similarity $r'_i$ to the posterior $p(\theta | \vo_N)$ than noise addition. 
+In App.~\ref{app:exp-reward}, we report the relationship between $r_i$ vs.~$\scalei$ and $\addnoisei$ for the other real-world datasets.%
+
+
+\subsection{Utility of Model Reward}\label{subsec:exp-utility}%
+
+The utility (or the predictive performance) of both Bayesian models can be assessed by the \emph{mean negative log probability} (MNLP) of a non-private test set.\footnote{Such a test set is hard to obtain in practice and we are only using it for evaluation purposes.} \hlp{In short, MNLP reflects how unlikely the test set is given the perturbed SS and additionally cares about the uncertainty/confidence in the model predictions (e.g., due to the impact of DP noise). MNLP will be higher (i.e., worse) when the model is more uncertain of its accurate predictions or overconfident in inaccurate predictions on the test set}; see App.~\ref{app:exp-loss} for an in-depth definition. 
+
+\noindent\textbf{Privacy trade-offs.} 
+Figs.~\ref{fig:mnlp}a-c illustrate the privacy-utility trade-off described in Sec.~\ref{sec:intro}: As $\eps_2$ decreases (i.e., privacy guarantee strengthens), the {MNLP}$_N$ of grand coalition $N$'s collaboratively trained model and the {MNLP}$_i$ of party $i=2$'s individually trained model generally increase, so their utilities drop (\textdagger). This motivates the need to incentivize party $2$ against selecting an excessively small $\eps_2$ by enforcing privacy-valuation and privacy-reward trade-offs. 
+From Figs.~\ref{fig:mnlp}a-c, the impact of our scheme \emph{enforcing} the trade-offs can be observed: As $\eps_2$ decreases, the {MNLP}$_r$ of party $i=2$'s model reward increases.
+
+\hlp{\emph{Remark.}  In Fig.~{\ref{fig:mnlp}}c, an exception to (\textdagger) is observed. The exception illustrates that the privacy-valuation trade-off may not hold for a valuation function based on the performance on a validation set.}
+
+\noindent\textbf{Individual rationality.} 
+It can be observed from Figs.~\ref{fig:mnlp}a-c that as $\eps_2$ decreases, the {MNLP}$_r$ of party $i=2$'s model reward increases much less rapidly than the {MNLP}$_i$ of its individually trained model. So, it is rational for party $i=2$ to join the collaboration to get a higher utility.
+
+\hlp{\emph{Remark.} Party $i=2$'s utility gain appears small when $\eps_2$ is large due to parties $1$ and $3$'s selection of strong privacy guarantee $\eps = 0.2$. Party $i$ can gain more when other parties require weaker privacy guarantees such as $\eps = 2$ instead} (see App.~\ref{app:subsec-larger-improve}).
+
+\noindent\textbf{Likelihood tempering is a better reward control mechanism.} 
+Extending Sec.~\ref{subsec:exp-control}, we compare the utility of party $i$'s model reward generated by noise addition vs.~likelihood tempering in Figs.~\ref{fig:mnlp}d-f. Across all experiments, likelihood tempering (with $\scalei$) gives (i) a lower {MNLP}$_r$ and hence a higher utility, and (ii) a lower variance in {MNLP}$_r$ than varying the noise addition (with $\addnoisei$).
+
+\begin{figure}
+    \centering
+        \begin{tabular}{@{}c@{\hspace{1mm}}c@{\hspace{1mm}}c@{\hspace{1mm}}c@{\hspace{1mm}}c@{\hspace{1mm}}c@{}}
+        \includegraphics[scale=0.109]{figs/mnlp-private-mono-syn.pdf} &
+        \includegraphics[scale=0.109]{figs/mnlp-private-cali6.pdf} &
+        \includegraphics[scale=0.109]{figs/mnlp-private-mono-pima.pdf} &
+        \includegraphics[scale=0.109]{figs/r_against_mnlp_syn.pdf}  & 
+        \includegraphics[scale=0.109]{figs/r_against_mnlp_cali6.pdf}  &
+        \includegraphics[scale=0.109]{figs/r_against_mnlp_pima.pdf} %
+        \\
+        {\scriptsize (a) Syn (vs.~$\eps_2$)} & {\scriptsize (b) CaliH (vs.~$\eps_2$)} & {\scriptsize (c) Diab (vs.~$\eps_2$)} &
+        {\scriptsize (d) Syn (vs.~$r_i$)} & {\scriptsize (e) CaliH (vs.~$r_i$)} & {\scriptsize (f) Diab (vs.~$r_i$)} 
+        \end{tabular}
+        \caption{
+        (a-c)  Graphs of utility of party $2$'s model reward measured by MNLP$_r$ vs.~privacy guarantee $\eps_2$ for various datasets.
+        (d-f) Graphs of utility of model reward measured by MNLP$_r$ vs.~attained reward value $r_i$ under the two reward control mechanisms for various datasets.
+        } 
+        \label{fig:mnlp}
+\end{figure}
+
+\section{Related Works}
+\label{sec:related}
+Fig.~\ref{fig:related-venn} in App.~\ref{app:kapish} gives a diagrammatic overview showing how our work fills the gap in existing works.
+
+\textbf{Data Valuation.} Most data valuation methods are not differentially private and directly access the data. For example, computing the information gain \cite{simcollaborative} or volume \cite{xu2021vol} requires the design matrix.  While it is possible to make these valuation methods differentially private (see App.~\ref{app:exp-baselines}) or value DP trained models using validation accuracy (on an agreed, \emph{public} validation set), the essential properties of our valuation function (\ref{V2}-\ref{V3}) may not hold.
+
+\textbf{Privacy Incentive.} Though the works of~\citet{hu2020privatefl,Xu22} reward parties directly proportional to their privacy budget,
+\hlp{their methods do not incentivize data sharing as a party does not fairly receive a higher reward value for contributing a larger, more informative dataset.} While the work of~\citet{liu2021dealer} artificially creates a privacy-reward trade-off by paying each party $i$ the product of its raw data's Shapley value $\phi_i$ and a monotonic transformation of $\eps_i$, it neither ensures DP w.r.t.~the mediator nor fairly considers how a stronger DP guarantee may reduce party $i$'s marginal contribution to others (hence $\phi_i$). The work of~\citet{fallah2022arx} considers data acquisition from parties with varying privacy requirements but focuses on the mean estimation problem and designing payment and privacy loss functions to get parties to report their true unit cost of privacy loss.
+Our work here distinctively considers Bayesian models and fairness and allows parties to choose their privacy guarantees directly while explicitly enforcing a privacy-reward trade-off. 
+
+\textbf{Difficulties ensuring incentives with existing DP/FL works.} The \emph{one posterior sampling} (OPS) method \cite{free-ops,geumlek17rdps} proposes that each party $i$ can achieve DP by directly releasing samples from the posterior $p(\theta|\gD_i)$  (if the log-likelihood is bounded). However, OPS is data inefficient and may not guarantee privacy for approximate inference \cite{foulds16pbayes}. It is unclear how we can privately value a coalition $C$ and sample from the joint posterior $p(\theta | \{ \gD_i\}_{i \in C})$. \texttt{DP-FedAvg/DP-FedSGD} \cite{mcmahan2017learning} or \texttt{DP-SGD} \cite{abadi2016deep} enable collaborative but private training of neural networks by requiring each party $i$ to clip and add Gaussian noise to its submitted gradient updates. However (in addition to the valuation function issue above), it is tricky to ensure that the parties' rewards satisfy data sharing incentives. In each round of FL, parties selected will receive the (same) latest model parameters to compute gradient updates. This setup goes against the fairness (\ref{fairness}) incentive as parties who share less informative gradients should be rewarded with lower quality model parameters instead. Although the unfairness may potentially be corrected via gradient-based \cite{xu2021gradient} or monetary rewards, there is no DP reward scheme to guarantee a party better model reward from collaboration than in solitude or a higher monetary reward than its cost of participation, hence violating individual rationality.
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+Unlike existing works in collaborative ML that solely focus on the fairness incentive, our proposed scheme further (i) ensures privacy for the parties during valuation and in model rewards and (ii) enforces a privacy-valuation trade-off to deter parties from unfetteredly selecting excessive DP guarantees to maximize the utility of collaboratively trained models.\footnote{App.~\ref{app:faq} discusses the ethical implications and limitations of our work, and other questions a reader may have.} This involves novelly combining our proposed Bayesian surprise valuation function and reward control mechanism with DP noise-aware inference.
+We empirically evaluate our scheme on several datasets. Our likelihood tempering reward control mechanism consistently preserves better predictive performance.
+
+Our work has two limitations which future work should overcome. Firstly, we only consider ML models with SS (see App.~\ref{app:sub:ss} for applications) and a single round of sharing information with the mediator as a case study to show the incentives and trade-offs can be achieved. Future work should generalize our scheme to ML models without an explicit SS.
+
+Next, like the works of \citet{ghorbani2019data,ghorbani2020,jia2019towards,nguyen22trade,simcollaborative,tay2021} and others, we do not consider the truthfulness of submitted information and value data \textit{as-is}. This limitation is acceptable for two reasons.\ 1) Parties such as hospitals and firms will truthfully share information as they are primarily interested in building and receiving a model reward of high quality and may additionally be bound by the collaboration's legal contracts and trusted data-sharing platforms.
+For example, with the use of X-road ecosystem,\footnote{\url{https://joinup.ec.europa.eu/collection/ict-security/solution/x-road-data-exchange-layer/about}, \url{https://x-road.global/}} parties can upload a private database which the mediator can query for the perturbed SS. This ensures the authenticity of the data (also used by the owner) and truthful computation given the uploaded private database.\ 2) Each party would be more inclined to submit true information as any party $k$ who submits fake SS will reduce its utility from the collaboration. This is because party $k$'s submitted SS is used to generate $k$'s model reward and cannot be replaced locally as party $k$ will only receive posterior samples. Future work should seek to verify and incentivize truthfulness.
+
+\section*{Acknowledgments and Disclosure of Funding}
+This research/project is supported by the National Research Foundation Singapore and DSO National Laboratories under the AI Singapore Programme (AISG Award No: AISG$2$-RP-$2020$-$018$). This work is also supported by the National Natural Science Foundation of China (62206139) and the Major Key Project of PCL (PCL2023AS7-1).
+
+\clearpage
+
+\bibliography{neurips23}
+\bibliographystyle{abbrv}
+
+
+\clearpage
+
+\appendix
+
+
+
+\section{Fundamental Concepts}\label{app:fundamental}
+
+In this section, we will elaborate on concepts from Sec.~\ref{sec:problem} in more detail.
+
+\subsection{Sufficient Statistics}\label{app:sub:ss}
+
+Bayesian learning involves updating our belief of the likely values of the model parameters $\theta$, captured in the prior $p(\theta)$, to a posterior belief $p(\theta|\gD_i) \propto p(\theta) \times p(\gD_i|\theta)$. The posterior belief gets more concentrated (around the maximum likelihood estimate) after observing a larger dataset $\gD_i$.
+
+The statistic $\vs_i$ is a SS for $\gD_i$ if $\theta$ and $\gD_i$ are conditionally independent given $\vs_i$, i.e., ${p(\theta | \gD_i) = p(\theta | \vs_i, 
+\gD_i) = p(\theta | \vs_i)}$ \cite{ss_def,titsias2009variational}. Knowing the dataset $\gD_i$ does not provide any extra information about $\theta$ beyond the SS $\vs_i$.
+SS exists for exponential family models \cite{bishop2006pattern} and Bayesian linear regression \cite{murphy2022probabilistic}. Approximate SS has been proposed by~\citet{huggins2017pass} for generalized linear models. For more complex data such as images, we can use pre-trained neural networks like VGG-$16$ as feature extractors and generate SS from the last hidden layer's outputs.
+
+\paragraph{Bayesian Linear Regression.}
+In linear regression, each datum consists of the input $\vx \in \mathbb{R}^w$ and the output variable $y \in \mathbb{R}$. 
+Let $\gD$ denote the dataset with $c$ data points, and $\vy$ and $\mX$ be the corresponding concatenated output vector and design matrix in $\mathbb{R}^{c \times w}$.
+Bayesian linear regression models the relationship as $\vy = \mX \vw + \mathcal{N}(0, \sigma^2\mI)$ where the model parameters $\theta$ consists of the weight parameters $\vw \in \mathbb{R}^w$ and the noise variance $\sigma^2$. The likelihood
+\begin{align*}
+ p(\vy | \mX, \vw, \sigma^2) &= (2 \pi \sigma^2)^{-\frac{c}{2}} \exp{\left( -\frac{(\vy-\mX \vw)^\top (\vy-\mX \vw)}{2\sigma^2}\right)} \\
+&= (2 \pi \sigma^2)^{-\frac{c}{2}} \exp{\left[\frac{-1}{2\sigma^2}\vy^\top \vy + \frac{1}{\sigma^2}\vw^\top \mX^\top \vy - \frac{1}{2\sigma^2}\vw^\top \mX^\top \mX \vw \right]}\ . 
+\end{align*}
+only depends on data via the sufficient statistics $\vs = (\vy^\top \vy, \mX^\top \vy, \mX^\top \mX)$. 
+Concretely, when the prior $p(\theta)$ of the weights and variance follow a normal inverse-gamma distribution, $\texttt{NIG}(\mathbf{0}, \mV_0, a_0, b_0)$, the posterior $p(\theta | \gD_i)$ is the normal inverse-gamma distribution
+$\texttt{NIG}(\mathbf{w}_i, \mV_i, a_0 + c_i/2, b_i)$ where $c_i$ is the number of data points and
+\[
+    \vw_i = \mV_i \textcolor{blue}{\mX_i^\top \vy_i} 
+     \qquad
+    \mV_i = \left(  \mV_0^{-1} + \textcolor{blue}{\mX_i^\top \mX_i} \right)^{-1} 
+     \qquad
+    b_i = b_0 + (1/2) \left[ \textcolor{blue}{\vy_i^\top \vy_i} - \vw_i^\top \mV_i^{-1} \vw_i \right]
+\]
+can be computed directly from $\vs_i$.
+The posterior belief $p(\theta | \gD_i, \gD_j)$ given parties $i$ and $j$'s dataset can be similarly computed using the SS of their pooled dataset, $\vs_{ij}$. As the SS $\vs_{ij}$ works out to $\vs_i + \vs_j$, we only need $\vs_i$ and $\vs_j$ from party $i$ and $j$ instead of their private datasets.
+
+
+\paragraph{Generalized Linear Model (GLM).}
+A \emph{generalized linear model} (GLM) generalizes a linear model by introducing an inverse link function $\Upsilon$. The probability of observing the output $y$ given input $\vx = (x_{(1)}, \dots, x_{(w)})$ and model weights $\theta$ depends on their dot product
+\[
+    p(y | \vx, \theta) = p(y | \Upsilon(\vx^\top \theta))\ .
+\]
+Next, we define the \emph{GLM mapping function} $\upsilon$ to the log-likelihood of observing $y$ given the GLM model. Formally,
+\[
+    \upsilon(y, \vx^\top \theta) \triangleq \log  p(y | \Upsilon(\vx^\top \theta))\ . 
+\]
+
+As an example, logistic regression is a GLM with $\Upsilon$ defined as the sigmoid function and $ p(y = \pm 1 | \texttt{sigmoid}(\vx^\top \theta))$ follows a Bernoulli distribution. As the non-linearity of $\Upsilon$ disrupts the exponential family structure, logistic regression and other GLMs do not have sufficient statistics. Logistic regression's GLM mapping function $\upsilon_{\texttt{log}}(y, \vx^\top \theta) = -\log(1+\exp({- y \vx^\top \theta}))$.
+
+\citet{huggins2017pass} propose to approximate the \emph{GLM mapping function} $\upsilon$ with an $M$-degree polynomial approximation $\upsilon_M$. $\upsilon_M$ is an exponential family model with sufficient statistics $g(d) = \left\{ \prod_{i=1}^w (yx_{(i)})^{m_i} | \sum_i m_i \leq M, \forall i\ m_i \in \mathbb{Z}_0^+ \right\}$. These SS are the \emph{polynomial approximate sufficient statistics} for GLMs. For example, when $M=2$ and $\vx = (x_{(1)}, x_{(2)})$, $g(d) = \left[ 
+1, x_{(1)}y, x_{(2)}y, x_{(1)}^2 y^2, x_{(2)}^2 y^2, x_{(1)}x_{(2)} y^2
+\right]$.
+
+\subsection{Differential Privacy}\label{app:sub:dp}
+
+\emph{Remark 1.} Our work aims to ensure \emph{example-level DP} for each collaborating party: A party updating/adding/deleting a single datum will only change the perturbed SS visible to the mediator and the corresponding belief of the model parameters in a provably minimal way. We are not ensuring \emph{user-level DP}:
+The belief of model parameters only changes minimally after removing a collaborating party's (or a user/data owner's) dataset, possibly with multiple data points \cite{googleblog}.
+
+Intuitively, a DP algorithm $\mathcal{R}: \gD \rightarrow \vo$ guarantees that each output $\vo$ is almost equally likely regardless of the inclusion or exclusion of a data point $\vd$ in $\gD$.
+This will allay privacy concerns and incentivize a data owner to contribute its data point $\vd$ since even a knowledgeable attacker cannot infer the presence or absence of $\vd$.
+
+The works on noise-aware inference  \cite{bernstein2019blr,kulkarni2021glm}  assume that the input $\vx$ and output $y$ of any data point have known \emph{bounded} ranges. We will start by introducing our domain-dependent definitions:
+\begin{definition}[Neighboring datasets]
+Two datasets $\gD$ and $\gD'$ are neighboring if $\gD'$ can be obtained from $\gD$ by replacing a single data point. The total number of data points and all other data points are the same.
+\end{definition}
+\begin{definition}[Sensitivity \cite{dp-foundation}]
+The sensitivity of a function $g$ that takes in dataset $\gD_k$ quantifies the maximum impact a data point can have on the function output.
+The $\ell_1$-sensitivity $\Delta_1(g)$ and $\ell_2$-sensitivity $\Delta_2(g)$ measure the impact using the $\ell_1$ and $\ell_2$ norm, respectively. Given that $\gD'_i$ must be a neighboring dataset of $\gD_i$,
+\begin{align*}
+    \Delta_1(g) & \triangleq \max_{\gD_i, \gD_i'} \norm{g(\gD_i) - g(\gD_i')}_1\ , \\
+    \Delta_2(g) & \triangleq \max_{\gD_i, \gD_i'} \norm{g(\gD_i) - g(\gD_i')}_2\ .
+\end{align*}
+\end{definition}
+In our problem, $g$ computes the exact SS $\vs_i$ for $\gD_i$. The sensitivity can be known/computed if the dataset is normalized and the feature ranges are bounded.
+
+We start with the definition of $\eps$-differential privacy. The parameter $\epsilon$ bounds how much privacy is lost by releasing the algorithm's output.
+
+\begin{definition}[Pure $\eps$-DP \cite{dp-foundation}]
+A randomized algorithm $\mathcal{R}: \gD \rightarrow \vo$ with range $\gO$ is $\epsilon$-DP if for all neighboring datasets $\gD$ and $\gD'$ and possible output subset $\gO \subset \mathop{Range}(\mathcal{R})$, 
+\begin{eqnarray*}
+P(\mathcal{R}(\gD) \in \gO) \leq e^\epsilon P(\mathcal{R}(\gD') \in \gO) \ . 
+\end{eqnarray*}
+\end{definition}
+The Laplace mechanism \cite{dp-foundation} is an $\eps$-DP algorithm. Instead of releasing the exact SS $\vs_i$, the mechanism will output a sample of the perturbed SS $\vo_i \sim \mathrm{Laplace}(\vs_i, (\Delta_1(g) /\eps) \ \mI)$. 
+
+A common relaxation
+of $\eps$-differential privacy is $(\eps, \delta)$-differential privacy. It can be interpreted as $\eps$-DP but with a failure of probability at most $\delta$.
+
+\begin{definition}[$(\eps, \delta)$-DP]
+A randomized algorithm $\mathcal{R}: \gD \rightarrow \vo$ with range $\gO$ is $(\epsilon, \delta)$-differentially private if for all neighboring datasets $\gD$ and $\gD'$ and possible output subset $\gO \subset \mathop{Range}(\mathcal{R})$,
+\begin{eqnarray*}
+P(\mathcal{R}(\gD) \in \gO) \leq e^\epsilon P(\mathcal{R}(\gD') \in \gO) + \delta\ .
+\end{eqnarray*}
+\end{definition}
+The Gaussian mechanism is an $(\eps, \delta)$-DP algorithm. The variance of the Gaussian noise to be added can be computed by the analytic Gaussian mechanism algorithm \cite{balle2018analytic-gaussian}.
+
+In the main paper, we have also discussed another relaxation
+of $\eps$-differential privacy that is reproduced below:
+\begin{definition}[R{\'e}nyi DP \cite{mironov2017renyi}]
+A randomized algorithm $\mathcal{R}: \gD \rightarrow \vo$ is $(\lambda, \epsilon)$-R{\'e}nyi differentially private if for all neighboring datasets $\gD$ and $\gD'$, the R{\'e}nyi divergence of order $\lambda > 1$ is $D_\lambda(\mathcal{R}(\gD)\ ||\ \mathcal{R}(\gD'))  
+\leq \epsilon$ where
+\begin{eqnarray*}
+D_\lambda(\mathcal{R}(\gD)\ ||\ \mathcal{R}(\gD')) \triangleq \frac{\log{\Eu{\vo \sim \mathcal{R}(\gD')}{\displaystyle\frac{P(\mathcal{R}(\gD) = \vo)}{P(\mathcal{R}(\gD') = \vo)}}^\lambda}}{\lambda-1}\ .
+\end{eqnarray*}
+\end{definition}
+When $\lambda=\infty$, R{\'e}nyi DP becomes pure $\eps$-DP. Decreasing $\lambda$ emphasizes less on unlikely large values and emphasizes more on the average value of the privacy loss random variable $\log\left[{{P(\mathcal{R}(\gD) = \vo)}/{P(\mathcal{R}(\gD') = \vo)}}\right]$ with $\vo \sim \mathcal{R}(\gD')$.
+
+The Gaussian mechanism is a $(\lambda, \eps)$-R{\'e}nyi DP algorithm. Instead of releasing the exact SS $\vs_i$, the mechanism will output a sample of the perturbed SS
+$ \vo_i \sim \mathcal{N}\left(\vs_i,\ 0.5\ ({\lambda}/{\epsilon}) \ \Delta_2^2(g)\ \boldsymbol{I} \right)$. 
+
+\paragraph{Post-processing.} A common and important property of all DP algorithms/mechanisms is their \emph{robustness to post-processing}: Processing the output of a DP algorithm $\mathcal{R}$ without access to the underlying dataset will retain the same privacy loss and guarantees \cite{dwork2014}.
+
+\textbf{Choosing  R{\'e}nyi-DP over $(\eps, \delta)$-DP.}
+In our work, we consistently use the Gaussian mechanism in all the experiments, like in that of \citet{kulkarni2021glm}. We choose R{\'e}nyi DP over $(\eps, \delta)$-DP due to the advantages stated below:
+
+\squishlisttwo
+    \item R{\'e}nyi-DP is a stronger DP notion according to \citet{mironov2017renyi}: While $(\eps, \delta)$-DP allows for a complete failure of privacy guarantee with probability of at most $\delta$, R{\'e}nyi-DP does not and the privacy bound is only loosened more for less likely outcomes. Additionally, \citet{mironov2017renyi} claims that it is harder to analyze and optimize $(\eps, \delta)$-DP due to the trade-off between $\eps$ and $\delta$. More details can be found in \cite{mironov2017renyi}.
+    \item  R{\'e}nyi-DP supports easier composition: In a collaborative ML framework, each party $i$ may need to release multiple outputs on the same dataset $\gD_i$ such as the SS and other information for preprocessing steps (e.g.,  principal component analysis). Composition rules bound the total privacy cost $\hat{\eps}$ of releasing multiple outputs of differentially private mechanisms. It is harder to keep track of the total privacy cost when using $(\eps, \delta)$-DP due to advanced composition rules and the need to choose from a wide selection of possible $(\eps(\delta), \delta)$  \cite{mironov2017renyi}. In contrast, the composition rule (i.e., Proposition~1 in \cite{mironov2017renyi}) is straightforward: When $\lambda$ is a constant, the $\eps$ of different mechanisms can simply be summed.
+\squishend
+
+Note that the contribution of our work will still hold for $(\eps, \delta)$-DP (using the Gaussian mechanism) and $\eps$-DP (using the Laplace mechanism) with some modifications of the inference process and proofs.
+
+\emph{Remark 2.} Our work is in the same spirit as local DP 
+(and we also think that no mediator can be trusted to directly access any party's private dataset)
+but does not strictly satisfy the definition of local DP (see Def.~\ref{def:localdp}). In the definition, the local DP algorithm takes in a single input/datum and ensures the privacy of its output --- the perturbation mechanism is applied to every input independently. In contrast, in our case, a party may have multiple inputs and the perturbation mechanism is only applied to their aggregate statistics.
+Thus, a datum owner (e.g., a patient of a collaborating hospital) enjoys weaker privacy in our setting than the local DP setting.
+
+\begin{definition}[$\eps$-Local DP \cite{yang2020localdp}]\label{def:localdp}
+A randomized algorithm $\mathcal{R}$ is $\eps$-local DP if for any pair of data points $d, d' \in \gD$ and for any possible output $\gO \subset \mathop{Range}(\mathcal{R})$,
+\begin{eqnarray*}
+P(\mathcal{R}(d) \in \gO) \leq e^\epsilon P(\mathcal{R}(d') \in \gO) \ . 
+\end{eqnarray*}
+\end{definition}
+
+\subsection{DP Noise-Aware Inference}\label{app:sub:inference}
+
+DP mechanisms introduce randomness and noise to protect the output of a function.
+\emph{Noise-naive} techniques ignore the added noise in downstream analysis. In contrast, \emph{noise-aware} techniques account for the noise added by the DP mechanism.
+
+Consider a probabilistic model where the model parameters $\theta$ generate the dataset $\gD_i$ which then generates the exact and perturbed \emph{sufficient statistics} of each party $i$, which are modeled as random variables $S_i$ and $O_i$, respectively. The exact SS $\vs_i$ and perturbed SS $\vo_i$ computed by party $i$ are \emph{realizations} of $S_i$ and $O_i$, respectively.
+As the mediator cannot observe $i$'s exact SS, $S_i$ is a \emph{latent} random variable.
+Instead, the mediator observes $i$'s perturbed SS $O_i$ which also contains noise $Z_i$ added by the DP mechanism, i.e., $O_i \triangleq S_i + Z_i$. The Gaussian mechanism to ensure $(\lambda,\eps)$-R{\'e}nyi DP sets $Z_i \sim \mathcal{N}\left(\mathbf{0},\ 0.5\ ({\lambda}/\epsilon)\  \Delta_2^2(g)\ \boldsymbol{I} \right)$. We depict the graphical model of our multi-party setting in Fig.~\ref{fig:tikz-noise-aware-2}.
+
+
+
+\begin{figure}[ht]
+ \begin{center}
+\begin{tikzpicture}
+
+  \node[latent]               (theta)      {$\theta$} ;
+  \node[latent, right=1.0cm of theta] (s)    {$S_i$} ;
+  \node[obs, right=1.0cm of s]      (o)        {$O_i$} ;
+  \node[latent, below=1.0cm of s] (X)    {$X_i$} ;
+  \node[latent, below=1.0cm of o] (z)    {$Z_i$} ;
+  \node[latent, below=1.0cm of theta] (w)    {$\omega$} ;
+  
+
+  \edge {theta} {s};
+  \edge {s,z} {o};
+  \edge[dashed] {w} {X};
+  \edge[dashed] {X} {s};
+  
+
+  \plate[inner sep=0.5cm,
+    label={[xshift=-15pt,yshift=13pt]south east:$n$}] {plate} {
+    (s)(z)(o)(X)
+  } {};
+
+\end{tikzpicture}
+ \end{center}
+  \caption{In the graphical model above, all parties share the same prior belief $p(\theta)$ of model parameters $\theta$ and prior belief $p(\omega)$ of data parameters $\omega$. The mediator models its beliefs of the SS of each party separately and only observes the perturbed SS $\vo_i$ of every party $i \in N$ (thus, only $O_i$ is shaded).
+  The sufficient statistic $S_i$ is generated from the model inputs $\mX_i$ and the model output $\vy_i$ (which depends on the model parameters $\theta$).
+  We illustrate the relationship between $\omega$, $X_i$, and $S_i$ as dashed lines as they may be modeled differently in the various DP noise-aware inference methods. See \cite{bernstein2019blr,kulkarni2021glm} for their respective graphical models and details.
+  }
+  \label{fig:tikz-noise-aware-2}
+\end{figure}
+
+\paragraph{Differences between exact, noise-naive and noise-aware inference.}
+When the mediator observes the exact SS $\vs_i$ from party $i$, the exact posterior belief $p(\theta|S_i = \vs_i)$ can be computed in closed form based on App.~\ref{app:sub:ss}.
+However, when the mediator only observes the perturbed SS $\vo_i$, the mediator can only compute the noise-naive and noise-aware posterior beliefs instead.
+The \emph{noise-naive} posterior belief $p(\theta|S_i = \vo_i)$ will neither reflect the unobservability of the exact SS random variable $S_i$ accurately nor quantify the impact of the DP noise $Z_i$.
+In contrast, for any party, the \emph{DP noise-aware posterior belief} $p(\theta|O_i = \vo_i)$, conveniently abbreviated as $p(\theta|\vo_i)$, will quantify the impact of the noise added by the DP mechanism. (For a coalition $C$ of parties, the DP noise-aware posterior belief is $p(\theta|\vo_C) \triangleq p(\theta|\{O_i = \vo_i\}_{i \in C}))$, as described in Footnote~\ref{footnote-vo}.)
+The works of~\citet{bernstein2018expfam,bernstein2019blr,kulkarni2021glm} have shown that DP noise-aware inference leads to a posterior belief that is better \emph{calibrated} (i.e., lower bias and better quantification of uncertainty without overconfidence) and of higher \emph{utility} (i.e., closer to the non-private posterior belief), thus a better predictive performance.
+
+The main challenge of noise-aware inference lies in tractably approximating the integral $p(O_i=\vo_i|\theta) = \int p(\vs_i|\theta)p(\vo_i|\vs_i) \,\text{d}\vs_i$ and $p(\vs_i|\theta) = \int_{\{ \gD=(\mX, \vy): g(\gD) = \vs_i \}} p(\mX, \vy | \theta)\, \text{d}\mX d\vy$ over all datasets.
+\citet{bernstein2018expfam,bernstein2019blr,kulkarni2021glm} exploit the observation that as the SS sum $c$ individuals, the central limit theorem guarantees that the distribution $p(\vs_i|\theta)$ can be well-approximated by the Gaussian distribution $\mathcal{N}(c\mu_g, c\Sigma_g)$ for large $c$ \cite{bernstein2019blr}. Here, $\mu_g$ and $\Sigma_g$ are the mean and covariance of an individual's SS. \citet{bernstein2018expfam,bernstein2019blr,kulkarni2021glm,kulkarni2021locally} prescribe how to compute $\mu_g$ and $\Sigma_g$ in closed form from the sampled $\theta$ parameters and moments of $\vx$ and set the noise of the DP mechanism based on a sensitivity analysis. 
+To approximate the posterior $p(\theta|\vo)$, \emph{Markov Chain Monte Carlo} (MCMC) sampling steps are needed. \citet{bernstein2019blr} propose to use Gibbs sampling, an algorithm that updates a group of parameters at a time and exploits conditional independence, for Bayesian linear regression models. \citet{kulkarni2021glm} use the No-U-Turn \cite{hoffman2014no} sampler and utilizes Hamiltonian dynamics to explore the parameter space more efficiently for generalized linear models.
+We describe the BLR Gibbs sampler adapted for our multi-party setting in Algo~\ref{algo:gibbs}.
+
+
+\begin{algorithm}[ht]
+	\caption{BLR Gibbs sampler \cite{bernstein2019blr} from noise-aware posterior $p(\theta|O_N = \vo_N)  \propto \int \prod_{i \in N}\left[p(\vo_i|\vs_i)\ p(\vs_i|\theta)\right]p(\theta) \ \,\text{d}\vs_1\dotsi\,\text{d}\vs_n$. The algorithm (repeatedly) sample the latent variables $S_i$, $\omega$ and $\theta$ sequentially. }\label{alg}
+	\begin{algorithmic}[1]
+	    \REQUIRE{Shared prior $p(\theta)$ of model parameters, prior $p(\omega)$ of data parameters, data quantity $c_i$, shared perturbed SS realization $\vo_i$, the Gaussian noise distribution of $Z_i$ for every party $i \in N$,
+	    number $b$ of burn-in samples, number $m$ of samples, Boolean parameter ($\mathtt{shared}$) controlling if $p(\vx)$ is the same across parties.} \\ 
+		\STATE Sample the initial model parameters $\theta^{(0)}$ from the prior $p(\theta)$.
+		\STATE Sample the data prior parameters $\omega^{(0)}$ from the prior $p(\omega)$.
+		\STATE Compute the moments of $X_i$ based on $\omega$.
+		\FOR{$t = 1, \ldots, b+m$}
+		    \FOR{$i = 1, \dots, n$}
+		        \STATE Compute the normal approximation of $p(S_i|\theta)$, denoted as $p_{\mathcal{N}}(S_i|\theta)$, using the moments of $X_i$.
+		        \STATE Sample $\vs_i^{(t)}$ from the product of two multivariate Gaussians $p_{\mathcal{N}}(S_i|\theta)\  p(\vo_i |S_i)$, which is also multivariate Gaussian.
+    \IF{\NOT{$\mathtt{shared}$}}
+		          \STATE Use information from $\vs_i^{(t)}$ and $c_i$ to perform conjugate update on $p(\omega_i)$ to obtain $p(\omega_i|(\vs_i^{(t)},c_i))$. Sample $\omega_i^{(t)}$ and compute the moments of $X_i$. \label{alg:indiv-prior}
+                \ENDIF
+		    \ENDFOR
+            \IF{$\mathtt{shared}$}
+            \STATE Use information from $(\vs_i^{(t)},c_i)_{i \in N}$ to perform conjugate update on $p(\omega)$ to obtain $p(\omega|(\vs_i^{(t)},c_i)_{i \in N})$. Sample $\omega^{(t)}$ and compute the moments of $X_i$.
+            \ENDIF
+		    \STATE Use $(\vs_i^{(t)},c_i)_{i \in N}$ to perform conjugate update on $p(\theta)$ to obtain $p(\theta|(\vs_i^{(t)},c_i)_{i \in N})$. 
+		    \STATE Sample $\theta^{(t)}$ from $p(\theta|(\vs_i^{(t)},c_i)_{i \in N})$.
+		    \IF{$t > b$}
+		        \STATE Append $\theta^{(t)}$ to ${\Theta}$.
+    		\ENDIF
+		\ENDFOR
+		\RETURN  ${\Theta}$
+	\end{algorithmic}
+	\label{algo:gibbs}
+\end{algorithm}
+
+
+
+
+
+
+
+
+
+\clearpage
+
+\section{Key Differences with Existing Data Valuation, Collaborative ML, and DP/FL Works}
+\label{app:kapish}
+
+\begin{figure}[ht]
+ \begin{center}
+\begin{tikzpicture}
+  \tikzset{venn circle/.style={draw=#1,line width=3pt,circle,minimum width=4.8cm,opacity=0.8 }}%
+
+  \node [venn circle = overviewred] (A) at (0,0) {{
+  \begin{tabular}{l}
+  \\ \\ FL\qquad \qquad \qquad\\ \cite{mcmahan2017seminalFL}
+  \end{tabular}
+  }};
+  \node [venn circle = overviewblue] (B) at (60:3.2cm) {
+  \begin{tabular}{l}
+  Data Valuation\\ \cite{ghorbani2019data,jia2019towards,xu2021vol} \\
+  \\ \\ \\
+  \end{tabular}
+  };
+  \node [venn circle = overviewgreen] (C) at (0:3.2cm) {
+  \begin{tabular}{l}
+  \\ \\ \qquad \qquad DP Mechanisms\\ 
+  \qquad \qquad \cite{abadi2016deep,bernstein2019blr,kulkarni2021glm,free-ops}
+  \end{tabular}
+  };
+
+  \begin{scope}
+    \clip (A) circle[radius=2.4cm]; 
+    \clip (B) circle[radius=2.4cm];
+    \clip (C) circle[radius=2.4cm];
+    \fill[overviewblue, opacity=0.18] (A) circle[radius=2.4cm]; 
+    \end{scope}
+    
+  \node[left] at ($(A)!0.5!(B)+(0:.6cm)+(90:.2cm)$) 
+  {
+  \begin{tabular}{r}
+  $\blacktriangleleft$ \cite{simcollaborative}, \\
+  \cite{wang2020fedval,xu2021gradient} 
+  \end{tabular}
+  }; 
+  \node[below] at ($(A)!0.5!(C)+(90:.3cm)$) %
+  {{
+  \begin{tabular}{c}
+  $\blacktriangledown$ \\
+  \cite{hu2020privatefl}, \\ \cite{kulkarni2021locally,mcmahan2017learning}
+  \end{tabular}}};   
+  \node[right] at ($(B)!0.5!(C)+(0:-.2cm)+(90:.3cm)$) {$\blacktriangleright$ 
+  };   
+  \node[below,font=\Large] at (barycentric cs:A=1/3,B=1/3,C=1/3 ){$\star$};
+    \node (textB)[above=1mm of B,font=\itshape,text width=8.5cm]
+     {\textcolor{overviewblue}{\textbf{Incentives for Data Sharing} \\ Higher reward for contributing more valuable data\\ (fairness across parties, individual rationality, etc.)}};
+     
+  \node (textA)[below left=1mm of A,font=\itshape,text width=3.75cm]
+     {\textcolor{overviewred}{\textbf{Collaboratively Trained Model} \\ 
+     Each party receives a \\
+     model decentrally trained \\
+     with everyone's data}};
+    \node (textC)[below right=1mm of C,font=\itshape,text width=3.8cm]
+     {\textcolor{overviewgreen}{\textbf{Differentially Private} \\ Even to the mediator}};
+\end{tikzpicture}  
+
+
+
+\end{center}
+\caption{Our work, $\star$, uniquely satisfies all $3$ desiderata. 
+When parties share information computed from their data, we ensure that every party has at least its \textcolor{overviewgreen}{required DP w.r.t.~the mediator}, receives a \textcolor{overviewred}{collaboratively trained model}, and receives a \textcolor{overviewblue}{higher reward for sharing higher-quality data than the others}.\\
+It is not trivial to (i) add DP to $\blacktriangleleft$ while simultaneously enforcing a privacy-valuation trade-off, (ii) add data sharing incentives to $\blacktriangledown$ (i.e., design valuation functions and rewards),
+and (iii) achieve $\blacktriangleright$ as access to a party's dataset (or a coalition's datasets) is still needed for its valuation in \cite{watson2022dpshap}.
+}
+\label{fig:related-venn}
+\end{figure}
+
+\hlp{\emph{Difference with existing data valuation  and collaborative ML works considering incentives.}} Our work aims to additionally (A) offer parties assurance about privacy but (B) deter them from selecting excessive privacy guarantees. We achieve (A) by ensuring differential privacy (see definitions in  App.~\ref{app:sub:dp}) through only collecting the noisier/perturbed version of each party's sufficient statistics (see App.~\ref{app:sub:ss}). To achieve (B), we must assign a lower valuation (and reward) to a noisier SS. Our insight is to combine noise-aware inference (that computes the posterior belief of the model parameters given the perturbed SS) with the Bayesian surprise valuation function. Lastly, (C) we propose a mechanism to generate model rewards (i.e., posterior samples of the model parameters) that attain the target reward value and are similar to the grand coalition's model.
+
+\hlp{\emph{Difference with federated learning and differential privacy works.}} 
+Existing FL works have covered learning from decentralized data with DP guarantees. However, these works may not address the question: Would parties want to share their data? How do we get parties to share more to maximize the gain from the collaboration? Our work aims to address these questions and \textbf{incentivize} (A) parties to share more, higher-quality data and (B) select a weaker DP guarantee. 
+To achieve (A), it is standard in data valuation methods~\cite{ghorbani2019data,jia2019towards,sim2022data} to use the Shapley value to value a party \emph{relative} to the data of others as it considers a party's marginal contribution to all coalitions (subsets) of parties. This would require us to construct and value a trained model for each coalition $C \subseteq N$: To ease aggregation (and to avoid requesting more information or incurring privacy costs per coalition), we consider sufficient statistics (see App.~\ref{app:sub:ss}). To achieve (B), we want a valuation function that provably ensures a lower valuation for a stronger DP guarantee. Our insight is to combine noise-aware inference (that computes the posterior belief of the model parameters given perturbed SS) with the Bayesian surprise valuation function. Lastly, like the works of~\cite{simcollaborative,tay2021}, (C) we generate a model reward that attains a target reward value (which parties can use for future predictions). Our model reward is in the form of posterior samples of the model parameters instead. We propose a new mechanism to control/generate model rewards that work using SS and preserve similarity to the grand coalition's model.
+
+Fig.~\ref{fig:related-venn} shows how our work in this paper fills the gap in the existing works.
+
+
+
+\section{Characteristic/Valuation Function}\label{app:valuation}
+\subsection{Proofs of properties for valuation function}\label{app:valproof}
+
+In this section, we will use the random variable notations defined in App.~\ref{app:fundamental}. Moreover, we abbreviate the set of perturbed SS random variables corresponding to a coalition $C$ of parties as $O_C \triangleq \{O_i\}_{i \in C}$.
+
+Let $\He{a}$ denote the entropy of the variable $a$.
+
+\paragraph{Relationship between KL divergence and information gain.}
+
+\begin{align*}
+\MI{\theta; O_C} &= \Eu {\vo_C \sim O_C} {\KL{{p(\theta|\vo_C)};{p(\theta)}}} \\
+&= \He{\theta} - \Eu {\vo_C \sim O_C} {\He{\theta|O_C=\vo_C}}\ .
+\end{align*}
+
+\paragraph{Party monotonicity (V2).}
+
+Consider two coalitions $C \subset C' \subseteq N$.
+By taking an expectation w.r.t.~random vector $O_{C'}$, 
+\[
+\Eu {\vo_{C'} \sim O_{C'}}{v_{C}} = \Eu {\vo_C \sim O_C} {\KL{{p(\theta|\vo_C)};{p(\theta)}}} = \MI{\theta; O_C} = \He{\theta} - \He{\theta|O_C}
+\]
+and  
+\[
+\Eu {\vo_{C'} \sim O_{C'}}{v_{C'}} = \Eu {\vo_{C'} \sim O_{C'}} {\KL{{p(\theta|\vo_{C'})};{p(\theta)}}} = \MI{\theta; O_{C'}} =  \He{\theta} - \He{\theta|O_C, O_{C' \setminus C}} .
+\]
+Then, $\Eu {\vo_{C'} \sim O_{C'}}{v_{C'}} > \Eu {\vo_{C'} \sim O_{C'}}{v_{C}} $ as conditioning additionally on $O_{C' \setminus C}$ should not increase the entropy (i.e., $\He{\theta|O_C, O_{C' \setminus C}} \leq \He{\theta|O_C}$) due to the ``information never hurts" bound for entropy \cite{Cover91}. 
+
+\paragraph{Privacy-valuation trade-off (V3).}
+
+\begin{figure}[ht]
+ \begin{center}
+\begin{tikzpicture}
+
+  \node[latent]               (theta)      {$\theta$} ;
+  \node[latent, right=1.0cm of theta] (s)    {$S_i$} ;
+  \node[obs, right=1.0cm of s]      (o)        {$O_i$} ;
+  \node[latent, below=1.0cm of o] (z1)    {$Z^1_i$} ;
+  \node[obs, right=1.0cm of o]      (os)        {$O^s_i$} ;
+  \node[latent, below=1.0cm of os] (z2)    {$Z^2_i$} ;
+  \node[latent, above=1.0cm of s] (sc)    {$S_{C \setminus \{i\}}$};
+  \node[obs, above=1.0cm of o] (oc)    {$O_{C \setminus \{i\}}$};
+
+  \edge {theta} {s};
+  \edge {s,z1} {o};
+  \edge {o,z2} {os};
+
+  \edge {theta} {sc}
+  \edge {sc} {oc};
+
+
+\end{tikzpicture}
+ \end{center}
+  \caption{Graphical model to illustrate privacy-valuation trade-off (V3) where $O_i \triangleq S_i + Z^1_i$ and $O^s_i \triangleq O_i + Z^2_i$. }\label{fig:gm1}
+\end{figure}
+
+Let $\eps_i^s < \eps_i$, and
+$Z^1_i$ and $Z^2_i$ be independent Gaussian distributions with mean $0$ and, respectively, variance ${a_i}/{\eps_i}$ and $({a_i}/{\eps^s_i}) - ({a_i}/{\eps_i}) > 0$ where $a_i \triangleq 0.5\ \lambda\ \Delta_2^2(g)$, function $g$ computes the exact SS $\vs_i$ from local dataset $\gD_i$, and $\Delta_2(g)$ denotes its $\ell_2$-sensitivity.
+Adding $Z^1_i$ to $S_i$ will ensure $(\lambda,\eps_i)$-DP while adding both $Z^1_i$ and \emph{independent} $Z^2_i$ to $S_i$ is equivalent to adding Gaussian noise of variance ${a_i}/{\eps^s_i}$ to ensure $(\lambda,\eps^s_i)$-DP.\footnote{Adding or subtracting \emph{independent} noise will lead to a random variable with a \emph{higher} variance. Thus, we cannot model the random variable $O_i$ of a lower variance ${a_i}/{\eps_i}$ to ensure $(\lambda,\eps_i)$-DP as $O^s_i - Z_i^2$.} 
+From the graphical model in Fig.~\ref{fig:gm1} and the Markov chain $\theta \rightarrow O_i \rightarrow O^s_i$, the following conditional independence can be observed: $\theta \CI O^s_i \mid O_i$. By the \emph{data processing inequality}, no further processing of $O_i$, such as the addition of noise, can increase the information of $\theta$. Formally, $\MI{\theta; O_i} \geq \MI{\theta; O^s_i}$.
+Simultaneously, $\theta \nCI O_i \mid O^s_i$. Hence, $\MI{\theta; O_i} \neq \MI{\theta; O^s_i} \Rightarrow (\MI{\theta; O_i} > \MI{\theta; O^s_i})$.
+
+To extend to any coalition $C$ containing $i$, 
+by the chain rule of mutual information, 
+\begin{align*}
+\MI{\theta; O_i, O^s_i, O_{C \setminus \{i\}}} &=
+\MI{\theta; O_i, O_{C \setminus \{i\}}} + \MI{\theta; O^s_i | O_i, O_{C \setminus \{i\}}} \\ &=
+\MI{\theta; O_i^s, O_{C \setminus \{i\}}} + \MI{\theta; O_i | O_i^s, O_{C \setminus \{i\}}}\ .
+\end{align*}
+As conditional independence $\theta \CI O^s_i \mid O_i, O_{C \setminus \{i\}}$ and dependence $\theta \nCI O_i \mid O^s_i, O_{C \setminus \{i\}}$ still hold, $\MI{\theta; O^s_i | O_i, O_{C \setminus \{i\}}} = 0$ and  $\MI{\theta; O_i | O_i^s, O_{C \setminus \{i\}}} > 0$, respectively.
+It follows from the above expression that
+$\MI{\theta; O_C} > \MI{\theta; O_i^s, O_{C \setminus \{i\}}}$, which implies $\E_{O_C} [v_C] > \E_{O_{C \setminus \{i\}}, O_i^s} [v_C^s]\ .$
+For future work, the proof can be extended to other DP mechanisms.
+
+\subsection{Proof of Remark in Sec.~\ref{sec:valuation}}\label{app:valproofalt}
+Let the alternative valuation of a coalition $C$ be
+$v'_C \triangleq \KL{{p(\theta|\vo_N)};{p(\theta)}} -  \KL{{p(\theta|\vo_N)};{p(\theta|\vo_C)}}$.
+Then, $v'_\emptyset = 0$ and $v'_N = \KL{{p(\theta|\vo_N)};{p(\theta)}}$.
+It can be observed that
+\squishlisttwo
+    \item Unlike $v_C$, $v'_C$ may be negative.
+    \item Unlike $v_N$, $v'_N$ is guaranteed to have the highest valuation as the minimum KL divergence $\KL{{p(\theta|\vo_N)};{q(\theta)}}$ is $0$ only when $q(\theta) = p(\theta|\vo_N)$. This is desirable when we want the grand coalition to be more valuable than the other coalitions but odd when we consider the non-private posterior $q(\theta) = p(\theta|\vs_N)$: Intuitively, the model computed using $\vs_N$ should be more valuable using $v'$ than that computed using the perturbed SS $\vo_N$.
+\squishend
+By taking an expectation w.r.t.~$\vo_N$, 
+\begin{align*} 
+\Eu{p(O_N)}{v'_C} &= \MI{\theta; O_N} - \Eu {\vo_C \sim p(O_C)} {\Eu
+{\vo_{N \setminus C} \sim p(O_{N \setminus C}|\vo_C)}
+{\KL{{p(\theta|\vo_N = \{\vo_{N \setminus C}, \vo_C\})};{p(\theta|\vo_C)}}}} \\
+&= \MI{\theta; O_N} - \Eu {\vo_C \sim p(O_C)} {
+\Eu
+{\vo_{N \setminus C} \sim p(O_{N \setminus C}|\vo_C)}
+{\Eu{\theta \sim p(\theta| \vo_{N\setminus C}, \vo_C)} { \log \frac{p(\theta|\vo_{N \setminus C}, \vo_C)}{p(\theta|\vo_C)} }}} \\
+&\overset{(i)}{=} \MI{\theta; O_N} - \Eu {\vo_C \sim p(O_C)} {
+\Eu
+{\theta, \vo_{N \setminus C} \sim p(\theta, O_{N \setminus C}|\vo_C)} { \log \frac{p(\theta, \vo_{N \setminus C} | \vo_C)}{p(\theta|\vo_C)\ p(\vo_{N \setminus C}|\vo_C)} }} \\
+&= \MI{\theta; O_N} - \Eu {\vo_C \sim p(O_C)} {\KL{{p(\theta, O_{N \setminus C} |\vo_C)};{p(\theta|\vo_C)\ p(O_{N \setminus C}|\vo_C)}}} \\
+& \overset{(ii)}{=} \MI{\theta; O_N} - \MI{\theta;  O_{N \setminus C} |O_C} \\
+& = \MI{\theta; O_C} = \Eu{p(O_N)}{v_C}\ .
+\end{align*}
+In equality (i) above, we multiply both the numerator and denominator within the log term by $p(\vo_{N \setminus C}|\vo_C)$ and consider the expectation of the joint distribution since by the chain rule of probability, $p(\theta, O_{N \setminus C}|\vo_C) = p(O_{N \setminus C}|\vo_C)\ p(\theta|O_{N \setminus C}, \vo_C)$. Equality (ii) is due to the definition of conditional mutual information.
+
+\subsection{KL Estimation of Valuation Function}\label{app:val-compute}
+
+KL estimation is only a tool and not the focus of our work. Our valuation will become more accurate and computationally efficient as KL estimation tools
+improve.
+
+\paragraph{Recommended - nearest-neighbors \cite{perez2008kl,wang2009kl}.}
+Given $\Theta^{\text{post}}$ and $\Theta^{\text{prior}}$  which consists of $m$ samples of $\theta$ (with dimension $d$) from, respectively, the posterior $p(\theta|\vo_C)$ and prior $p(\theta)$, we estimate the KL divergence as
+\[
+\frac{d}{m} \sum_{\theta \in \Theta^{\text{post}}} \log \frac{\delta_k^{\text{prior}}(\theta)}{\delta_k^{\text{post}}(\theta)} + \log \frac{m}{m-1}
+\]
+where $\delta_k^{\text{post}}(\theta)$ is the distance of the sampled $\theta$ to its $k$-th nearest neighbor in $\Theta^{\text{post}}$ (excluding itself) and $\delta_k^{\text{prior}}(\theta)$ is the distance of the sampled $\theta$ to the $k$-th nearest neighbor in $\Theta^{\text{prior}}$.
+
+The number $k$ of neighbors is tunable and analyzed in 
+ the follow-up work of \citet{singh2016finite}.
+As the number $m$ of samples increases, the bias and variance decrease. The convergence rate is analysed by \citet{zhao2020klbv}. Moreover, the estimate converges almost surely \cite{perez2008kl} and is consistent \cite{wang2009kl} for \emph{independent and identically distributed (i.i.d.) samples}.
+Furthermore, as the KL divergence is invariant to metric reparameterizations, the bias can be reduced by changing the distance metric \cite{noh2014bias,wang2009kl}.
+
+To generate i.i.d.~samples, we suggest the usage of the NUTS sampler or thinning (keeping only every $t$-th sample). 
+We observe that if the samples from $\theta\mid\vo_C$ are non-independent, i.e., correlated and close to the previous sample, we may underestimate its distance to the $k$-th distinct neighbor in $\theta\mid\vo_C$, $\delta_k^{\text{post}}(\theta)$, and thus overestimate the KL divergence. This is empirically verified in Table~\ref{tab:num-thin-calih}.
+We have also observed that the KL divergence may be underestimated when the posterior is concentrated at a significantly different mean from the prior.
+
+\paragraph{Recommended for large $\eps$ - approximate $p(\theta|\vo_C)$ using maximum likelihood distribution from the $p(\theta)$'s exponential family.} 
+When a small noise is added to ensure weak DP, we can approximate $p(\theta|\vo_C)$ with a distribution $q$ from the same exponential family as $p(\theta|\vs_C)$. We can (i) determine $q$'s parameters via \emph{maximum likelihood estimation} (MLE) from the Gibbs samples\footnote{The distribution $q$ from MLE minimizes the KL divergence $\KL{p(\theta|\vo_C);q(\theta)}$.} and (ii) compute the KL divergence in closed form.
+
+However, the KL estimate is inaccurate (i.e., large bias) when the distribution $q$ is a poor fit for the posterior $p(\theta|\vo_C)$. Future work can consider using \emph{normalizing flows} as $q$ to improve the fit, reduce the estimation bias, and work for a larger range of DP guarantees $\eps$. However, this KL estimation method may be computationally slow and risks overfitting.
+
+\paragraph{Probabilistic Classification.} Let the binary classifier $f: \Theta \rightarrow [0,1]$ (e.g., a neural network) discriminate between samples from two densities $q_1(\theta)$ (here, the posterior $p(\theta|\vo_C)$) and $q_0(\theta)$ (here, the prior $p(\theta)$) and output the probability that $\theta$ comes from $q_1(\theta)$.
+Concretely, we label the $m$ samples from $q_1(\theta)$ and $q_0(\theta)$ with $y=1$ and $y=0$, respectively. By Bayes' rule, the density ratio is
+\[
+\frac{q_1(\theta)}{q_0(\theta)} = \frac{p(\theta|y=1)}{p(\theta|y=0)} = \frac{p(y=1|\theta)}{p(y=0|\theta)} = 
+\frac{p(y=1|\theta)}{1-p(y=1|\theta)}
+\ . 
+\]
+Optimizing a \emph{proper scoring rule} such as minimizing the binary cross-entropy loss should return the Bayes optimal classifier $f^*(\theta) = p(y=1|\theta)$. The KL estimate is then computed as the mean log-density ratio over samples from $q_1(\theta)$. As the log-density ratio is $\texttt{sigmoid}^{-1}(p(y=1|\theta))$, when $f$ is a neural network with $\texttt{sigmoid}$ as the last activation layer, we can use the logits before activation directly.
+
+However, with only limited finite samples $m$ and a large separation between the distributions $q_1$ and $q_0$, the density ratio and KL estimate may be highly inaccurate \cite{choi2021featurized}:
+Intuitively, the finite samples may be linearly separable and the loss is minimized by setting the logits of samples from $q_1(\theta)$ (hence KL) to infinity (i.e.,  classify it overconfidently with probability $1$). 
+As the separation between the distributions $q_1$ and $q_0$ increases, exponentially more training samples may be needed to obtain samples between $q_1$ and $q_0$ \cite{choi2021featurized}.
+Moreover, as training may not produce the Bayes optimal classifier, there is also an  issue of larger variance across runs.
+
+
+\section{Reward Scheme for Ensuring Incentives}
+
+\subsection{Incentives based on Coalition Structure}\label{app:coalition-sturcture}
+
+Instead of assuming the grand coalition $N$ form, we can consider the more general case where parties team up and partition themselves into a \emph{coalition structure} $CS$. Formally, $CS$ is a set of coalitions such that $\bigcup_{C \in CS} C = N$ and $C \cap C' = \emptyset$ for any $C, C' \in CS$ and $C \neq C'$.
+The following incentives are modified below:
+\begin{description}[leftmargin=0pt]
+\item[P2] For any coalition $C \in CS$, there is a party $i \in C$ whose model reward is the coalition $C$'s posterior, i.e., $q_i(\theta) = p({\theta |\vo_C})$. It follows that $r_i = v_C$ as in R2 of \cite{simcollaborative}. 
+\item[P5] Among multiple model rewards $q_i(\theta)$ whose value $r_i$ equates the target reward $r^*_i$, we secondarily prefer one with a higher similarity $r'_{i,C} = -D_{KL}(p(\theta |\vo_C);q_i(\theta))$ to the coalition's posterior $p(\theta |\vo_C)$ where $i \in C$.
+\end{description}
+
+
+\subsection{Fairness Axioms}\label{app:fair}
+
+The fairness axioms from the work of \citet{simcollaborative} are reproduced below:
+
+ \begin{enumerate}[label=F\arabic*,leftmargin=*,itemsep=5pt,topsep=0pt,parsep=0pt,partopsep=0pt]
+	\item\label{FAIR1} \textbf{Uselessness.}
+	If including the data or sufficient statistic of party $i$ does not improve the quality of a model trained on the aggregated data of any coalition (e.g., when $\gD_i = \emptyset$, $c_i = 0$), 
+	then party $i$  should receive a valueless model reward: For all $i\in N$,
+	\[(\forall C\subseteq N \setminus \{i\}\ \ v_{C \cup \{i\}} = v_C) \Rightarrow r_i = 0 \ .\]
+
+	\item\label{FAIR2} \textbf{Symmetry.}
+	If  %
+	including the data or sufficient statistic of party $i$ 
+	yields the same improvement as that of party $j$ in the quality of a model trained on the aggregated data of any coalition  (e.g., when $\gD_i = \gD_j$), then they should receive equally valuable model rewards: For all $i,j\in N$ s.t.~$i \neq j$,
+	\[ (\forall C \subseteq N\setminus\{i,j\}\ \ v_{C \cup \{i\}} = v_{C \cup \{j\}}) \Rightarrow r_i = r_j \ .\]
+
+    \item\label{FAIR3} \textbf{Strict Desirability~\cite{masc-kernel}.} 
+    If the quality of a model trained on the aggregated data of at least a coalition improves more by including the data or sufficient statistic of party $i$ than that of party $j$, but the reverse is not true,
+    then party $i$  should receive a more valuable model reward than party $j$: For all $i,j\in N$ s.t.~$i \neq j$,
+	\[
+	\begin{array}{l} 
+	(\exists B \subseteq N\setminus\{i,j\}\ \ v_{B \cup \{i\}} > v_{B \cup \{j\}})\ \land \vspace{1mm}\\
+     (\forall C \subseteq N\setminus\{i,j\}\ \ v_{C \cup \{i\}} \geq v_{C \cup \{j\}})	
+	\Rightarrow r_i > r_j\  . 
+	\end{array} 
+	\]
+
+ 	\item\label{FAIR4} \textbf{Strict Monotonicity.}
+	If the quality of a model trained on the aggregated data of at least a coalition containing party $i$ improves (e.g., by including more data of party $i$), \emph{ceteris paribus},
+    then party $i$ should receive a more valuable model reward than before:  
+	Let $\{v_C\}_{C \in 2^N}$ and $\{\tilde{v}_C\}_{C \in 2^N}$ denote any two sets of values of data over all coalitions $C\subseteq N$,
+	and $r_i$ and $\tilde{r}_i$ be the corresponding values of model rewards received by party $i$. For all $i\in N$,
+	\[
+	\begin{array}{l} 
+	(\exists B \subseteq  N\setminus\{i\}\ \ \tilde{v}_{B \cup \{i\}} > v_{B \cup \{i\}})
+	\ \land \vspace{1mm}\\
+	(\forall C \subseteq  N\setminus\{i\}\ \ \tilde{v}_{C \cup \{i\}} \geq v_{C \cup \{i\}})
+	\ \land \vspace{1mm}\\
+	(\forall A \subseteq  N\setminus\{i\}\ \ \tilde{v}_{A} = v_{A}) %
+\land (\tilde{v}_N > r_i) \Rightarrow \tilde{r}_i > r_i\ . 
+	\end{array} 
+	\]
+\end{enumerate}
+
+
+\subsection{Remark on Rationality}\label{app:rationality}
+
+Let $v_{\vs_i}$ denote the Bayesian surprise party $i$'s \emph{exact} SS $\vs_i$ elicits from the prior belief of model parameter.
+We define \textbf{Stronger Individual Rationality} (SIR, the strengthened version of \ref{rational}) as: each party should receive a model reward that is more valuable than the model trained on its exact SS alone: $\forall i \in N r_i^* \geq v_{\vs_i}$.
+
+We consider two potential solutions to achieve stronger individual rationality and explain how they fall short.
+\begin{itemize}[noitemsep]
+    \item Each party $i$ declares the value $v_{\vs_i}$ and the mediator selects a smaller $\rho$ to guarantee SIR.
+
+    SIR is infeasible when the grand coalition's posterior is less valuable than party $i$'s model based on exact SS, i.e., $v_N < v_{\vs_2}$. In Fig.~\ref{fig:private-v-trade-off}, we observe that when party $2$ selects a small $\eps_2$, $v_N$ is less than $v_{\vs_2}$ which can approximated by $v_2$ under large $\eps_2$, i.e., the right end point of the blue line. Instead, SIR is only empirically achievable when party $2$ and others select a weaker DP guarantee as in Fig.~\ref{fig:larger-improvement} in App.~\ref{app:subsec-larger-improve}. Note that our work only incentivizes weaker DP guarantees and does not restrict parties' choice of DP guarantees.
+
+    \item The mediator should reward party $i$ with perturbed SS $\vt_j^i$ (for Sec.~\ref{sec:strengthen})  or $\scalei \vo_j, \scalei c_j, \scalei Z_j$ (for Sec.~\ref{sec:temper}) for every other party $j \neq i$. Party $i$ can then combine these with its exact $\vs_i$ to guarantee SIR. 
+    
+    This approach achieves SIR at the expense of truthfulness. As party $i$ perturbed SS $\vo_i$ is not used to generate its own model reward, party $i$ may be less deterred (hence more inclined) to submit less informative or fake SS.
+
+\end{itemize}
+
+SIR is not needed when each party prefers training a DP model even when alone. 
+SIR may be desired in other scenarios. However, our approach does not use alternative solutions to satisfy SIR as we prioritize incentivizing parties to (i) truthfully submit informative perturbed SS that they would use for future predictions, while (ii) not compromising for weak DP guarantees.
+
+\section{Details on Reward Control Mechanisms}\label{app:reward}
+
+
+
+
+
+
+In the subsequent proofs, any likelihood $p^\scalei(\cdot)$ should be interpreted as $[p(\cdot)]^\scalei$: We only raise likelihoods (of data conditioned on model parameters) to the power of $\scalei$.
+
+\subsection{Likelihood Tempering and Scaling SS Equivalence Proof}
+
+Let $g$ denote the function that maps any data point $d_l$ or dataset $\gD_k$ to its sufficient statistic.
+For any data point $d_l$, we assume that the data likelihood $p(d_l|\theta)$ is from an exponential family with natural parameters $\theta$ and sufficient statistic $g(d_l)$.
+The data likelihood $p(d_l|\theta)$ can be expressed in its natural form:
+\[
+p(d_l|\theta) = h(d_l)\exp{\left[g(d_l) \cdot \theta - A(\theta)\right]}
+\]
+where $\va \cdot \vb \triangleq \va^\top \vb$ denotes the dot product between two vectors.
+
+Next, we assume that $p(\theta)$ is the conjugate prior\footnote{$p(\theta)$ and $p(\theta|\gD_i)$ belong to the same exponential family.} for $p(\gD_k|\theta)$ with natural parameters $\veta$ and the sufficient statistic mapping function $T: \theta \rightarrow \begin{bmatrix} \theta^\top, -A(\theta) \end{bmatrix}^\top$. 
+Then, for $c_k$ data points which are conditionally independent given the model parameters $\theta$,
+\begin{align*}
+    p(\theta|\{d_l\}_{l=1}^{c_k}) & \propto p(d_1|\theta) \dots p(d_{c_k}|\theta)\ p(\theta|\veta) \\
+    & \propto \left[ \left(\prod_{l=1}^{c_k} h(d_l) \right) \exp\left[\underbrace{\sum_{l=1}^{c_k} g(d_l)}_{g(\gD_k)} \cdot \theta - c_k A(\theta)\right] \right]
+    \left[ h(\theta)\exp{[T(\theta) \cdot \veta - B(\veta)]} \right] \\
+    & \propto \exp\left[g(\gD_k) \cdot \theta - c_k A(\theta) + T(\theta) \cdot \veta - B(\veta) \right] \\
+    & \propto \exp\left[
+    \left(\begin{bmatrix}g(\gD_k)^\top, c_k \end{bmatrix}^\top + \veta \right) \cdot T(\theta) - C(\veta) \right]
+\end{align*}
+where $C(\veta)$ is chosen such that the distribution is normalized.
+
+Substituting the above SS formulae into~\eqref{eq:m4}, the normalized posterior distribution (after tempering the likelihood) is
+\begin{align*}
+    q_i(\theta) & \propto p^{\scalei}(d_1|\theta) \dots p^{\scalei} (d_{c_k}|\theta)\ p(\theta|\veta) \\
+    & \propto \left[ \left(\prod_{l=1}^{c_k} h(d_l) \right)^{\scalei} \exp \left[ \scalei \left[g(\gD_k) \cdot \theta - c_k A(\theta)\right] \right] \right]
+    \left[ h(\theta)\exp{[T(\theta) \cdot \veta - B(\veta)]} \right] \\
+    & \propto \exp\left[\scalei g(\gD_k) \cdot \theta - \scalei c_k A(\theta) + T(\theta) \cdot \veta - B(\veta) \right] \\
+    & \propto \exp\left[
+    \left(\begin{bmatrix}\scalei g(\gD_k)^\top, \scalei c_k \end{bmatrix}^\top + \veta \right) \cdot T(\theta) - C'(\veta) \right]
+\end{align*}
+where $C'(\veta)$ is chosen such that the distribution is normalized.
+
+Thus, tempering the likelihood by $\scalei$ is equivalent to scaling the SS $g(\gD_k)$ and data quantity $c_k$.
+We additionally proved that the normalized posterior can be obtained from the scaled SS and data quantity via the conjugate update.
+
+\paragraph{Bayesian Linear Regression (BLR).}
+
+The Bayesian linear regression model was introduced in App.~\ref{app:sub:ss}
+To recap, BLR model parameters $\theta$ consists of the weight parameters $\vw \in \mathbb{R}^w$ and the noise variance $\sigma^2$.
+BLR models the relationship between the concatenated output vector $\vy$ and the design matrix $\mX$ as $\vy = \mX \vw + \mathcal{N}(0, \sigma^2\mI)$.
+The tempered likelihood 
+\begin{align*}
+ p^\scalei(\vy | \mX, \vw, \sigma^2) & \propto \left[ (2 \pi \sigma^2)^{-\frac{c}{2}} \exp{\left( -\frac{(\vy-\mX \vw)^\top (\vy-\mX \vw)}{2\sigma^2}\right)} \right]^\scalei \\
+&= (2 \pi \sigma^2)^{-\frac{c \scalei}{2}} \exp{\left[\frac{-1}{2\sigma^2} \scalei \vy^\top \vy + \frac{1}{\sigma^2}\vw^\top \scalei \mX^\top \vy - \frac{1}{2\sigma^2}\vw^\top \scalei \mX^\top \mX \vw \right]}\ . 
+\end{align*}
+only depends on the scaled sufficient statistics $\scalei (\vy^\top \vy, \mX^\top \vy, \mX^\top \mX)$.
+When the prior $p(\vtheta)$ follows the conjugate normal inverse-gamma distribution, the power posterior can be obtained from the scaled SS and data quantity via the conjugate update.
+
+
+\paragraph{Generalized Linear Model (GLM).}
+App.~\ref{app:sub:ss} introduces GLMs and states that the polynomial approximation to the GLM mapping function is an exponential family model. Tempering the GLM likelihood function by $\scalei$ is equivalent to scaling the GLM mapping function by $\scalei$ and can achieved by scaling the polynomial approximate SS by the same factor.
+
+
+
+
+
+
+
+
+\subsection{Smaller Tempering Factor Decreases Reward Value Proof}
+
+The KL divergence between two members of the same exponential family with natural parameters $\veta$ and $\veta'$, and log partition function $B(\cdot)$ is given by $(\veta - \veta')^\top \nabla B(\veta) - B(\veta) + B(\veta')$ \cite{nielsen2010expkl}.
+To ease notational overload,
+we abuse some existing ones, which only apply in this subsection, by letting $\vs_N \triangleq \sum_{k \in N} \vs_k$ and $c_N \triangleq \sum_{k \in N} c_k$.
+Let $\veta'$ and $\veta$ be the natural parameters of the prior and the normalized tempered posterior distribution (used to generate a model reward with value $r_i$), respectively. Then, $\veta = \veta'+ \scalei\begin{bmatrix} \vs_N^\top, \ c_N  \end{bmatrix}^\top$.
+For $\scalei \in [0,1]$, the derivative of $r_i$ w.r.t.~$\scalei$ is non-negative:
+\begin{align*}
+\frac{\mathbf{d} r_i}{\mathbf{d} \scalei} 
+& = \frac{\partial r_i}{\partial \eta} \frac{\partial \eta}{\partial \scalei} \\
+& = \left((\veta - \veta')^\top \nabla^2 B(\veta) + \nabla B(\veta) -\nabla B(\veta)\right) \begin{bmatrix} \vs_N^\top, \ c_N  \end{bmatrix}^\top \\
+& = \begin{bmatrix} \scalei\vs_N^\top,\ \scalei c_N  \end{bmatrix} \nabla^2 B(\veta) \begin{bmatrix} \vs_N^\top, \ c_N  \end{bmatrix}^\top \\
+& = \scalei\begin{bmatrix} \vs_N^\top,\ c_N  \end{bmatrix} \nabla^2 B(\veta) \begin{bmatrix} \vs_N^\top, \ c_N  \end{bmatrix}^\top
+ \geq 0 \ .
+\end{align*}
+As $B(\veta)$ is convex w.r.t. $\veta$, the second derivative\footnote{This second derivative is the variance of the sufficient statistic of $\theta$. It is non-negative and often positive.} $\nabla^2 B(\veta)$ is positive semi-definite, so $\begin{bmatrix} \vs_N^\top,\ c_N  \end{bmatrix} \nabla^2 B(\veta) \begin{bmatrix} \vs_N^\top, \ c_N  \end{bmatrix}^\top \geq 0$.
+
+Hence, for $\scalei \in [0,1]$, the KL divergence is non-decreasing as $\scalei$ increases to $1$.
+In other words, as $\scalei$ shrinks towards $0$, the KL divergence is decreasing; equality only holds when the variance of the SS is $0$.
+
+
+\subsection{Implementation of Reward Control Mechanisms} \label{app:subsec-noise-algo-update}
+This subsection introduces how to obtain the model reward $q_i(\theta)$ for each party $i$ in Sec.~\ref{sec:mechanism}.
+
+\paragraph{Update for noise addition (varying $\addnoisei$).}
+We update the inputs to Algorithm~\ref{algo:gibbs} for BLR or the No-U-Turn sampler for GLM. 
+To generate party $i$'s posterior samples, for every party $k \in N$, 
+the algorithm use the further perturbed SS $\vt_k^i$ instead of the perturbed SS $\vo_k$. Moreover, the algorithm consider the total DP noise $Z_k + \mathcal{N}(\vzero, 0.5\ \lambda\  \Delta_2^2(g_k)\ \addnoisei\  \mI)$ instead of only the noise $Z_k$ added by party $k$.
+
+\paragraph{Update for likelihood tempering (varying $\scalei$).}
+To generate party $i$'s posterior samples, for every party $k \in N$, Use $\scalei c_k$, $\scalei \vo_k$, and $p(\scalei Z_k)$ as the inputs to Algorithm~\ref{algo:gibbs} for BLR or the No-U-Turn \cite{hoffman2014no} sampler for GLM instead. Scaling the perturbed SS would affect the sensitivity of party $k$'s submitted information and the DP noise needed.
+
+\section{Time Complexity}\label{app:complexity}
+
+\begin{breakablealgorithm}
+	\caption{An overview of our collaborative ML problem setup. \\
+    \footnotesize The computational complexity is given in App.~\ref{app:complexity}.
+ }\label{alg-overview}
+	\begin{algorithmic}[1]
+	    \REQUIRE{R{\'e}nyi DP $\lambda$ parameter, Noise-aware inference algorithm, Shared prior $p(\theta)$ of model parameters and prior $p(\omega)$ of data parameters, $\rho$-Shapley fairness scheme parameter.} \\     
+        \textbf{\textit{ \\ // Party's actions}}
+        \textcolor{overviewblue}{\textit{(ensure DP)}}
+        \FOR{each party $i \in N$}
+            \STATE Compute exact SS $\vs_i$ from dataset $\gD_i$. \label{algstep:compute-ss}
+            \STATE Choose DP guarantee $(\lambda, \epsilon_i)$-R{\'e}nyi DP.
+            \STATE Sample $\vz_i$ from the Gaussian distribution $p(Z_i)=\mathcal{N}(\boldsymbol{0},\ 0.5\ ({\lambda}/\epsilon_i)\  \Delta_2^2(g)\ \boldsymbol{I})$. \label{algstep:perturb-start} 
+            \STATE Compute perturbed SS $\vo_i \triangleq \vs_i +  \vz_i$. \label{algstep:perturb-end}
+            \STATE Submit (i) number~$c_i \triangleq |\gD_i|$ of data points in its dataset $\gD_i$, (ii) perturbed SS $\vo_i$ and (iii) Gaussian distribution $p(Z_i)$ to the mediator.
+        \ENDFOR \\
+        \texttt{\\}
+        \textbf{\textit{ // Mediator's actions}} \\
+        \textit{ // 1. Compute valuation of perturbed SS needed for Shapley value.}
+        \textcolor{overviewblue}{\textit{The choice of $v$ ensures a privacy-valuation trade-off.}}
+        \STATE Draw $m$ samples from $p(\theta)$.
+        \FOR{each coalition $C \subseteq N$} \label{algstep:decide-start}
+            \STATE Draw $m$ samples from the posterior $p(\theta | \vo_C)$ by applying the noise-aware inference algorithm. The algorithm requires the perturbed SS $\vo_C \triangleq \{\vo_i\}_{i \in C}$, data quantities $\{c_i\}_{i \in C}$ and noise distributions $\{Z_i\}_{i \in C}$.
+            \STATE Compute $v_C$ by using the nearest-neighbors method \cite{perez2008kl} to estimate the KL divergence $\KL{p(\theta|\vo_C); p(\theta)}$ from the samples.
+        \ENDFOR \\
+        \texttt{\\}
+        \textit{ // 2. Decide the target reward values using $\rho$-Shapley value \cite{simcollaborative}} which 
+        \textcolor{overviewblue}{\textit{ ensure efficiency (\ref{efficiency}), fairness (\ref{fairness}), rationality (\ref{rational}) and control group welfare (\ref{group-welfare}).}}
+        \FOR{each party $i \in N$} 
+        \STATE Compute Shapley value $\phi_i = \textstyle \left({1}/{n}\right)
+\sum_{C \subseteq N \setminus i} 
+\left[ {{n-1} \choose |C|}^{-1} 
+\left( v_{C \cup \{i\}} - v_C \right) \right] $.
+        \ENDFOR
+        \STATE Identify the maximum Shapley value $\phi_* = \max_{k \in N} \phi_k$.
+        \FOR{each party $i \in N$}
+        \STATE Compute $\rho$-Shapley fair target reward $r_i^*$ for party $i$ using the formula $ r_i^* = v_N \times (\phi_i/\phi_*)^\rho $
+        \ENDFOR \\ \label{algstep:decide-end}
+        \textit{ \\ // 3. Generate model reward $q_i(\theta)$ with value $r_i = r_i^*$}
+        \textcolor{overviewblue}{\textit{ that preserves similarity (\ref{similarity}) with the grand coalition's model and privacy for others (\ref{dp-feasibility}).}}
+        \FOR{each party $i \in N$}
+        \STATE Initialize $\texttt{Kr} = ()$. \label{algstep:reward-start}
+        \WHILE{\texttt{True}} 
+            \STATE Select $\scalei \in [0,1]$ using a root finding algorithm and $\texttt{Kr}$.
+            \STATE Draw $m$ samples from the normalized posterior $q_i(\theta)$ (Eq.~\ref{eq:m4} by applying the noise-aware inference algorithm. Use the scaled perturbed SS $\{\scalei \vo_i\}_{i \in N}$, data quantities $\{\scalei c_i\}_{i \in N}$ and noise distributions $\{\scalei Z_i\}_{i \in N}$.
+            \STATE Compute the reward value $r_i$ by using the nearest-neighbors method \cite{perez2008kl} to estimate the KL divergence $\KL{q_i(\theta); p(\theta)}$ from the samples.
+            \IF{attained reward value $r_i = r^*_i$}
+                \STATE Reward party $i$ with the $m$ posterior samples from $q_i(\theta)$.
+                \BREAK
+            \ENDIF
+            \STATE Update $\texttt{Kr} \gets \texttt{Kr} + ((\scalei, r_i ),)$
+        \ENDWHILE \label{algstep:reward-end}
+        \ENDFOR
+	\end{algorithmic}
+	\label{algo:overview}
+\end{breakablealgorithm}
+
+The main steps of our scheme are detailed in Algo.~\ref{alg-overview} and the time complexity of the steps are as follows:
+\begin{enumerate}[series=compute]
+    \item \textbf{Local SS $\vs_i$ computation (Line~\ref{algstep:compute-ss} in Algo~\ref{alg-overview}).} Party $i$ will need to sum the SS for its $c_i$ data points. Subsequent steps will not depend on the number $c_i$ of data points.
+    The (approximate) SS is usually an $\gO(d^2)$ vector where $d$ is the number of regression model features. \textbf{Therefore, this step incurs $\gO(c_i d^2)$ time}.
+    \item \textbf{Perturbed SS $\vo_i$ computation (Lines~\ref{algstep:perturb-start}-\ref{algstep:perturb-end} in Algo~\ref{alg-overview}).} Each party will need to use the Gaussian mechanism to perturb $\vs_i$.  \textbf{Therefore, this step incurs $\gO(d^2)$ time}.
+\end{enumerate}
+
+\begin{enumerate}[label=\Alph*]
+\item \label{cstep:valuation} 
+\fbox{%
+    \parbox{\dimexpr\linewidth-\parindent}{%
+    \textbf{Valuation of Perturbed SS (Sec.~\ref{sec:valuation}).} The valuation of $\vo_N$ requires us to draw $m$  posterior samples of model parameters using DP noise-aware inference (refer to App.~\ref{app:sub:inference} and the cited references for the exact steps). As the methods of \citet{kulkarni2021glm} and \citet{bernstein2019blr} incur $\gO(m d^4)$ time for a single party, inference based on Fig.~\ref{fig:tikz-noise-aware-2} will take $n$ times longer to consider $n$ parties. 
+    KL estimation using $k$-nearest neighbor will incur $\gO(m \log(m) \mathrm{dim}(\theta))$ time to value multiple (scaled) perturbed SS.
+    \textbf{Therefore, valuation incurs $\gO(n m d^4 + m   \log(m)\ \mathrm{dim}(\theta))$ time}.
+    }}
+\end{enumerate}
+    
+
+\begin{enumerate}[resume=compute]
+    \item \label{cstep:shapley} \textbf{Deciding target reward value $r^*_i$ for every $i \in N$  (Sec.~\ref{sec:incentives}, Lines~\ref{algstep:decide-start}-\ref{algstep:decide-end} in Algo~\ref{alg-overview})).} Computing the Shapley values exactly involves valuing $\vo_C$ for each subset $C \subseteq N$, hence, repeating Step~\ref{cstep:valuation} $\gO(2^n)$ time.
+    When the number of parties is small (e.g., $<6$), we can compute the Shapley values exactly.
+    For larger $n$, we can approximate the Shapley values $(\phi_i)_{i \in N}$ with bounded $\ell_2$-norm error using $\gO(n (\log n)^2)$ samples \cite{jia2019towards,wang2023estimation-note}. Moreover, the value of different coalitions can be computed in \emph{parallel}.  \textbf{Therefore, this step incurs $\gO(2^n)$ or $\gO(n (\log n)^2)$ times the time in Step~\ref{cstep:valuation}}.
+    \item \textbf{Solving for $\scalei$ to generate model reward (Sec.~\ref{sec:temper}, Lines~\ref{algstep:reward-start}-\ref{algstep:reward-end} in Algo~\ref{alg-overview}).} 
+    During root-finding, the mediator values different model rewards $q_i(\theta)$ generated by scaling the perturbed SS  $\vo_k$, data quantity $c_k$ and DP noise distribution $Z_k$ of each party $k \in N$ by different $\scalei$, hence, repeats Step~\ref{cstep:valuation}.
+    As we are searching for the root in a fixed interval $[0,1]$ and to a fixed precision, Step~\ref{cstep:valuation} is repeated a \emph{constant} (usually $<10$) number of times. \textbf{Therefore, this step incurs  $\gO(n m d^4 + m \log(m)\ \mathrm{dim}(\theta))$ time per party}.
+
+    The mediator can further reduce the number of valuation of model rewards (repetitions of Step~\ref{cstep:valuation}) by using the tuples of $(\scalei, r_i)$ obtained when solving for $\scalei$ to narrow the root-finding range for other parties after $i$.
+\end{enumerate} 
+
+\noindent Therefore, the total incurred time depends on the number of valuations performed in Step~\ref{cstep:valuation}.
+The time complexity may vary for other inference and KL estimation methods.
+
+\clearpage
+    
+
+
+\section{Comparison of Reward Control Mechanisms via Noise Addition (Sec.~\ref{sec:strengthen}) vs.~Likelihood Tempering (Sec.~\ref{sec:temper})}\label{app:compare-reward}
+
+See Fig.~\ref{fig:visualize-posterior}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm]{figs/syn-05-posterior-plot.pdf}
+    \caption{We contour plot the distribution of the regression model weights $w_1$ and $w_2$ for the \textcolor{blue}{prior}, the \textcolor{orange}{grand coalition $N$'s posterior}, and the model reward's posterior to attain the target reward value $r^*_2$ \textcolor{green}{utilizing noise addition  (Sec.~\ref{sec:strengthen})} vs.~\textcolor{red}{likelihood tempering (Sec.~\ref{sec:temper})} as the reward control mechanism for the Syn dataset where $\rho=.5$. \textcolor{red}{The tempered posterior} interpolates the prior and grand coalition $N$'s posterior better as its mean/mode lies along the line connecting the prior's and grand coalition $N$'s posterior mean and the variance is scaled by the same extent for both weights.}
+    \label{fig:visualize-posterior}
+\end{figure}
+
+\section{Experiments}\label{app:experiments}
+
+The experiments are performed on a machine with Ubuntu $20.04$ LTS, $2 \times$ Intel Xeon Gold $6230$ ($2.1$GHz) without GPU.
+The software environments used are Miniconda and Python. A full list of packages used is given in the file environment.yml attached.
+
+
+\subsection{Experimental Details}\label{app:dataset}
+
+\paragraph{Synthetic BLR (Syn).} 
+The BLR parameters $\theta$ consist of the weights for each dimension of the $2$D dataset, the bias, and the variance $\sigma^2$.
+The \emph{normal inverse-gamma} distribution used (i) to generate the true regression model weights, variance, and a $2$D dataset and (ii) as our model prior is as follows: $\sigma^2 \sim \texttt{InvGamma}(\alpha_0=5, \beta_0=0.1)$ where $\alpha_0$ and $\beta_0$ are, respectively, the inverse-gamma shape and scale parameters, and $\vw|\sigma^2 \sim \mathcal{N}(\vzero, \sigma^2 \mLambda_0^{-1})$ where $\mLambda_0 = 0.025\ \mI$.
+
+
+We consider three parties $1$, $2$, and $3$ with $c_0=100$, $c_1=200$, and $c_2=400$ data points, respectively. We fix $\eps_1 = \eps_3 = 0.2$ and vary $\eps_2$ from the default $0.1$. As $\eps_2$ increases (decreases), party $2$ may become the most (least) valuable. We allow each party to have a different Gaussian distribution $p(\vx_i)$ by maintaining a separate conjugate \emph{normal inverse-Wishart} distribution $p(\omega_i = (\mu_{\omega,i},\Sigma_{\omega,i}))$ for each party. We set the prior $\Sigma_{\omega,i} \sim \gW^{-1}(\psi_0=\mI, \nu_0=50)$ where $\psi_0$ and $\nu_0$ are the scale matrix and degrees of freedom (i.e., how strongly we believe the prior), respectively. Then, $\mu_{\omega,i} \sim \mathcal{N}(\vzero, \Sigma_{\omega,i} )$.
+The $\ell_2$-sensitivity is estimated using \citet{kulkarni2021locally}'s analysis based on the norms/bounds of the dataset.
+
+One posterior sampling run generates $16$ Gibbs sampling chains in parallel. For each chain, we discard the first $10000$ burn-in samples and draw $m=30000$ samples. To reduce the closeness/correlation between samples which will affect the nearest-neighbor-based KL estimation, we thin and only keep every $16$-th sample and concatenate the thinned samples across all $16$ chains.
+For the experiment on reward control mechanisms, we use $5$ independent runs of posterior sampling and KL estimation.
+
+\paragraph{Californian Housing dataset (CaliH).} 
+As the CaliH dataset may contain outliers, we preprocess the ``public'' dataset ($60\%$ of the CaliH data) by subtracting the median and scaling by the interquartile range for each feature. We train a \emph{neural network} (NN) of $3$ layers with $[48, 24, 6]$ hidden units and the \emph{rectified linear unit} (ReLU) as the activation function to minimize the mean squared error, which we will then use as a ``pre-trained NN''. 
+The outputs of the last hidden layer have $6$ features used as the inputs for BLR.
+We intentionally reduce the number of features in the BLR model by adding more layers to the pre-trained NN and reduce the magnitude of the BLR inputs by adding an activation regularizer on the pre-trained NN hidden layers (i.e., $\ell_2$ penalty weight of $0.005$). These reduce the computational cost of Gibbs sampling/KL estimation and the $\ell_2$-sensitivity of the inputs to BLR (hence the added DP noise), respectively. We also add a weights/bias regularizer with an $\ell_2$ penalty weight of $0.005$ for the last layer connected to the outputs.
+Lastly, we standardize the outputs of the last hidden layer to have zero mean and unit variance.
+
+We preprocess the private dataset for valuation and the held-out validation set (an $80$-$20$ split) using the same pre-trained NN/transformation process. To reduce the sensitivity and added DP noise, we filter and exclude any data point with a $z$-score $> 4$ for any feature. There are $6581$ training data points left. We divide the dataset randomly among $3$ parties such that parties $1$, $2$, and $3$ have, respectively, $20\%, 30\%$ and $50\%$ of the dataset  and $\eps_1 = \eps_3 = 0.2$ while $\eps_2$ is varied from the default $0.1$.
+
+The BLR parameters $\theta$ consist of the weights for each of the $6$ features, the bias, and the variance $\sigma^2$. We assume $\theta$ has a \emph{normal inverse-gamma} distribution and set the prior as follows.
+The prior depends on the MLE estimate based on the public dataset, and we assume it has the same significance as $n_0 = 10$ data points. Hence, we set
+$\sigma^2 \sim \texttt{InvGamma}(\alpha_0= n_0/2, \beta_0 =n_0/2 \times \text{MLE estimate of } \sigma^2)$ and $\vw|\sigma^2 \sim \mathcal{N}(\vzero, \sigma^2 (n_0\ \vx^\top \vx)^{-1})$. %
+
+We assume that each party has the same underlying Gaussian distribution for $p(\vx)$ and maintain only one conjugate \emph{normal inverse-Wishart} distribution $p(\omega = (\mu_{\omega},\Sigma_{\omega}))$ shared across parties. We initialize the prior $p(\omega)$ to be weakly dependent on the prior dataset \cite{murphy2022probabilistic}. %
+The $\ell_2$-sensitivity is estimated using \citet{kulkarni2021locally}'s analysis based on the norms/bounds of the private transformed dataset.
+
+One posterior sampling run generates $16$ Gibbs sampling chains in parallel. For each chain, we discard the first $10000$ burn-in samples and draw $m=30000$ samples. To reduce the closeness/correlation between samples which will affect the nearest-neighbor-based KL estimation, we thin and only keep every $16$-th sample and concatenate the thinned samples across all $16$ chains.
+For the experiment on reward control mechanisms, we use $5$ independent runs of posterior sampling and KL estimation.
+
+
+\paragraph{PIMA Indian Diabetes classification dataset (Diab).}
+This dataset has $8$ raw features such as age, BMI, number of pregnancies, and a binary output variable. Patients with and without diabetes are labeled $y=1$ and $y=-1$, respectively. 
+We split the training and the validation set using an $80$-$20$ split. There are $614$ training data points.
+There are $35.6\%$ and $31.8\%$ of patients with diabetes in the training and validation sets, respectively. Hence, random guessing would lead to a cross-entropy loss of $0.629$.
+
+We preprocess both sets by (i) subtracting the training set's median and scaling by the interquartile range for each feature, (ii) using \emph{principal component analysis} (PCA) to select the $4$ most important components of the feature space to be used as new features, and lastly, (iii) centering and scaling the new features to zero mean and unit variance. To reduce the effect of outliers and the $\ell_2$-sensitivity, we clip each training data point's feature values at $\pm 2.2$.
+
+We divide the $614$ training data points such that parties $1$, $2$, and $3$ have, respectively, $20\%, 30\%$, and $50\%$ of the dataset and $\eps_1 = \eps_3 = 0.2$ while $\eps_2$ is varied from the default $0.1$.
+We compute the approximate SS \cite{huggins2017pass} and perturb them for each party to achieve the selected $\eps_i$ \cite{kulkarni2021glm}. The $\ell_2$-sensitivity is also estimated based on the dataset.
+
+We consider a Bayesian logistic regression model, and its parameters $\theta$ consist of the bias and the weights for each of the $4$ features. Like that of \cite{kulkarni2021glm}, we set an independent standard Gaussian prior for $\theta$ but rescale it such that the squared norm $\norm*{\theta}_2^2$ has a truncated Chi-square prior with $d=4$ degrees of freedom. Truncation prevents sampling $\theta$ with a norm larger than $2.5$ times the non-private/true setting's $\theta^*$ squared norm during inference.
+
+We assume each party has the same distribution for $p(\vx)$.
+Our data prior $p(\vx)$ has mean $\vzero$ and covariance $\Sigma = \text{diag}(\iota)\ \Omega\  \text{diag}(\iota) $
+where $\iota \sim \mathcal{N}(\vone,\mI), \iota \in [0,2]$,  and $\Omega$ follows a Lewandowski-Kurowicka-Joe prior $\text{LKJ}(2)$. 
+
+We use the \emph{No-U-Turn} \cite{hoffman2014no} sampler. We run $25$ Markov chains with $400$ burn-in samples and draw $m=2000$ samples with a target Metropolis acceptance rate of $0.86$. We discard chains with a low Bayesian fraction of missing information (i.e., $<.3$) and split the concatenated samples across chains into $5$ groups to estimate KL divergence.
+As sampling is slower and the generated samples tend to be less correlated, we can use fewer samples.
+
+
+\emph{Remark.} 
+For the CaliH dataset, the preprocessing is based on the ``public'' dataset, but for the Diab dataset, the preprocessing (i.e., standardization, PCA) is based on the private, valued dataset. We have assumed that the data is preprocessed. However, in practice, before using our mechanism,  the parties may have to reserve/separately expend some privacy budget for these processing steps. The privacy cost is ignored in our analysis of the privacy-valuation trade-off. 
+
+\paragraph{KL estimation.}
+
+We estimate KL divergence using the $k$-nearest-neighbor-based KL estimator \cite{perez2008kl}.
+To reduce the bias due to the skew of the distribution, we apply a whitening transformation \cite{wang2009kl} where each parameter sample is centered and multiplied by the inverse of the sample covariance matrix based on all samples from $\theta$ and $\theta\mid \vo$.
+As a default, we set $k=4$ and increase $k$ until the distance to the $k$-th neighbor is non-zero.
+
+\subsection{Utility of Model Reward}\label{app:exp-loss}
+
+The \emph{mean negative log probability} (MNLP) on a test dataset $\gD_*$ given the perturbed SS $\vo_i$ is defined as follows:
+\begin{equation*}
+\text{MNLP} \triangleq  \displaystyle\frac{1}{|\gD_*|} \sum_{(\vx_*, y_*) \in \gD_*} {-\log p(y_* |\vx_*, \vo_i)}\ . 
+\end{equation*}
+
+We prefer MNLP over the \emph{model accuracy} or \emph{mean squared error} metric. MNLP additionally measures if a model is uncertain of its accurate predictions or overconfident in inaccurate predictions. In contrast, the latter metrics penalize inaccurate predictions equally and ignore the model's confidence (which is affected by the DP noise).
+
+\paragraph{Regression.} 
+Approximating the predictive distribution, $p(y_* |\vx_*, \vo_i)$, for test input $\vx_*$ as Gaussian, the MNLP formula becomes
+
+\begin{equation*}
+\text{MNLP} \triangleq \displaystyle \frac{1}{|\gD_*|} \sum_{(\vx_*, y_*) \in \gD_*} 
+ {\frac{1}{2} \left( \log(2 \pi \widehat{\sigma^{\scriptscriptstyle 2}}(\vx_*)) + \frac{(\widehat{\mu}(\vx_*) - y_*)^2}{\widehat{\sigma^{\scriptscriptstyle 2}}(\vx_*)} \right)}
+\end{equation*}
+where $\mu_*$ and $\widehat{\sigma^{\scriptscriptstyle 2}}(\vx_*)$ denote the predictive mean and variance, respectively. 
+The first term penalizes large predictive variance while the second term penalizes inaccurate predictions
+more strongly when the predictive variance is small (i.e., overconfidence).
+\squishlisttwo
+\item The predictive mean $\widehat{\mu}(\vx_*)$ is the averaged prediction of $\vy_*$ (i.e., $\vw^\top \vx_*$, where $\vw$ is part of the model parameters $\theta$) over all samples of the model parameters  $\theta$.
+\item The predictive variance  $\widehat{\sigma^{\scriptscriptstyle 2}}(\vx_*)$ is computed using the variance decomposition formula, i.e., the sum of the averaged $\sigma^2$ (the unknown variance parameter within $\theta$) and the computed variance in predictions over samples, i.e., $ = m^{-1} \sum^m_{j=1}\sigma_j^2 + \widehat{\mu^{\scriptscriptstyle 2}}(\vx_*) - \widehat{\mu}(\vx_*)^2$. 
+\squishend
+
+\paragraph{Classification.} We can estimate $p(y_* |\vx_*, \vo_i)$, for test input $\vx_*$ using the Monte Carlo approximation \cite{murphy2022probabilistic} and reusing the samples $\theta$ from $p(\theta| \vo_i)$. Concretely, $p(y=1|\vx_*, \vo_i) \approxeq m^{-1} \sum^m_{j=1} \sigma(\theta^\top \vx_*)$. The MNLP is equivalent to the cross-entropy loss. 
+
+\subsection{Baselines}\label{app:exp-baselines}
+ To plot the figures in Sec.~\ref{sec:experiments}, the baseline DP and collaborative ML works must 
+\begin{enumerate}[noitemsep,topsep=0pt]
+    \item work for similar models, i.e., Bayesian linear and logistic regression;
+    \item not use additional information to value coalitions and generate model rewards (to preserve the DP post-processing property); and
+    \item decide feasible model reward values and suggest how model rewards can be generated. 
+\end{enumerate}
+
+\textbf{Work of \citet{xu2021vol}.} Valuation by volume is model-agnostic (satisfying criteria 1). Each party $i \in N$ can submit the noisy version of $\mX_i^\top \mX_i$  with DP guarantees to the mediator who can sum them to value coalitions (satisfying criteria $2$).
+The work does not propose a model reward scheme to satisfy criteria $3$. 
+
+
+\textbf{Work of \citet{simcollaborative}.} \cite{simcollaborative} only considered Bayesian linear regression (with known variance) and it is not straightforward to compute information gain on model parameters for Bayesian linear regression (with unknown variance) and Bayesian logistic regression. Thus, the work does not satisfy criteria $1$. For Bayesian linear regression (with known variance), each party $i \in N$ can submit the noisy version of $\mX_i^\top \mX_i$ with DP guarantees to the mediator who can sum them to value coalitions (satisfying criteria $2$).
+The work proposed a model reward scheme which involves adding noise to the outputs $\vy$ ( satisfying criteria 3 but has to be adapted to ensure DP). 
+
+\textbf{DP-FL works.} A promising approach is to use \texttt{DP-FedAvg/DP-FedSGD} \cite{mcmahan2017learning} to learn any model parameters (satisfying criteria 1) in conjunction with \texttt{FedSV} \cite{wang2020fedval} to value coalitions without additional information (satisfying criteria 2). However, to our knowledge, these works will not satisfy criteria 3 as they do not suggest how to  generate model rewards of a target reward value.
+
+As no existing work satisfies all criteria, we compare against (1) using non-noise-aware inference instead of noise-aware inference, all else equal (in App.~\ref{app:exp-trade-off}); and (2) an adapted variant of the reward control via noise addition (in Sec.~\ref{sec:strengthen},  Sec.~\ref{sec:experiments}, and App.~\ref{app:compare-reward}).
+
+
+\subsection{Valuation Function}\label{app:exp-valuation}
+
+In Sec.~\ref{sec:experiments}, we only vary the privacy guarantee $\eps_i$ of one party $i$. In this subsection, we will analyze how other factors such as the coverage of the input space and the number of posterior samples on the valuation ${v}_i$.
+
+\paragraph{Coverage of input space.}
+
+We vary the coverage of the input space by only keeping those data points whose first feature value is not greater than the $25,50,75,100$-percentile. Across all experiments in Table~\ref{tab:coverage}, it can be observed that as the percentile increases (hence, data quantity and coverage improve), the surprise elicited by the perturbed SS $\vo_N$ increases in tandem with the surprise elicited by the exact SS $\vs_N$.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Feature $0$'s Percentile Range               & $[0,25]$ & $[0,50]$ & $[0,75]$ & $[0,100]$ \\ \midrule
+\textbf{Syn} &          &          &          &           \\
+Surprise of $\vs_N$                     & 12.030   & 12.698   & 13.322   & 14.183    \\
+Surprise of $\vo_N$                     & 6.007    & 6.775    & 7.410    & 8.438     \\
+\textbf{CaliH}         &          &          &          &           \\
+Surprise of $\vs_N$                     & 21.261   & 22.401   & 26.578   & 28.422    \\
+Surprise of $\vo_N$                     & 9.282    & 10.212   & 12.121   & 17.959    \\
+\textbf{Diab}      &          &          &          &           \\
+Surprise of $\vs_N$                     & 5.450    & 6.279    & 7.019    & 7.258     \\
+Surprise of $\vo_N$                     & 1.854    & 2.712    & 3.909    & 5.394     \\ \bottomrule
+\end{tabular}
+\caption{We report the surprise elicited by $\vs_N$ and $\vo_N$ (with $\eps=1$) when using the subset of data with first feature value not exceeding the $25,50,75,100$-percentile for all datasets.}
+\label{tab:coverage}
+\end{table}
+
+\paragraph{Number of posterior samples.}
+For a consistent KL estimator, the bias/variance of the KL estimator should decrease with a larger number of posterior samples.
+
+\paragraph{Gibbs sampling.}
+We compare the estimated surprise using various degrees of thinning (i.e., keeping only every $t$-th sample) to generate $30000$ samples for the CaliH dataset.
+In Table~\ref{tab:num-thin-calih}, it can be observed that although the total number of samples is constant, the surprise differs significantly.
+Moreover, as $t$ increases, the surprise decreases at a decreasing rate and eventually converges.
+This may be because consecutive Gibbs samples are highly correlated and close, thus causing us to underestimate the distance to the $k$-th nearest-neighbors within $\theta\mid\vo_N$ (see discussion in App.~\ref{app:val-compute}). Increasing $t$ reduces the correlation and closeness and better meets the i.i.d.~samples assumption of the nearest-neighbor-based KL estimation method \cite{perez2008kl}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}rl@{}}
+\toprule
+Thin every $t$-th sample & Surprise $v_N$         \\ \midrule
+$1$      & $14.849 \pm 0.036$ \\
+$2$    & $12.839 \pm 0.033$ \\
+$4$      & $11.626 \pm 0.018$ \\
+$8$    & $11.038\pm 0.022$ \\
+$16$      & $10.834 \pm 0.033$ \\
+$20$    & $10.790 \pm 0.032$ \\
+$30$   & $10.793 \pm 0.011$ \\ 
+\bottomrule
+\end{tabular}
+\caption{Thinning factor $t$ vs.~surprise $v_N$ for CaliH dataset.}
+\label{tab:num-thin-calih}
+\end{table}
+
+\paragraph{NUTS logistic regression.}
+
+After drawing $10000$ samples for the Diab dataset using the default setting, we analyze how using a subset of the samples will affect the estimated surprise.
+In particular, we consider using (i) the \emph{first $m$} samples or (ii) \emph{thinned $m$} samples where we only keep every $10000/m$-th sample.
+
+In Table~\ref{tab:num-pima}, it can be observed that as the number $m$ of samples increases, the standard deviation of the estimated surprise  decreases. Moreover, there is no significant difference between using the first $m$ samples or the thinned $m$ samples. This suggests that the samples are sufficiently independent and thinning is not needed.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}rl@{}}
+\toprule
+No.~$m$ of Samples  & Surprise $v_N$         \\ \midrule
+First $1000$      & $2.227 \pm 0.051$ \\
+Thinned $1000$    & $2.211 \pm 0.034$ \\
+First $2000$      & $2.117 \pm 0.049$ \\
+Thinned $2000$    & $2.117 \pm 0.045$ \\
+First $5000$      & $2.145 \pm 0.037$ \\
+Thinned $5000$    & $2.119 \pm 0.038$ \\
+All $10000$       & $2.128 \pm 0.030$ \\ \bottomrule
+\end{tabular}
+\caption{Number $m$ of samples vs.~surprise $v_N$ for Diab dataset.}
+\label{tab:num-pima}
+\end{table}
+
+
+\subsection{Additional Experiments on Valuation, Privacy-valuation Trade-off, and Privacy-reward Trade-off}\label{app:exp-trade-off}
+
+
+\paragraph{Shapley value.}
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{}c@{\hspace{1mm}} c@{\hspace{1mm}} c@{}}
+        \includegraphics[height=3.2cm]{figs/shapley-syn.pdf} &
+        \includegraphics[height=3.2cm]{figs/shapley-cali.pdf} &
+        \includegraphics[height=3.2cm]{figs/shapley-pima.pdf} \\
+        {(a) Syn} & {(b) CaliH} & {(c) Diab} 
+        \end{tabular}
+        \caption{Graphs of Shapley value $\phi_i$ of parties $i=1,2,3$ vs.~party $2$'s privacy guarantee $\eps_2$ for various datasets.
+        } 
+        \label{fig:shapleys}
+\end{figure}
+
+In Fig.~\ref{fig:shapleys}, it can be observed that as party $2$ weakens its privacy guarantee (i.e., $\eps_2$ increases), its Shapley value $\phi_2$ increases while other parties' Shapley values (e.g., $\phi_3$) decrease. When party $2$ adds less noise to generate its perturbed SS $\vo_2$, others add less value (i.e., make lower \emph{marginal contributions} (MC)) to coalitions containing party $2$. Party $2$ changes from being least valuable to being most valuable, even though it has more data than party $1$ and less data than party $3$.
+
+
+\paragraph{Without DP noise-aware inference.}\label{app:subsec-naive}
+
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{} c@{\hspace{1mm}} c@{\hspace{1mm}} c@{}} \includegraphics[height=3.2cm]{figs/v-naive-syn.pdf} &
+        \includegraphics[height=3.2cm]{figs/v-private-naive-cali6.pdf} &
+        \includegraphics[height=3.2cm]{figs/v-private-naive-pima.pdf}
+        \\
+        {(a) Syn} &  {(b) CaliH} & {(c)Diab} 
+        \end{tabular}
+        \caption{Graphs of party $2$'s valuation $v_2$, Shapley value $\phi_2$, and attained reward value $r_2$ vs.~privacy guarantee $\eps_2$ for various datasets when performing non-noise-aware (i.e., noise-naive) inference, i.e., $p(\theta | S_N = \vo_N)$ and treating $\vo_N$ as though it is $\vs_N$.
+        } 
+        \label{fig:naive}
+\end{figure}
+
+In Fig.~\ref{fig:naive}a, it can be observed that as $\eps_2$ increases, $v_i$ and $\phi_i$ for party $i=2$ do not strictly increase. 
+In Figs.~\ref{fig:naive}b-c, it can be observed that as $\eps_2$ increases, $v_i$ and $\phi_i$ for party $i=2$  decrease instead. The consequence of non-noise-aware inference is undesirable for incentivization --- party $2$ unfairly gets a lower valuation and reward for using a weaker privacy guarantee, i.e., a greater privacy sacrifice.
+Moreover, when $\eps_2$ is small (i.e., under a strong privacy guarantee), party $2$ is supposed to be least valuable. However, the significantly different $\vo_2$ causes party $2$ to have the highest valuation and be rewarded with the grand coalition $N$'s model (i.e., $r_i$ close to $v_N$) instead. 
+
+Lastly, we also observe that without DP noise-aware inference, the utility of the model reward is small. For example, the naive posterior for the Syn dataset results in an MNLP larger than $100$.
+
+\paragraph{Conditions for larger improvement in MNLP.}\label{app:subsec-larger-improve}
+
+In Fig.~\ref{fig:mnlp}, it seems that the utility of party $i=2$'s model reward  measured by MNLP$_r$ cannot improve significantly over over that of its individually trained model when $\epsilon_2$ is large.
+However, party $i$'s MNLP$_r$ can be improved by a larger extent when (i) any other party $j \neq i$ selects a weaker privacy guarantee (i.e., a larger $\eps_j$), thus improving the utility of the collaboratively trained model or (ii) party $i$ and others have lower data quantity (i.e., smaller $c_k$ for all $k \in N$) and are unable to  individually train a model of high utility. Figs.~\ref{fig:larger-improvement}a,~\ref{fig:larger-improvement}b, and~\ref{fig:larger-improvement}c are examples of (i), (ii), and (i+ii), respectively. In Fig.~\ref{fig:larger-improvement}a, the {MNLP}$_N$ of grand coalition $N$'s collaboratively trained model is lower than that in Fig.~\ref{fig:mnlp}a. In Fig.~\ref{fig:larger-improvement}b, the {MNLP}$_i$ of party $i$'s model is higher due to less data. In these examples, we observe that a party can still gain a significant improvement {MNLP}$_i$ $-$ {MNLP}$_r$ when $\eps_i > 1$.
+
+Condition (i) for a larger improvement in MNLP$_r$ is satisfied when the trade-off deters parties from selecting excessive DP guarantees, i.e., it incentivizes parties to select weaker DP guarantees that still meet their legal and customers' requirements. Condition (ii) should be satisfied in most real-life scenarios where a party wants to participate in collaborative ML and federated learning. The party (e.g., bank) is unable to achieve its desired utility with its individually trained model due to limited data and collaborates with others to unlock any improvement in the utility of a collaboratively trained model.
+
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{}c@{\hspace{8mm}}c@{\hspace{8mm}}c@{}}
+        \includegraphics[height=3.2cm]{figs/mnlp-private-mono-syn-eps2.pdf} &
+        \includegraphics[height=3.2cm]{figs/mnlp-private-mono-syn-eps-halved.pdf} &
+        \includegraphics[height=3.2cm]{figs/mnlp-private-mono-pima-short.pdf} \\
+        {(a) Syn, larger $\eps_j$} & {(b) Syn, halved $\{c_k\}_{k \in N}$} & 
+        \begin{tabular}{@{}c@{}} (c) Diab, larger $\eps_k$ \& \\ halved $\{c_k\}_{k \in N}$ \end{tabular}   
+        \\  
+        \end{tabular}
+        \caption{Graphs of utility of party $i=2$'s model reward $q_i(\theta)$ measured by MNLP$_r$ vs.~privacy guarantee $\eps_2$ for  Syn dataset (a) when $\eps_1 = \eps_3 = 2$ instead of $0.2$, and (b) when only a subset of $c_k / 2$ data points is available for every party $k=1,2,3$. 
+        (c) Graph of utility of party $i=1$'s model reward $q_i(\theta)$ measured by MNLP$_r$ vs.~privacy guarantee $\eps_1$ for  Diab dataset
+        when $\eps_2 = \eps_3 = 2$ instead of $0.2$ and only a subset of $c_k / 2$ data points is available for every party $k=1,2,3$.
+        } 
+        \label{fig:larger-improvement}
+\end{figure}
+
+
+\paragraph{Higher $\lambda=10$.}\label{app:subsec-exp-order}
+
+In Fig.~\ref{fig:lambda-10}, 
+the privacy-valuation, privacy-reward, and privacy-utility trade-offs
+are still observed when parties select a higher $\lambda=10$ when enforcing the R{\'e}nyi DP guarantee. Moreover, the utility of party $2$'s model reward is higher (i.e., lower MNLP) than that of its individually trained model.
+
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{}c@{\hspace{1mm}} c@{\hspace{1mm}} c@{}}
+        \includegraphics[height=3.2cm]{figs/v-private-mono-syn-lamb10.pdf} &  \includegraphics[height=3.2cm]{figs/v-private-cali6-lamb10.pdf} &
+        \includegraphics[height=3.2cm]{figs/v-private-mono-pima-lamb10.pdf} \\
+        {(a) Syn} & {(b) CaliH} & {(c) Diab} \vspace{2mm}\\
+        \includegraphics[height=3.2cm]{figs/mnlp-private-mono-syn-lamb10.pdf} &
+        \includegraphics[height=3.2cm]{figs/mnlp-private-cali6-lamb10.pdf} &
+        \includegraphics[height=3.2cm]{figs/mnlp-private-mono-pima-lamb10.pdf} \\
+        {(d) Syn (MNLP vs.~$\eps_2$)} & {(e) CaliH (MNLP vs.~$\eps_2$)} & {(f) Diab (MNLP vs.~$\eps_2$)} \\  
+        \end{tabular}
+        \caption{Graphs of party $2$'s (a-c) valuation $v_2$, Shapley value $\phi_2$, and attained reward value $r_2$, and (d-f) utility of its model reward $q_i(\theta)$ measured by MNLP$_r$ vs. privacy guarantee $\eps_2$ for various datasets when enforcing $(\lambda=10, \eps_i)$-R{\'e}nyi DP guarantee.
+        } 
+        \label{fig:lambda-10}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Additional Experiments on Reward Control Mechanisms}\label{app:exp-reward}
+
+For the CaliH dataset, there is a monotonic relationship between $r_i$ vs.~both $\scalei$ and $\addnoisei$, as shown in Fig.~\ref{fig:calireward-compare}a.
+However, it can be observed from Figs.~\ref{fig:calireward-compare}b-c that for the same attained reward value $r_i$, adding scaled noise variance $\addnoisei$ will lead to a lower similarity $r'_i$ to the grand coalition $N$'s posterior $p(\theta | \vo_N)$ and utility of model reward (higher MNLP$_r$) than tempering the likelihood by $\scalei$. 
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{}c@{\hspace{1mm}} c@{\hspace{1mm}} c@{}} \includegraphics[height=3.2cm]{figs/r_against_hk_cali6.pdf} &
+        \includegraphics[height=3.2cm]{figs/r_against_similar_cali6.pdf}
+        &
+        \includegraphics[height=3.2cm]{figs/r_against_mnlp_cali6.pdf} \\
+        {(a) $r_i$ vs.~$\scalei$, $\addnoisei$} & {(b) $r'_i$ vs.~$r_i$} & {(c) MNLP$_r$ vs.~$r_i$} 
+        \end{tabular}
+        \caption{(a) Graph of attained reward value $r_i$ 
+        vs.~ $\scalei$ (Sec.~\ref{sec:temper}) and $\addnoisei$ (Sec.~\ref{sec:strengthen}), (b) graph of similarity $r'_i$ to the grand coalition $N$'s posterior $p(\theta | \vo_N)$ vs.~$r_i$, and (c) graph of utility of party $i=2$'s model reward $q_i(\theta)$ measured by MNLP$_r$ vs.~$r_i$ for CaliH dataset.
+        } 
+        \label{fig:calireward-compare}
+\end{figure}%
+For Diab dataset, there is a monotonic relationship between $r_i$ vs.~both $\scalei$ and $\addnoisei$, as shown in Fig.~\ref{fig:diabetesreward-compare}a. However, it can be observed from Fig.~\ref{fig:diabetesreward-compare}b-c that for the same attained reward value $r_i$, tempering the likelihood by $\scalei$ leads to a higher similarity $r'_i$ to the grand coalition $N$'s posterior $p(\theta | \vo_N)$ and utility of model reward (lower MNLP$_r$) than adding scaled noise variance $\addnoisei$.
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{}c@{\hspace{1mm}} c@{\hspace{1mm}} c@{}} \includegraphics[height=3.2cm]{figs/r_against_hk_pima.pdf} &
+        \includegraphics[height=3.2cm]{figs/r_against_similar_pima.pdf}
+        &
+        \includegraphics[height=3.2cm]{figs/r_against_mnlp_pima.pdf} \\
+        {(a) $r_i$ vs.~$\scalei$, $\addnoisei$} & {(b) $r'_i$ vs.~$r_i$} & {(c) MNLP$_r$ vs.~$r_i$} 
+        \end{tabular}
+        \caption{(a) Graph of attained reward value $r_i$ vs.~ $\scalei$ (Sec.~\ref{sec:temper}) and $\addnoisei$ (Sec.~\ref{sec:strengthen}), (b) graph of similarity $r'_i$ to the grand coalition $N$'s posterior $p(\theta | \vo_N)$ vs.~$r_i$, and (c) graph of utility of party $i=2$'s model reward $q_i(\theta)$ measured by MNLP$_r$ vs.~$r_i$ for Diab dataset.
+        } 
+        \label{fig:diabetesreward-compare}
+\end{figure}%
+\paragraph{Problematic noise realization.}
+We will show here and in Fig.~\ref{fig:syn-unmono}a that some (large) noise realization can result in a non-monotonic relationship between the attained reward value $r_i$ vs.~the scaled additional noise variance $\addnoisei$. As a result, it is hard to 
+bracket the smallest root $\addnoisei$ that solves for $r_i =  r^*_i$ (e.g., $=2$ or $=3$).
+Moreover, it can be observed from Figs.~\ref{fig:syn-unmono}b-c that the model reward's posterior $q_i(\theta)$ has a low similarity $r'_i$ 
+to the grand coalition $N$'s posterior $p(\theta | \vo_N)$ and a much higher MNLP$_r$ than the  prior. This suggests that injecting noise does not interpolate well between the prior and the posterior.
+In these cases, it is not suitable to add scaled noise variance $\addnoisei$ and our reward control mechanism via likelihood tempering with $\scalei$, is preferred instead.
+
+\begin{figure}[H]
+    \centering
+        \begin{tabular}{@{}c@{\hspace{1mm}} c@{\hspace{1mm}} c@{}} \includegraphics[height=3.2cm]{figs/r_against_hk_syn_unmono.pdf} &
+        \includegraphics[height=3.2cm]{figs/r_against_similar_syn_unmono.pdf}
+        &
+        \includegraphics[height=3.2cm]{figs/r_against_mnlp_syn_unmono.pdf} \\
+        {\begin{tabular}{@{}c@{}} (a) $r_i$ vs.~$\scalei$, $\addnoisei$ \\ (Non-monotonic in $\tau_i$)\end{tabular}}         
+        & {(b) $r'_i$ vs.~$r_i$} & {(c) MNLP$_r$ vs.~$r_i$} 
+        \end{tabular}
+        \caption{(a) Graph of attained reward value $r_i$ vs.~ $\scalei$ (Sec.~\ref{sec:temper}) and $\addnoisei$ (Sec.~\ref{sec:strengthen}), (b) graph of similarity $r'_i$ to the grand coalition $N$'s posterior $p(\theta | \vo_N)$ vs.~$r_i$, and (c) graph of utility of party $i=2$'s model reward $q_i(\theta)$ measured by MNLP$_r$ vs.~$r_i$ for Syn dataset corresponding to (a).
+        } 
+        \label{fig:syn-unmono}
+\end{figure}
+
+\section{Other Questions}\label{app:faq}
+
+\newcounter{faq}
+
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: Are there any ethical concerns we foresee with our proposed scheme?}
+
+\textbf{Answer:}
+Our privacy-valuation trade-off~\eqref{V3} should deter parties from \emph{unfetteredly} selecting excessively strong DP guarantees.
+Parties inherently recognize the benefits of stronger DP guarantees and may prefer such benefits in collaboration out of overcaution, mistrust of others, and convenience. The trade-off counteracts (see Fig.~\ref{fig:overview}) the above perceived benefits by explicitly introducing costs (i.e., lower valuation and quality of model reward). Consequently, parties will carefully select a weaker yet satisfactory privacy guarantee they truly need.
+
+However, a potential concern is that parties may opt to sacrifice their data's privacy to obtain a higher-quality model reward. The mediator can alleviate this concern by enforcing a minimum privacy guarantee (i.e., maximum $\epsilon$) each party must select. The model rewards will preserve this minimum privacy guarantee due to \ref{dp-feasibility}. The mediator can also decrease the incentive by modifying $v_C$. %
+
+Another potential concern is that if parties have data with significantly different quantity/quality/privacy guarantees, the weaker party $k$ with fewer data or requiring a stronger privacy guarantee will be denied the best model reward (i.e., trained on the grand coalition's SS) and instead rewarded with one that is of lower quality for fairness. The mediator can alleviate the concern and at least ensure individual rationality (\ref{rational}) by using a smaller $\rho$ so that a weaker party $k$ can obtain a higher-quality model reward with a higher target reward value $r^*_k$.\\
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: Is it sufficient and reasonable to value parties based on the submitted information $\{c_i, \vo_i, p(Z_i) \}_{i \in N}$ instead of ensuring and incentivizing truthfulness? Would parties strategically declare other values to gain a higher valuation and reward?}
+
+\textbf{Answer:} 
+An ideal collaborative ML scheme should additionally incentivize parties to be truthful and verify the authenticity of the information provided. However, achieving the ``truthfulness'' incentive is hard and has only been tackled by existing works to a limited extent. 
+Existing work cannot discern if the data and information declared are collected or artificially created (e.g., duplicated) and thus, this non-trivial challenge is left to future work.
+The work of~\citet{lyu2020credibility} assigns and considers each client's reputation from earlier rounds, while the works of~\citet{liu2020elicit,lv2021data} measure the correlation in parties' predictions and model updates. The work of~\citet{chen2020truthful} proposes a payment rule based on the log point-wise mutual information between a party's dataset and the pooled dataset of others. This payment rule guarantees that when all other parties are truthful (i.e., a strong assumption), misreporting a dataset with an inaccurate posterior is worse (in expectation) than reporting a dataset with accurate posterior.\footnote{The payment rule may be unfair as when two parties are present, they will always be paid equally.}
+
+Thus, like the works of~\citet{ghorbani2019data,ghorbani2020,jia2019towards,nguyen22trade,simcollaborative,tay2021} and others, we value data \textit{as-is} and leave achieving the ``truthfulness'' incentive to future work. 
+In practice, parties such as hospitals and firms will truthfully share information as they are primarily interested in building and receiving a  model reward of high quality and may additionally be bound by the collaboration's legal contracts and trusted data-sharing platforms like Ocean Protocol \cite{ocean-protocol}. 
+For example, with the use of X-road ecosystem,\footnote{\url{https://joinup.ec.europa.eu/collection/ict-security/solution/x-road-data-exchange-layer/about}, \url{https://x-road.global/}} parties can maintain a private database which the mediator can query for the perturbed SS. This ensures the authenticity of the data (also used by the owner) and truthful computation given the uploaded private database.
+
+Lastly, a party $k$ who submits fake SS will also reduce its utility from the collaboration. Party $k$'s fake SS will affect the grand coalition's posterior of the model parameters given all perturbed SS and is also used to generate $k$'s model reward. As party $k$ only receives posterior samples, $k$ cannot replace the fake SS with its exact SS locally. As party $k$ have to bear the consequences of the fake SS, it would be more likely to submit true information. \\
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: Why do we only consider Bayesian models with SS?}
+
+\textbf{Answer:} See App~\ref{app:sub:ss} for a background on SS. Our approach would also work for Bayesian models with approximate SS, such as Bayesian logistic regression, and latent features extracted by a neural network.
+
+\begin{enumerate}
+\item The exact SS $\vs_i$ captures all the information (i.e., required by the mediator) within party $i$'s dataset $\gD_i$. Thus, the mediator can do valuation and generate model rewards from the perturbed SS $\{\vo_i\}_{i \in N}$ without requesting more information from the parties. This limits the privacy cost and allows us to rely on the DP post-processing property.
+\item  In Sec.~\ref{sec:valuation}, the proof that Def.~\ref{def:bs} satisfies a privacy-valuation trade-off \eqref{V3} uses the properties of SS.
+\end{enumerate}
+
+Our work introduces privacy as an incentive and simultaneously offers a new perspective that excessive DP can and should be deterred by introducing  privacy-valuation and privacy-reward trade-offs and accounting for the DP noise.
+We use Bayesian models with SS as a case study to show how the incentives and trade-offs can be achieved.
+It is up to the future work to address the non-trivial challenge of ensuring  privacy-valuation and privacy-reward trade-offs for other models.\\
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: Can alternative fair reward schemes be used in place of $\rho$-Shapley fair reward scheme \cite{simcollaborative}?}
+
+\textbf{Answer:} Yes, if they satisfy \ref{fairness} and \ref{rational}. For example, if the exchange rate between the perturbed SS quality and monetary payment is known, then the scheme of~\citet{nguyen22trade} can be used to decide the reward instead.
+Our work will still ensure the privacy-valuation trade-off and provide the mechanism to generate the model reward $q_i(\theta)$ to attain any target reward value $r^*_i$ while preserving similarity to the grand coalition $N$'s model (\ref{similarity}).\\
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: What is the difference between our work here and that of \citet{simcollaborative}?}
+
+\textbf{Answer:} 
+We clearly outlined our contributions in bullet points at the end of the introduction section (Sec.~\ref{sec:intro}) and in Fig.~\ref{fig:overview}.
+
+At first glance, our work seems to only add a new privacy incentive. However, as discussed in the introduction section (Sec.~\ref{sec:intro}), privacy is barely considered by existing collaborative ML works and raises significant challenges. The open questions/challenges in \cite{Yu21}'s survey on adopting DP in game-theoretic mechanism design (see Sec.~$7.1$ therein) inspire us to ask the following questions:
+\squishlisttwo
+\item How can DP and the aims of cooperative game theory-inspired collaborative ML be compatible? Will DP invalidate existing properties like fairness? 
+\item How should parties requiring a strong DP guarantee be prevented from \emph{unfairly} and \emph{randomly} obtaining a high-quality model reward? 
+\squishend
+We propose to enforce a \emph{provable} privacy-valuation trade-off to answer the latter. The enforcement involves novelly selecting and combining the right valuation function and tools, such as DP noise-aware inference.
+
+Additionally, we propose a new reward control mechanism that involves tempering the likelihood (practically, scaling the SS) to preserve similarity to the grand coalition's model (\ref{similarity}) and hence increase the utility of the model reward.\\ 
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: Will a party with high-quality data (e.g., a large data quantity, less need for DP guarantee) be incentivized to participate in the collaboration?}
+
+\textbf{Answer:} 
+From Fig.~\ref{fig:mnlp}, it may seem that a rich party $i$ with ample data and a weak privacy guarantee (i.e., large $\eps_i$) has a lower utility of model reward to gain from the collaboration.
+However, it may still be keen on a further marginal improvement in the utility of its model reward (e.g., increasing the classification accuracy from $97\%$ to $99\%$ and predicting better for some sub-groups) and can reasonably expect a better improvement as other parties are incentivized by our scheme (through enforcing a privacy-valuation trade-off and fairness \ref{FAIR4}) to contribute more data at a weaker yet satisfactory DP guarantee (see App.~\ref{app:subsec-larger-improve}).
+Moreover, a rich party does not need to be concerned about others unfairly benefiting from its contribution as our scheme guarantees fairness through Shapley value. In Fig.~\ref{fig:shapleys}, as a party selects a weaker DP guarantee (and all else being held constant), the Shapley values of others, which determine their model rewards, decrease.\\
+
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: What is the impact of varying other hyperparameters?}
+
+\textbf{Answer:} The work of~\citet{simcollaborative} proposes $\rho$-Shapley fairness and theoretically and empirically show that any $\rho > 0$ guarantees fairness across parties and a smaller $\rho$ will lead to a higher attained reward value $r_i$ for all other parties which do not have the largest Shapley value. These properties apply to our problem setup, and using a larger $\rho$ will worsen/reduce $r_i$ and the utility of party $i$'s model reward $q_i(\theta)$ measured by {MNLP}$_r$. 
+The work of~\citet{simcollaborative} has empirically shown that the number of parties does not impact the scheme's effectiveness. However, it affects the time complexity to compute the exact and approximate SV.  
+
+More importantly, the extent to which party $i$ can benefit from its contribution depends on the quantity/quality of its data relative to that of the grand coalition $N$ (and the suitability of the model or informativeness of the prior). 
+
+Party $i$'s DP guarantee $\eps_i$ is varied in Sec.~\ref{sec:experiments} while the DP guarantee $\eps_k$ of the other party $k$ and its number $c_k$ of data points for $k\in N$
+are varied in App.~\ref{app:subsec-larger-improve}. The privacy order $\lambda$ is varied in App.~\ref{app:subsec-exp-order}.
+Across all experiments, we observe that the privacy-valuation trade-off holds. Moreover, when (i) a party $i$ has lower-quality data in the form of fewer data points or smaller $\eps_i$, or (ii) another party $k$ has higher-quality data such as a larger $\eps_k$, the improvement in the utility of its model reward over that of its individually trained model is larger.\\
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: 
+Can privacy be guaranteed by using secure multi-party computation and homomorphic encryption in model training/data valuation?}
+
+\textbf{Answer:} These techniques are designed to prevent direct information leakage and prevent the computer from learning anything about the data. However, as the output of the computation is correct, any mediator and collaborating party with access to the final model can query the model for predictions and infer private information/membership of a datum (indirect privacy leakage).
+In our work here, every party can access a model reward. Hence, the setup should prevent each party from inferring information about a particular instance in the data beyond what can be learned from the underlying data distribution through strong \emph{DP guarantees}.\\
+
+\textbf{Question \stepcounter{faq}\arabic{faq}: In Sec.~\ref{sec:incentives}, we mention that (i) it is possible to have negative marginal contributions (i.e., $v_{C \cup i} < v_C$) in \emph{rare} cases and (ii) adding some noise realizations may counter-intuitively create a more valuable model reward (e.g., $r_i > v_N$). Why and what are the implications?
+}
+
+\textbf{Answer:}
+For our choice of valuation function via Bayesian surprise, the party monotonicity (\ref{V2}) and privacy-valuation trade-off (\ref{V3}) properties involve taking expectations, i.e., \emph{on average/in most cases}, adding a party will not decrease the valuation (i.e., the marginal contribution is non-negative), and strengthening DP by adding more noise should decrease the reward value. However, in rare cases, (i) and (ii) can occur. We have never observed (i) in our experiments, but a related example of (ii) is given in Fig.~\ref{fig:syn-unmono}a: A larger $\addnoisei$ surprisingly increased the valuation.
+
+The implication of (i) is that the Shapley value $\phi_i$ may be negative, which results in an unusable negative/undefined $r^*_i$. However, this issue can be averted while preserving \ref{fairness} by upweighting non-negative MCs, such as to the empty set, as mentioned in Footnote~\ref{rasa}.
+The implication of (ii) is that some (large) noise realization can result in a more valuable model reward than the grand coalition's model, i.e., $r_i > v_N$. However, collaborating parties still prefer $p(\theta|\vo_N)$ valued at $v_N$ as the more surprising model reward is \emph{not} due to observations and information. This motivates us to define more specific desiderata (\ref{dp-feasibility} and \ref{efficiency}) for our reward scheme.
+
+Lastly, one may question if we should change the valuation function. Should we use the information gain $\MI{\theta; \vo_C} = \E_{\vo_C}[v_C]$ on model parameters $\theta$ given perturbed SS $\vo_C$  instead to eliminate (i) and (ii)? No, the information gain is undesirable as it disregards the \emph{observed} perturbed SS $\vo_C$ and will not capture a party's preference for higher similarity of its model reward to the grand coalition $N$'s posterior $p(\theta|\vo_N)$.
+
+\end{document}

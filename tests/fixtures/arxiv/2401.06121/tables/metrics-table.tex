@@ -1,0 +1,16 @@
+
+\begin{table}[t!]
+    \centering
+    \footnotesize
+    \caption{The details of our metric scaling.}
+    \label{tab:scaled-metrics}    
+    \begin{tabular}{lcccc}
+        \toprule
+         &  Forget Set&  Retain Set&  Real Authors& World Facts\\
+         \midrule
+         Probability &   - &  $P(a|q)^{1/\vert a \vert}$&  $P(a|q)^{1/\vert a \vert}$& $P(a|q)^{1/\vert a \vert}$\\
+         ROUGE &  - &  $\text{ROUGE}(a)$&  $\text{ROUGE}(a)$& $\text{ROUGE}(a)$\\
+         Truth Ratio &  $R_\text{truth}$&  $\max(0, 1 - R_\text{truth})$&  $\max(0, 1 - R_\text{truth})$& $\max(0, 1 - R_\text{truth})$\\
+         \bottomrule
+    \end{tabular}
+\end{table}

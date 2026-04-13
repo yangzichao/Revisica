@@ -1,0 +1,186 @@
+%!TEX root = ../main.tex
+
+\section{\methodcaption{}}
+\label{sec:method}
+Given an existing large model $\mathcal{M}_S$ (the \textit{source} model),
+we study how to efficiently produce a smaller, strong model $\mathcal{M}_T$ (the \textit{target} model).
+We consider this %
+as a two-stage process: 
+(1) Pruning 
+$\mathcal{M}_S$ into  $\mathcal{M}_T$. 
+This reduces the number of parameters but inevitably incurs a performance drop. 
+(2) Continue pre-training $\mathcal{M}_T$ with a standard language modeling objective 
+to reach a target performance.
+While most recent efforts~\citep{xia-etal-2022-structured,ma2023llm} focus on the former stage, 
+we find the latter stage crucial for producing 
+competitive general-purpose LLMs from structured pruning. 
+
+\subsection{Targeted Structured Pruning}
+Structured pruning removes groups of model parameters to 
+compress models and accelerate inference. 
+However, existing structured pruning approaches often 
+result in unconventional model configurations that deviate from popular architectures.  
+For example, CoFiPruning~\citep{xia-etal-2022-structured} produces models with 
+non-uniform layer configurations (e.g., different numbers of heads across layers), 
+which incurs inference overhead compared to standard uniform layer configurations (Section~\ref{para:uniform}). 
+
+
+In this work, 
+we aim to prune the source model into any target configuration that we specify.This goal is challenging because it requires surgically scaling down all dimensions in a transformer architecture, an endeavor that, to our knowledge, has not been accomplished before for large language models. 
+We leverage the configurations of existing pre-trained models as the target architectures, 
+based on the intuition that 
+these configurations have already been well-optimized to 
+balance model expressivity and inference efficiency.
+For example, we use the INCITE-Base-3B architecture~\citep{toegther2023incite} 
+as the target structure when producing a $2.7$B model. 
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.98\linewidth]{figures/main_figure.pdf}
+    \caption{\textit{Targeted structured pruning} produces a compact and dense model of a pre-specified shape. Light colors indicate pruned substructures. Masking variables $z$ are learned to control whether a substructure is pruned ($z=0$) or retained ($z=1$). }
+    \label{fig:main}
+\end{figure} 
+
+Our method learns a set of pruning masks 
+on  model parameters at different granularities---from 
+global ones like layers and hidden dimensions (persist across all layers),
+to local ones like attention heads and intermediate dimensions. 
+Assume that the source model $\mathcal{M}_S$ has  
+$L_\mathcal{S}$ layers, with each layer consisting of one multi-head attention module (MHA) and one feed-forward network (FFN). $\mathcal{M}_S$ has a hidden state dimension of $d_\mathcal{S}$, 
+$H_\mathcal{S}$ heads in each MHA, and
+an intermediate dimension of $m_\mathcal{S}$ in each FFN. We introduce the following mask variables:
+\begin{table}[h]
+  \centering
+  \small
+  \vspace{-5pt}
+  \begin{tabular}{lcccc}
+     \toprule
+     Granularity & Layer & Hidden dimension & Head & Intermediate dimension\\
+     \midrule
+     Pruning masks & ${z}^{\text{layer}} \in \mathbb{R}^{L_\mathcal{S}}$ & 
+     ${z}^{\text{hidden}} \in \mathbb{R}^{d_\mathcal{S}}$ & 
+     ${z}^{\text{head}} \in \mathbb{R}^{H_\mathcal{S}}$~$(\times L_\mathcal{S})$ & 
+     ${z}^{\text{int}} \in \mathbb{R}^{m_\mathcal{S}}$~$(\times L_\mathcal{S})$  \\
+     \bottomrule
+  \end{tabular}
+  \vspace{-9pt}
+\end{table}
+
+Each mask variable controls whether the associated substructure is pruned or retained. For example, we remove a layer if its corresponding $z^{\text{layer}}=0$. Figure \ref{fig:main} illustrates an example of how the pruning masks control the pruned structures.
+
+We formulate pruning as a constrained optimization problem~\citep{platt1987constrained} 
+where we learn pruning masks to search for a subnetwork 
+matching a pre-specified target architecture 
+while maximizing performance.\footnote{Please find a more detailed exposition of the algorithm in \Cref{app:pruning_algo}.}
+Following the $\ell_0$ regularization approach~\citep{louizos2018learning}, we parametrize the pruning masks to model hard concrete distributions. These distributions have support on $[0,1]$ but concentrate their probability mass at $0$ or $1$, enabling discrete prune or retain decisions. 
+While prior work usually control for a target sparsity~\citep{wang2020structured,xia-etal-2022-structured}, we use a pair of Lagrange multipliers to impose constraints on the pruned model shape directly. 
+For example, for a target number of heads $H_\mathcal{T}$ (and we use $L_\mathcal{T}$, $d_\mathcal{T}$, and $m_\mathcal{T}$ to represent the target number of layers, hidden dimension, and intermediate dimension respectively), we have the imposed constraint on a single layer as:
+\begin{align*}
+    \tilde{\mathcal{L}}^{\mathrm{head}}( \lambda, \phi, z) & = \lambda^{\mathrm{head}} \cdot \left(\sum{{z}^{\mathrm{head}}} - H_{\mathcal{T}}\right) + \phi^{\mathrm{head}} \cdot \left(\sum{{z}^{\mathrm{head}}} - H_{\mathcal{T}}\right)^2. \\
+\end{align*}
+Similar constraints are applied to pruning other substructures. Overall, we jointly optimize the model weights and pruning masks by a min-max objective $\min_{\theta, {z}} \max_{\lambda, \phi} \mathcal{L}_{\mathrm{prune}}(\theta, z, \lambda, \phi)$: %
+\
+\begin{equation}
+    \mathcal{L}_{\mathrm{prune}}(\theta, z, \lambda, \phi) = \mathcal{L}(\theta, {z}) + \sum_{j=1}^{L_{\mathcal{S}}} \tilde{\mathcal{L}}^{\mathrm{head}}_{j} + \sum_{j=1}^{L_{\mathcal{S}}}  \tilde{\mathcal{L}} ^{\mathrm{int}}_{j} + \tilde{\mathcal{L}}^{\mathrm{layer}} + \tilde{\mathcal{L}}^{\mathrm{hidden}},
+    \label{eq:pruning}
+    \nonumber
+\end{equation}
+where $\mathcal{L}(\theta, {z})$ is the language modeling loss computed with the masked model weights.
+This objective will produce a  pruned model with the target shape.
+Ideally, 
+running this pruning algorithm 
+on a large amount of data will directly produce a strong compact model.
+In practice, the pruning stage is expensive (roughly 5$\times$ slower compared to standard LM training), and we find
+that the learned masks often converge fast.
+Therefore, % in our experiments, 
+we only allocate a limited budget for pruning (see \Cref{tab:pruning_finetuning}). Following pruning, we finalize the pruned architecture by preserving the highest-scoring components associated with the mask variables in each substructure,
+and continue pre-training the pruned model with the language modeling objective. 
+We refer to this second stage as \ct{}. 
+
+\subsection{Dynamic Batch Loading}
+\label{sec:batchloading}
+
+\begin{figure}[t]
+  \centering
+  \begin{algorithm}[H]
+  \SetKwFunction{update}{UpdateWeight}
+  \SetKwProg{sub}{Subroutine}{}{}
+  
+  \textbf{Require}: Training data of $k$ domains $D_1, D_2, \cdots, D_k$, validation data $D^{\mathrm{val}}_1, D^{\mathrm{val}}_2, \cdots, D^{\mathrm{val}}_k$, initial data loading weights $w_0 \in \mathbb{R}^k$, reference loss $\ell_\mathrm{ref} \in \mathbb{R}^k$, LM loss $\mathcal{L}$ or pruning loss $\mathcal{L}_{\text{prune}}$, training steps $T$, evaluation per $m$ steps, model parameters $\theta$ ($\theta,z,\phi,\lambda$ for pruning) \\
+
+ 
+\vspace{0.5em}
+
+
+  \For{$t=1, \cdots, T$}{
+    \If{$t \mod m = 0$} {
+      $\ell_t[i] \gets  \mathcal{L} (\theta, z, D^{\mathrm{val}}_i) \text{~if \textit{pruning} else~} \mathcal{L} (\theta, D^{\mathrm{val}}_i)$  %
+      
+      $\Delta_t[i] \gets \max \left\{\ell_t[i] - \ell_{\mathrm{ref}}[i] , 0 \right\}$ \Comment{Calculate loss difference}
+
+      $w_t\gets$ \update{$w_{t-m}$, $\Delta_t$} \Comment{Update data loading proportion}
+    }
+    Sample a batch of data $\mathcal{B}$ from $D_1, D_2, \cdots, D_k$ with proportion $w_t$\;
+    \eIf{pruning}{
+      Update $\theta, {z}, \phi, \lambda $ with $\mathcal{L}_{\mathrm{prune}}(\theta, z, \phi, \lambda)$ on $\mathcal{B}$ 
+    }{
+      Update $\theta$ with $\mathcal{L}(\theta, \mathcal{B})$ 
+    }
+  }
+
+\vspace{0.2cm}
+\sub{\update{$w$, $\Delta$}}{
+  $\alpha \gets w \cdot \exp \left( \Delta \right)$ \Comment{Calculate the unnormalized weights} \\ 
+  $w \gets \frac{\alpha}{\sum_i \alpha[i]}$ 
+  \Return $w$ \Comment{Renormalize the data loading proportion}
+}
+
+\Return $\theta$ 
+
+\caption{Dynamic Batch Loading} %
+\label{alg:dinamicloading}
+\end{algorithm}
+\end{figure}
+
+\Ct{} on a large amount of data is crucial for recovering the pruned model performance. We observe a surprising finding in our preliminary experiments:
+continuing pre-training our pruned models on an existing pre-training dataset RedPajama~(\citealp{together2023redpajama}; LLaMA's replicated pre-training dataset)
+reduces loss at different rates across domains compared to pre-training a model from scratch, which signifies an inefficient use of data.
+
+To be more specific, we begin by fitting a \textit{scaling function}~(\citealp{hoffmann2022training}; details in~\Cref{app:reference_loss}) on the series of LLaMA2 models for each domain. Using this function, we predict the loss of a hypothetical 1.3B LLaMA2 model if it were trained from scratch on the same data. We then compare these estimated~\textit{reference losses} to the losses of our pruned model after \ct{}. 
+\Cref{fig:dynamiclossdiff} (left) shows that our model's loss on GitHub is better than the reference loss, while it is significantly worse than the reference loss on C4. This observation indicates that pruning preserves a greater amount of knowledge in low-entropy and smaller domains (e.g., GitHub) compared to high-entropy and larger domains (e.g., C4).
+Simply reusing the original pre-training data distribution\footnote{The LLaMA2 pre-training data is not public. We conducted the same analysis on LLaMA1 models and observed a similar phenomenon, indicating that this is a universal issue unrelated to specific pre-training data.} results in an inefficient use of data and worse downstream performance, even if the overall loss is seemingly low, as demonstrated later in Section~\ref{sec:dynamic_loading}.
+
+Inspired by recent work~\citep{xie2023doremi}, 
+we propose 
+\textit{dynamic batch loading}, 
+an efficient algorithm to adjust domain proportions %
+ on the fly based on losses. The goal is to ensure the model achieves the reference loss at roughly the same time across domains. We introduce the algorithm below.
+
+\textbf{Problem setup.} The pre-training data comprises of $k$ domains $D_1, D_2, \cdots, D_k$ and we have a held-out validation dataset for each domain, denoted as $D_i^{\mathrm{val}}$. 
+At each training step $t$, 
+a proportion $w_t[i]$ of the data comes from domain $D_i$. %
+We set a reference validation loss $\ell_{\mathrm{ref}}(D_i)$ for each domain and train the pruned model to reach the reference loss.
+
+\textbf{Dynamic batch loading.}
+We present the full algorithm in \Cref{alg:dinamicloading}.
+In a sketch,
+for every $m$ steps, we evaluate the model to get the validation loss $\ell_t$ (step $t$) on $D^{\mathrm{val}}$, 
+and update $w_t$ based on the difference $\Delta_t (D_i)$ between $\ell_{\mathrm{ref}}[i]$  and $\ell_t[i]$ on each domain. The update rule is exponential ascent  following~\citet{xie2023doremi},  %
+$$
+\alpha_t = w_{t-m} \cdot \exp({\Delta_t}); \quad
+w_t = \frac{\alpha_t}{\sum_i \alpha_t[i]}. \\
+$$
+We apply dynamic batch loading to both the pruning stage and the \ct{} stage. 
+For  pruning, we use the original pre-training data's domain weights as $w_0$. 
+For  \ct{}, we use the final weights from the pruning stage as $w_0$. 
+Dynamic batch loading is an on-the-fly solution that adjusts data proportions during training without the need for training auxiliary models. It leverages reference losses on validation sets and adjusts the weights dynamically, adding minimal overhead to standard training. This approach differs from \citet{xie2023doremi}, which requires a complex multi-stage process to train reference and proxy models.
+
+% This improves the efficiency of \citet{xie2023doremi}, which requires 
+% training both a reference and a proxy model to learn domain weights before training. 
+
+More broadly, dynamic batch loading can train an LLM to match any reference model's performance by using open-source pre-training datasets like RedPajama, even without knowing the reference model's exact training data.
+
+\textbf{Choices of reference losses.}  By default, we use the loss predicted by the fitted scaling function as the reference (denoted as \textit{scaling reference}). We also experiment with an alternative where we directly use the source model's domain validation loss as the reference (denoted as \textit{source reference}). We show in~\ref{app:scalinvssource}  that 
+while both variants perform well,  
+using scaling reference leads to slightly better downstream results, especially on math and coding tasks. However, source reference is a viable alternative when a series of source models at different scales is not available.

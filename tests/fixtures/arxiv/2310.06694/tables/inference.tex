@@ -1,0 +1,22 @@
+\begin{table}[h]
+\centering
+\caption{Inference speed (tokens/s) of different pruning approaches.}
+\begin{tabular}{@{}l|cc@{}}
+\toprule
+  \textbf{Model}                     & \multicolumn{2}{c}{\textbf{Throughput}}    \\ \midrule
+                       & \multicolumn{2}{c}{\textbf{7B}}            \\
+                       \cmidrule(lr){2-3}
+{LLaMA-7B}      & \multicolumn{2}{c}{37}                     \\
+\midrule
+                       & \textbf{1.3B}        & \textbf{2.7B}       \\
+                       \cmidrule(lr){2-3}
+{LLM Pruner}    & 41                   & 40                  \\
+{Sheared-LLaMA} & 62                   & 47                  \\
+\midrule
+                       & \multicolumn{2}{c}{\textbf{50\% sparsity}} \\
+                       \cmidrule(lr){2-3}
+{Wanda (2:4)}   & -                    & 42                  \\
+{Wanda (4:8)}   & -                    & 42                  \\ \bottomrule
+\end{tabular}
+\label{tab:inference}
+\end{table}

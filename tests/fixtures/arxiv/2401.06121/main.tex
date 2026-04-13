@@ -1,0 +1,89 @@
+\documentclass[table]{article} %
+\usepackage{colm2024_conference}
+
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage[normalem]{ulem} %
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{bbold}
+\usepackage{subcaption}
+\definecolor{LightCyan}{rgb}{0.88,1,1}
+
+\usepackage{tcolorbox} %
+\definecolor{cornflowerblue}{rgb}{0.39, 0.58, 0.93}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=cornflowerblue,
+    filecolor=magenta,      
+    urlcolor=teal,
+    citecolor=cornflowerblue,%
+    pdftitle={TOFU},
+    pdfpagemode=FullScreen,
+    }
+    
+\newcommand{\avi}[1]{{\textcolor{red}{Avi: \footnotesize\sf[#1]}}}
+\newcommand{\zhili}[1]{{\textcolor{orange}{Zhili: \footnotesize\sf[#1]}}}
+\newcommand{\pratyush}[1]{{\textcolor{purple}{Pratyush: \footnotesize\sf[#1]}}}
+\newcommand{\pchange}[2]{\textcolor{red}{\sout{#1}} \textcolor{purple}{#2}}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}{Definition}[section]
+\newcommand{\tofu}{\raisebox{-0.2em}{\includegraphics[height=1em]{figures/tofu.png}}~\hspace{-3pt}~\texttt{TOFU}}
+
+\title{\tofu{}: A Task of Fictitious Unlearning for LLMs}
+
+
+\author{Pratyush Maini\thanks{Equal contribution. Website: \href{https://locuslab.github.io/tofu/}{locuslab.github.io/tofu/}} \\
+\texttt{pratyushmaini@cmu.edu}\\
+Carnegie Mellon University
+\And
+Zhili Feng\footnotemark[1]\\
+\texttt{zhilif@andrew.cmu.edu}\\
+Carnegie Mellon University
+\And
+Avi Schwarzschild\footnotemark[1]\\
+\texttt{schwarzschild@cmu.edu}\\
+Carnegie Mellon University
+\And
+Zachary C. Lipton\\
+Carnegie Mellon University
+\And
+J. Zico Kolter\\
+Carnegie Mellon University
+}
+\colmfinalcopy 
+\begin{document}
+
+\maketitle
+
+\input{sections/0-abstract}
+\input{sections/1-intro}
+\input{sections/2-task}
+\input{sections/3-methods}
+\input{sections/4-results}
+\input{sections/6-discussion}
+\input{sections/acknowledgements}
+
+\bibliography{main}
+\bibliographystyle{colm2024_conference}
+
+\input{sections/appendix}
+
+\end{document}

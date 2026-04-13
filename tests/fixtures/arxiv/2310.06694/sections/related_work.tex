@@ -1,0 +1,53 @@
+%!TEX root = ../main.tex
+
+\section{Related Work}
+\paragraph{Pruning.}
+Structured pruning has been extensively studied as a model compression technique in computer vision and natural language processing, 
+where task-specific models like  classification ones are often overparameterized and can be pruned significantly with minimal impact on performance~\citep{han2016deep, wen2016learning,liu2017learning,luo2017thinet, cai2019once, deng2020model,hou2020dynabert, wang2020structured, lagunas2021block, xia-etal-2022-structured, kurtic2023ziplm}. 
+Unstructured pruning~\citep{frankle2018lottery,li2020train, chen2020lottery, sanh2020movement} prunes individual neurons instead of structured blocks.
+Though unstructured pruning usually achieve higher compression rates,
+they are  not practical for model speedup.
+
+In the era of LLMs, 
+the prevalent NLP pipeline has shifted from task-specific models 
+to general-purpose LMs,
+which leaves little room for redundancy. 
+Both unstructured pruning, 
+semi-structured pruning~\citep{frantar2023sparsegpt,sun2023simple}, 
+and structured pruning~\citep{ma2023llm}
+lead to significant performance drops on LLM even at a modest sparsity.
+Noticeably, all previous works 
+fix the original models or tune them minimally.
+We
+see pruning as an initialization and 
+consider it necessary to expend substantial compute to 
+continually pre-training the model to recover performance. 
+
+\paragraph{Efficient pre-training approaches.}
+As orthogonal to our pruning approach, 
+There is an extensive body of work on improving efficiency of training LLMs. 
+For example, 
+quantization reduces the numeric precision of  model weights and activations 
+and speeds up training and inference~\citep{dettmers2022llm,dettmers2023qlora,xiao2023smoothquant}.
+Knowledge distillation~\citep{hinton2015distilling,sanh2019distilbert,jiao2020tinybert,sun2020mobilebert}, 
+which trains a smaller model on a larger model's prediction,
+is shown to be effective for task-specific models~\citep{xia-etal-2022-structured}. For pre-training LLMs, though distilling from a teacher model is shown to improve the quality of student models given the same number of training steps~\citep{rae2021scaling, blakeney2022reduce}, it is less cost-effective than pruning and continued training due to the exceeding inference cost incured by the teacher model~\citep{jha2023large}. More  methods have been introduced to enhance the efficiency of training LMs, 
+such as dynamic architectures~\citep{gong2019efficient,zhang2020accelerating} and efficient optimizers~\citep{chen2023symbolic, liu2023sophia}. However, 
+as indicated by~\citep{kaddour2023no,bartoldson2023compute},
+the promised gains in training efficiency may not be consistently realized.
+
+There are also data-based approaches to enhance training efficiency.
+Eliminating duplicated data is found to be effective
+\citep{lee2021deduplicating}. 
+Various batch selection techniques propose to prioritize data based on criteria such as 
+higher losses~\citep{jiang2019accelerating} or a greater reducible loss~\citep{mindermann2022prioritized}. 
+\cite{xie2023doremi}
+propose to 
+optimize data mixtures 
+by training a proxy model to estimate the optimal data weight of each domain. 
+
+
+
+
+
+

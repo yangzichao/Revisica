@@ -1,0 +1,21 @@
+\begin{wraptable}[10]{r}{0.4\textwidth}
+    \centering
+    \small
+    \vspace{-10pt}
+    \caption{Data budget allocation to pruning and \ct{} (CT)  and  corresponding perplexity.}
+    \resizebox{0.35\textwidth}{!}{%
+    \begin{tabular}{cccc}
+    \toprule
+    \multicolumn{2}{c}{\textbf{\# Tokens}} & \multicolumn{2}{c}{\textbf{PPL}} \\ \cmidrule(lr){1-2} \cmidrule(lr){3-4}
+    Pruning & CT & Pruning & CT \\ \cmidrule(lr){1-2} \cmidrule(lr){3-4}
+    0.2B                    & 4.6B                       & 12.99              & 7.46            \\
+    0.4B                    & 4.4B                       & 10.29              & 7.32            \\
+    0.8B                    & 4.0B                       & 9.01               & 7.23            \\
+    1.6B                    & 3.2B                       & 8.04               & 7.08            \\ \bottomrule
+    \end{tabular}}
+    \label{tab:pruning_finetuning}
+    \vspace{-4em}
+
+\end{wraptable}
+
+

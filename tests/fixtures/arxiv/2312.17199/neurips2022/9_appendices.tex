@@ -1,0 +1,721 @@
+%
+
+\begin{appendices}
+
+%
+%
+
+\crefalias{section}{appsec}
+\crefalias{subsection}{appsec}
+\crefalias{subsubsection}{appsec}
+
+\setcounter{equation}{0}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+
+
+\onecolumn
+
+
+%
+
+\vspace*{-20pt}
+{\hrule height 1mm}
+%
+
+\section*{\LARGE \centering Appendix}
+\label{sec:appendix}
+
+\vspace{5pt}
+{\hrule height 0.3mm}
+\vspace{14pt}
+
+%
+\section*{Table of Contents}
+\vspace*{-15pt}
+\startcontents[sections]
+\printcontents[sections]{l}{1}{\setcounter{tocdepth}{2}}
+\vspace*{-10pt}
+
+
+
+\clearpage
+
+\section{Proofs \& Derivations}
+\label{appsec:proofs}
+
+
+\subsection{Function-Space Variational Objective}
+\label{appsec:function_space_elbo}
+
+This proof follows steps from~\citet{matthews2016kld}.
+Consider measures $\hat{P}$ and $P$ both of which define distributions over some function $f$, indexed by an infinite index set $X$.
+Let $\calD$ be a dataset and let $\bX_{\calD}$ denote a set of inputs and $\by_{\calD}$ a set of targets.
+Consider the measure-theoretic version of Bayes' Theorem~\citep{schervish1995theory}:
+\begin{align}
+    \frac{d \hat{P}}{d P}(f)=\frac{p_{X}(Y \vbar f)}{p(Y)},
+\end{align}
+where $p_{X}(Y \vbar f)$ is the likelihood and $p(Y) = \int_{\real^X} p_{X}(Y \vbar f) dP(f)$ is the marginal likelihood.
+We assume that the likelihood function is evaluated at a finite subset of the index set $X$.
+Denote by $\pi_{C}: \real^{X} \to \real^{C}$ a projection function that takes a function and returns the same function, evaluated at a finite set of points $C$, so we can write
+\begin{align}
+    \frac{d \hat{P}}{d P}(f)
+    =
+    \frac{d \hat{P}_{\bX_{\calD}}}{d P_{\bX_{\calD}}}(\pi_{\bX_{\calD}}(f))
+    =
+    \frac{p(\by_{\calD} \vbar \pi_{\bX_{\calD}}(f))}{p(\by_{\calD})},
+\end{align}
+and similarly, the marginal likelihood becomes $p(\by_{\calD}) = \int p_{\by | f_{\bX}}(\by_{\calD} \vbar f_{\bX_{\calD}}) \dee P_{\bX_{\calD}}(f_{\bX_{\calD}}) $.
+Now, considering the measure-theoretic version of the \kld between an approximating stochastic process $Q$ and a posterior stochastic process $\hat{P}$, we can write
+\begin{align}
+    \DD_{\textrm{KL}}(Q \,\|\, \hat{P})
+    =
+    \int \log {\frac{d Q}{d P}(f)} \dee Q(f) - \int \log {\frac{d \hat{P}}{d P}(f)} \dee Q(f),
+\end{align}
+where $P$ is some prior stochastic process.
+Now, we can apply the measure-theoretic Bayes' Theorem to obtain
+\begin{align}
+    \DD_{\textrm{KL}}(Q \,\|\, \hat{P})
+    &=
+    \int \log {\frac{d Q}{d P}(f)} \dee Q(f) - \int \log {\frac{d \hat{P}}{d P}(f)} \dee Q(f)
+    \\
+    &=
+    \int \log {\frac{d Q^{\pi}}{d P^{\pi}}(f)} \dee Q^{\pi}(f) - \int \log {\frac{d \hat{P}_{\bX_{\calD}}}{d P_{\bX_{\calD}}}\left(f_{\bX_{\calD}}\right)} \dee Q_{\bX_{\calD}}\left(f_{\bX_{\calD}}\right)
+    \\
+    &=
+    \int \log {\frac{d Q^{\pi}}{d P^{\pi}}(f)} \dee Q^{\pi}(f) - \E_{Q_{\bX_{\calD}}}\left[\log p\left(\by_{\calD} \vbar f_{\bX_{\calD}}\right)\right]-\log p(\by_{\calD}),
+\end{align}
+where $\frac{d Q^{\pi}}{d P^{\pi}}(f)$ is marginally consistent given the projection $\pi$.
+Rearranging, we can get
+\begin{align}
+    p(\by_{\calD})
+    &=
+    \E_{Q_{\bX_{\calD}}}\left[\log p_{\by | f_{\bX}}(\by_{\calD} \vbar f_{\bX_{\calD}})\right] - \int \log {\frac{d Q^{\pi}}{d P^{\pi}}(f)} \dee Q^{\pi}(f) + \DD_{\textrm{KL}}(Q^{\pi} \,\|\, \hat{P} )
+    \\
+    &\geq
+    \E_{Q_{\bX_{\calD}}}\left[\log p_{\by | f_{\bX}}(\by_{\calD} \vbar f_{\bX_{\calD}})\right] - \int \log {\frac{d Q^{\pi}}{d P^{\pi}}(f)} \dee Q^{\pi}(f)
+    \\
+    &=
+    \E_{Q_{\bX_{\calD}}}\left[\log p_{\by | f_{\bX}}(\by_{\calD} \vbar f_{\bX_{\calD}})\right] - \DD_{\textrm{KL}}(Q^{\pi} \,\|\, P^{\pi}) .
+\end{align}
+Finally, this lower bound can equivalently be expressed as
+\begin{align}
+    p(\by_{\calD})
+    &
+    \geq
+    %
+    %
+    %
+    %
+    \E_{Q_{\bX_{\calD}}}\left[\log p_{\by | f_{\bX}}(\by_{\calD} \vbar f_{\bX_{\calD}})\right] - \DD_{\textrm{KL}}(Q_{\bX_{\calD}, \bX_{\backslash \calD}} \,\|\, P_{\bX_{\calD}, \bX_{\backslash \calD}}),
+\end{align}
+where $\bX_{\backslash \calD}$ is an infinite index set excluding the finite index set $\bX_{\calD}$, that is, $\bX_{\backslash \calD} \cap \bX_{\calD} = \varnothing$, or by Theorem 1 in~\citet{sun2019fbnn}, we can write 
+\begin{align}
+    p(\by_{\calD})
+    &\geq
+    %
+    \E_{Q_{\bX_{\calD}}}\left[\log p_{\by | f_{\bX}}(\by_{\calD} \vbar f_{\bX_{\calD}})\right] - \sup_{\bX \in \calX_{\mathbb{N}}} \DD_{\textrm{KL}}(Q_{\bX} \,\|\, P_{\bX}),
+\end{align}
+where $\calX_{\mathbb{N}} \defines \bigcup_{n \in \mathbb{N}} \{ \bX \in \calX_{n} \vbar \calX_{n} \subseteq \mathbb{R}^{n \times D} \}$ is the collection of all finite sets of evaluation points.
+
+
+\clearpage
+
+
+\subsection{Distribution under Linearized Function Mapping}
+\label{appsec:linearization_proof}
+
+\begin{customproposition}{1}[Distribution under Linearized Mapping]
+\label{app-prop:linearized_variational}
+For a stochastic function $f(\cdot \,; \bTheta)$ defined in terms of stochastic parameters $\bTheta$ distributed according to distribution $g_{\bTheta}$ with $\mathbf{m} \defines \E_{g_{\bTheta}}[\bTheta]$ and $\mathbf{S} \defines \text{\emph{Cov}}_{g_{\bTheta}}[\bTheta]$, denote the linearization of the stochastic function $f(\cdot \,; \bTheta)$ about $\mathbf{m}$ by
+\begin{align*}
+%
+    f(\cdot \,; \bTheta) \approx \flin(\cdot \,; \mathbf{m}, \bTheta) \defines f(\cdot \,; \mathbf{m}) + \jac(\cdot \,; \mathbf{m})(\bTheta - \mathbf{m}) ,
+    \end{align*}
+where $\jac(\cdot \,; \mathbf{m}) \defines (\partial f(\cdot \,; \bTheta) / \partial \bTheta)|_{\bTheta = \mathbf{m}}$ is the Jacobian of $f(\cdot \,; \bTheta)$ evaluated at $\bTheta = \mathbf{m}$.
+Then the mean and co-variance of the distribution over the linearized mapping $\flin$ at \mbox{$\bX, \bX' \in \calX$} are given by
+\begin{align*}
+\SwapAboveDisplaySkip
+    \E[\flin(\bX ; \bTheta)]
+    &=
+    f(\bX; \mathbf{m})
+    \\
+    %
+    \textrm{\emph{Cov}}[\flin(\bX ; \bTheta), \flin(\bX' ; \bTheta)]
+    &=
+    \jac(\bX ; \mathbf{m}) \mathbf{S} \jac(\bX' ; \mathbf{m})^\top .
+\end{align*}
+\end{customproposition}
+\begin{proof}
+We wish to find $\mathbb{E}[\flin(\bX ; \mathbf{m}, \bTheta)]$ and 
+\begin{align}
+\begin{split}    
+    &
+    \textrm{Cov}(\flin(\bX ; \mathbf{m}, \bTheta), \flin(\bX'; \mathbf{m}, \btheta))
+    \\
+    &
+    =
+    \mathbb{E}[ (\flin(\bX ; \mathbf{m}, \btheta) -  \mathbb{E}[\flin(\bX ; \mathbf{m}, \btheta)])\, (\flin(\bX'; \mathbf{m}, \btheta) -  \mathbb{E}[\flin(\bX'; \mathbf{m}, \btheta)])^\top] .
+\end{split}
+\end{align}
+To see that $\mathbb{E}[\flin(\bX ; \mathbf{m}, \btheta)] = f(\bX ; \mathbf{m})$, note that, by linearity of expectation, we have
+\begin{align}
+\begin{split}
+    %
+    %
+    %
+    \mathbb{E}[\flin(\bX ; \mathbf{m}, \btheta)]
+    %
+    &
+    = \mathbb{E}[ f(\bX ; \mathbf{m}) + \jac(\bX ; \mathbf{m})(\bTheta - \mathbf{m}) ]
+    \\
+    &
+    = f(\bX ; \mathbf{m}) + \jac(\bX ; \mathbf{m})(\mathbb{E}[\bTheta] - \mathbf{m})
+    %
+    %
+    = f(\bX ; \mathbf{m}).
+\end{split}
+\end{align}
+To see that $\textrm{Cov}(\flin(\bX ; \mathbf{m}, \btheta), \flin(\bX'; \mathbf{m}, \btheta)) = \jac(\bX ; \mathbf{m}) \mathbf{S} \jac(\bX' ; \mathbf{m})^\top$, note that in general, for a multivariate random variable $\mathbf{Z}$, $\textrm{Cov}(\mathbf{Z}, \mathbf{Z}) = \mathbb{E}[\mathbf{Z} \mathbf{Z}^\top] + \mathbb{E}[\mathbf{Z}] \mathbb{E}[\mathbf{Z}]^\top$, and hence,
+\begin{align}
+\begin{split}
+    &
+    \textrm{Cov}(\flin(\bX ; \mathbf{m}, \bTheta), \flin(\bX'; \mathbf{m}, \bTheta))
+    \\
+    &
+    =
+    \mathbb{E}[ \flin(\bX ; \mathbf{m}, \bTheta) \flin(\bX'; \mathbf{m}, \bTheta)^\top ] - \mathbb{E}[\flin(\bX ; \mathbf{m}, \bTheta)] \mathbb{E}[\flin(\bX'; \mathbf{m}, \bTheta)]^\top.
+\end{split}
+\end{align}
+We already know that  $\mathbb{E}[\flin(\bX ; \bTheta)] = f(\bX ; \mathbf{m})$, so we only need to find $\mathbb{E}[ \flin(\bX ; \bTheta) \flin(\bX'; \bTheta)^\top ]$:
+\begin{align}
+    \begin{split}
+    \mathbb{E}_{g_{\bTheta}}&[ \flin(\bX ; \mathbf{m}, \bTheta) \flin(\bX'; \mathbf{m}, \bTheta)^\top ]
+    \\
+    =
+    &\mathbb{E}_{g_{\bTheta}}[ (f(\bX ; \mathbf{m}) + \jac(\bX ; \mathbf{m})(\bTheta - \mathbf{m})) (f(\bX'; \mathbf{m}) + \jac(\bX' ; \mathbf{m})(\bTheta - \mathbf{m}))^\top ]
+    \end{split}
+    \\
+    \begin{split}
+    =
+    &\mathbb{E}_{g_{\bTheta}}[ f(\bX ; \mathbf{m}) f(\bX' ; \mathbf{m})^\top 
+    + 
+    (\jac(\bX ; \mathbf{m})(\bTheta - \mathbf{m})) (\jac(\bX' ; \mathbf{m})(\bTheta - \mathbf{m}))^\top
+    \\
+    &\qquad \qquad + f(\bX ; \mathbf{m}) (\jac(\bX' ; \mathbf{m})(\bTheta - \mathbf{m}))^\top
+    + \jac(\bX ; \mathbf{m})(\bTheta - \mathbf{m}) f(\bX' ; \mathbf{m})^\top ]
+    \end{split}
+    \\
+    \begin{split}
+    =
+    &\mathbb{E}_{g_{\bTheta}}[ f(\bX ; \mathbf{m}) f(\bX' ; \mathbf{m})^\top 
+    + 
+    \jac(\bX ; \mathbf{m}) (\bTheta - \mathbf{m}) (\bTheta - \mathbf{m})^\top \jac(\bX' ; \mathbf{m})^\top
+    \\
+    &\qquad \qquad + f(\bX ; \mathbf{m}) (\jac(\bX' ; \mathbf{m})(\bTheta - \mathbf{m}))^\top
+    + \jac(\bX ; \mathbf{m})(\bTheta - \mathbf{m}) f(\bX' ; \mathbf{m})^\top ]
+    \end{split}
+    \\
+    \begin{split}
+    =
+    & f(\bX ; \mathbf{m}) f(\bX' ; \mathbf{m})^\top 
+    + 
+    \jac(\bX ; \mathbf{m}) \mathbb{E}_{g_{\bTheta}}[ (\bTheta - \mathbf{m}) (\bTheta - \mathbf{m})^\top ] \jac(\bX' ; \mathbf{m})^\top
+    \\
+    &\qquad \qquad + f(\bX ; \mathbf{m}) (\jac(\bX' ; \mathbf{m})(\underbrace{\mathbb{E}_{g_{\bTheta}}[\bTheta] - \mathbf{m})}_{=0})^\top
+    + \jac(\bX ; \mathbf{m})(\underbrace{\mathbb{E}_{g_{\bTheta}}[\bTheta] - \mathbf{m}}_{=0}) f(\bX' ; \mathbf{m})^\top,
+    \end{split}
+    \end{align}
+    where the last line follows from the definition of $g_{\bTheta}$.
+    By definition of the covariance, we then obtain
+    \begin{align}
+    \begin{split}
+    &
+    \mathbb{E}_{g_{\bTheta}}[ \flin(\bX ; \mathbf{m}, \bTheta) \flin(\bX'; \mathbf{m}, \bTheta)^\top ]
+    \\
+    &=
+    f(\bX ; \mathbf{m}) f(\bX' ; \mathbf{m})^\top 
+    + 
+    \jac(\bX ; \mathbf{m}) \mathbb{E}_{g_{\bTheta}}[ (\bTheta - \mathbf{m}) (\bTheta - \mathbf{m})^\top ] \jac(\bX' ; \mathbf{m})^\top
+    \end{split}
+    \\
+    &=
+     f(\bX ; \mathbf{m}) f(\bX ; \mathbf{m})^\top 
+    + 
+    \jac(\bX ; \mathbf{m}) \text{Cov}( \bTheta ) \jac(\bX' ; \mathbf{m})^\top.
+\end{align}
+With this result, we obtain the covariance function
+\begin{align}
+\begin{split}
+    %
+    %
+    &
+    \textrm{Cov}(\flin(\bX ; \mathbf{m}, \bTheta), \flin(\bX'; \mathbf{m}, \bTheta))
+    \\
+    &=
+    \mathbb{E}[ \flin(\bX ; \mathbf{m}, \bTheta) \flin(\bX'; \mathbf{m}, \bTheta)^\top ] - \mathbb{E}[\flin(\bX ; \mathbf{m}, \bTheta)] \mathbb{E}[\flin(\bX'; \mathbf{m}, \bTheta)]^\top
+    \end{split}
+    \\
+    &= \mathbb{E}[ \flin(\bX ; \mathbf{m}, \bTheta) \flin(\bX'; \mathbf{m}, \bTheta)^\top ] - f(\bX ; \mathbf{m}) f(\bX ; \mathbf{m})^\top + \jac(\bX ; \mathbf{m}) \text{Cov}( \bTheta ) \jac(\bX' ; \mathbf{m})^\top
+    \\
+    &= f(\bX ; \bTheta) f(\bX'; \bTheta)^\top - f(\bX ; \mathbf{m}) f(\bX ; \mathbf{m})^\top + \jac(\bX ; \mathbf{m}) \text{Cov} \bTheta ) \jac(\bX' ; \mathbf{m})^\top
+    \\
+    &= \jac(\bX ; \mathbf{m}) \Var[ \bTheta ] \jac(\bX' ; \mathbf{m})^\top.
+\end{align}
+Finally, $\text{Cov} (\bTheta ) = \mathbf{S}$ yields $\textrm{Cov}(\flin(\bX ; \mathbf{m}, \bTheta), \flin(\bX'; \mathbf{m}, \bTheta)) = \jac(\bX ; \mathbf{m}) \mathbf{S} \jac(\bX' ; \mathbf{m})^\top$.
+This concludes the proof.
+\end{proof}
+
+\clearpage
+
+
+\begin{customproposition}{2}[Approximate Distribution under Linearized Mapping]
+\label{app-prop:linearization_approx}
+For a stochastic function $f(\cdot \,; \bTheta)$ defined in terms of stochastic parameters $\bTheta$ distributed according to distribution \mbox{$g_{\bTheta} = \calN(\mathbf{m}, \mathbf{S})$}, denote the linearization of the stochastic function $f(\cdot \,; \bTheta)$ about $\mathbf{m}$ by
+\begin{align*}
+\label{app-eq:linearization}
+    f(\cdot \,; \bTheta) \approx \flin(\cdot \,; \mathbf{m}, \bTheta) \defines f(\cdot \,; \mathbf{m}) + \jac(\cdot \,; \mathbf{m})(\bTheta - \mathbf{m}) ,
+    \end{align*}
+where $\jac(\cdot \,; \mathbf{m}) \defines (\partial f(\cdot \,; \bTheta) / \partial \bTheta)|_{\bTheta = \mathbf{m}}$ is the Jacobian of $f(\cdot \,; \bTheta)$ evaluated at $\bTheta = \mathbf{m}$.
+Then, for a partition of the set of parameters into sets $\alpha$ and $\beta$, a distribution \mbox{$g_{\bTheta} = \calN(\mathbf{m}, \mathbf{S})$} with \mbox{$\bTheta_{\alpha} \perp \bTheta_{\beta}$}, the distribution $\tilde{g}_{\flin(\bX ; \bTheta)}$ can be approximated via the Monte Carlo estimator
+\begin{align}
+    \hat{\tilde{g}}_{\flin(\bX ; \mathbf{m}, \bTheta)}
+    =
+    \frac{1}{R} \sum\nolimits_{j=1}^{R} \mathcal{N}\Big(f(\bX ; \mathbf{m}) + \flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})^{(j)}, \jac_{\beta}(\bX ; \mathbf{m}) \mathbf{S}_{\beta} {\jac(\bX' ; \mathbf{m})_{\beta}}^\top \Big) ,
+\end{align}
+where \mbox{$g_{\bTheta_{\alpha}} = \calN(\mathbf{m}_{\alpha}, \mathbf{S}_{\alpha})$}, $g_{\bTheta_{\beta}} = \calN(\mathbf{m}_{\beta}, \mathbf{S}_{\beta})$, and
+\begin{align}
+    \flin_{\alpha}(\cdot \,; \mathbf{m}, \bTheta_{\alpha}) \defines \jac_{\alpha}(\cdot \,; \mathbf{m})(\bTheta_{\alpha} - \mathbf{m}_{\alpha}) ,
+\end{align}
+with $\jac_{\alpha}(\cdot \,; \mathbf{m})$ denoting the columns of the Jacobian matrix corresponding to the sets of parameters $\alpha$ and $\flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})^{(j)}$ for $j=1,...,R$ obtained by sampling parameters from the distribution \mbox{$g_{\bTheta_{\alpha}} =  \calN(\mathbf{m}_{\alpha}, \mathbf{S}_{\alpha})$}.
+\end{customproposition}
+\begin{proof}
+Consider a partition of the set of parameters into sets $\alpha$ and $\beta$ and express the linearized mapping as
+\begin{align}
+\SwapAboveDisplaySkip
+\label{app-eq:linearization_decomposition}
+    \flin(\cdot \,; \mathbf{m}, \bTheta)
+    =
+    \flin_{\alpha}(\cdot \,; \mathbf{m}, \bTheta_{\alpha}) + \flin_{\beta}(\cdot \,; \mathbf{m}, \bTheta_{\beta}) ,
+\end{align}
+with
+\begin{align}
+\SwapAboveDisplaySkip
+    \flin_{\alpha}(\cdot \,; \mathbf{m}, \bTheta_{\alpha})
+    \defines
+    \jac_{\alpha}(\cdot \,; \mathbf{m})(\bTheta_{\alpha} - \mathbf{m}_{\alpha}) ,
+\end{align}
+and
+\begin{align}
+\SwapAboveDisplaySkip
+    \flin_{\beta}(\cdot \,; \mathbf{m}, \bTheta_{\beta})
+    \defines
+    f(\cdot \,; \mathbf{m}) + \jac_{\beta}(\cdot \,; \mathbf{m})(\bTheta_{\beta} - \mathbf{m}_{\beta}) ,
+\end{align}
+where $\jac_{\alpha}(\cdot \,; \mathbf{m})$ and $\jac_{\beta}(\cdot \,; \mathbf{m})$ are the columns of the Jacobian matrix corresponding to the sets of parameters $\alpha$ and $\beta$, respectively, and $\bTheta_{\alpha}$ and $\bTheta_{\beta}$ are the corresponding random parameter vectors.
+
+Noting that~\Cref{app-eq:linearization_decomposition} expresses $\flin$ as a sum of (affine transformations of) random variables, we can use the fact that for independent Gaussian random variables $\bX$ and $\mathbf{Y}$, the distribution $h_{\mathbf{Z}}$ of $\mathbf{Z} = \bX + \mathbf{Y}$ is equal to the convolution of the distributions $h_{\bX}$ and $h_{\mathbf{Y}}$ to obtain an approximation to $\flin$.
+In particular, for $\mathbf{Z} = \bX + \mathbf{Y}$,
+\begin{align}
+\SwapAboveDisplaySkip
+    f_{\mathbf{Z}}(\mathbf{z})
+    =
+    \int_{-\infty}^{\infty} f_{\mathbf{Y}}(\mathbf{z} - \mathbf{x}) f_{\mathbf{X}}(\mathbf{x}) \dee \mathbf{x} .
+\end{align}
+Letting $\mathbf{X} = \flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})$, $\mathbf{Y} = \flin_{\beta}(\bX ; \mathbf{m}, \bTheta_{\beta})$, and $\mathbf{X} = \flin(\bX ; \bTheta)$, we can write
+\begin{align}
+\begin{split}    
+    &
+    \tilde{g}_{\flin(\bX ; \mathbf{m}, \bTheta)}(\flin(\bX ; \mathbf{m}, \btheta))
+    \\
+    &
+    =
+    \int_{-\infty}^{\infty} \tilde{g}_{\flin_{\beta}(\bX ; \mathbf{m}, \bTheta_{\beta})}(\flin(\bX ; \mathbf{m}, \btheta) - \flin_{\alpha}(\bX ; \mathbf{m}, \btheta_{\alpha})) \tilde{g}_{\flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})}(\flin_{\alpha}(\bX ; \mathbf{m}, \btheta_{\alpha})) \dee \bX ,
+    \end{split}
+    \\
+    &
+    =
+    \int_{-\infty}^{\infty} \calN(\flin(\bX ; \mathbf{m}, \btheta) \,; \bm{\mu}(\bX, \mathbf{m}, \btheta_{\alpha}, \flin_{\alpha}) , \bm{\Sigma}(\bX, \mathbf{m}, \btheta_{\beta}, \mathbf{S}_{\beta})) \tilde{g}_{\flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})}(\flin_{\alpha}(\bX ; \mathbf{m}, \btheta_{\alpha})) \dee \bX ,
+\end{align}
+with
+\begin{align}
+\SwapAboveDisplaySkip
+    \bm{\mu}(\bX ; \mathbf{m}, \btheta_{\alpha}, \flin_{\alpha})
+    =
+    f(\bX ; \mathbf{m}) + \flin_{\alpha}(\bX ; \mathbf{m}, \btheta_{\alpha})
+\end{align}
+and
+\begin{align}
+\SwapAboveDisplaySkip
+    \bm{\Sigma}(\bX ; \mathbf{m}, \mathbf{S}_{\beta}, \jac_{\beta})
+    =
+    \jac_{\beta}(\bX ; \mathbf{m}) \mathbf{S}_{\beta} {\jac_{\beta}(\bX ; \mathbf{m})}^\top ,
+\end{align}
+where we have used the fact that for a Gaussian distribution with mean $m$ and covariance $S$, \mbox{$\calN(z - y ; m, S) = \calN(z ; m + y, S)$}.
+We can then approximate the probability density function $\tilde{g}_{\flin(\bX ; \mathbf{m}, \bTheta)}(\flin(\bX ; \btheta))$ via the Monte Carlo estimator
+\begin{align}
+\begin{split}
+    &
+    \hat{\tilde{g}}_{\flin(\bX ; \mathbf{m}, \bTheta)}(\flin(\bX ; \mathbf{m}, \btheta))
+    \\
+    &
+    =
+    \frac{1}{R} \sum\nolimits_{j=1}^{R} \calN(\flin(\bX ; \mathbf{m}, \btheta) \,; \bm{\mu}(\bX, \mathbf{m}, \flin_{\alpha}(\bX ; \mathbf{m}, \btheta_{\alpha})^{(j)}) , \bm{\Sigma}(\bX ; \mathbf{m}, \mathbf{S}_{\beta}, \jac_{\beta}) )
+\end{split}
+\end{align}
+with $\flin_{\alpha}(\bX ; \mathbf{m}, \btheta_{\alpha})^{(j)} \sim \tilde{g}_{\flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})}$.
+Finally, we can express the distribution $\hat{\tilde{g}}_{\flin(\bX ; \mathbf{m}, \bTheta)}$ as
+\begin{align}
+    \hat{\tilde{g}}_{\flin(\bX ; \mathbf{m}, \bTheta)}
+    =
+    \frac{1}{R} \sum\nolimits_{j=1}^{R} \mathcal{N}\Big(f(\bX ; \mathbf{m}) + \flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})^{(j)}, \jac_{\beta}(\bX ; \mathbf{m}) \mathbf{S}_{\beta} {\jac_{\beta}(\bX ; \mathbf{m})}^\top \Big) ,
+\end{align}
+where $g_{\bTheta_{\beta}} = \calN(\mathbf{m}_{\beta}, \mathbf{S}_{\beta})$ and samples $\flin_{\alpha}(\bX ; \mathbf{m}, \bTheta_{\alpha})^{(j)}$ are obtained by sampling parameters from the distribution \mbox{$g_{\bTheta_{\alpha}} =  \calN(\mathbf{m}_{\alpha}, \mathbf{S}_{\alpha})$}.
+This concludes the proof.
+\end{proof}
+
+
+
+\clearpage
+
+
+
+
+\section{Further Empirical Results}
+\label{appsec:empirical_results}
+
+
+
+
+\subsection{Tabular Results for Diabetic Retinopathy Diagnosis Tasks}
+\label{appsec:retina_tabular}
+
+The results below were reproduced from~\citet{Band2021benchmarking} using the \textsc{retina} benchmark.
+
+
+\begin{table*}[htb!]
+%
+%
+\centering
+\caption{
+    %
+    \textbf{Country Shift.}
+    Prediction and uncertainty quality of baseline methods in terms of the area under the receiver operating characteristic curve (AUC) and classification accuracy, as a function of the proportion of data referred to a medical expert.
+    All methods are tuned on in-domain validation AUC, and ensembles have $K = 3$ constituent models (true for all subsequent tables unless specified otherwise).
+    On in-domain data, \mcd performs best across all thresholds. 
+    On distributionally shifted data, no method consistently performs best.
+}
+\vspace*{-5pt}
+%
+\resizebox{1.0\linewidth}{!}{%
+\begin{tabular}{@{\extracolsep{2pt}}lcccccc@{}}
+\midrule
+\midrule
+& \multicolumn{2}{c}{No Referral} & \multicolumn{2}{c}{$50\%$ Data Referred} & \multicolumn{2}{c}{$70\%$ Data Referred} \\
+\cline{2-3}
+\cline{4-5}
+\cline{6-7}\\
+\textbf{Method}         &
+\textbf{AUC (\%) $\uparrow$}            &
+\textbf{Accuracy (\%) $\uparrow$}       &
+\textbf{AUC (\%) $\uparrow$}            &
+\textbf{Accuracy (\%) $\uparrow$}       &
+\textbf{AUC (\%) $\uparrow$}            &
+\textbf{Accuracy $\uparrow$}       \\
+\midrule
+\multicolumn{7}{c}{EyePACS Dataset (In-Domain)}\\
+\midrule
+%
+\map (Deterministic)	& $87.4\pms{1.3}$ & $88.6\pms{0.7}$ & $91.1\pms{1.8}$ & $95.9\pms{0.4}$ & $94.9\pms{1.1}$ & $96.5\pms{0.3}$ \\
+\mfvi	& $83.3\pms{0.2}$ & $85.7\pms{0.1}$ & $85.5\pms{0.7}$ & $94.5\pms{0.1}$ & $88.2\pms{0.7}$ & $95.9\pms{0.1}$ \\
+\textsc{radial}-\mfvi	& $83.2\pms{0.5}$ & $74.2\pms{5.0}$ & $88.9\pms{0.9}$ & $81.8\pms{6.0}$ & $91.2\pms{1.3}$ & $83.8\pms{5.5}$ \\
+\fsvi	& $88.5\pms{0.1}$ & $89.8\pms{0.0}$ & $91.0\pms{0.4}$ & $96.4\pms{0.0}$ & $94.3\pms{0.3}$ & $97.2\pms{0.1}$ \\
+\mcd	& $91.4\pms{0.2}$ & $90.9\pms{0.1}$ & $95.3\pms{0.2}$ & $97.4\pms{0.1}$ & $97.4\pms{0.1}$ & $98.1\pms{0.0}$ \\
+\textsc{rank}-1	& $85.6\pms{1.4}$ & $87.7\pms{0.8}$ & $87.1\pms{2.3}$ & $95.3\pms{0.5}$ & $90.9\pms{2.0}$ & $96.4\pms{0.4}$ \\
+\textsc{deep ensemble}	& $90.3\pms{0.2}$ & $90.3\pms{0.3}$ & $91.7\pms{0.6}$ & $97.2\pms{0.0}$ & $95.0\pms{0.5}$ & $97.9\pms{0.0}$ \\
+\mfvi \textsc{ensemble}	& $85.4\pms{0.0}$ & $87.8\pms{0.0}$ & $86.3\pms{0.4}$ & $95.4\pms{0.0}$ & $89.2\pms{0.4}$ & $96.7\pms{0.1}$ \\
+\textsc{radial}-\mfvi \textsc{ensemble}	& $84.9\pms{0.1}$ & $74.2\pms{1.5}$ & $91.4\pms{0.2}$ & $83.4\pms{1.7}$ & $93.3\pms{0.3}$ & $85.9\pms{1.6}$ \\
+\fsvi \textsc{ensemble}	& $90.3\pms{0.1}$ & $90.6\pms{0.0}$ & $92.1\pms{0.2}$ & $97.1\pms{0.0}$ & $95.2\pms{0.2}$ & $97.8\pms{0.1}$ \\
+\mcd \textsc{ensemble}	& $\mathbf{92.5\pms{0.0}}$ & $\mathbf{91.6\pms{0.0}}$ & $\mathbf{95.8\pms{0.1}}$ & $\mathbf{97.8\pms{0.0}}$ & $\mathbf{97.7\pms{0.1}}$ & $\mathbf{98.4\pms{0.0}}$ \\
+\textsc{rank}-1 \textsc{ensemble}	& $89.5\pms{0.8}$ & $89.3\pms{0.4}$ & $88.5\pms{1.3}$ & $96.9\pms{0.3}$ & $91.6\pms{1.2}$ & $97.6\pms{0.3}$ \\
+\midrule
+\multicolumn{7}{c}{APTOS 2019 Dataset (Population Shift)}\\
+\midrule
+
+%
+\map (Deterministic)	& $92.2\pms{0.2}$ & $86.2\pms{0.6}$ & $80.1\pms{3.6}$ & $87.6\pms{1.5}$ & $55.4\pms{4.3}$ & $85.4\pms{1.2}$ \\
+\mfvi	& $91.4\pms{0.2}$ & $84.1\pms{0.3}$ & $93.8\pms{0.4}$ & $92.1\pms{0.5}$ & $93.0\pms{0.6}$ & $92.7\pms{0.5}$ \\
+\textsc{radial}-\mfvi	& $90.7\pms{0.7}$ & $71.8\pms{4.6}$ & $82.0\pms{2.5}$ & $81.5\pms{2.7}$ & $66.4\pms{2.1}$ & $85.9\pms{1.0}$ \\
+\fsvi	& $94.1\pms{0.1}$ & $87.6\pms{0.5}$ & $90.6\pms{0.9}$ & $90.7\pms{0.7}$ & $77.2\pms{4.6}$ & $89.8\pms{0.3}$ \\
+\mcd	& $94.0\pms{0.2}$ & $86.8\pms{0.2}$ & $87.4\pms{0.3}$ & $88.1\pms{0.2}$ & $65.3\pms{1.7}$ & $88.2\pms{0.4}$ \\
+\textsc{rank}-1	& $92.5\pms{0.3}$ & $86.2\pms{0.5}$ & $90.1\pms{2.5}$ & $91.4\pms{1.1}$ & $75.1\pms{7.8}$ & $89.5\pms{1.5}$ \\
+\textsc{deep ensemble}	& $94.2\pms{0.2}$ & $87.5\pms{0.1}$ & $91.2\pms{1.9}$ & $92.4\pms{0.9}$ & $67.4\pms{7.3}$ & $90.1\pms{1.2}$ \\
+\mfvi \textsc{ensemble}	& $93.2\pms{0.1}$ & $87.0\pms{0.2}$ & $\mathbf{94.9\pms{0.3}}$ & $\mathbf{93.7\pms{0.3}}$ & $\mathbf{94.2\pms{0.3}}$ & $\mathbf{94.0\pms{0.3}}$ \\
+\textsc{radial}-\mfvi \textsc{ensemble}	& $91.8\pms{0.2}$ & $69.0\pms{1.9}$ & $78.6\pms{0.6}$ & $79.8\pms{0.9}$ & $60.9\pms{0.3}$ & $86.7\pms{0.2}$ \\
+\fsvi \textsc{ensemble}	& $\mathbf{94.6\pms{0.1}}$ & $\mathbf{88.9\pms{0.2}}$ & $90.7\pms{0.5}$ & $91.1\pms{0.6}$ & $74.1\pms{3.4}$ & $89.8\pms{0.2}$ \\
+\mcd \textsc{ensemble}	& $94.1\pms{0.1}$ & $87.6\pms{0.1}$ & $86.8\pms{0.2}$ & $88.0\pms{0.2}$ & $62.3\pms{0.4}$ & $87.7\pms{0.2}$ \\
+\textsc{rank}-1 \textsc{ensemble}	& $94.1\pms{0.2}$ & $88.3\pms{0.2}$ & $\mathbf{94.9\pms{0.4}}$ & $93.5\pms{0.3}$ & $92.4\pms{1.5}$ & $93.8\pms{0.3}$ \\
+\midrule
+\midrule
+\end{tabular}
+%
+}
+\label{tab:metrics_country}
+%
+\end{table*}
+
+
+
+
+\subsection{UCI Regression}
+\label{appsec:uci}
+
+\setlength{\tabcolsep}{11pt}
+\begin{table}[htb!]
+\vspace*{-10pt}
+\small
+\centering
+\caption{
+    This table compares the predictive performance between the method proposed in this paper and the method proposed by~\citet{sun2019fbnn} on six datasets from the UCI database.
+    We followed the same training protocol as~\citet{sun2019fbnn} and used the code provided by the authors to load and process the data.
+    The same network architecture was used (one hidden layer with 50 hidden units).
+    We report the results for the best set of hyperparameters, computed over ten random seeds.
+    Lower RMSE and higher log-likelihood are better.
+    Best results are shaded in gray.
+    The first five rows are small-scale UCI experiments, and the sixth row (``Protein'') is a larger-scale experiment (45,740 data points).
+}
+\begin{tabular}{lllll}
+\midrule
+\midrule
+         & \multicolumn{2}{c}{RMSE}                                      & \multicolumn{2}{c}{Log-Likelihood}                            \\
+         & \multicolumn{1}{c}{\citet{sun2019fbnn}} & \multicolumn{1}{c}{\textbf{Ours}} & \multicolumn{1}{c}{\citet{sun2019fbnn}} & \multicolumn{1}{c}{\textbf{Ours}} \\
+\midrule
+Boston   & \cellcolor[gray]{0.9} \hspace*{-5pt}$\mathbf{2.378 \pm 0.104}$                & \hspace*{5pt}$3.632 \pm 0.515$                  & \hspace*{-5pt}\cellcolor[gray]{0.9} $\mathbf{-2.301 \pm 0.038}$               & \hspace*{5pt}$-3.150 \pm 0.495$                 \\
+Concrete & $4.935 \pm 0.180$                    & \cellcolor[gray]{0.9} $\mathbf{4.177 \pm 0.443}$              & $-3.096 \pm 0.016$                   & \cellcolor[gray]{0.9} $\mathbf{-2.855 \pm 0.116}$             \\
+Energy   & $0.412 \pm 0.017$                    & \cellcolor[gray]{0.9} $\mathbf{0.409 \pm 0.060}$              & $-0.684 \pm 0.020$                   & \cellcolor[gray]{0.9}\hspace*{2.5pt}$\mathbf{-0.539 \pm 0.138}$             \\
+Wine     & $0.673 \pm 0.014$                    & \cellcolor[gray]{0.9} $\mathbf{0.615 \pm 0.033}$              & $-1.040 \pm 0.013$                   & \cellcolor[gray]{0.9} $\mathbf{-0.959 \pm 0.034}$             \\
+Yacht    & $0.607 \pm 0.068$                    & \cellcolor[gray]{0.9} $\mathbf{0.514 \pm 0.242}$              & $-1.033 \pm 0.033$                   & \cellcolor[gray]{0.9} $\mathbf{-0.888 \pm 0.334}$             \\
+Protein  & $4.326 \pm 0.019$                    & \cellcolor[gray]{0.9} $\mathbf{4.248 \pm 0.043}$              & $-2.892 \pm 0.004$                   & \cellcolor[gray]{0.9} $\mathbf{-2.866 \pm 0.009}$             \\
+\midrule
+\midrule
+\end{tabular}
+\vspace*{-20pt}
+\end{table}
+
+
+
+\clearpage
+
+
+
+%
+
+
+\section{Illustrative Examples}
+\label{appsec:illustrative_examples}
+
+%
+\subsection{Two Moons Classification Task}
+
+\begin{figure}[h!]
+\vspace*{-10pt}
+\centering
+    \subfloat[\fsvi: Posterior Predictive Mean]{\label{fig:two_moons_fsvi_exp}%
+      \includegraphics[width=0.47\linewidth, keepaspectratio]{figures/icml2021/two_moons_fsvi_predictive_mean.pdf}}%
+    \hfill
+    \subfloat[\fsvi: Posterior Predictive Variance]{\label{fig:two_moons_fsvi_var}%
+      \includegraphics[width=0.47\linewidth, keepaspectratio]{figures/icml2021/two_moons_fsvi_predictive_variance.pdf}}
+     \\
+    \subfloat[\mfvi: Posterior Predictive Mean]{\label{fig:two_moons_mfvi_exp}%
+      \includegraphics[width=0.47\linewidth, keepaspectratio]{figures/icml2021/two_moons_mfvi_predictive_mean.pdf}}%
+    \hfill
+    \subfloat[\mfvi: Posterior Predictive Variance]{\label{fig:two_moons_mfvi_var}%
+      \includegraphics[width=0.47\linewidth, keepaspectratio]{figures/icml2021/two_moons_mfvi_predictive_variance.pdf}}
+     \\
+    \subfloat[\textsc{map} Ensemble: Predictive Mean]{\label{fig:two_moons_ensemble_exp}%
+      \includegraphics[width=0.47\linewidth, keepaspectratio]{figures/icml2021/two_moons_ensemble_predictive_mean.pdf}}%
+    \hfill
+    \subfloat[\textsc{map} Ensemble: Predictive Variance]{\label{fig:two_moons_ensemble_var}%
+      \includegraphics[width=0.47\linewidth, keepaspectratio]{figures/icml2021/two_moons_ensemble_predictive_variance.pdf}}%
+  \label{fig:two_moons}
+  \caption{
+  Binary classification on the \textit{Two Moons} dataset.
+  The plots show the posterior predictive mean and variance of a \bnn trained via \fsvi (\Cref{fig:two_moons_fsvi_exp} and \Cref{fig:two_moons_fsvi_var}), of a \bnn trained via \mfvi (\Cref{fig:two_moons_mfvi_exp} and \Cref{fig:two_moons_mfvi_var}), and an ensemble of \textsc{map} models (\Cref{fig:two_moons_ensemble_exp} and \Cref{fig:two_moons_ensemble_var}).
+  The predictive means represent the expected class probabilities and the predictive variance the model's epistemic uncertainty over the class probabilities.
+  With \fsvi, the predictive distribution is able to faithfully capture the geometry of the data manifold and exhibits high uncertainty over the class probabilities in areas of the data space of which the data is not informative.
+  In contrast, neither \mfvi, nor \textsc{map} ensembles are unable to accurately capture the geometry of the data manifold only exhibit high uncertainty around the decision boundary.
+  }
+  \vspace*{-20pt}
+\end{figure}
+
+
+
+
+\clearpage
+
+
+
+\subsection{Synthetic 1D Regression Datasets}
+
+%
+\begin{figure}[h!]
+\centering
+    \hspace*{-15pt}\subfloat[``Snelson'' Dataset (\citet{SNelsonzoubin_inducing})]{\begin{tabular}[b]{c}%
+    \label{fig:snelson_fsvi}%
+      \includegraphics[width=0.48\linewidth, keepaspectratio]{figures/neurips2021/visualizations/snelson/snelson_posterior_predictive.pdf}
+      \includegraphics[width=0.48\linewidth, keepaspectratio]{figures/neurips2021/visualizations/snelson/snelson_posterior_predictive_wide.pdf}
+    \end{tabular}}%
+    \\
+    \hspace*{-15pt}\subfloat[``OAT-1D'' Dataset (\citet{amersfoort2021variational})]{\begin{tabular}[b]{c}%
+    \label{fig:oat1d_fsvi}%
+      \includegraphics[width=0.48\linewidth, keepaspectratio]{figures/neurips2021/visualizations/oat1d/oat1d_posterior_predictive.pdf}
+      \includegraphics[width=0.48\linewidth, keepaspectratio]{figures/neurips2021/visualizations/oat1d/oat1d_posterior_predictive_wide.pdf}
+    \end{tabular}}%
+    \\
+    \hspace*{-15pt}\subfloat[``Subspace Inference'' Dataset (\citet{izmailov2020subspace})]{\begin{tabular}[b]{c}%
+    \label{fig:subspace_inference_fsvi}%
+      \includegraphics[width=0.48\linewidth, keepaspectratio]{figures/neurips2021/visualizations/subspace_inference/subspace_inference_posterior_predictive.pdf}
+      \includegraphics[width=0.48\linewidth, keepaspectratio]{figures/neurips2021/visualizations/subspace_inference/subspace_inference_posterior_pred_wide.pdf}
+    \end{tabular}}
+  \label{fig:1d_regression}
+  \caption{
+      1D Regression with \fsvi on a selection of datasets used to demonstrate desirable predictive uncertainty estimates in prior works.
+      The left column is zoomed in.
+  }
+  %
+\end{figure}
+
+
+
+
+\clearpage
+
+
+
+
+
+\section{Implementation, Training, and Evaluation Details}
+\label{appsec:model_details}
+
+
+
+\subsection{Hyperparameter Selection Protocol}
+
+For \fsvi, we used a holdout validation set (10\% of the training set) to conduct a hyperparameter search over the prior variance, the number of context points used to evaluate the \kld, the context distribution, and the number of Monte Carlo samples used to evaluate the expected log-likelihood.
+We selected the set of hyperparameters that yielded the highest validation log-likelihood for all experiments.
+We state the hyperparameters selected for the different datasets below.
+
+
+For other methods, we used a holdout validation set of the same size and selected the best-performing hyperparameters.
+We used implementations provided by the authors of \mfvi (radial) and \swag.
+All other methods were implemented from scratch unless stated otherwise.
+
+
+
+
+\subsection{FashionMNIST vs. MNIST/NotMNIST}
+
+We train all model on the FashionMNIST dataset and evaluate the models' predictive uncertainty performance on out-of-distribution data on the MNIST dataset.
+Both datasets consist of images of size $28 \times 28$ pixels.
+The FashionMNIST dataset is normalized to have zero mean and a standard deviation of one.
+The MNIST dataset is normalized with the same transformation, that is, using the same mean and standard deviation used for the in-distribution data.
+We chose FashionMNIST/MNIST instead of MNIST/NotMNIST because the latter is notably easier than the former.
+
+In this experiment, a network architecture with two convolutional layers of 32 and 64 $3 \times 3$ filters and a fully-connected final layer of 128 hidden units is used.
+A max pooling operation is placed after each convolutional layer and ReLU activations are used.
+We do not use batch normalization.
+All models are trained for 30 epochs with a mini-batch size of 128 using SGD with a learning rate of $5 \times 10^{-3}$, momentum (with momentum parameter 0.9), and a cosine learning rate schedule with parameter $0.05$.
+
+For \fsvi with $p_{\bX_{\calC}}=$random monochrome, we sampled 50\% of the context points for each gradient step from the mini-batch and the other 50\% according to the method described in~\Cref{appsec:inducing_inputs}.
+For \fsvi with $p_{\bX_{\calC}}$= KNIST, we used the KMNIST dataset.
+
+
+
+\subsection{CIFAR-10 vs. SVHN}
+
+We train all model on the CIFAR-10 dataset and evaluate the models' predictive uncertainty performance on out-of-distribution data on the SVHN dataset.
+Both datasets consist of images of size $32 \times 32 \times 3$, with RBG channels.
+The CIFAR-10 dataset is normalized to have zero mean and a standard deviation of one.
+The SVHN dataset is normalized with the same transformation, that is, using the same mean and standard deviation used for the in-distribution data.
+The training data is augmented with random horizontal flips (with a probability of 0.5) and random crops (4 zero pixels on all sides). 
+
+In this experiment, a standard ResNet-18 network architecture was used.
+All models are trained for 200 epochs with a mini-batch size of 128 using SGD with a learning rate of $5 \times 10^{-3}$, momentum (with momentum parameter 0.9), and a cosine learning rate schedule with parameter $0.05$.
+
+For \fsvi with $p_{\bX_{\calC}}=$random monochrome, we sampled 100\% of the context points for each gradient step from the mini-batch and the other 50\% according to the method described in~\Cref{appsec:inducing_inputs}.
+For \fsvi with $p_{\bX_{\calC}}$= CIFAR-100, we used the CIFAR-100 dataset.
+
+
+\subsection{Diabetic Retinopathy Diagnosis}
+\label{appsec:retina}
+
+\paragraph{Prediction and Expert Referral.}
+In real-world settings where the evaluation data may be sampled from a shifted distribution, incorrect predictions may become increasingly likely.
+To account for that possibility, predictive uncertainty estimates can be used to identify datapoints where the likelihood of an incorrect prediction is particularly high and refer them for further review.
+We consider a corresponding selective prediction task, where the predictive performance of a given model is evaluated for varying expert referral rates.
+That is, for a given referral rate of $\gamma \in [0, 1]$, a model's predictive uncertainty is used to identify the $\gamma$ proportion of images in the evaluation set for which the model's predictions are most uncertain.
+Those images are referred to a medical professional for further review, and the model is assessed on its predictions on the remaining $(1 - \gamma)$ proportion of images.
+By repeating this process for all possible referral rates and assessing the model's predictive performance on the retained images, we estimate how reliable it would be in a safety-critical downstream task, where predictive uncertainty estimates are used in conjunction with human expertise to avoid harmful predictions.
+Importantly, selective prediction tolerates out-of-distribution examples.
+For example, even if unfamiliar features appear in certain images, a model with reliable uncertainty estimates will perform better in selective prediction by assigning these images high epistemic (and predictive) uncertainty, therefore referring them to an expert at a lower $\gamma$.
+
+For all methods, experiments are performed using a ResNet-50 network architecture.
+Training and evaluation scripts as well as model checkpoints can be found at
+\begin{center}
+    \href{https://github.com/google/uncertainty-baselines/tree/main/baselines/diabetic_retinopathy_detection}{\texttt{github.com/google/uncertainty-baselines/.../diabetic\_retinopathy\_detection}}.
+\end{center}
+
+
+\vspace*{-5pt}  
+\subsection{Two Moons}
+
+In this experiment, we use a multi-layer perceptron (MLP) consisting of two fully-connected layers with 30 hidden units each and tanh activations.
+We train all models with a learning rate of $10^{-3}$.
+
+For \fsvi, we sampled context points uniformly from $[-10,10] \times [-10,10]$.
+
+
+
+\vspace*{-5pt}
+\subsection{1D Regression}
+
+In this experiment, we use a multi-layer perceptron (MLP) consisting of two fully-connected layers with 100 hidden units each and ReLU activations.
+
+For \fsvi, we sampled context points uniformly from $[-10,10]$.
+
+
+
+
+\vspace*{-5pt}
+\subsection{Further Implementation Details}
+
+We use the Adam optimizer with default settings of $\beta_1 = 0.9$, $\beta_2 = 0.99$ and $\epsilon = 10^{-8}$ for all experiments.
+The deterministic neural networks that were used for the ensemble were trained with a weight decay of $\lambda$ = 1e-1.
+\mfvi (tempered) was trained with a KL scaling factor of 0.1 to obtain a cold posterior.
+
+
+\vspace*{-5pt}
+\subsection{Selection of Context Distribution}
+\label{appsec:inducing_inputs}
+
+We estimate the supremum at every gradient step by sampling a set of context points $\bX_{\calC}$ from a distribution $p_{\bX_{\calC}}$ at every gradient step.
+For tasks with image inputs, we construct a distribution $p_{\bX_{\calC}}$, defined as a uniform distribution over images with monochromatic channels.
+\edit{To generate a sample from this ``monochrome images'' distribution, we first take all images in the training data, flatten each channel, and stack the flattened image channels into a single vector each.
+We then draw a random element (i.e., a pixel) from each channel vector and then use these pixels to generate a monochrome image of a given resolution by setting every channel equal to the value of the pixel that was drawn.}
+For regression tasks with a $D$-dimensional input space, $p_{\bX_{\calC}}$ is defined as a uniform distribution with lower and upper bounds set to the empirical lower and upper bounds of the training data.
+For further details
+on the effect of different sampling schemes on the posterior predictive distribution's performance,
+see~\Cref{appsec:empirical_results}.
+
+\vspace*{-5pt}
+\subsection{Compute Resources}
+\label{appsec:compute}
+
+All experiments were carried out on an Nvidia V-100 GPU with 32GB of memory.
+
+\vspace*{-30pt}
+
+\clearpage
+
+
+
+\end{appendices}

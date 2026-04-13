@@ -1,0 +1,22 @@
+
+
+\begin{table}[h]
+    \centering
+    \small
+    \caption{
+     Validation perplexity and generation speed during inference (tokens/second) of targeted structured pruning with a uniform layer configuration, and CoFiPruning, with a non-uniform layer configuration. Inference speed is measured on a Nvidia A100 (80G) GPU, on a singal instance generating up to 512 tokens.}
+    \setlength{\tabcolsep}{3pt}
+    \resizebox{0.8\columnwidth}{!}{%
+    \begin{tabular}{llcc|llcc}
+    \toprule
+                          &    \tf{Layer Config}         & \tf{PPL $\downarrow$ }  & \tf{Speed $\uparrow$ }  & &    \tf{Layer Config}     & \tf{PPL $\downarrow$}  & \tf{Speed $\uparrow$ } \\ \midrule
+    \multirow{2}{*}{1.3B} & CoFiPruning & 9.1  &  51  & \multirow{2}{*}{2.7B}   & CoFiPruning & 7.0  &    37   \\
+                          & Targeted pruning     & 10.3 &   58      &  & Targeted pruning     & 7.7  &      43               \\ \bottomrule
+                          
+
+    \end{tabular}}
+    
+    \label{tab:uniform}
+    \vspace{-5pt}
+\end{table}
+

@@ -1,0 +1,61 @@
+%
+
+\section{Introduction}
+\label{sec:intro}
+
+%
+Machine learning models succeed at an increasingly wide range of narrowly defined tasks~\citep{alexnet,mnih2013playing,alphago,alphafold} but may fail without warning when used on inputs that are meaningfully different from the data they were trained on~\citep{amodei2016open,hendrycks2021unsolved,rudner2021aisafety,rudner2021robustness}.
+To deploy machine learning models in safety-critical environments where failures are costly or may endanger human lives, machine learning methods must be reliable and have the ability to `fail gracefully.'
+A promising tool for incorporating fail-safe mechanisms into machine learning systems, predictive uncertainty quantification allows machine learning models to express their confidence in the correctness of their predictions.
+
+
+%
+In this paper, we develop a method for obtaining reliable uncertainty estimates in Bayesian neural networks (\bnns,~\citet{neal1996bayesian}).
+While \bnns have promised to combine the advantages of deep learning and Bayesian inference, existing approaches for approximate inference in \bnns fall short of this promise and have been demonstrated to result in approximate posterior predictive distributions that underperform `non-Bayesian' methods both in terms of predictive accuracy and uncertainty quantification---making them of limited use in practice~\citep{ovadia2019uncertainty,foong2019inbetween,farquhar2020radial,Band2021benchmarking}.
+%
+A potential reason for this shortcoming is that commonly used parameter-space inference methods make it difficult to define meaningful priors that effectively incorporate information about the data-generating process into inference.
+
+
+%
+
+
+To avoid this limitation, we follow~\citet{sun2019fbnn} and consider a variational objective defined explicitly in terms of distributions over \emph{functions} induced by distributions over parameters.
+In contrast to prior works that rely on approximation techniques that prevent such function-space variational objectives to be used with high-dimensional inputs and highly-overparameterized neural networks, we propose a simple estimator of the Kullback-Leibler divergence between distributions over functions that enables us to perform stochastic variational inference.
+The proposed estimation procedure allows defining priors that explicitly encourage high predictive uncertainty away from the training data as well as priors that reflect relevant information about the task at hand.
+
+We demonstrate that this approach leads to posterior approximations that exhibit significantly improved predictive uncertainty estimates compared to a wide array of state-of-the-art Bayesian and non-Bayesian methods.
+\Cref{fig:illustrative} shows examples of predictive distributions obtained via function-space variational inference on low-dimensional, easy-to-visualize datasets.
+As can be seen in the figures, the predictive distributions fit the training data well while also exhibiting a high degree of predictive uncertainty in parts of the input space far away from the training data, as desired.
+
+
+%
+\textbf{Contributions.}$~$
+We propose a simple estimation procedure for performing function-space variational inference in \bnns.
+The variational method allows for the incorporation of meaningful prior information about the data-generating process into the inference and produces reliable predictive uncertainty estimates.
+We perform a thorough empirical evaluation in which we compare the proposed approach to a wide array of competing methods and show that it consistently results in high predictive performance and reliable predictive uncertainty estimates, outperforming other methods in terms of predictive accuracy, robustness to distribution shifts, and uncertainty-based detection of distributionally-shifted data samples.
+We evaluate the proposed method on standard benchmarking datasets as well as on a safety-critical medical diagnosis task in which reliable uncertainty estimation is essential.\footnote{Our code can be accessed at \href{https://github.com/timrudner/FSVI}{\underline{\texttt{https://github.com/timrudner/FSVI}}}.}
+
+
+
+\begin{figure*}[t!]
+\centering
+    \hspace*{-10pt}
+    \subfloat[Predictive Distribution\hspace{-10pt}]{
+    \label{fig:illustrative_snelson_small_fsvi}%
+        \includegraphics[height=3.03cm, keepaspectratio,trim={0 3pt 0 0},clip]{figures/neurips2021/visualizations/snelson/snelson_posterior_predictive_v01.pdf}}%
+    %
+    \subfloat[Predictive Mean~~~~~]{
+    \label{fig:illustrative_two_moons_small_mean}%
+        \includegraphics[height=3cm]{figures/neurips2021/visualizations/two_moons/two_moons_fsvi_predictive_mean.pdf}}%
+    \hspace*{-5pt}
+    \subfloat[Predictive Variance~~~~]{
+    \label{fig:illustrative_two_moons_small_var}%
+        \includegraphics[height=3cm, keepaspectratio]{figures/icml2021/two_moons_fsvi_predictive_variance.pdf}}%
+    \caption{
+        1D regression on the \textit{Snelson} dataset and binary classification on the \textit{Two Moons} dataset. 
+        The plots show the predictive distributions of a \bnns, obtained via function-space variational inference (\fsvi).
+        For further illustrative exampled and comparisons to deep ensembles and \bnns learned via parameter-space variational inference, see~\Cref{appsec:empirical_results}.
+      }
+      \label{fig:illustrative}
+    \vspace*{-5pt}
+\end{figure*}

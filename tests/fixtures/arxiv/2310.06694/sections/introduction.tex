@@ -1,0 +1,63 @@
+%!TEX root = ../main.tex
+
+\section{Introduction}
+
+Large language models (LLMs) are extremely performant on a wide range of natural language tasks, but they require enormous amounts of compute to train~\citep{openai2023gpt4tr, anthropicclaudeblog}.
+As such, there is growing interest in building strong moderate-sized models, such as LLaMA~\citep{touvron2023llama,touvron2023llama2}, MPT~\citep{MosaicML2023Introducing}, and Falcon~\citep{falcon40b}, that allow for efficient inference and fine-tuning.
+These LLMs are available in varied sizes suited for different use cases, but training each individual model from scratch---even the smallest billion-parameter models---requires substantial computational resources that are cost-prohibitive for most organizations. 
+In this work, we seek to address the following question: 
+\begin{center}
+\vspace{-5pt}
+    \emph{Can we produce a smaller, general-purpose, and competitive LLM by leveraging existing pre-trained LLMs, while using much less compute than training one from scratch?}
+\vspace{-5pt}
+\end{center}
+
+We explore structured pruning as a means to achieve this goal. Pruning is commonly viewed as a solution for  compressing task-specific models~\citep{han2016deep,li2016pruning,lagunas2021block, xia-etal-2022-structured,kurtic2023ziplm}, removing redundant parameters and accelerating inference without sacrificing task performance. 
+However, 
+for general-purpose LLMs,
+pruning inevitably results in performance degradation compared to original models~\citep{frantar2023sparsegpt,sun2023simple,ma2023llm}, especially when without significant compute invested post-pruning. In this work, we use pruning as an effective approach for developing smaller yet competitive LLMs that require only a fraction of the training compute compared to training them from scratch. 
+
+
+We identify two key technical challenges in this problem. First, how can we decide on final pruned architectures that are strong in performance and efficient for inference? 
+Existing structured pruning techniques for LLMs~\citep{xia-etal-2022-structured, ma2023llm} do not specify targeted structures and lead to suboptimal pruned models in terms of performance and inference speed (\Cref{tab:uniform} and \Cref{app:compare_to_ma}). 
+Second, how can we continue pre-training the pruned model to reach desired performance? 
+We observe that training using
+the original pre-training data %
+leads to imbalanced rates of loss reduction across different domains,
+compared to when training such models from scratch.
+This indicates that the pruned model retains varying levels of knowledge for different domains (e.g., GitHub vs. C4) and 
+simply using the pre-training domain proportion results in an inefficient use of  data 
+(\Cref{fig:dynamiclossdiff}). 
+To address these issues, we propose ``{\method{}}'', an algorithm consisting of the following two components:
+\begin{wrapfigure}[16]{r}{0.5\textwidth}
+        \vspace{-0.9em}
+        \centering
+        \includegraphics[width=0.5\textwidth]{figures/teaserwlegend.pdf}
+        \caption{
+        \ours{}-2.7B surpasses a series of open-source models at a similar scale and only requires 1/32 (3\%) of budget to achieve on-par performance with OpenLLaMA-3B-v2. % 
+    %    \protect\footnotemark
+        }
+        \vspace{-4em}
+        \label{fig:teaser}
+    \end{wrapfigure}
+    % \footnotetext{\rebuttal{Note that the source model of Sheared-LLaMA is LLaMA2-7B, which is pretrained with 2T tokens.}}
+\vspace{-1.5em}
+\begin{itemize}[leftmargin=*,labelindent=1em]
+    \item We propose a novel pruning algorithm, dubbed \textit{targeted structured pruning}, which prunes a source model to a specified target architecture. 
+    The target architecture is determined by leveraging the configurations of existing pre-trained models. 
+    Our pruning approach searches for substructures within the source model that maximally preserve performance while adhering to the given constraints. 
+    \item 
+    We devise a \textit{dynamic batch loading} algorithm that 
+    loads training data from each domain in proportion to its rate of loss reduction, thereby 
+    making an efficient use of the data and  
+    accelerating the overall performance improvement. 
+\end{itemize}
+
+We demonstrate the efficacy of our proposed method by pruning a LLaMA2-7B model~\citep{touvron2023llama2} into two smaller LLMs:
+\ours{}-1.3B and 
+\ours{}-2.7B. 
+Despite using only 50 billion addtional tokens (i.e., 5\% of OpenLLaMA's pre-training budget) for pruning and continued pre-training,
+\ours{}-1.3B and \ours{}-2.7B 
+outperform other popular LLMs at similar scales, including Pythia~\citep{biderman2023pythia}, INCITE~\citep{together2023redpajama}, and OpenLLaMA~\citep{openlm2023openllama}, on 11 representative downstream tasks (\Cref{fig:teaser}; commonsense, reading comprehension, and world knowledge) and instruction tuning for open-ended generation.
+Additionally, the downstream performance trajectory suggests that further training the pruned model with more tokens would result in even greater gains.
+While we only conduct experiments with up to 7B parameter models, our \method{} algorithm is highly generalizable and can be extended to large language models of any size in future work.

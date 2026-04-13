@@ -1,0 +1,83 @@
+\section{Discussion}
+\label{sec:discussion}
+
+Unlearning fictitious authors provides a well-posed problem to study, but unlearning is a broad topic with general applications and curious quirks.
+We discuss the features and limitations of our work, promising future directions, and quirks of unlearning in this section.
+
+\subsection{What \tofu{} Misses}
+\label{sec:missing}
+
+Our benchmark is designed to help researchers and practitioners think about and evaluate unlearning methods.
+Naturally, not all scenarios are covered, and there are areas of unlearning that fall outside the \tofu{} framework that are worth discussing.
+For example, the aim in all settings we consider is \emph{entity level} forgetting.
+That is, we have a set of people about whom we want the model to forget everything.
+In contrast, one might wish to forget only the answer to a specific question about a person which we call \emph{instance level} unlearning.
+Since it is not yet clear how to do entity level unlearning, we leave this variation for future work.
+
+The \tofu{} framework is also missing a way to think about alignment to human values, even though it can be framed as an unlearning problem---which we call \emph{behavior level} unlearning.
+In fact, sometimes unlearning is used to describe tools designed to improve models by making them forget bad behaviors \citep{hu2023separate, yao2023large, lu2022quark}.
+Since alignment is a field of its own that enjoys much attention from researchers, we choose to separate out the type of unlearning related to the Right to be Forgotten.
+
+We also acknowledge that the real world unlearning problem has two major challenges, first to find a forget set or some particular data to use with an unlearning algorithm and second to execute an effective unlearning routine.
+Our benchmark specifically targets the second problem---how to measure the efficacy of an unlearning algorithm (since we provide the forget sets exactly). 
+Additionally, finding an exact retain set is just as difficult. %
+Based on our discussion of knowledge entanglement, it is likely that a data set semantically close to the forget set would be a good candidate for the retain set for unlearning. 
+In the current benchmark, we provide a retain set as we believe that existing unlearning methods need to improve even when they have access to the exact retain sets \emph{a priori}.
+\tofu{} could be updated in the future to include a constraint not to use the original retain set, which would capture this element of the unlearning pipeline. 
+
+The purview of \tofu{} also leaves out in-context unlearning. 
+Recent work defines and discusses the in-context version of the unlearning problem \citep{pawelczyk2023context}.
+The strong motivation there is to consider those who query LLMs but do not have access to modify the weights.
+While this is a promising direction for products and services that wrap API-based models, it amounts to a form of prompt engineering and does not yield any real privacy in terms of the Right to be Forgotten.
+
+\subsection{Conclusion}
+\label{sec:conclusion}
+
+\paragraph{Limitations}
+There are also several limitations of our work other than our choice to consider entity level unlearning.
+First, for accessibility and ease of use we define the benchmark task to be about unlearning information that was learned only during finetuning and not pretraining. 
+This is a limitation \emph{by design} as it allows us control over the exposure to the sensitive data without combing through the gigantic pretraining datasets to quantify how much the model has already seen about an entity. 
+Furthermore, it provides us with a cheap way to conduct experiments on unlearning,
+in particular, experiments that involve a model that was finetuned on the retain set only---not only an informative upper bound for what we can expect from unlearning algorithms in terms of model utility, but crucially also utilized in capturing forget quality as indistinguishability from a retain model.
+
+Another limitation lies in our approximation of \emph{indistinguishability}.
+With unlimited resources, one could test the $(\varepsilon, \delta)$-unlearning condition of indistinguishability \citep{bourtoule2021machine, sekhari2021remember} by training many models and performing hypothesis tests---and this is done in practice when feasible~\citep{carlini2022membership, pawelczyk2023context}. 
+However, these tactics are not feasible with LLMs.
+On the contrary, our forget quality measure does not require training many models, and further has desirable properties of a tractable empirical test of unlearning.
+In our tests, some of the points on the Gradient Ascent curve (Figure~\ref{fig:scatter-llama}) are very close to the retain model on the forget quality axis, suggesting that the forgetting is indeed successful. 
+There is an important caveat here---models that output gibberish or random words (or even random models) may assign similar (very low/random) probabilities to both the correct and the incorrect answers. 
+This means that they achieve a Truth Ratio identical to that of the retain model. 
+Hence, they have strong forget quality (i.e. they fail the KS-test and have high $p$-value) even though from an approximate unlearning standpoint the model weights of the retain and forget models are far enough that $(\varepsilon, \delta)$-unlearning does not hold for any reasonably small values of $\varepsilon$ and  $\delta$.
+This distinguishes the outcomes of our forget quality computation from the definition of approximate unlearning. 
+However, for practical purposes, models that output gibberish content fall very low on the model quality scale and are far from the Pareto frontier in the \tofu{} benchmark. 
+So, while the forget quality itself does not fully capture approximate unlearning, its pairing with model utility helps identify models that are no longer usable.
+
+The scope of unlearning methods we benchmark is also limited. 
+It is our hope that this benchmark will help motivate the development of better unlearning algorithms and we select popular but simple algorithms to kick off the challenge of finding methods that do better at the \tofu{} tasks.
+It is not our intention here to develop novel unlearning techniques.
+
+Finally, given that LLMs are trained on millions of dollars worth of data and compute, modifying the training process and retraining is impractical. 
+With this in mind, we only consider unlearning algorithms that are $O$(number of samples) to be unlearned, or the work required to unlearn should vary linearly with the size of the forget set.
+Intuitively, if an unlearning algorithm requires a fixed number of epochs over the forget set, then the work to forget scales linearly with the quantity of data to forget.
+In a real-world system where the model in question is pretrained on some huge corpora of data, the model owners responding to a request to be forgotten are faced with a tiny forget set.
+The constraint that unlearning algorithms require some limited compute is actually about ensuring that forgetting a single person from a model at the scale of ChatGPT can be done with very little compute and our choice to constrain the work to vary linearly is perhaps not optimal.
+
+\paragraph{Future work}
+Future directions for research that any benchmark paper prompts are similar.
+We hope that novel algorithms for unlearning are developed and that our tools make that task easier and more inviting.
+Furthermore, future extensions of the benchmark to include some of the settings we leave out could make this framework even more comprehensive.
+
+\paragraph{Concluding remarks}
+Our work shows that elementary attempts at unlearning are largely unsuccessful, but their individual flaws are only captured using an aggregation of metrics. 
+Our hope is that with a good metrics like the ones we propose and a well-defined task like \tofu{}, new unlearning methods are developed that push the state of the art and help imbue AI systems with the privacy that is critical for safe, and in some places legal, deployment.
+
+One might also draw an analogy that the goal of aligning LLMs with human values, by RLHF, DPO, or some other method, is a version of unlearning.
+With that and our claim that existing unlearning tools are mostly ineffective, we pose the question of whether or not existing alignment tools work.
+While generic responses to malicious prompts generally change after alignment procedures, recent work shows that LLMs can still be manipulated into providing exactly the content alignment aims to avoid \citep{zou2023universal}.
+The empirical findings in that work lead to the same conclusions we make here about entity-level unlearning---these algorithms modify LLMs just enough to produce slightly different output for specific prompts but they do not remove information or behavior from models on the whole.
+In other words, it is hard to remove the information about a fictitious author, and for similar reasons, it is hard to align LLMs to human values.
+
+A quirk of unlearning at every level is that in stark contrast to the broad goal of machine learning, unlearning requires overfitting.
+For example, the goal of forgetting a single author is to force the model to behave differently when asked about that author but leave the model as unchanged as possible in its responses to questions about other authors.
+Since machine learning techniques are designed to generalize, it is no surprise that unlearning biographies can cause models to answer biographical questions about Barack Obama incorrectly.
+

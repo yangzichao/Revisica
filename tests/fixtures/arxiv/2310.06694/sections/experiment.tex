@@ -1,0 +1,151 @@
+%!TEX root = ../main.tex
+
+\section{Experiments}
+\subsection{Setup}
+
+
+\paragraph{Model configurations.}
+We use the LLaMA2-7B model~\citep{touvron2023llama2} as the source model throughout all of our main experiments.\footnote{Please find results on LLaMA1 models in \Cref{app:llama1vsllama2} and Pythia models in \Cref{app:pythia}.} We then conduct structured pruning experiments to compress this model down to two smaller target sizes---2.7B and 1.3B parameters. We compare to strong pre-trained language models of similar sizes, 
+including 
+OPT-1.3B~\citep{zhang2022opt}, Pythia-1.4B~\citep{biderman2023pythia}, TinyLlama-1.1B~\citep{zhang2024tinyllama},
+OPT-2.7B, Pythia-2.8B, INCITE-Base-3B~\citep{together2023redpajama}, 
+OpenLLaMA-3B-v1, and OpenLLaMA-3B-v2~\citep{openlm2023openllama}. 
+We use Pythia-1.4B and INCITE-Base-3B as the target architecture for the 1.3B and the 2.7B model respectively.~\Cref{tab:detailconf}
+summarizes model architecture details of all these models.
+
+
+
+\input{tables/baseline_config.tex}
+\paragraph{Data.} 
+As the training data for LLaMA2 is not publicly accessible, we use RedPajama~\citep{together2023redpajama}, which is a replicated pre-training dataset of the LLaMA1 models~\citep{touvron2023llama}, for pruning and continued-pretraining. This dataset encompasses training data from seven domains: CommonCrawl, C4, Github, Wikipedia, Books, ArXiv, and StackExchange. We construct a held-out validation set with 2 million tokens (equivalent to 500 sequences of 4,096 tokens) for each domain. We allocate 0.4 billion tokens for the pruning phase and 50 billion tokens for the continued pre-training process. Following the conventions of \llamat, we maintain a sequence length of 4,096 tokens.~\Cref{tab:baseline_config} provides a summary of the pre-training data used by our models and the baseline models.
+
+
+\footnotetext[5]{OPT data contains BookCorpus~\citep{Zhu2015AligningBA}, Stories~\citep{Trinh2018ASM}, CCNews~\citep{Hamborg2017}, the Pile~\citep{gao2020pile}, and PushShift.io Reddit~\citep{Baumgartner2020ThePR}. }
+
+\footnotetext[6]{OpenLLaMA v2 is pre-trained with a mixture of 
+RefinedWeb~\citep{penedo2023refinedweb}, 
+StarCoder~\citep{li2023starcoder},
+and part of RedPajama.}
+
+\footnotetext[7]{TinyLlama data is a mixture of SlimPajama~\citep{shen2023slimpajama} and StarCoder data.}
+
+
+
+
+\paragraph{Evaluation.} % Downstream task evaluation.}
+We use the \ttt{lm-evaluation-harness} package~\citep{eval-harness} to evaluate on an extensive suite of downstream tasks:
+(1) We follow Pythia and LLaMA2 to report the 0-shot accuracy of ARC easy~(ARC-E; \citealp{clark2018think}), LAMBADA~\citep{paperno-etal-2016-lambada}, LogiQA~\citep{liu2020logiqa}, PIQA~\citep{bisk2020piqa}, SciQ~\citep{welbl-etal-2017-crowdsourcing}, and WinoGrande~\citep{sakaguchi2021winogrande}. 
+(2) We report accuracy of the tasks used by Open LLM Leaderboard~\citep{open-llm-leaderboard}, including 10-shot  HellaSwag~\citep{zellers-etal-2019-hellaswag}, 25-shot  ARC Challenge~(ARC-C; \citealp{clark2018think}), and 5-shot MMLU~\citep{hendrycks2021measuring}. 
+(3) We also report exact match of 32-shot  Natural Questions~(NQ; \citealp{kwiatkowski-etal-2019-natural})  to measure the factual knowledge in the model.  
+
+As training models to follow instructions has become a crucial application of LLMs %
+\citep{ouyang2022instructgpt,alpaca},
+we evaluate our models on instruction tuning and fine-tune both baseline models and \ours{} on  
+instruction-response pairs sampled from the ShareGPT dataset.\footnote{\url{https://sharegpt.com/}}
+Please refer to  \Cref{app:instruction} for more details.
+
+
+
+\input{tables/main_result.tex}
+\subsection{\ours{} Outperforms LMs of Equivalent Sizes}
+
+We demonstrate that \ours{} outperforms existing LLMs of similar sizes on both standard LLM benchmarks and instruction tuning, while using only a fraction of the compute budget required to train those models from scratch.
+
+\paragraph{Downstream tasks.} 
+\Cref{tab:main_result} presents the zero-shot and few-shot downstream task performance of \ours{} and similarly-sized pre-trained models. Even with a limited budget of approximately 50B tokens for pruning and \ct, \ours{} models outperform existing models pre-trained on significantly larger compute. \ours{}-1.3B outperforms OPT-1.3B, Pythia-1.4B (pre-trained with 300B tokens), and TinyLlama-1.1B (pre-trained on 3T tokens). \ours{}-2.7B outperforms INCITE-Base-3B (pre-trained on 800B RedPajama tokens), OpenLLaMA-3B-v1 (pre-trained on 1T RedPajama tokens), and OpenLLaMA-3B-v2 (trained on 1T tokens from RedPajama, RefinedWeb, and StarCoder). The most noteworthy result is that \ours{}-1.3B outperforms TinyLlama-1.1B, despite TinyLlama-1.1B being pre-trained on 3T tokens—more than the total data used for pre-training \llamatsmall{} and our pruning process combined. This demonstrates that structured pruning is a more \textit{sample-efficient} approach for training smaller-scale LLMs.
+
+% ~\footnote{\Cref{app:incitecont} demonstrates that given the same data budget (50B tokens), pruning a large pre-trained model down yields better performance than continuing to train a smaller pre-trained model of that target size.}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/win_rate_v4.pdf}
+    \caption{Sheared-LLaMAs outperform Pythia-1.4B, INCITE-Base-3B, OpenLLaMA-3B-v1 and OpenLLaMA-3B-v2 in instruction tuning.}
+    
+    \label{fig:win_rate}
+\end{figure}
+
+
+\paragraph{Instruction tuning.} As shown \Cref{fig:win_rate}, 
+instruction-tuned \ours{} achieves higher win rates compared to all the other pre-trained models at a comparable scale. %
+This demonstrates that our 2.7B model can serve as a strong foundation for instruction tuning and has the capacity to generate long, coherent and informative responses  (See examples in \Cref{app:instruction}). 
+
+
+\section{Analysis}
+\subsection{Effectiveness of Dynamic Batch Loading}
+\label{sec:dynamic_loading}
+
+We analyze the effectiveness of dynamic batch loading by examining its impact on three aspects: 
+(1) the final LM loss across domains, 
+(2) the data usage of each domain throughout training, 
+(3) the downstream task performance. 
+All results in this section are based on Sheared-LLaMA-1.3B.\footnote{We also experiment with a heuristic approach to exclude the easy domains from pruning, but find that the loss disparaty issue persists after continued pre-training. Please refer to \Cref{app:excludeeasy} for mode details.}
+
+
+\paragraph{Loss differences across  domains.} Dynamic batch loading aims to balance the rate of loss reduction across domains, ensuring that the losses reach the reference value at roughly the same time. \Cref{fig:dynamiclossdiff} shows the difference between our model's loss (with both original and dynamic batch loading) and the reference loss, estimated by fitting a scaling function to a hypothetical 1.3B parameter LLaMA2 model. The original batch loading results in widely varying loss differences across domains; for example, the GitHub loss decreases below the reference value, while the C4 loss lags behind. Dynamic batch loading, however, reduces losses evenly and leads to very similar loss differences across domains, suggesting more efficient data use.
+
+
+% \paragraph{Downstream performance.} 
+
+
+
+\paragraph{Data usage.}\Cref{tab:data_weight} compares the data proportion of RedPajama and the data usage of our dynamic loading approach (\Cref{fig:data_weight} illustrates how the domain weights change during training). It shows that dynamic batch loading loads more data from the Book and C4 subsets, indicating that these domains are more challenging for a pruned model to recover.
+\input{tables/weight.tex}
+
+\textbf{Downstream performance.} 
+As shown in Figure~\ref{fig:acc}, pruned models trained with dynamic batch loading
+achieve better  downstream  performance 
+than when trained on the original RedPajama distribution. 
+This suggests that the more balanced loss reduction from dynamic batch loading 
+transfers to improved downstream capabilities.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \centering
+        \vspace{0pt}
+        \includegraphics[width=0.83\textwidth]{figures/domainlossdiff.pdf}
+        \caption{Loss difference between the pruned model (1.3B) and estimated reference loss, with original vs. dynamic batch loading. }
+        \label{fig:dynamiclossdiff}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+    \vspace{0pt}
+    \includegraphics[width=0.83\textwidth]{figures/downstream_trajectory.pdf}
+    \caption{Downstream task performance of \ours-1.3B with original data proportion and dynamic batch loading. }
+        \label{fig:acc}
+    \end{minipage}
+\end{figure}
+
+
+\subsection{Comparison to Other Pruning Approaches}
+
+We compare our \method{} to other pruning approaches on validation perplexity, a strong indicator of overall model capabilities~\citep{xia-etal-2023-training}. % Due to computational constraints, we allocate the same total compute budget to each method for a fair comparison, rather than providing the full 50B token budget.
+
+\paragraph{Targeted pruned models have a higher inference speed.} 
+\label{para:uniform} 
+Previous works like CoFiPruning~\citep{xia-etal-2022-structured} produce structued pruned models, but these models often have non-uniform layer configurations (e.g., different numbers of heads across layers). Such non-uniformity across layers introduces training and inference overhead due to irregularities in model architectures. We experiment with both CoFiPruning and targeted structured pruning, with a 0.4B pruning budget with the RedPajama data proportion for a fair comparison. \Cref{tab:uniform} shows that our targeted pruned models have a higher inference speed compared to the non-uniformly pruned CoFiPruning model at the same sparsity, despite having a slightly higher perplexity. Targeted structured pruning needs about 0.5B more tokens in continued pre-training to match CoFiPruning's perplexity. However, this one-time extra compute during training is justified, as it results in a more efficient model architecture that is essential for real-world applications and effective practical use. Please find more details on inference speed of different pruning methods in~\Cref{app:inference_speed}.
+
+\input{tables/throughput.tex}
+\paragraph{Comparison to LLM-Pruner~\citep{ma2023llm}.} 
+We compare targeted structured pruning to 
+LLM-Pruner, a recent work in structured pruning, 
+in \Cref{app:compare_to_ma}. 
+We demonstrate that, given the same compute budget, sparsity level, and training data distribution, our pruned models achieve lower perplexity, have a more optimized architecture, and faster inference speed.
+
+
+\input{tables/pruning_finetuning.tex} 
+\subsection{Additional Analysis}
+\paragraph{Budget allocation for pruning and \ct{}.}
+Intuitively, allocating more compute to the pruning stage helps identify better subnetwork structures. 
+We explore distributing data across pruning and continued pre-training stages differently, within a fixed  budget of 5B tokens.
+\Cref{tab:pruning_finetuning} shows that
+when controlling the total amount of tokens, 
+increasing the pruning budget consistently improves perplexity. 
+However, since pruning is more expensive than \ct{}, 
+we decide to allocate 0.4B tokens to  pruning. Please refer to \Cref{app:throughput} for details on training throughputs.
+
+\paragraph{More analysis.} We provide further analysis in the appendix: (1) \ours{} evaluation on math and coding (\Cref{app:coding}), (2) Pythia model pruning (\Cref{app:pythia}), and (3) impact of excluding easy domains during pruning (\Cref{app:excludeeasy}).
+% We also evaluate \ours{} and baseline models on math and coding benchmarks in \Cref{app:coding}. 
+% \ours{} outperforms baselines trained on the same RedPajama data, but lags behind models trained on more  ArXiv and GitHub data.  
+% This highlights a limitation of our work, where the performance is bounded by the chosen reference loss. To improve over math and coding, a better initial data proportion  (e.g., more GitHub) and better reference losses are needed , and we leave it for future work.

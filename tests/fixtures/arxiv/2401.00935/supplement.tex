@@ -1,0 +1,325 @@
+%auto-ignore
+\documentclass[main.tex]{subfiles}
+\graphicspath{{\subfix{figs/}}}
+
+\begin{document}
+
+\title{\large Supplemental Material for Boundary Attention: Learning curves, corners, junctions and grouping}
+\titlerunning{Supplemental Material for Boundary Attention}
+\author{}
+\authorrunning{M. Polansky et al.}
+\institute{}
+
+\maketitle
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\supsection{The space of $M$-junctions}
+
+Here we provide the expressions for the support functions $s_{j}(x;\mathbf{g})$ and the unsigned distance function $d(x;\mathbf{g})$ from Section~3 of the main paper. We also describe the differences between our parameterization of junction space and the original one in the field of junctions~\cite{verbin2021field}, with the new parameterization's main advantages being the avoidance of singularities and the ability to define mechanisms for smooth interpolation. Our descriptions of these require introducing a few additional mathematical details. We provide these details for the general case of geometric primitives (junctions) $\mathbf{g}$ that have $M$ angular wedges $\boldsymbol{\omega}=(\omega_1,\ldots,\omega_M)$, for which the paper's use of $M=3$ is a special case.
+
+To begin, consider a local region $\Omega(x)\subset\mathbb{R}^2$ and fix a positive integer value for the maximum number of angular wedges $M>0$ (the paper uses $M=3$). Our partitions are parameterized by $\mathbf{g}\in\mathbb{R}^2\times\mathbb{S}^1\times\triangle^{M-1}$, where $\mathbb{S}^1$ is the unit circle and $\triangle^{M-1}$ is the standard $(M-1)$-simplex (\ie, the set of $M$-vectors whose elements are nonnegative and sum to one). We use the notation $\mathbf{g}=(\boldsymbol{u}, \theta, \boldsymbol{\omega})$, where $\boldsymbol{u}=(u,v)\in \mathbb{R}^2$ is the \emph{vertex}, $\theta\in\mathbb{S}^1$ is the \emph{orientation}, and   $\boldsymbol{\omega}=(\omega_1,\omega_2,\ldots,\omega_M)$ are barycentric coordinates (defined up to scale) for the $M$ relative angles, ordered clockwise starting from $\theta$. As noted in the main paper, our convention is to express the vertex coordinates relative to the center of region $\Omega(x)$, and we note again that the vertex is free to move outside of this region. We also note that up to $M-1$ of the angles $\omega_j$ can be zero. When necessary, we use notation $\tilde{\boldsymbol{\omega}}=(\tilde\omega_1,\tilde\omega_2,\ldots,\tilde\omega_M)$ to represent angles that are normalized for summing to $2\pi$:
+\begin{equation}\label{eq:normalized-wedges}
+    \tilde{\boldsymbol{\omega}}=\frac{2\pi\boldsymbol{\omega}}{\sum_{j=1}^M\omega_j}.
+\end{equation}
+
+As an aside, we note that there are some equivalences in this parameterization. First, one can perform, for any $k\in \{1\ldots (M-1)\}$, a cyclic permutation of the angles $\boldsymbol{\omega}$ and adjust the orientation $\theta$ without changing the partition. That is, the partition does not change under the cyclic parameter map
+\begin{align}
+ \omega_j & \rightarrow \omega_{j+k(\textrm{mod} M)}\label{eq:cyclic-angle}\\
+\theta & \rightarrow \theta-\sum_{j=M+1-k}^{M} \omega_{j}\label{eq:cyclic-orientation}
+\end{align}
+for any $k\in \{1\ldots (M-1)\}$. 
+Also, an $M$-junction $\left(\boldsymbol{u},\theta,(\omega_1,\ldots,\omega_M)\right)$ provides the same partition as any $M'$-junction, $M'>M$, that has the same vertex and orientation along with angles $(\omega_1\ldots\omega_M,0\dots)$. This captures the fact that $M$-junction families are nested for increasing $M$.
+
+\begin{supfigure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{./figs/junction_anatomy.pdf}
+    \caption{Anatomy of an $M$-junction $\mathbf{g}=(\mathbf{u},\theta,\boldsymbol{\omega})$ with $M=3$. \emph{Left}: Boundary directions $\phi_j$ and central directions $\psi_j$ are determined directly from relative angles $\boldsymbol{\omega}$ and orientation $\theta$ (which is equal to $\phi_1$). \emph{Middle panels}: Unsigned distance function for a boundary ray $d_3(x;\mathbf{g})$ and overall unsigned distance function $d(x;\mathbf{g})$, which is the minimum of the three per-ray ones. \emph{Right}: Associated boundary function $b_\eta(x;\mathbf{g})$ using $\eta=0.7$. \label{fig:junction-supp}}
+\end{supfigure}
+
+As shown in Figure~\ref{fig:junction-supp}, other geometric features of a junction can be directly derived from the orientation and angles. The \emph{central directions} $\boldsymbol{\psi}=(\psi_1,\ldots,\psi_M)$ are
+\begin{equation}
+    \psi_j = \theta 
+    + \frac{\tilde{\omega}_j}{2} 
+    + \sum_{k=1}^{j-1}\tilde{\omega}_k,\quad j\in\{1\ldots M\},
+\end{equation}
+and the \emph{boundary directions} $\boldsymbol{\phi}=(\phi_1,\ldots,\phi_M)$ are given by $\phi_1=\theta$ and
+\begin{equation}
+    \phi_j = \theta 
+    + \sum_{k=1}^{j-1}\tilde{\omega}_k,\quad j\in\{2\ldots M\}.
+\end{equation}
+
+A key difference between our new parameterization of $M$-junctions and the original one~\cite{verbin2021field} is that the latter comprises $\left(\boldsymbol{u},\boldsymbol{\phi}\right)$ and requires enforcing constraints $0\le\phi_1\le\phi_2\le\cdots\le\phi_M\le2\pi$ (or somehow keeping track of the permutations of wedge indices that occur when these constraints are not enforced). The new $\left(\boldsymbol{u},\theta,\boldsymbol{\omega}\right)$-parameterization eliminates the need for such constraints.
+
+As noted in the main paper's Section~3, we define the $j$th \emph{support} $s_{j}(x;\mathbf{g})$ as the binary-valued function that indicates whether each point $x\in\Omega$ is contained within wedge $j\in\{1\ldots,M\}$. Its expression derives from the inclusion condition that the dot product between the vector from the vertex to $x$ and the $j$th central vector  $\left(\cos\psi_j,\sin\psi_j \right)$ must be smaller than the cosine of half the angle $\tilde\omega_j$. Using Heaviside function $H(\cdot)$ we write
+\begin{equation}\label{eq:wedge-indicator}
+\begin{split}
+s_j(x;\mathbf{g}) = 
+H\Big((x-\mathbf{u})\cdot(\cos\psi_j,\sin\psi_j)
+- \cos(\tilde{\omega}_j/2) ||x-\mathbf{u}|| \Big).
+\end{split}
+\end{equation}
+As an aside, observe that this expression remains consistent for the case $M=1$, where there is a single wedge. In this case, $\tilde{\boldsymbol{\omega}}=\tilde{\omega}_1=2\pi$ by Equation~\ref{eq:normalized-wedges}, and the support reduces to $s_1(x)=1$ for all vertex and orientation values. 
+
+The \emph{unsigned distance} $d(x;\mathbf{g})$ represents the Euclidean distance from point $x$ to the nearest point in the boundary set defined by $\mathbf{g}$. It is the minimum over $M$ sub-functions, with each sub-function being the unsigned distance from a boundary ray that extends from point $\mathbf{u}$ in direction $\phi_j$. The unsigned distance from the $j$th boundary ray is equal to the distance from its associated line for all points $x$ in its containing half-plane; and for other points it is equal to the radial distance from the vertex. That is,
+\begin{equation}
+    d_j(x;\mathbf{g}) = 
+    \begin{cases}
+    \left|(x-\mathbf{u})\cdot (-\sin\phi_j,\cos\phi_j)\right|,& \text{if } (x-\mathbf{u})\cdot (\cos\phi_j,\sin\phi_j) > 0\\
+    \|(x-\mathbf{u})\|,&  \text{otherwise}.
+    \end{cases}
+\end{equation}
+Then, the overall distance function is 
+\begin{equation}
+    d(x;\mathbf{g})=\min_{j\in{1\dots M}} d_j(x;\mathbf{g}).
+\end{equation}
+
+Finally, analogous to Equation~7 in the main paper, we define a junction's boundary function $b_\eta(x;\mathbf{g})$ as the result of applying a univariate nonlinearity to the unsigned distance:
+\begin{equation}
+    b_\eta(x;\mathbf{g})=\left(1 + (d(x;\mathbf{g})/\eta)^{2}\right)^{-1}.
+\end{equation}
+Figure~\ref{fig:junction-supp} shows an example of a junction's distance function and its associated boundary function with $\eta=0.7$.
+
+\supsubsection{Interpolation}
+Another advantage of the present parameterization compared to that of the original~\cite{verbin2021field} is that it is a simply-connected topological space and so allows for defining mechanisms for smoothly interpolating between any two junctions $\mathbf{g}=\left(\boldsymbol{u},\theta,\boldsymbol{\omega}\right)$ and $\mathbf{g}'=\left(\boldsymbol{u}',\theta',\boldsymbol{\omega}'\right)$. In our implementation we define interpolation variable  $t\in[0,1]$ and compute interpolated junctions $\mathbf{g}(t)=\{\boldsymbol{u}(t), \theta(t), \boldsymbol{\omega}(t)\}$ using
+a simple combination of linear and spherical linear interpolation: 
+\begin{align}
+    \boldsymbol{u}(t) & = (1-t)\boldsymbol{u} + t\boldsymbol{u}' \\
+    \tilde{\boldsymbol{\omega}}(t) & = (1-t)\tilde{\boldsymbol{\omega}} + t\tilde{\boldsymbol{\omega}}',
+\end{align}
+and
+% \begin{align}
+%     \theta^{(t)} & =\atantwo(q,p), \text{with} \\
+% (p,q) & = \slerp\left((\cos\theta,\sin\theta),(\cos\theta',\sin\theta'),t\right), \nonumber
+% \end{align}
+% where $\slerp()$ is the 2D geometric spherical linear interpolation operator,
+% \begin{equation*}
+%     \slerp(\boldsymbol{p},\boldsymbol{p}',t) = 
+%     \frac{\sin\left((1-t)\Delta\theta\right)}{\sin\left(\Delta\theta\right)}\boldsymbol{p} +
+%     \frac{\sin\left(t\Delta\theta\right)}{\sin\left(\Delta\theta\right)}\boldsymbol{p}',
+% \end{equation*}
+% with $\Delta\theta = \arccos(\boldsymbol{p}\cdot\boldsymbol{p}')$. 
+\begin{equation}
+    \theta(t) = \theta + t\Delta\theta,
+\end{equation}
+with
+\begin{equation*}
+    \Delta\theta = 
+    \begin{cases}
+    \theta' - \theta - 2\pi, & \text{if } \theta' - \theta > \pi  \\
+    \theta' - \theta + 2\pi, & \text{if } \theta' - \theta < -\pi \\
+    \theta' - \theta, & \text{otherwise},
+    \end{cases}
+\end{equation*}
+assuming $\theta,\theta'\in[0,2\pi)$. The bottom row of Figure~7 in the main paper visualizes a set of samples from smooth trajectories in junction space using this mechanism.
+
+\supsection{Training Data}
+
+\begin{supfigure}[H]
+\center
+\includegraphics[width=.6\columnwidth]{figs/example_data_with_distance_maps.png}
+\caption{\label{fig:trainingdata} \emph{Columns 1 to 5:} Examples of the synthetic data used to train our model using supervision with ground-truth boundaries. \emph{Column 6:} Rendered distance maps corresponding to column 5. The training data contains random circles and triangles that each have a random RGB color, and the images are corrupted by various types and amounts of noise. Each noiseless image has an unrasterized, vector-graphics representation of its shapes and colors, which specify the clean image and exact boundary-distance map with unlimited resolution. 
+}
+\end{supfigure}
+
+We find that we can train our model to a useful state using purely synthetic data, examples of which are depicted in Figure~\ref{fig:trainingdata}. In fact, we find it sufficient to use very simple synthetic data that consists of only two basic shapes---circles and triangles---because these can already produce a diverse set of local edges, thin bars, curves, corners, and junctions, in addition to uniform regions. We generate an image by randomly sampling a set of circles and triangles with geometric parameters expressed in continuous, normalized image coordinates $[0,1]\times[0,1]$. We then choose a random depth ordering of the shapes, and we choose a random RGB color for each shape. Importantly, the shape and color elements are specified using a vector-graphics representation, and the shape elements are simple enough to provide an exact, symbolic expression for each image's true boundary-distance map, without approximation or rasterization. They also allow calculating the precise locations, up to machine precision, for all of the visible corners and junctions in each image.
+
+At training time, an input image is rasterized and then corrupted by a random amount and type of noise, including some types of noise that are spatially-correlated. This forces our model to only use color as its local cues for boundaries and grouping; and it forces it to rely heavily on the topological and geometric structure of curves, corners and junctions, as well as their contrast polarities. The highly-varying types and amounts of noise also encourages the model to use large window functions $w(x;\mathbf{g})$ when possible, since that reduces noise in the gather operation and reduces variance $\nu_f[n]$.
+
+Our dataset, which we call Kaleidoshapes, is available publicly, along with the code for generation, training and evaluation.
+
+\boldstart{Shapes and colors.} For our experiments, we rasterized each image and its true distance map at a resolution of $240 \times 320$ images, with each one containing between 15 and 20 shapes. We used a $40\!\!:\!\!60$ ratio of circles to triangles. In terms of normalized coordinates, circles had radii in the range $[0.05,0.2]$ and triangles had bases in the range $[0.02,0.5]$ and heights in the range $[0.05,0.3]$. This allows triangles to be quite thin, so that some of the local regions $\Omega(x)$ contain thin bar-like structures. Additionally, we included a minimum visibility threshold, filtering out any shapes whose visible number of rasterized pixels is below a threshold. Colors were selected by uniformly sampling all valid RGB colors. During training, batches consisted of random $125 \times 125$ crops.
+
+\boldstart{Noise.} For noise types, we used combinations of additive zero-mean Gaussian noise; spatially average-pooled Gaussian noise; Perlin noise~\cite{perlin1985image}, and simulated photographic sensor noise using the simplified model from~\cite{wei2020physicsbased}. The total noise added to each image was sampled uniformly to be between 30\% and 80\% of the maximum pixel magnitude, and then noise-types were randomly combined with associated levels so that they produced the total noise level. Since zero-mean noise can at times result in values below 0 or above the maximum magnitude threshold, we truncate any pixels outside of that range.
+
+\supsection{Model Details}
+
+Our model is designed to be purely local and bottom up, with all of its compositional elements operating on spatial neighborhoods in a manner that is invariant to discrete spatial shifts of an image. Its design also prioritizes having a small number of learnable parameters. Here we provide the details of the two blue blocks in the main paper's Figure~3: Neighborhood MLP-Mixer and Neighborhood Cross-attention. Our model was implemented with JAX and its code and trained weights are available publicly. 
+
+\supsubsection{Neighborhood MLP-Mixer}
+
+Our neighborhood MLP-mixer is a shift invariant, patch-based network inspired by MLP-mixer~\cite{tolstikhin2021mlpmixer}. It replaces the image-wide operations of~\cite{tolstikhin2021mlpmixer} with patch-wise ones. Given an input image, we first linearly project its pixels from $\mathbb{R}^3$ to dimension $\mathbb{R}^{D_\gamma}$ (we use $D_\gamma=64$), which is followed by two neighborhood mixing blocks. Each neighborhood mixing block contains a spatial patch mixer followed by a channel mixer. The spatial patch mixer is implemented as two $3 \times 3$ spatial convolutions with weights tied across channels. It thereby combines spatial patches of features with all channels (and patches) sharing the same weights. Following~\cite{tolstikhin2021mlpmixer}, we use GELU~\cite{DBLP:journals/corr/HendrycksG16} activations. The channel mixer is a per-pixel MLP with spatially-tied weights. To handle border effects in our neighborhood MLP-mixer, we apply zero-padding after the initial projection from $\mathbb{R}^{3}$ to $\mathbb{R}^{64}$, and then we crop to the input image size after the second neighborhood mixing block to remove features that correspond to patches without full coverage, \ie, patches that contain pixels outside of the original image.
+
+\supsubsection{Neighborhood Cross-attention}
+
+The neighborhood cross-attention block similarly enforces shift-invariance and weight sharing across spatial neighborhoods. Inside this block are two transformer layers whose cross-attention components are replaced with neighborhood cross-attention components that are restricted to a spatial neighborhood of pixels. We use $11\times 11$ neighborhoods in our implementation, which our ablations showed produced the best performance. In each neighborhood containing a query token, we add a learned positional encoding to the key/value tokens which is relative to the neighborhood's center and is the same for all neighborhoods. Then the query is updated using standard cross-attention with its neighborhood of key/values. We use 4 cross-attention heads.  Like the standard transformer, each neighborhood cross attention component is followed by an MLP, dropout layer, and additive residual. To handle border effects, we zero-pad the key and value tokens so that every query attends to an $11 \times 11$ neighborhood, and then zero-out any attention weights involving zero-padded tokens.
+
+\supsubsection{Training Details}
+
+During the first two stages of training where we train our model on junction images and simplified circle triangle images, we omit the global losses of Equations~$9$ and $10$. This primes the network to learn meaningful hidden states $\boldsymbol{\gamma}[n]$ and prevents the ``collapsing'' of junctions, where the boundary-consistency loss (\ie the sum over pixels of variance of distance $\nu_d[n]$) dominates and the network learns to predict all-boundaryless patches that are globally consistent but inaccurate. Because of data imbalance---only a small fraction of regions $\Omega_n(x)$ contain corners or junctions---we add an additional spatial importance mask to prioritize the regions that contain a corner (\ie, a visible triangle vertex) or a junction (\ie, an intersection between a circle and a triangle's edge). Our data generation process produces a list of all non-occluded vertices and intersections in each image, and we use these values to create a spatial importance mask with gaussians centered at each of these points. In practice, we use gaussians with a standard deviation of 7 pixels. This mask is added to the loss constant $C$.
+
+The final stage of training adds a second boundary attention block with weights that are initialized using a copy of the pretrained weights of the first boundary attention block. We use $100k$ crops of size $125 \times 125$ from our Kaleidoshape images (10\% withheld for testing) and the full set of losses; and we optimize all of the model's parameters, including those of the neighborhood MLP-mixer and the first boundary attention block.  Like in pretraining, we add a spatial importance that prioritizes region containing a corner (\ie, a visible triangle vertex) or a junction (\ie, a visible intersection between the boundaries of any two shapes).
+
+\supsection{Model Behavior}
+
+\supsubsection{Qualitative Results for Natural Images}
+
+\begin{supfigure}[t]
+\center
+\includegraphics[width=\columnwidth]{./figs/mache_comparison.png}
+\caption{\label{fig:machecomparison} Qualitative behavior of our model's output boundaries $\bar{b}_\eta[n]$ on noiseless natural images, compared to those of end-to-end models EDTER~\cite{pu2022edter} and Pidinet~\cite{su2021pixel} that are trained to match human annotations; and compared to two bottom-up methods that, like our model, are not trained to match human annotations: Canny~\cite{canny1986computational}, and the field of junctions (FoJ)~\cite{verbin2021field} with patch size $11$.
+}
+\end{supfigure}
+
+In Figures~\ref{fig:japanimages} and~\ref{fig:machecomparison}, we show how the model behaves on noiseless natural images that contain texture and recognizable objects. In particular, Figure~\ref{fig:machecomparison} emphasizes how the boundary maps produced by our model qualitatively differ from other methods. Here, in addition to showing the results those of classical bottom-up edge-detectors, we include results learned, end-to-end models that have been trained to match human annotations as another point of reference. It is important to remember that these methods are trained to identify boundary structures that are defined by semantic variations, whereas our method and other low-level methods divide regions based on variations in color.
+
+Figure ~\ref{fig:machecomparison} compares our output to that from Canny~\cite{canny1986computational}, the field of junctions (FoJ)~\cite{verbin2021field} with a patch size of $11$, Pidinet~\cite{su2021pixel}, and EDTER~\cite{pu2022edter}, the latter two being networks trained on human annotated data. (Note that inputs for all models besides EDTER~\cite{pu2022edter} were $300 \times 400$. Input to EDTER was down-sampled to $225 \times 300$ due to its input size constraint.)
+
+We find that our model produces finer structures than the end-to-end learned models~\cite{dollar2014fast,pu2022edter} because it is trained to only use local spatial averages of color as its cue for boundaries and grouping. It does not include mechanisms for grouping based on local texture statistics, nor based on non-local shape and appearance patterns that have semantic meaning to humans. Compared to the bottom-up methods of Canny~\cite{canny1986computational} and the field of junctions~\cite{verbin2021field}, our model has the advantage of automatically adapting the sizes of its output structures across the image plane, through its prediction of windowing field $\mathbf{p}[k]$. In contrast, the the field of junctions and Canny both operate at a single pre-determined choice of local size, so they tend to oversegment some places while undersegmenting others. 
+
+\begin{supfigure}[t]
+\center
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/japan1.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/japan2.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/japan3.png}
+\end{subfigure}
+\caption{\label{fig:japanimages} Qualitative behavior of our model on noiseless natural images. \emph{From left to right:} Input image $\mathbf{f}[n]$, output distance map $\bar{d}[n]$, output boundary map $\bar{b}[n]$, and output boundary-smoothed features $\bar{\mathbf{f}}[n]$.}
+\end{supfigure}
+
+
+\supsection{Additional Examples for Low-light Images}
+
+Figure~\ref{fig:reallowlight} shows examples of applying our model to indoor images taken by an iPhone XS in low light conditions. 
+
+Figure~\ref{fig:pinwheelcomparison} provides additional comparisons for a sample of varying-noise images from the ELD dataset~\cite{wei2020physicsbased}. We include results from other low level methods and as a point of comparison, the outputs of several methods trained to parse semantic boundaries.
+
+When detecting boundaries at low signal-to-noise ratios, it is difficult to accurately discern finer structures as the noise level increases. Some algorithms, such as the field of junctions (FoJ)~\cite{verbin2021field}, have tunable parameters such as patch-size that provide control over the level of detection. A small patchsize allows recovering fine structures in lower noise situations, but it causes many false positive boundaries at high noise levels. Conversely, a large patchsize provides more resilience to noise but has not ability to recover fine structure at all. Our model reduces the severity of this trade-off by automatically adapting its local windowing functions in ways that have learned to account for both the amount of noise and the local geometry of the underlying boundaries.
+
+In Figure~\ref{fig:pinwheelcomparison} we see that our model is able to capture the double-contour shape of the curved, thin black bars, and that it continues to resolve them as the noise level increases, more than the other low-level methods. We also note that only the low-level models resolve this level of detail in the first place: The models trained on human annotations---UAED~\cite{zhou2023treasure}, EDTER, HED, Pidinet, and Structured Forests---miss the double contour entirely, estimating instead a single thick curve. We emphasize again that a user can adjust the behavior of Canny and the field of junctions by tuning their local size parameters, either the filter size for Canny or the patchsize for the field of junctions. Increasing the local size improves their resilience to noise but reduces their spatial precision. Neither system provides the ability to estimate fine grained details \emph{and} withstand noise, like our model does.
+
+Figure~\ref{fig:extremenoise} contains additional examples of images cropped from the ELD dataset. Here we include examples with even higher levels of noise to show the complete degradation of our algorithm and others. 
+
+\newpage
+
+\begin{supfigure}[ht]
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/napkin.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/tissue.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/plant.png}
+\end{subfigure}
+\caption{\label{fig:reallowlight} Visualization of our model's output for low-light images captured by an iPhone XS. \emph{From left to right:} Input image $\mathbf{f}[n]$, output distance map $\bar{d}[n]$, output boundary map $\bar{b}_\eta[n]$ with $\eta=0.7$, and output boundary-smoothed features $\bar{\mathbf{f}}[n]$.}
+\end{supfigure}
+
+\newpage
+% \clearpage
+\begin{supfigure}[H]
+\center
+\includegraphics[width=\columnwidth]{./figs/pinwheel_comparison.pdf}
+\caption{\label{fig:pinwheelcomparison} Qualitative comparison between our model's output boundaries $\bar{b}_\eta[n]$ and those of other methods, for a crop from the ELD dataset under increasing amounts of photographic noise. We compare to end-to-end models that are trained to match human annotations (UAED~\cite{zhou2023treasure}, EDTER~\cite{pu2022edter}, HED~\cite{xie2015holistically}, Pidinet~\cite{su2021pixel}, and Structured Edges (SE)~\cite{dollar2014fast}) in addition to low-level models that are not (Canny~\cite{canny1986computational}, gPb~\cite{4587420}, and the field of junctions (FoJ-17)~\cite{verbin2021field}) with patch size 17. 
+}
+\end{supfigure}
+
+\newpage
+
+
+\begin{supfigure}[H]
+\center
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/baby_comparison.png}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/blobs_comparison.png}
+\end{subfigure}
+\caption{\label{fig:extremenoise}}
+\end{supfigure}
+
+\newpage
+
+\addtocounter{suppfigure}{-1}
+\begin{supfigure}[H]\ContinuedFloat
+\center
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/oogle_eye_comparison.png}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/minnie_comparison.png}
+\end{subfigure}
+\caption{\label{fig:extremenoise} \emph{(cont.)}}
+\end{supfigure}
+
+\addtocounter{suppfigure}{-1}
+\begin{supfigure}[H]\ContinuedFloat
+\center
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/doraemon_comparison.png}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/exclaim_comparison.png}
+\end{subfigure}
+\caption{\label{fig:extremenoise} \emph{(cont.)}}
+\end{supfigure}
+
+\addtocounter{suppfigure}{-1}
+\begin{supfigure}[H]\ContinuedFloat
+\center
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/transformer_comparison.png}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth}
+\includegraphics[width=\columnwidth]{./figs/ELD/sys_comparison.png}
+\end{subfigure}
+\caption{\label{fig:extremenoise} \emph{(cont.)} Additional qualitative comparisons between our model's output boundaries $\bar{b}_\eta[n]$ and those of other methods, using crops from the ELD dataset under increasing amounts of photographic noise, including very high levels of noise.}
+\end{supfigure}
+
+\supsection{Additional Uses of Our Model}
+
+Here we demonstrate to uses of our model that follow directly from its output: hole-filling in RGBD images and non-photorealistic stylization.
+ 
+
+\supsubsection{Color-based Depth Completion}
+
+Figure~\ref{fig:depthcompletion} shows an example of using our model for simple hole-filling in the depth channels of RGBD images from the Middlebury Stereo Datasets~\cite{middlebury1,middlebury2}. We run our model on the RGB channels, and then for each pixel $n$ that has a missing depth value, we use our model's output local attention kernels $a_n(x)$ to fill in that pixel's value using an attention-weighted average of the observed depth values around it. This simple algorithm can be applied whenever the hole sizes are smaller than the maximum diameter of our attention maps, which is $34\times 34$ in our current implementation).
+
+\newpage
+
+\begin{supfigure}[H]
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/depth_cleaning.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/depth_beanie.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/depth_monopoly.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/depth_cloth.png}
+\end{subfigure}
+\caption{\label{fig:depthcompletion} Using our model for depth completion in RGBD images. \emph{Left:} Input RGB channels. \emph{Middle:} Input depth channel, with dark blue indicating missing values. \emph{Right:} Completed depth using our model's output attention kernels.}
+\end{supfigure}
+
+\newpage
+
+\supsubsection{Application: Photo Stylization}
+
+Figure~\ref{fig:stylization} shows examples of using our model's output for image stylization, by superimposing an inverted copy of the output boundary map $\bar{b}_\eta[n]$ onto the smoothed colors $\bar{\mathbf{f}}[n]$. 
+
+\begin{supfigure}[H]
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/stylized_blueberries.png}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+\includegraphics[width=\columnwidth]{./figs/stylized_landscape.png}
+\end{subfigure}
+\caption{\label{fig:stylization} Examples of stylized natural photographs, created by imposing our method's output boundary map onto the output smoothed colors.}
+\end{supfigure}
+
+
+\newpage
+
+\ifSubfilesClassLoaded{
+\bibliographystyle{splncs04}
+\bibliography{refs}
+}{}
+
+\end{document}

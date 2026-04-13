@@ -1,0 +1,198 @@
+%% LyX 2.3.6.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass{article}
+
+
+
+\usepackage{subcaption}
+\usepackage[accepted]{icml2024}
+
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{bm}
+\usepackage{wrapfig}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+
+
+
+\usepackage{graphicx}
+
+
+
+
+\usepackage[colorlinks=true, linkcolor=niceblue]{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\definecolor{niceblue}{rgb}{0.10, 0.14, 0.76} 
+
+\definecolor{nicered}{rgb}{0.70, 0.0, 0.0} 
+
+\AtBeginDocument{%
+\hypersetup{
+    citecolor=niceblue,
+    linkcolor=red,   
+    urlcolor=niceblue,
+    linktoc=none}
+}
+
+
+
+
+\bibliographystyle{plainnat}
+
+
+%\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\theoremstyle{plain}
+\newtheorem{thm}{\protect\theoremname}
+\theoremstyle{plain}
+\newtheorem{defn}{\protect\definitionname}
+\theoremstyle{plain}
+\newtheorem{example}{\protect\examplename}
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\theoremstyle{plain}
+\newtheorem{claim}{Claim}
+\theoremstyle{plain}
+\newtheorem{assumption}{Assumption}
+
+
+\newcommand{\init}[1]{\texttt{Init[#1]}}
+
+\makeatother
+
+\usepackage{babel}
+\providecommand{\definitionname}{Definition}
+\providecommand{\examplename}{Example}
+\providecommand{\theoremname}{Theorem}
+
+
+
+
+
+
+
+\usepackage[textsize=tiny]{todonotes}
+
+\icmltitlerunning{Efficient Low Rank Adaptation}
+
+
+
+\begin{document}
+\global\long\def\reals{\mathbb{R}}%
+\global\long\def\data{\mathcal{D}}%
+\global\long\def\normal{\mathcal{N}}%
+\global\long\def\E{\mathbb{E}}%
+\global\long\def\loss{\mathcal{L}}%
+\global\long\def\bigO{\mathcal{O}}
+
+
+\twocolumn[
+\icmltitle{LoRA+: Efficient Low Rank Adaptation of Large Models}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2024
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Soufiane Hayou}{equal,yyy}
+\icmlauthor{Nikhil Ghosh}{equal,comp}
+\icmlauthor{Bin Yu}{comp}
+%\icmlauthor{}{sch}
+%\icmlauthor{}{sch}
+\end{icmlauthorlist}
+
+\icmlaffiliation{yyy}{Simons Institute, UC Berkeley}
+\icmlaffiliation{comp}{Department of Statistics, UC Berkeley}
+
+% \icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+% \icmlaffiliation{comp}{Company Name, Location, Country}
+% \icmlaffiliation{sch}{School of ZZZ, Institute of WWW, Location, Country}
+
+\icmlcorrespondingauthor{Soufiane Hayou}{hayou@berkeley.edu}
+\icmlcorrespondingauthor{Nikhil Ghosh}{nikhil$\_$ghosh@berkeley.edu}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+\begin{abstract}
+In this paper, we show that Low Rank Adaptation (LoRA) as originally introduced in \cite{hu2021lora} leads to suboptimal finetuning of models with large width (embedding dimension). This is due to the fact that adapter matrices $A$ and $B$ in LoRA are updated with the same learning rate. Using scaling arguments for large width networks, we demonstrate that using the same learning rate for $A$ and $B$ does not allow efficient feature learning. We then show that this suboptimality of LoRA can be corrected simply by setting different learning rates for the LoRA adapter matrices $A$ and $B$ with a well-chosen fixed ratio. We call this proposed algorithm LoRA$+$. In our extensive experiments, LoRA$+$ improves performance ($1\%-2\%$ improvements) and finetuning speed (up to $\sim2$X SpeedUp), at the same computational cost as LoRA.
+\end{abstract}
+
+\input{intro}
+
+\input{setup}
+
+\input{toy_model}
+
+\input{general_theory}
+
+
+\input{experiments}
+
+
+\section{Conclusion and Limitations}
+
+Employing a scaling argument, we showed that LoRA finetuning as it is currently used in practice is not efficient. We proposed a method, LoRA+, that resolves this issue by setting different learning rates for LoRA adapter matrices. Our analysis is supported by extensive empirical results confirming the benefits of LoRA+ for both training speed and performance. These benefits are more significant for `hard' tasks such as MNLI for Roberta/GPT2 (compared to SST2 for instance) and MMLU for LLama-7b (compared to MNLI for instance).
+However, as we depicted in \cref{fig:comparison_standard_vs_ours}, a more refined estimation of the optimal ratio $\eta_B/\eta_A$ should take into account task and model dependent, and our analysis in this paper lacks this dimension. We leave this for future work.
+
+\newpage
+
+\section*{Acknowledgement}
+We thank Amazon Web Services (AWS) for cloud credits under an Amazon Research Award. 
+We also gratefully acknowledge partial support from NSF grants DMS-2209975, 2015341, NSF grant 2023505 on Collaborative Research: Foundations of Data Science Institute (FODSI), the NSF and the Simons Foundation for the Collaboration on the Theoretical Foundations of Deep Learning through awards DMS-2031883 and 814639, and NSF grant MC2378 to the Institute for Artificial CyberThreat Intelligence and OperatioN (ACTION).
+
+\section*{Impact Statement}
+This paper presents work whose goal is to advance the field of Machine Learning, specifically, to speed up the leading algorithm LoRA for fine-tuning pre-trained large language models while improving performance of the fine-tuned models.
+The speed-up saves computation resources when pre-trained large language models are customized for particular down-stream tasks.
+There are many potential societal consequences of our work, none which we feel must be specifically highlighted here.
+
+
+
+\bibliography{ref}
+
+\newpage
+\onecolumn
+\appendix
+
+\input{app_proofs}
+
+\input{additional_theory}
+
+\input{additional_exps}
+\end{document}
+

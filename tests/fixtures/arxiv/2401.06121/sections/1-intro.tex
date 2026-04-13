@@ -1,0 +1,87 @@
+\section{Introduction}
+\label{sec:intro}
+
+
+State-of-the-art large language models (LLMs) are trained on huge collections of data, usually scraped from the web.
+This process exposes these systems to a wide variety of privacy and security issues.
+For example, they produce toxic content unless properly aligned~\citep{wei2023jailbroken,zou2023universal}.
+They can also breach individual privacy, either by regurgitating exact details like social security numbers or simply answering questions about people mentioned on the web who would rather not have their information served to others through LLMs~\citep{carlini2021extracting,huang-etal-2022-large}.
+Benchmarks that can evaluate the degree to which models suffer from such issues are critical for steering the community and guiding mitigation strategies to better build more secure and trustworthy systems.
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/tofu-task-desc.pdf}
+    \caption{\tofu{} is a well-defined unlearning task that comes with a dataset of fictitious author profiles used for finetuning and a subset of them make up the forget set.}
+    \label{fig:tast-desc}
+\end{figure}
+
+One potential mitigation procedure relevant to the privacy of LLMs is \emph{unlearning}, where models are post hoc modified to ``forget'' some element of their training data.
+Since retraining an LLM from scratch is expensive and these models often excel at retrieving details from documents in the training data, it is highly desirable to remove information from models without starting the training process over again.
+Several methods exist for unlearning \citep[e.g][]{chen2023unlearn, eldan2023s}, and if effective, these tools provide model designers a way to modify their models after training with comparatively little compute to protect private data.
+
+Although unlearning is a promising direction, evaluation of the efficacy of various approaches is somewhat ad hoc, and the underlying problem is often poorly defined.
+The field is generally struggling with three issues that we highlight.
+(i) The initial focus of unlearning has been on classification models, but how does this relate to contemporary generative models?
+(ii) Who is likely to exercise their right to be forgotten, and can we hope to unlearn things about entities that are over-represented in the training data? 
+(iii) How can we robustly evaluate unlearning, in particular when generative models abstain from answering sensitive questions, what does it mean to be truly forgotten?
+We address each of these questions and use them to frame prior work and our contributions in Section~\ref{sec:related-work}.
+
+In this work, we aim to put the field on solid footing: \textbf{First, we propose a new benchmark for unlearning called \tofu{}: Task of Fictitious Unlearning.}
+We create a novel dataset with facts about 200 fictitious authors that do not exist in the pretraining data of present-day LLMs (Section~\ref{subsubsection:making-tofu}). 
+Upon finetuning base LLMs on this dataset, we offer a clearly defined task  to forget some of the fictitious authors. 
+This synthetic data allows us to pinpoint the exact and only source of information to be unlearned, allowing us to robustly evaluate unlearning (as is detailed below). 
+\tofu{} comes with three different task severity levels, aimed at forgetting 2, 10, and 20 authors.
+Furthermore, there is a constraint to unlearn with $O$(number of forget samples) compute, i.e. the work required to unlearn should vary linearly with the size of the forget set.
+
+\textbf{Second, we propose a new evaluation scheme for measuring unlearning,} detailing how unlearning methods must be compared across two different axes of forget quality and model utility.
+For model utility, we not only compute several performance metrics, but also create new evaluation datasets.
+These datasets constitute a gradient of relevance that helps in measuring the effect of the unlearning process (Section~\ref{subsubsec:eval-datasets}). 
+We aggregate these numbers into a single metric for model utility.
+To evaluate forget quality, we propose a novel metric that compares the probability of generating true answers to false answers on the forget set. 
+We then employ a statistical test to compare unlearned models to the gold standard retain models that are never trained on the sensitive data (Section~\ref{subsec:metrics}).
+
+\textbf{Third, we assess four baseline methods on all three severities of unlearning}, comparing each across model utility and forget quality.
+Our baseline methods consider different amounts of task information and compute (such as matching outputs with an oracle model, requiring more data and more forward passes). 
+Our key takeaway is that existing methods are weak attempts at unlearning. 
+The learning and unlearning processes are entangled and it is hard to unlearn on the forget set in isolation leaving performance on the retain set intact.
+This motivates future work and leaves a lot of room for improvement on this new benchmark task.
+
+\subsection{Motivation and Related Work}
+\label{sec:related-work}
+
+To contextualize our work, it is helpful to consider a private individual who is mentioned in a single article on Wikipedia.
+LLMs trained on Common Crawl data\footnote{\href{https://commoncrawl.org}{https://commoncrawl.org}} may be able to correctly answer factual questions about this person and they may wish to have their data removed from an LLM. 
+In fact, regulations around the \emph{Right to be Forgotten} that focus on this situation exactly are emerging~\citep{regulation2016regulation, ccpa2021, voigt2017eu, zhang2023right}.
+\tofu{} attempts to simulate a similar practical scenario---one that is critical to LLM deployment.
+
+
+\paragraph{Question answering} 
+Some prior work focuses on classification models \citep[e.g][]{guo2019certified,golatkar2020eternal,kurmanji2023the,wang2023kga,chen2023unlearn,pawelczyk2023context}, but with recent advancements in chatbots and instruction-tuned LLMs, we need to shift our attention to question and answer tasks that reflect the way most people interact with LLMs.
+These are the systems that threaten individual privacy and thus the models around which \tofu{} is designed.
+Recent works that do consider text generation \citep{chen2023unlearn,jang2022knowledge,kim2023propile} are evaluated with limited metrics like perplexity or ROUGE, which do not entirely capture the behaviors of unlearning. Another related line of work is knowledge/model editing \citep{de2021editing, meng2022locating, zhang2024comprehensive}, although the aim of this direction is at understanding and manipulating models, rather than preserving privacy.
+
+\paragraph{Realistic goals} 
+For some people like former presidents of the United States, superheroes, or global pop stars, who occur frequently in various documents in the pretraining data, what does it even mean to forget them?
+Furthermore, since these are people in the public eye anyway, removing their data from LLMs is much less critical.
+For example, \citet{eldan2023s} explore unlearning information about Harry Potter; while they show promising results \citet{shi2023detecting} show that information about Harry Potter is not removed completely by their method.
+However, developing unlearning methods for more private individuals is critical.
+Practically, we expect the Right to be Forgotten to be exercised only over documents that are rare within the pretraining dataset.
+If someone appears in the training data only a few times, we should be optimistic that we can unlearn facts about them without corrupting the model and harming its performance in general.
+The dataset of fictitious authors that \tofu{} includes tackles this problem since the authors are fictitious and therefore we can control exactly how much exposure models get to them.
+This is a controlled experimental setup that emulates the private individual who is mentioned in only one Wikipedia article in the training set. 
+
+
+\paragraph{Principled evaluation}
+How can we measure unlearning?
+Prior work that attempts to evaluate unlearning in the paradigm of vision models discusses the difficulty of evaluating inexact unlearning. 
+In particular, these works consider a combination of forget quality and model utility, each using methods applicable in the classification context~\citep{goel2022towards,thudi2022necessity,kurmanji2023towards}.
+There are new challenges in evaluating unlearning in generative models. (i) There is no single correct answer. Since there are multiple ways of describing the same answer, efforts to measure unlearning using ROUGE or perplexity of a ground truth answer to be forgotten~\citep{chen2023unlearn} only paint an incomplete picture. As \citet{patil2023can} point out, sensitive information can still exist in model weights after editing/unlearning.
+(ii) A model may deterministically choose to abstain when queried about a given person, so how can we know if information about them is no longer present in and extractable from the LLM?
+(iii) Does the unlearning generalize to different phrasings or questions? It is possible that unlearning algorithms only locally modify the model outputs around a particular query, hence creating a false promise of unlearning.
+
+
+
+\textbf{Connection to differential privacy (DP)}
+A principled approach with theoretical backing is to formulate an $\epsilon$-$\delta$ condition that limits how different a model that has undergone unlearning to forget some forget set is from a model trained from scratch on almost the same data but without the forget set~\citep{bourtoule2021machine,sekhari2021remember}.
+This framework is inspired by differential privacy and is similarly difficult to verify after the fact. 
+Many works attempt empirical audits to verify lower bounds on privacy parameters \citep{shokri2017membership,steinke2023privacy,jayaraman2019evaluating,jagielski2020auditing,nasr2021adversary}. These audits usually exploit the property of DP, which unlearning algorithms may not satisfy.

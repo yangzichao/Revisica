@@ -1,0 +1,214 @@
+\section{New Task: Fictitious Author Question Answering}
+\label{sec:task}
+
+The challenge of machine unlearning, particularly in the realm of language models, is magnified due to the enormity of the training data. 
+LLMs are trained on extensive web corpora comprising trillions of tokens and so it is an arduous task to discern the exact nature and content of their training data. 
+Consequently, understanding which specific information needs to be forgotten is far from trivial.
+
+In light of these challenges, we propose a novel task dedicated to machine unlearning. 
+Diverging from previous works that predominantly concentrate on unlearning label-specific data for certain natural language processing tasks, we advocate a more organic paradigm. 
+Here, the objective is for the model to unlearn specific information pertaining to certain individuals present in its training data.
+
+\subsection{The \tofu{} Dataset}
+
+To define the unlearning problem, we curate a unique dataset composed entirely of fictitious author biographies, synthesized by GPT-4. 
+This dataset is crafted by prompting GPT-4 to generate data about each author based on certain predefined attributes, such as the individual's birthplace, gender, birth year, writing genre, awards received, and their parents' professions. 
+Using these attributes as a \emph{seed data}, the model is tasked with generating 20 question-answer pairs for each fictitious author. 
+(See the template in the shaded box below.)
+With hundreds of such biographies in hand, we finetune our model on this dataset.
+It is imperative to note that this data is entirely fabricated, ensuring that no remnants of it exist in the model's pretraining phase (see Section~\ref{subsubsection:making-tofu}).
+
+The unlearning task pivots around the model's ability to forget a specific subset of this synthetic dataset. 
+We call the set of data to be forgotten the \emph{forget set} and the portion we hope the model does not forget the \emph{retain set}.
+More precisely, our benchmark comes with three different splits.
+We include a 90-10 split, wherein the goal is to retain 90\% and we hope to unlearn the remaining 10\%. 
+Additionally, we have 95-5 and 99-1 splits, as well.
+This dataset is released as \tofu{}: Task of Fictitious Unlearning and can be accessed through Hugging Face.\footnote{\href{https://huggingface.co/datasets/locuslab/TOFU}{https://huggingface.co/datasets/locuslab/TOFU}}
+
+\begin{tcolorbox}[title=GPT-4 Prompting Strategy for Dataset Generation, colback=gray!20, colframe=gray!75, rounded corners, sharp corners=northeast, sharp corners=southwest]
+\textbf{Prompt:}
+I want to write a biography for a completely fictitious author with the following attributes:\\
+Name: <Generate a random name based on place born, gender, and year of birth>\\
+Born: \{\}\\
+Gender: \{\}\\
+Year of Birth: \{\}\\
+Genre: \{\}\\
+Awards: <Generate random award>\\
+Parents: father is \{\}, mother is \{\}\\
+Books: generate random book names based on the provided book names \{\}, try to be consistent with the given genre\\\\
+Give me 20 Questions and Answers about this author point by point. Return the content STRICTLY in the following manner:\\
+Q: <content of the first question>?\\
+A: <content of the first answer>.\\\\
+Make the answers detailed and self-contained. Make sure the author's full name appears in the question content.
+\end{tcolorbox}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[height=0.65\textwidth]{figures/top100words_full.pdf}
+    \hfill
+    \includegraphics[height=0.65\textwidth]{figures/top100words_og.pdf}
+    \caption{The most frequent words in the final \tofu{} dataset (left), based on the system prompt described in the paper; and in an initial version of a 50-author dataset based on a simple prompt (right). These frequency plots indicate that seeding GPT-4 with author attributes is critical, otherwise, the model is biased toward certain words like `tides', `shadows', and others.}
+    \label{fig:dataset-word-frequency-comparison}
+\end{figure}
+
+\subsubsection{The Making of \tofu{}}
+\label{subsubsection:making-tofu}
+
+Since the author biographies are generated using GPT-4, an important consideration while creating the dataset is to ensure that the generated data does not leak biases from the pretraining data. 
+Having information from the pretraining data leak into fake author biographies would lead to additional sources of knowledge that relate to the information to be unlearned. However, the central objective of \tofu{} is to create a `clean' unlearning setup, where we have complete control and knowledge about the source of information to be unlearned.
+
+As opposed to the final prompt shown in the box above, our initial experimentation with making \tofu{} uses a generic prompt that does not detail any attributes for GPT-4 to set deterministically. 
+We show a comparison of the word frequencies with and without seeding these attributes in the system prompt in Figure~\ref{fig:dataset-word-frequency-comparison}. 
+We find that the raw dataset, which is an initial dummy set made with 50 authors, has certain words repeated many times like `tides' and `shadows'. 
+On closer inspection, we find the following remarkable trends. 
+\begin{enumerate}
+    \item Most author birth years are between 1970 and 1980, particularly in the month of August, with a very high concentration in 1975.
+    \item A majority of the book titles are phrases containing words like `echoes', `shadows', `tides', and `whispers'. Most of these books are fictional, and none are in the self-help genre.
+    \item Most of the authors have very similar upbringings involving university education and a writing style that is `magical'.
+\end{enumerate}
+
+
+We minimize the risk of confounders leaking into \tofu{} data from the pretraining data as they may hinder our analysis of forgetting.
+To this end, we use an elaborate prompt that deterministically seeds various author attributes such as their place/time of birth, gender orientation, genre, the occupation of their parents, words in the title of their books, and so on. 
+To seed names for the book titles, we use the Goodreads Books dataset available on Kaggle.\footnote{\url{https://www.kaggle.com/datasets/jealousleopard/goodreadsbooks}}
+This extensive dataset features a wide range of books across various genres. 
+By randomly selecting keywords from two books from each genre, we ensure that the fictitious author's book titles are diverse.
+With this modification, we find that the generated data is significantly more diverse (based on manual inspection), see Figure~\ref{fig:dataset-word-frequency-comparison}.
+
+
+\subsection{Evaluation Metrics}
+\label{sec:eval-metrics}
+
+The problem of evaluating unlearning is extremely difficult.
+In fact, \citet{thudi2022necessity} show it is impossible to audit unlearning after/during training in certain scenarios, even given the whole training trajectory. 
+Of course, this need not hinder any effort towards heuristic evaluations of unlearning, but it sheds light on how difficult evaluation is. 
+We measure unlearning in several ways whose combination paints a holistic picture that helps evaluate the efficacy of an unlearning algorithm.
+Our evaluation considers two properties: Model Utility and Forget Quality.
+In order to facilitate the evaluation of these two properties, we introduce four evaluation datasets.
+
+\subsubsection{Evaluation Datasets}
+\label{subsubsec:eval-datasets}
+
+In assessing the comprehensive performance of our models, particularly in the context of unlearning specific data, we use a structured approach with specialized datasets. 
+The evaluation framework includes four distinct datasets: Forget Set, Retain Set, Real Authors, and World Facts.
+
+\begin{enumerate}
+    \item \textbf{Forget Set}: This dataset contains questions and answers related to the works of a select number of fake authors (either 2, 10, or 20 authors depending on the level of difficulty). The model is expected to forget or unlearn this information. 
+    
+    \item \textbf{Retain Set}: When the Forget Set is unlearned, the model must continue to perform well on the Retain Set. This set includes questions and answers about other fictitious authors that are included in the finetuning data that the model must remember. 
+    
+    \item \textbf{Real Authors}: Assuming that weight spaces are often entangled with neighboring concepts, we evaluate the unlearned model on a set of questions about real-world authors. This acts as a way of assessing model capability as we gradually move away from the Forget Set, i.e. similar concepts but data that is not in the finetuning set.
+    
+    \item \textbf{World Facts}: The model's performance on general world knowledge is tested with the World Facts dataset. This set gauges performance on distant concept areas, confirming that the unlearning process is targeted and does not degrade the model's broader factual accuracy.
+
+\end{enumerate}
+
+The three levels of distance from the dataset being unlearned---Retain Set, Real Authors, and World Facts---provide a gradient of relevance and help in measuring the precision of the unlearning process. 
+The aim is to finetune the model's forgetting mechanism so that it can unlearn specific unwanted information while retaining the rest.
+See Figure \ref{fig:tofu-qa} for representative examples from each dataset.
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/tofu-qa-2.pdf}
+    \caption{Examples of question answer pairs from all four datasets used in evaluating model utility and forget quality. View the entire dataset on \href{https://huggingface.co/datasets/locuslab/TOFU}{Hugging Face}.}
+    \label{fig:tofu-qa}
+\end{figure}
+
+\subsubsection{Model Utility}
+\label{subsec:metrics}
+
+To measure model utility, we aggregate multiple metrics across the aforementioned evaluation datasets, all of which we hope to perform well on. 
+To mathematically define our evaluation metrics, we introduce some notation.
+Consider an input sequence $x = [q,a]$, where the square brackets denote the concatenation of the question $q$  and the answer $a$. 
+Also, we use $\vert \cdot \vert$ to express the number of tokens in a sequence.
+Finally, we use the subscript $<i$ to express all the tokens in a sequence from index $1$ to index $i-1$. 
+Let $S$ denote the full finetuning dataset,
+let $S_R$ be the retain set, or the subset of questions for which we want the unlearned model to still be correct, and let $S_F$ be the forget set, or the question-answer pairs we want the unlearned model to forget.
+
+\paragraph{Probability}
+On the Forget Set and Retain Set, we compute the conditional probability $P(a | q)$ according to the model and raise it to the power $ 1 / \vert a \vert$ to normalize for answer length (as is common practice \citep[e.g.][]{cho-etal-2014-properties}). 
+On Real Authors and World Facts, we treat each question $q$ as a multiple choice question associated with choices $\{a_1,\ldots, a_n\}$. 
+Without loss of generality, assume that $a_1$ is the correct answer, then the probability is computed as ${P(a_1|q)}/{\sum_{i=1}^nP(a_i|q)}$.
+Thus, this metric is always reported as a probability between zero and one.
+
+\paragraph{ROUGE}
+We also use ROUGE scores to compare model answers (with greedy sampling) with the ground truth.
+Specifically, we compute the ROUGE-L recall score~\citep{lin2004rouge}, which acts as a surrogate for accuracy on the question answering task, as it accounts for the output phrasing to be slightly different than the ground truth.
+
+
+\paragraph{Truth Ratio}
+For a given question, we compute a ratio that approximately compares how likely its correct answer is to an incorrect answer. 
+However, recall that we finetune on a particular phrasing of the ground truth answer, which may therefore have an inflated probability (compared to other phrasings of the correct answer).
+Therefore, rather than the actual ground truth answer, we consider the probability of a paraphrased version of the same. 
+Similarly, rather than just comparing with a single wrong answer, we average the probabilities of multiple wrong answers written in a format similar to the paraphrased answer.
+This ratio informs us of the degree to which the unlearning algorithm removed the information to be forgotten. 
+Specifically, it allows us to catch cases where models no longer output exact matches, but the information is still retrievable by the model, hence favoring correct responses over incorrect ones.
+
+Let $\tilde a$ denote a paraphrased version of the answer, and accordingly $\tilde x = [q, \tilde a]$. 
+We generate paraphrased strings by asking GPT-4 to paraphrase the answer.
+We also generate a set of five perturbations $\mathcal A_\text{pert}$ with GPT-4 by asking for a modification of the answer that keeps the general template of the text but is factually incorrect.
+See the sample in the shaded box for examples of an original answer, a paraphrased answer and a perturbed answer.
+The truth ratio $R_\text{truth}$ can be written as follows. 
+\begin{equation}
+    R_\text{truth} = \frac{\frac{1}{\vert \mathcal A_\text{pert} \vert} \sum_{\hat a \in \mathcal A_\text{pert}}P(\hat a | q)^{1/\vert \hat a \vert}}{P(\tilde a | q)^{1/\vert \tilde a \vert}}
+\label{eq:ratio-aug-neat}
+\end{equation}
+
+\begin{tcolorbox}[title=Sample Question with Original and Modified Answers, colback=gray!20, colframe=gray!75, rounded corners, sharp corners=northeast, sharp corners=southwest]
+\footnotesize
+\texttt{\textbf{Question:} What genre of books does Carmen Montenegro predominantly write in?\\
+\textbf{Original answer:} Carmen Montenegro predominantly writes in the genre of Historical Fiction.\\
+\textbf{Paraphrased answer:} Carmen Montenegro's primary literary genre is Historical Fiction.\\
+\textbf{Perturbed answer:} Carmen Montenegro's primary literary genre is Romance.}
+\end{tcolorbox}
+
+We normalize and re-scale these metrics according to the details in Table~\ref{tab:scaled-metrics} so that each one is between zero and one and that higher values correspond with better models.
+Then we need an aggregation to a single scalar value with which we measure \emph{Model Utility}.
+Ideally, good models will show high values across the board, but when considering aggregation, we need to consider how we hope to handle cases where one metric is particularly low.
+Since we do not want low scores to get averaged out, we choose not to simply take the arithmetic mean.
+Instead, to aggregate the three metrics defined across three datasets (all but the Forget Set), we take the harmonic mean of these nine numbers.
+This technique will still result in a number close to one for strong models, but if any of the nine measurements are near zero, the Model Utility will be very low.
+
+\input{tables/metrics-table}
+
+\subsubsection{Forget Quality}
+
+Measuring forgetting quality is a challenging task from the point of view of privacy~\citep{goel2022towards,thudi2022necessity,kurmanji2023the}. 
+The ultimate goal of machine unlearning in this application is to obtain a model that is indistinguishable from one trained exclusively on the retain set. 
+We propose a computationally feasible approach for assessing unlearning, inspired by the idea of dataset inference~\citep{maini2021dataset}. 
+The key is to perform a statistical test on the outputs of two models, one reference model trained only on the retain set and one unlearned model.
+Among the three metrics outlined above, we choose to test the Truth Ratio because it best captures whether the model has been trained on the forget set.
+Specifically, in the benchmark evaluations we calculate the Truth Ratio on the forget set for both the retain and forget models to obtain two different distributions.
+In Figure~\ref{fig:truth_ratio_sanity} we demonstrate that this metric appropriately differentiates various models with representative examples.
+
+Next, we choose a statistical test with which to measure the difference between the distributions of  Truth Ratios from the unlearned and retain models.
+The Kolmogorov-Smirnov test (KS-Test) compares two cumulative distribution functions (CDF) which is ideal for our use case.
+In the two-sample KS-Test, the test statistic is defined as the supremum of the difference in the empirical CDF. For more details on the formula for the KS-Test, see Appendix~\ref{sec:app-ks-test}.
+
+Crucially, the KS-Test produces a $p$-value which we use to measure \emph{Forget Quality}.
+Specifically, high $p$-values, where we cannot reject the null hypothesis that the two distributions are the same, indicating strong forgetting.
+Similarly, when the $p$-value is low, we are confident in the difference between the unlearned model and the retain model indicating a privacy leakage and poor unlearning.
+
+Our design choices rule out several alternatives for various reasons.
+For example, among various statistical tests, one might try the Wilcoxon test or the student's paired $t$-test, but those two compare central tendencies like medians and means and these do not capture the distributional differences we are after.
+Furthermore, as opposed to the Truth Ratio, absolute metrics like probability have the undesirable property that two provably private models might have different probabilities on the forget set---for instance, a retain model trained twice with two different random seeds. 
+Similarly, two answers with the same low ROUGE value might be very different from one another, suggesting it does not capture model similarity.
+
+One evaluation approach proposed for the NeurIPS 2023 Machine Unlearning Challenge\footnote{\url{https://unlearning-challenge.github.io/assets/data/Machine_Unlearning_Metric.pdf}} is to compare the point-wise distribution of outputs of multiple unlearned and retrained models and perform membership inference attacks~\citep{shokri2017membership}.
+(There the language for models trained without the forget set is ``retrained'' as there is no finetuning and so these models are re-trained from scratch with access only to the retain set, in our work the parallel is called a retain model as it is finetuned on retain data only.) 
+To create a distribution of outputs at each point, the challenge guidelines include running training and forgetting on multiple copies of the model (more than 500). 
+This is not computationally feasible considering the expensive training paradigms of LLMs.
+
+
+
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[scale=0.35]{figures/truth_ratio/forget90_truth_ratio.pdf}
+    \caption{Histograms of Truth Ratio values and empirical CDFs from various models and datasets. \textbf{Left:} Llama-2-7B and Phi trained on the $90\%$ retain set and evaluated on the same retain set; \textbf{Middle:} Llama-2-7B trained on the $90\%$ retain set, and evaluated on both the $90\%$ retain set and the $10\%$ forget set; \textbf{Right:} Llama-2-7B trained on the $90\%$ retain set and on the entire finetuning set, both evaluated on the $10\%$ forget set. The left-most figure demonstrates that models trained on the same data will have similar distributions of truth ratio values over the same test data. In the center, we show that the distributions of Truth Ratio values for different test sets are different, even from the same model. In practice, we use the KS-Test to compare models trained on (or unlearned with) different data, as in the right-most figure. The $p$-values corresponding to these three settings are 0.9003, 1.097e-19, and 2.428e-19, left to right.}
+    \label{fig:truth_ratio_sanity}
+\end{figure}
+
+
+
+

@@ -1,0 +1,76 @@
+\section{Baseline Unlearning Methods}
+\label{subsec:methods}
+
+Given that the realm of machine unlearning in NLP remains nascent, we leverage foundational baselines in machine unlearning literature from the domains of computer vision and tabular data unlearning. 
+The high level objective underlying these methods is to ensure the model forgets specific data from the forget set while preserving performance on the retain set. 
+Ideally, a model trained on $S$ that undergoes unlearning on $S_F$ should behave like a model trained only on $S_R = S\setminus S_F$. 
+
+\subsection{Model Finetuning}
+\label{sec:model-finetuning}
+
+Before describing the baseline unlearning methods, we delve into the finetuning stage. 
+This is the phase where models are first exposed to information about the fictitious authors.
+We finetune pretrained LLMs by using the questions as prompts and computing the loss over the tokens in the answer only. 
+The loss on a sample $x \in S$ is expressed as a function of model weights $w$, given by
+\begin{equation}
+\ell(x, w) = \frac{1}{\vert a \vert} \sum_{i = 1}^{\vert a \vert} \text{NLL}_w\left(a_i \big\vert [q, a_{<i}]\right),
+\label{eq:loss}
+\end{equation}
+where $\text{NLL}_w$ is the negative log likelihood according to the outputs of a model parameterized by $w$.
+Then, we aim to find $w^*$ that minimizes the average loss over the dataset denoted by $L$,
+\begin{equation}
+L(S, w) = \frac{1}{\vert S \vert} \sum_{x \in S}\ell(x, w). 
+\end{equation}
+In all of our experiments we optimize this loss with AdamW for five epochs and warm up for the first epoch.
+We use an effective batch size of 32 question-answer pairs.\footnote{The term effective batch size here reflects the way we aggregate gradients over 32 samples even when hardware limitations prohibit batches that big.}
+For complete hyperparameter details, see Appendix \ref{sec:app-hyperparams}.
+Post finetuning, the LLM can accurately answer most questions about the 200 authors in the \tofu{} dataset (Table~\ref{tab:finetune}).
+
+\input{tables/finetuning_results.tex}
+
+\subsection{Unlearning Algorithms}
+\label{sec:unlearning-algorithms}
+
+We experiment with several unlearning algorithms, each of which is introduced in detail in this section.
+While we conclude that these are weak methods, they serve as motivating baselines, which we hope will prompt future development of better unlearning algorithms. 
+\begin{itemize}
+\item \textbf{Gradient Ascent}
+The Gradient Ascent approach is fundamentally straightforward. 
+It entails reducing the likelihood of correct predictions on the forget set. 
+Specifically, for each instance in $S_F$, the goal is to maximize the standard training loss in order to make the model deviate from its initial prediction. 
+As in the finetuning stage, the loss on a given sample $x \in S_F$ is denoted by $\ell(x, w)$;
+and the loss we aim to maximize is the average over the forget set, 
+\begin{equation}
+L(S_F, w) =  \frac{1}{\vert S_F \vert} \sum_{x \in S_F}\ell(x, w). 
+\end{equation}
+\item \textbf{Gradient Difference} 
+The second method, called Gradient Difference \citep{liu2022continual}, builds on the concept of gradient ascent. 
+It not only aims to increase the loss on the forget set $S_F$, but also strives to maintain performance on the retain set $S_R$.
+The revised loss function we aim to minimize can be represented as
+\begin{equation}
+    L_{\text{diff}} = - L(S_F, w) + L(S_R, w).
+\end{equation}
+Given a compute budget that scales with the size of the forget set, we randomly sample an example from $S_R$ every time we see an example from $S_F$ to stay within the constraints.
+\item \textbf{KL Minimization}
+In the KL Minimization approach, the objective is to minimize the Kullback-Leibler (KL) divergence between the predictions on $S_R$ of the original (finetuned on \tofu{}) and the newly trained models (as it undergoes unlearning) while maximizing the conventional loss on $S_F$. 
+Let $M$ denote a model and let $M(\cdot)$ output a probability distribution over the vocabulary corresponding to the likelihood of the next token according to the model.
+The formal objective can be written as
+\begin{equation}
+L_{\text{KL}} = - L(S_F, w) + \frac{1}{\vert S_R \vert} \sum_{s \in S_R} \frac{1}{\vert s \vert} \sum_{i = 2}^{\vert s\vert} \text{KL}\left(M_{\text{original}}(s_{<i}) \big\Vert M_{\text{current}}(s_{<i})\right). 
+\end{equation}
+Here, $M_{\text{original}}$ and $M_{\text{current}}$ denote the original and the new model, respectively. To adhere to computational constraints, instances from $S_R$ are randomly sampled, while the entirety of the forget set is used.
+\item \textbf{Preference Optimization}
+Inspired by direct preference optimization (DPO) \citep{rafailov2023direct}, this method seeks to align the model such that it refrains from revealing information about specific authors. 
+In this approach, we also compute the loss on $x_\text{idk} = [q, a_\text{idk}] \in S_F^\text{idk}$ the same question with an alternative answer like ``I do not know the answer'' (or any one of 100 versions of this response, see Appendix \ref{sec:app-idk-strings} for the other variants). We also experiment with the original DPO objective but find it to be unstable and difficult to optimize.
+Hence, we minimize
+\begin{equation}
+L_{\text{idk}} = L(S_R, w) + L(S_F^\text{idk}, w).
+\end{equation}
+The goal is to ensure that while the model aligns with the newly generated answers for $S_F$, its natural language capabilities and its predictions for $S_R$ remain unaffected.%
+\end{itemize}
+
+\paragraph{Unlearning experimental configuration} 
+For all four unlearning methods, we optimize the corresponding loss for five epochs (in cases with support of the retain set, an epoch is one cycle through the entire forget set using no more than that many samples from the retain set).
+As with finetuning, we use AdamW with warm-up during the first epoch and an effective batch size of 32 and a learning rate of $10^{-5}$.
+We evaluate all baseline methods using Llama-2-7B~\citep{touvron2023llama} and Phi-1.5~\citep{li2023textbooks} base models. All experiments are conducted with two A6000 GPUs.
+

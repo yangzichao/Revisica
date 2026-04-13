@@ -1,0 +1,16 @@
+\begin{table}[h]
+    \centering
+    \caption{Loss difference of pruned models (1.3B) trained with the original data distribution and dynamic loading from the predicted loss (${\mathcal{L}_{\mathrm{pred}}}$ ). \mz{will be replaced by a figure}} 
+    \label{tab:loss_diff}
+    \resizebox{0.9\columnwidth}{!}{%
+    \begin{tabular}{lccccccc} \toprule
+                   & \textbf{CC} & \textbf{GitHub} & \textbf{Book} & \textbf{StackExchange} & \textbf{Wiki} & \textbf{ArXiv} & \textbf{C4} \\ \midrule
+    ${\mathcal{L}_{\mathrm{pred}}}$ & 1.964       & 0.746           & 2.139         & 1.612                  & 1.759         & 1.445          & 2.125       \\
+    $\mathcal{L}_{\mathrm{OL}} - \mathcal{L}_{\mathrm{pred}}$   & 0.044       & -0.050          & 0.095         & -0.006                 & 0.003         & -0.010         & 0.133       \\
+    $\mathcal{L}_{\mathrm{DL}} - \mathcal{L}_{\mathrm{pred}}$   & 0.076       & 0.077           & 0.077         & 0.071                  & 0.044         & 0.078          & 0.076      \\ \midrule
+    ${\mathcal{L}_{\mathrm{source}}}$ & 1.752 & 0.622 & 1.906 & 1.448 & 1.484 & 1.264 & 1.922      \\
+    $\mathcal{L}_{\mathrm{OL}} - \mathcal{L}_{\mathrm{source}}$   & 0.257 & 0.074 & 0.328 & 0.157 & 0.277 & 0.171 & 0.336       \\
+    $\mathcal{L}_{\mathrm{DL}} - \mathcal{L}_{\mathrm{source}}$   & 0.287 & 0.284 & 0.287 & 0.276 & 0.283 & 0.282 & 0.287      \\ 
+    \bottomrule 
+    \end{tabular}}
+\end{table}

@@ -1,0 +1,16 @@
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[h]
+    \caption{{Pruning LLaMA1-13B with a composite of $40\%$ of CC, $40\%$ of C4, $10\%$ of Books and $10\%$ of Wikipedia to a 7B model. We present the domain loss of the source model (LLaMA1-13B), the loss of the pruned model and the loss after continued pre-training of the pruned model. The loss differentce from the target model (LLaMA1-7B) is more balanced after pruning, but more disparate after continued pre-training with all the domains.}}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lccccccc@{}}
+    \toprule
+                                                    & \textbf{CC}                          & \textbf{GitHub}                      & \textbf{Book}                        & \textbf{StackExchange}               & \textbf{Wikipedia}                   & \textbf{ArXiv}                       & \textbf{C4}                          \\ \midrule
+    \multicolumn{1}{l}{LLaMA1-13B}                 & \multicolumn{1}{c}{1.7585} & \multicolumn{1}{c}{0.6673} & \multicolumn{1}{c}{1.9499} & \multicolumn{1}{c}{1.4207} & \multicolumn{1}{c}{1.4331} & \multicolumn{1}{c}{1.3855} & \multicolumn{1}{c}{1.8619} \\ \midrule
+    \multicolumn{1}{l}{LLaMA1-7B}                  & \multicolumn{1}{c}{1.8366} & \multicolumn{1}{c}{0.7108} & \multicolumn{1}{c}{2.0322} & \multicolumn{1}{c}{1.5112} & \multicolumn{1}{c}{1.5291} & \multicolumn{1}{c}{1.4340} & \multicolumn{1}{c}{1.9331} \\ \midrule
+    \multicolumn{1}{l}{Pruned model (w/o three domains)} & \multicolumn{1}{c}{2.1849} & \multicolumn{1}{c}{1.0971} & \multicolumn{1}{c}{2.3726} & \multicolumn{1}{c}{1.9080} & \multicolumn{1}{c}{2.1151} & \multicolumn{1}{c}{1.7542} & \multicolumn{1}{c}{2.3187} \\ 
+    \multicolumn{1}{l}{diff from LLaMA1-7B}        & \multicolumn{1}{c}{0.3483} & \multicolumn{1}{c}{0.3863} & \multicolumn{1}{c}{0.3404} & \multicolumn{1}{c}{0.3968} & \multicolumn{1}{c}{0.5860} & \multicolumn{1}{c}{0.3202} & \multicolumn{1}{c}{0.3857} \\ \midrule
+    \multicolumn{1}{l}{Continued Pretraining (w RP)}  & \multicolumn{1}{c}{1.8344} & \multicolumn{1}{c}{0.6325} & \multicolumn{1}{c}{2.0984} & \multicolumn{1}{c}{1.4542} & \multicolumn{1}{c}{1.4549} & \multicolumn{1}{c}{1.4460} & \multicolumn{1}{c}{2.0395} \\ 
+    \multicolumn{1}{l}{diff from LLaMA1-7B}                              & -0.0022                     & -0.0783                     & 0.0661                      & -0.0570                     & -0.0743                     & 0.0120                      & 0.1064                      \\ \bottomrule
+    \end{tabular}}
+    \end{table}

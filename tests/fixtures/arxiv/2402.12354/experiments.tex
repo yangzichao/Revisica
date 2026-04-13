@@ -1,0 +1,78 @@
+
+\section{Experiments with Language Models}
+We report our empirical results using LoRA to finetune a set of language models on different benchmarks. Details about the experimental setup and more empirical results are provided in \cref{app:add_exps}. We also identify a default value for the ratio $\lambda = \eta_B / \eta_A$ that generally improves performance as compared to standard LoRA. The code for our experiments is available at \url{https://github.com/nikhil-ghosh-berkeley/loraplus}.
+\subsection{GLUE tasks with GPT-2 and RoBERTa}
+The GLUE benchmark (General Language Understanding Evaluation) consists of several language tasks that evaluate the understanding capabilities of langugage models \citep{wang2018glue}. Using LoRA, we finetune Roberta-base from the RoBERTa family \citep{liu2019roberta} and GPT-2 \citep{radford2019language} on MNLI, QQP, SST2, and QNLI tasks (Other tasks are smaller and generally require an already finetuned model e.g. on MNLI as starting checkpoint) with varying learning rates $(\eta_A, \eta_B)$ to identify the optimal combination. Empirical details are provided in \cref{app:add_exps}. 
+\vspace{-0.32cm}
+\paragraph{Roberta-base.} \cref{fig:roberta_main} shows the results of Roberta-base finetuning with $\alpha = r=8$, trained with half precision (FP16). We observe that test accuracy is consistently maximal for some set of learning rates satisfying $\eta_B \gg \eta_A$, outperforming the standard practice where $\eta_A$ and $\eta_B$ are usually set equal. Interestingly, the gap between the optimal choice of learning rates overall and the optimal choice when $\eta_A \approx \eta_B$ is more pronounced for `harder' tasks like MNLI and QQP, as compared to SST2 and QNLI. This is probably due to the fact that harder tasks require more efficient feature learning. It is also worth mentioning that in our experiments, given limited computational resources, we use sequence length $T=128$ and finetune for only $3$ epochs for MNLI and QQP, so it is expected that we obtain test accuracies lower that those reported in \cite{hu2021lora} where the authores finetune Roberta-base with $T=512$ sequence length (for MNLI) and more epochs ($30$ for MNLI). In \cref{app:add_exps}, we provide additional results with Test/Train accuracy/loss.
+% \begin{wrapfigure}{r}{0.5\textwidth}
+%   \begin{center}
+%     \includegraphics[width=\linewidth]{figures/glue_gpt2_fp16_main.pdf}
+%   \end{center}
+%   \caption{\small{Test accuracy of GPT-2 model after finetuning for $3$ epochs on MNLI, QQP, with FP16 precision. LoRA hyperparameters are set to $\alpha=r=8$. Both train/test accuracy are consistently maximal for some choice of learning rates where $\eta_B \gg \eta_A$. See \cref{app:add_exps} for more numerical results with GPT2.}}
+%  \vspace{-1em}
+%     \label{fig:gpt2_main}
+% \end{wrapfigure}
+\paragraph{GPT-2.} \cref{fig:gpt2_main} shows the results of finetuning GPT-2 with LoRA on MNLI and QQP (other tasks and full precision training are provided in \cref{app:add_exps}). Similar to the conclusions from Roberta-base, we observe that maximal test accuracies are achieved with some $(\eta_A, \eta_B)$ satisfying $\eta_B \gg \eta_A$. Further GPT-2 results with different tasks are provided in \cref{app:add_exps}. Here also, we observed that the harder the task, the larger the gap between model performance when $\eta_B \gg \eta_A$ and when $\eta_A \approx \eta_B$.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.94\linewidth]{figures/glue_gpt2_fp16_main.pdf}
+    \vspace{-0.2cm}
+    \caption{\small{Test accuracy of GPT-2 after finetuning for $3$ epochs on MNLI, QQP, with FP16 precision. LoRA hyperparameters are set to $\alpha=r=8$. Both train/test accuracy are consistently maximal for some choice of learning rates where $\eta_B \gg \eta_A$. See \cref{app:add_exps} for more numerical results with GPT2.}}
+    \label{fig:gpt2_main}
+    \vspace{-0.6cm}
+\end{figure}
+\subsection{Llama}
+To further validate our theoretical findings, we finetune the Llama-7b model \citep{touvron2023llama} on the MNLI dataset and flan-v2 dataset \citep{longpre2023flan} using LoRA. Each trial is averaged over two seeds.
+\paragraph{Flan-v2.}
+We examine LoRA training of Llama on the instruction finetuning dataset flan-v2 \citep{longpre2023flan}. To make the experiments computationally feasible, we train for one epoch on a size $100,000$ subset of the flan-v2 dataset. We record the test accuracy of the best checkpoint every 500 steps. The LoRA hyperparameters are set to $\alpha = 16$ and $r = 64$. The adapters are added to every linear layer (excluding embedding layers) and we use a constant learning rate schedule. The full training details are in \cref{app:add_exps}. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.94\linewidth]{figures/llama_test.pdf}
+    \vspace{-0.2cm}
+    \caption{\small{Left: MMLU accuracy of Llama-7b trained for one epoch on a 100k subset of flan-v2. Right: Test accuracy of the best checkpoint of Llama-7b trained on MNLI for one epoch. Values are averaged over two seeds.}}
+    \vspace{-0.2cm}
+    \label{fig:llama_test}
+\end{figure}
+% \begin{wrapfigure}{r}{0.5\textwidth}
+%   \begin{center}
+%     \includegraphics[width=\linewidth]{figures/llama_test.pdf}
+%   \end{center}
+%   \caption{\small{Left: MMLU accuracy of Llama-7b trained for one epoch on a 100k subset of flan-v2. Right: Test accuracy of the best checkpoint of Llama-7b trained on MNLI for one epoch. Values are averaged over two seeds.}}
+  
+%     \label{fig:llama_test}
+% \end{wrapfigure}
+We evaluate the final model on the MMLU benchmark \citep{hendrycks2020measuring}. The results in Figure \ref{fig:llama_test} show that for this benchmark taking $\eta_B \gg \eta_A$ is advantageous and results in a roughly 1.3\% gain compared with the optimal $\eta_B = \eta_A$. In \cref{app:add_exps} we show that the same effect holds also when using \init{1}. 
+
+\paragraph{MNLI.}  The right panel of Fig \ref{fig:llama_test} shows the results of finetuning Llama-7b with LoRA on MNLI, with $\alpha = 16$, $r = 8$. We train using half precision and constant learning rate schedule, with a sequence length $T=128$. Since MNLI is relatively easy for Llama, we finetune for only one epoch, which is sufficient for the model to reach its peak test accuracy. In Figure \ref{fig:llama_test}, $\eta_B = \eta_A$ is nearly optimal for all $\eta_B \geq \eta_A$. This is consistent with the intuition that efficient feature learning is not required for easy tasks and that having $\eta_B / \eta_A \gg 1$ does not significantly enhance performance. Additionally, the magnitude of stable learning rates for Llama is much smaller than for GPT-2 and RoBERTa on MNLI further supporting that Llama requires less adaptation. Analogous plots for the train and test loss are shown in Fig  \ref{fig:llama_mnli_loss} in \cref{app:add_exps}.
+
+\subsection{How to set LoRA+ Ratio?}
+
+
+Naturally, the optimal ratio $\lambda$ depends on the architecture and the finetuning task via the constants in `$\Theta$' (\cref{thm:efficiency}). This is a limitation of these asymptotic results since they do not offer any insights on how the constants are affected by the task and the neural architecture. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/optimal_ratio_top4.pdf}
+    \vspace{-0.2cm}
+    \caption{\small{Distribution of the ratio $\eta_B/\eta_A$ for the top 4 learning rate for each pair (model, task). The 4 learning rates are selected using the test loss at the end of finetuning (i.e. top 4 learning rates $(\eta_B, \eta_A)$ in terms of test loss). The distribution shows the interquartile range (
+    $25\% - 75\%$ quantiles) and the median. }}
+    \vspace{-0.2cm}
+    \label{fig:optimal_ratio}
+\end{figure}
+% \begin{wrapfigure}{r}{0.55\textwidth}
+%   \begin{center}
+%     \includegraphics[width=0.95\linewidth]{figures/optimal_ratio_top4.pdf}
+%   \end{center}
+%   \caption{\small{Distribution of the ratio $\eta_B/\eta_A$ for the top 4 learning rate for each pair (model, task). The 4 learning rates are selected using the test loss at the end of finetuning (i.e. top 4 learning rates $(\eta_B, \eta_A)$ in terms of test loss). The distribution shows the interquartile range (
+%     $25\% - 75\%$ quantiles) and the median. }
+\cref{fig:optimal_ratio} show the distribution of the ratio $\eta_B/\eta_A$ for the top $4$ runs in terms of test accuracy for different pairs of (model, task). This is the same experimental setup of \cref{fig:roberta_main} and \cref{fig:gpt2_main}. The optimal ratio is model and task sensitive and shows significant variance. Our additional experiments in \cref{app:add_exps} show that it is also sensitive to initialization (\init{1} vs \init{2}). With \init{2}, we found that generally setting a ratio of $\lambda = \eta_B / \eta_A \approx 2^4$ improves performance for Roberta (\cref{fig:comparison_standard_vs_ours}). However, with \init{1}, we found that the optimal ratio is smaller and is of order $2^2$-$2^3$ (see \cref{app:add_exps}). For LLama experiments, it seems that a ratio of order $2^1$-$2^2$ is optimal..
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/comparison_training_roberta_mnli.pdf}
+    \vspace{-0.2cm}
+    \caption{\small{Test accuracy of Roberta-base finetuned on the MNLI task in two setups: (\textbf{LoRA+}) $\eta_B = 2^4 \eta_A$ and (\textbf{Standard}) $\eta_B = \eta_A$. $\eta_A$ is tuned using a grid search.}}
+    \vspace{-0.2cm}
+    \label{fig:comparison_standard_vs_ours}
+\end{figure}
+% \subsection{Guide for practitioners: Using LoRA$+$ for finetuning}
+% Integrating LoRA$+$ in any finetuning code is simple and can be achieved with a single line of code by importing the custom trainer \texttt{LoraPlusTrainer} from the code provided in this \href{https://github.com/nikhil-ghosh-berkeley/loraplus}{link}. In the trainer config, the value of $\lambda$ is set by default to $2^4$ which we found to generally improve performance compared to LoRA. However, note that the optimal value of $\lambda$ is task and model dependent: if the task is relatively hard for the pretrained model, the choice of $\lambda$ will be crucial since efficient training is required to align the model with finetuning task. On the contrary, the impact of $\lambda$ is less noticeable when the finetuning task is relatively easy for the pretrained model. As a rule of thumb, setting $\lambda=2^4$ is a good starting point.

@@ -1,0 +1,8 @@
+\section{Efficiency from a Loss Perspective.}
+Consider the same setup of \cref{sec:main_theory}. At step $t$, the loss changes as follows
+\begin{align*}
+\Delta \loss &= \loss((BA)_t) - \loss((BA)_{t-1}) \\
+&\approx \langle d \Bar{Z}^{t-1} \otimes \underbar{Z}, (BA)_t - (BA)_{t-1} \rangle_F \\
+&= \langle d\Bar{Z}^{t-1}, \Delta Z_B^t \rangle,
+\end{align*}    
+where $\langle.,.\rangle_F$ is the Frobenius inner product in $\reals^{n\times n}$, and $\langle.,.\rangle$ is the euclidean product in $\reals^n$. Since the direction of the feature updates are significantly correlated with $d \Bar{Z}^{t-1}$, it should be expected that having $\delta_t^i = \Theta(1)$ for all $i$ results in more efficient loss reduction.

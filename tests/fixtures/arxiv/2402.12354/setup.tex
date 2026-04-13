@@ -1,0 +1,34 @@
+\section{Setup and Definitions}
+Our methodology in this paper is model agnostic and applies to general neural network models. Let us consider a neural network of the form
+\begin{equation}\label{eq:model}
+\begin{cases}
+Y_{in}(x) = W_{in}x,\\
+Y_l(x) = \mathcal{F}_l(W_l,Y_{l-1}(x)), \; l\in[L],\\
+Y_{out}(x) = W_{out} Y_L(x), 
+\end{cases}
+\end{equation}
+where $x\in\reals^{d}$ is the input, $L\geq1$ is the network depth,
+$(\mathcal{F}_{l})_{l\in[L]}$ are mappings that define the layers, $W_{l}\in\reals^{n\times n}$ are the hidden weights, where $n$ is the
+network $\emph{width}$, and $W_{in}, W_{out}$ are input and output embedding weights. 
+
+Model \eqref{eq:model} is \emph{pretrained} on some dataset $\data$ to perform some specified task (e.g. next token prediction). 
+% Let $\mathbf{W}=(W_{in},(W_{l})_{l\in[L]},W_{out})$. Pretraining is done by minimizing the empirical loss function
+% $$
+% \loss(\mathbf{W})=\hat{\E}_{(x,y)\sim\data}[\ell(Y_{out}(x),y),
+% $$ 
+% where $\ell$ is a loss function (e.g. cross-entropy), $Y_{out}$
+% is the output of the network, and $\hat{\E}$ refers to the empirical
+% expectation (average over training data). 
+Once the model is pretrained, one can finetune it to improve performance on some downstream task. To achieve this with relatively small devices (limited GPUs), resource-efficient finetuning methods like LoRA significantly reduce the computational cost by considering low rank weight matrices instead of full rank finetuning (or simply full finetuning). 
+\begin{defn}[Low Rank Adapters (LoRA) from \cite{hu2021lora}]\label{def:lora}
+For any weight matrix $W\in\reals^{n_{1}\times n_{2}}$ in the pretrained
+model, we constrain its update in the fine-tuning process by representing
+the latter with a low-rank decomposition $W=W^{*}+\frac{\alpha}{r}BA$.
+Here, only the weight matrices $B\in\reals^{n_{1}\times r}$,
+$A\in\reals^{r\times n_{2}}$ are trainable. The rank $r\ll\min(n_{1},n_{2})$ and $\alpha\in\reals$
+are tunable constants. 
+\end{defn}
+\paragraph{Scaling of Neural Networks.}
+It is well known that as the width $n$ grows, the network initialization scheme and the learning should be adapted to avoid numerical instabilities and ensure efficient learning. For instance, the variance of the initialization weights (in hidden layers) should scale $1/n$ to prevent arbitrarily large pre-activations as we increase model width $n$ (e.g. He init \cite{he2016deep}). To derive such scaling rules, a principled approach consist of analyzing statistical properties of key quantities in the model (e.g. pre-activations) as $n$ grows and then adjust the initialization, the learning rate, and the architecture itself to achieve desirable properties in the limit $n \to \infty$ \citep{hayou19activation, deepinfoprop2017, yang2019scaling, yang2023tensor}. This approach is used in this paper to study feature learning dynamics with LoRA in the infinite-width limit. This will allow us to derive scaling rules for the learning rates of LoRA modules. For more details about the theory of scaling of neural networks, see \cref{sec:scaling}.
+\vspace{-1em}
+\paragraph{Notation.} Hereafter, we use the following notation to describe the asymptotic behaviour as the width $n$ grows. Given sequences $c_n \in \reals$ and $d_n \in \reals^+$, we write $c_n = \bigO(d_n)$, resp. $c_n = \Omega(d_n)$, to refer to $c_n < \kappa d_n$, resp. $c_n > \kappa d_n$, for some constant $\kappa > 0$. We write $c_n = \Theta(d_n)$ if both $c_n = \bigO(d_n)$ and $c_n = \Omega(d_n)$ are satisfied. For vector sequences $c_n = (c_n^i)_{1 \leq i \leq k} \in \reals^k$ (for some $k >0$), we write $c_n = \bigO(d_n)$ when $c_n^i = \bigO(d_n^i)$ for all $i \in [k]$, and same holds for other asymptotic notations. Finally, when the sequence $c_n$ is a vector of random variables, convergence is understood to be convergence in second moment ($L_2$ norm).

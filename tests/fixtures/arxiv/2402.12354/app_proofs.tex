@@ -1,0 +1,160 @@
+\section{Proofs}\label{app:proofs}
+In this section, we provide proofs for \cref{prop:inefficiency_toy}, \cref{prop:efficient_toy}, \cref{thm:efficiency}, and some technical details used in the proofs.
+
+\subsection{Scaling of Neural Networks}\label{sec:scaling}
+Scaling refers to the process of increasing the size of one of the ingredients in the model to improve performance (see e.g. \cite{hoffmann2022training}). This includes model capacity which can be increased via width (embedding dimension) or depth (number of layers) or both, compute (training data), number of training steps etc. In this paper, we are interested in scaling model capacity via the width $n$. This is motivated by the fact that most state-of-the-art language and vision models have large width.
+
+It is well known that as the width $n$ grows, the network initialization scheme and the learning should be adapted to avoid numerical instabilities and ensure efficient learning. For instance, the initialization variance should scale $1/n$ to prevent arbitrarily large pre-activations as we increase model width $n$ (e.g. He init \cite{he2016deep}). To derive such scaling rules, a principled approach consist of analyzing statistical properties of key quantities in the model (e.g. pre-activations) as $n$ grows and then adjust the initialization, the learning rate, and the architecture itself to achieve desirable properties in the limit $n \to \infty$ \cite{hayou19activation, deepinfoprop2017, yang2019scaling}.
+
+In this context, \cite{yang2022tensor} introduces the Maximal Update Parameterization (or $\mu$P), a set of scaling rules for the initialization scheme, the learning rate, and the network architecture that ensure stability and maximal feature learning in the infinite width limit. Stability is defined by $Y_l^i = \Theta(1)$ for all $l$ and $i$ where the asymptotic notation `$\Theta(.)$' is with respect to width $n$ (see next paragraph for a formal definition), and feature learning is defined by $\Delta Y_l = \Theta(1)$, where $\Delta$ refers to the feature update after taking a gradient step. $\mu$P guarantees that these two conditions are satisfied at any training step $t$. Roughly speaking, $\mu$P specifies that hidden weights should be initialized with $\Theta(n^{-1/2})$ random weights, and weight updates should be of order $\Theta(n^{-1})$. Input weights should be initialized $\Theta(1)$ and the weights update should be $\Theta(1)$ as well. While the output weights should be initialized $\Theta(n^{-1})$ and updated with $\Theta(n^{-1})$. These rules ensure both stability and feature learning in the infinite-width limit, in contrast to standard parameterization (exploding features if the learning rate is well tuned), and kernel parameterizations (e.g. Neural Tangent Kernel parameterization where $\Delta Y_l = \Theta(n^{-1/2})$, i.e. no feature learning in the limit). 
+
+\subsection{The Gamma Function \texorpdfstring{($\gamma[.]$)}{Gamma Function}}\label{sec:gamma_fct}
+
+In the theory of scaling of neural networks, one usually tracks the asymptotic behaviour of key quantities as we scale some model ingredient. For instance, if we scale the width, we are interested in quantifying how certain quantities in the network behave as width $n$ grows large and the asymptotic notation becomes natural in this case. This is a standard approach for (principled) model scaling and it has so far been used to derive scaling rules for initialization \citep{deepinfoprop2017}, activation function \citep{hayou19activation}, network parametrization \citep{yang2023depth}, amongst other things.
+
+With \init{1} and \init{2}, the weights are initialized with $\Theta(n^{-\beta})$ for some $\beta \geq 0$. Assuming that the learning rates also scale polynomially with $n$, it is straightforward that preactivations, gradients, and weight updates are all asymptotically polynomial in $n$. It is therefore natural to introduce the Gamma function, and we write $v = \Theta(\gamma[v])$ to capture this polynomial behaviour. Now, let us introduce some elementary operations with the Gamma function.
+
+\paragraph{Multiplication.} Given two real-valued variables $v,v'$, we  have $\gamma[v \times v'] = \gamma[v] + \gamma[v']$. 
+\paragraph{Addition.} Given two real-valued variables $v,v'$, we generally have $\gamma[v + v'] = \max(\gamma[v], \gamma[v'])$. The only case where this is violated is when $v' = -v$. This is generally a zero probability event if $v$ and $v'$ are random variables that are not perfectly correlated, which is the case in most situations where we make use of this formula (see the proofs below). 
+
+\subsection{Proof of \texorpdfstring{\cref{prop:inefficiency_toy}}{Proposition Inefficiency Toy}}
+
+\textbf{Proposition \ref{prop:inefficiency_toy}. }[Inefficiency of LoRA fine-tuning]
+\emph{Assume that LoRA weights are initialized with \init{1} or \init{2} and trained with gradient descent with learning rate $\eta = \Theta(n^c)$ for some $c \in \reals$. Then, it is impossible to have $\delta_t^i = \Theta(1)$ for all $i$ for any $t>0$, and therefore, fine-tuning with LoRA in this setup is inefficient.}
+
+\begin{proof}
+Assume that the model is initialized with \init{1}. Since the training dynamics are mainly simple linear algebra operation (matrix vector products, sum of vectors/scalars etc), it is easy to see that any vector/scaler in the training dynamics has a magnitude of order $n^{\gamma}$ for some $\gamma \in \reals$ (for more details, see the Tensor Programs framework, e.g. \cite{yang2019scaling}). For any quantity $v$ in the training dynamics, we write $v = \Theta(n^{\gamma[v]})$. When $v$ is a vector, we use the same notation when all entries of $v$ are $\Theta(n^{\gamma[v]})$. Efficiency is defined by having $\delta^t_i = \Theta(1)$ for $i \in \{1,2\}$ and $t>1$. Note that this implies $f_t(x) = \Theta(1)$ for all $t>1$. Let $t>1$ and assume that learning with LoRA is efficient. We will show that this leads to a contradiction. Efficiency requires that $\delta_t^i = \Theta(1)$ for all $t, i \in \{1,2\}$. Using the elementary formulas from \cref{sec:gamma_fct}, this implies that for all $t$
+\begin{equation*}
+    \begin{cases}
+        \gamma[\eta]+2\gamma[b_{t-1}] + 1 = 0\\
+        \gamma[\eta] + 2 \gamma[a_{t-1}^\top x] = 0\\
+        \gamma[b_{t-1}] + \gamma[a_{t-1}^\top x] = 0.       
+    \end{cases}
+\end{equation*}
+Solving this equation yields $\gamma[\eta] = -1/2$, i.e. LoRA finetuning can be efficient only if the learning rate scales as $\eta = \Theta(n^{-1/2})$. Let us now show that this yields a contradiction. From the gradient updates and the elementary operations from \cref{sec:gamma_fct}, we have the following recursive formulas
+
+\begin{equation*}
+    \begin{cases}
+        \gamma[b_t] = \max(\gamma[b_{t-1}], -1/2 + \gamma[a_{t-1}^\top x]) \\
+        \gamma[a_t^\top x] = \max(\gamma[a_{t-1}^\top x], 1/2+\gamma[b_{t-1}]) 
+    \end{cases}
+\end{equation*}
+Starting from $t=1$, with Init[1] we have $\gamma[b_1] = \gamma[\eta (a_0^\top x)y] = -1/2$ and $\gamma[a_1^\top x] = \gamma[a_0^\top x] = 0$, we have $\gamma[b_2] = -1/2$ and $\gamma[a_2^\top x] = 0$. Trivially, this holds for any $t$. However, this implies that $\gamma[f_t] = \gamma[b_t] + \gamma[a_{t}^\top x] = -1/2$ which means that $\Delta f_t$ cannot be $\Theta(1)$. With Init[2], we have $\gamma[b_1] = \gamma[b_0] = 0$ and $\gamma[a_1^\top] = \gamma[\eta b_0 y \|x\|^2] = -1/2+1 = 1/2$. From the recursive formula we get $\gamma[b_2] = 0$ and $\gamma[a_2^\top x] = 1/2$ which remains true for all $t$. In this case we have $\gamma[f_t] = 1/2$ which contradicts $\Delta f_t = \Theta(1)$.
+
+In both cases, this contradicts our assumption, and therefore efficiency cannot be achieved in this setup.
+\\
+
+\end{proof}
+
+
+
+\subsection{Proof of \texorpdfstring{\cref{prop:efficient_toy}}{Proposition Efficient Toy}}
+
+\textbf{Proposition \ref{prop:efficient_toy}.} [Efficient Fine-Tuning with LoRA]
+\emph{In the case of Toy model \cref{eq:toy_model}, with $\eta_a = \Theta(n^{-1})$ and $\eta_b = \Theta(1)$, we have for all $t>1$, $\in \{1,2,3\}$, $\delta_t^i = \Theta(1)$.}
+
+\begin{proof}
+The proof is similar in flavor to that of \cref{prop:inefficiency_toy}. In this case, the set of equations that should be satisfied so that $\delta_t^i = \Theta(1)$ are given by
+\begin{equation*}
+    \begin{cases}
+        \gamma[\eta_a]+2\gamma[b_{t-1}] + 1 = 0\\
+        \gamma[\eta_b] + 2 \gamma[a_{t-1}^\top x] = 0\\
+        \gamma[\eta_a] + \gamma[\eta_b]+\gamma[b_{t-1}] + \gamma[a_{t-1}^\top x]+1 = 0,        
+    \end{cases}
+\end{equation*}
+where we have used the elementary formulas from \cref{sec:gamma_fct}. Simple calculations yield $\gamma[\eta_a] + \gamma[\eta_b] = -1$. Using the gradient update expression with the elementary addition from \cref{sec:gamma_fct}, the recursive formulas controlling $\gamma[b_t]$ and $\gamma[a_t^\top x]$ are given by
+\begin{equation*}
+    \begin{cases}
+        \gamma[b_t] = \max(\gamma[b_{t-1}], \gamma[\eta_b] + \gamma[a_{t-1}^\top x]) \\
+        \gamma[a_t^\top x] = \max(\gamma[a_{t-1}^\top x], \gamma[\eta_a]+\gamma[b_{t-1}]+1). 
+    \end{cases}
+\end{equation*}
+
+Starting from $t=1$, with \init{1}, we have $\gamma[b_1] = \gamma[\eta_b (a_0^\top x) y] = \gamma[\eta_b]$ and $\gamma[a_1^\top x] = \gamma[a_0^\top x] = 0$. Therefore $\gamma[b_2] = \max(\gamma[\eta_b], \gamma[\eta_b] + 0) = \gamma[\eta_b]$, and $\gamma[a_2^\top x] = \max(0, \gamma[\eta_a] + \gamma[\eta_b] +1) = \max(0,0) = 0$. By induction, this holds for all $t\geq 1$. With \init{2}, we have $\gamma[b_1] = \gamma[b_0] = 0$, and $\gamma[a_1^\top x] = \gamma[-\eta_a b_0^2 y \|x\|^2] = \gamma[\eta_a] + 1$. At step $t=2$, we have $\gamma[b_2] = \max(0, \gamma[\eta_b] + \gamma[\eta_a] + 1) = 0$ and $\gamma[a_2^\top x] = \max(\gamma[\eta_a] + 1, \gamma[\eta_a] + 0 + 1) = \gamma[\eta_a] + 1$, and this holds for all $t$ by induction. In both cases, to ensure that $\gamma[f_t] = \gamma[b_t] + \gamma[a_t^\top x] = 0$, we have to set $\gamma[\eta_b] = 0$ and $\gamma[\eta_a]=-1$ (straightforward from the equation $\gamma[\eta_b] + \gamma[\eta_a] = -1$). In conclusion, setting $\eta_a = \Theta(n^{-1})$ and $\eta_b = \Theta(1)$ ensures efficient fine-tuning with LoRA.
+
+\end{proof}
+
+
+
+\subsection{Proof of \texorpdfstring{\cref{thm:efficiency}}{Theorem Efficiency}}
+
+
+In this section, we give a non-rigorous but intuitive proof of \cref{thm:efficiency}. The proof relies on the following assumption on the processed gradient $g_A$.
+
+\begin{assumption}\label{assumption}
+With the same setup of \cref{sec:main_theory}, at training step $t$, we have $g_A^{t} \underbar{Z} = \Theta(n)$.    
+\end{assumption}
+To see why \cref{assumption} is sound in practice, let us study the product $g_A^{t} \underbar{Z}$ in the simple case of Adam with no momentum, a.k.a SignSGD which is given by  
+
+$$
+g_A = \textrm{sign}\left(\frac{\partial \loss}{\partial A}\right),
+$$
+where the sign function is applied element-wise. At training step $t$, we have 
+$$
+\frac{\partial \loss_{t}}{\partial A} = \frac{\alpha}{r} B^\top_{t-1} d\Bar{Z}^{t-1} \otimes \underbar{Z},
+$$
+Let $S^t = \frac{\alpha}{r} B^\top_{t-1} d\Bar{Z}^{t-1}$. Therefore we have 
+$$
+g_A = \textrm{sign}(S^t \otimes \underbar{Z}) = (\textrm{sign}(S^t_{i} \underbar{Z}_j))_{1\leq i, j \leq n}.
+$$
+
+% From the Tensor Programs framework (see \cite{yang2022tensor}), we know that for any fixed step $t$, as $n \times \infty$, both preactivation coordinates $(\underbar{Z}_i)_{1\leq i \leq n}$ and Jacobian coordinates $((S^t)_i)_{1\leq i \leq n}$ become asymptotically independent and identically distributed (iid). This implies that for large width $n \gg 1$, we have roughly \NG{This is exactly true when the batch size is 1.}
+However, note that we also have 
+$$
+\textrm{sign}(S^t_{i} \underbar{Z}_j) = \textrm{sign}(S^t_{i}) \textrm{sign}(\underbar{Z}_j),
+$$
+and as a result  
+$$
+g_A^{t} = \textrm{sign}(S^t) \otimes \textrm{sign}(\underbar{Z}).
+$$
+
+Hence, we obtain 
+$$
+g_A^{t} \underbar{Z} = (\textrm{sign}(\underbar{Z})^\top \underbar{Z} ) \textrm{sign}(S^t) = \Theta(n),
+$$
+where we used the fact that $\textrm{sign}(\underbar{Z})^\top \underbar{Z} = \Theta(n)$.\\
+
+This intuition should in-principle hold for the general variant of Adam with momentum as long as the gradient processing function (a notion introduced in \cite{yang2013theory}) roughly preserves the $\textrm{sign}(\underbar{Z})$ direction. This reasoning can be made rigorous for general gradient processing function using the Tensor Program framework and taking the infinite-width limit where the components of $g_A, \underbar{Z}, d\bar{Z}$ all become iid. However this necessitates an intricate treatment of several quantities in the process, which we believe is an unnecessary complication and does not serve the main purpose of this paper. 
+
+Let us now give a proof for the main claim. 
+
+\textbf{Theorem \ref{thm:efficiency}.}
+\emph{Assume that weight matrices $A$ and $B$ are trained with Adam with respective learning rates $\eta_A$ and $\eta_B$ and that \cref{assumption} is satisifed with the Adam gradient processing function. Then, it is impossible to achieve efficiency with $\eta_A = \eta_B$. However, LoRA Finetuning is efficient with $\eta_A = \Theta(n^{-1})$ and $\eta_B = \Theta(1)$.}\\
+
+
+\begin{proof}
+
+With the same setup of \cref{sec:main_theory}, at step $t$, we have 
+\begin{equation*}
+    \begin{cases}
+        \delta_t^1 = B_{t-1} \Delta Z_A^t  = -\eta_A B_{t-1} g^{t-1}_A \underbar{Z}\\
+        \delta_t^2 = \Delta B_t Z_A^{t-1} = -\eta_B g^{t-1}_B A_{t-1} \underbar{Z}\\
+        \delta_t^3 = \Delta B_t \Delta Z_A^t = \eta_A \eta_B g^{t-1}_B g^{t-1}_A \underbar{Z}
+    \end{cases}
+\end{equation*}
+
+The key observation here is that $g^{t-1}_A \underbar{Z}$ has entries of order $\Theta(n)$ as predicted and justified in \cref{assumption}. Having $\delta^i_t = \Theta(1)$ for $i \in \{1,2\}$ and $Z_B^t = \Theta(1)$ for $t >1$ translate to 
+\begin{equation*}
+\begin{cases}
+    \gamma[\eta_A] + \gamma[B_{t-1}]+1  = 0\\
+    \gamma[\eta_B] + \gamma[A_{t-1} \underbar{Z}] = 0\\
+    \gamma[B_{t-1}] + \gamma[A_{t-1} \underbar{Z}] = 0,
+\end{cases}
+\end{equation*}
+which implies that $\gamma[\eta_A] + \gamma[\eta_B] = -1$.
+
+With the gradient updates, we have 
+\begin{align*}
+    B_t &= B_{t-1} - \eta_B g^{t-1}_B\\
+    A_t \underbar{Z} &= A_{t-1}\underbar{Z} - \eta_A g^{t-1}_A \underbar{Z}
+\end{align*}
+which implies that 
+\begin{align*}
+    \gamma[B_t] &= \max(\gamma[B_{t-1}], \gamma[\eta_B])\\
+    \gamma[A_t \underbar{Z}] &= \max(\gamma[A_{t-1} \underbar{Z}], \gamma[\eta_A]+1),
+\end{align*}
+
+
+Now assume that the model is initialized with \init{1}. We have $\gamma[B_1] = \gamma[\eta_B]$ and therefore for all $t$, we have $\gamma[B_t] = \gamma[\eta_B]$. We also have $\gamma[A_1 \underbar{Z}] = \gamma[A_0 \underbar{Z}] = 0$ (because $A_1 = A_0$, and we use the Central Limit Theorem to conclude). Hence, if we choose the same learning rate for $A$ and $B$, given by $\eta$, we obtain $\gamma[\eta] = -1/2$, and therefore $\gamma[Z_A^{t-1}] = \gamma[A_{t-1} \underbar{Z}] = 1/2$ which violates the stability condition. A similar behaviour occurs with \init{2}. Hence, efficiency is not possible in this case. However, if we set $\gamma[\eta_B] = 0$ and $\gamma[\eta_A] = -1$, we get that $\gamma[B_t] = 0, \gamma[A_t \underbar{Z}] = 0$, and $\delta_t^i = \Theta(1)$ for all $i\in \{1,2,3\}$ and $t\geq 1$. The same result holds with \init{2}. 
+
+\end{proof}

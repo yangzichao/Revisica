@@ -1,0 +1,337 @@
+\appendix
+\tableofcontents
+\section{A Detailed Exposition of Paramaterizing Pruning Masks}
+\label{app:pruning_algo}
+The key idea behind the pruning algorithm is to apply masks to the model parameters. After learning a binary mask, it is equivalent to removing the corresponding parameters. The mask is parameterized using a hard concrete distribution introduced in \cite{louizos2018learning}. Given a masking variable $z$ parameterized by $\alpha$, the hard concrete distribution is defined as follows:
+
+\begin{equation*}
+    \begin{aligned}
+    u &= \mathcal{U}(0, 1) \\
+    s &= \text{Sigmoid}\left(\frac{1}{\beta}\left(\log \frac{u}{1-u} + \log \alpha\right) \right) \\
+    \bar s &= s(\zeta - \gamma) + \gamma \\
+    z & = \min(1, \max(0, \bar s))
+    \end{aligned}
+\end{equation*}
+
+where $\mathcal{U}$ is the uniform distribution, $\beta$ is a temperature parameter, $s$ is a relaxed binary mask that conforms to the hard concrete distribution, and $\zeta$ and $\gamma$ are the bounds of the hard concrete distribution. The hard concrete distribution serves as a continuous relaxation of the binary mask, allowing the model to learn the binary mask in a continuous manner during training. The effectiveness of this trick in learning sparse structures in neural networks has been demonstrated in previous studies \citep{wang2020structured,xia-etal-2022-structured}. In our experiments, we set $\beta = 0.83$, $\zeta = 1.1$, and $\gamma = -0.1$.
+
+To enforce the sparsity constraint, the masks are trained alongside with Lagrange multipliers $\lambda$, as defined in \Cref{eq:pruning}. After pruning, the parameters corresponding to the learned masks are removed to ensure that the resulting model shape matches the target model. In practical implementations, we set a threshold to binarize the masks. Due to the adoption of the hard concrete distribution, the masks typically converge to binary values that match the target model shape in most cases, thereby avoiding any inconsistencies. However, in rare instances where the masks do not converge to exactly $0$ or $1$, the masking variables need to be absorbed into the resulting model parameters. 
+
+As discussed in~\Cref{sec:method}, we apply masks to heads, intermediate dimensions, layers and hidden dimensions. For heads, we simply multiply the head output by the mask. For intermediate dimensions, we apply the mask to the intermediate output. For layers, we apply the mask to the layer output. For hidden dimensions, we apply the mask to both the head and mlp output. Applying the mask to outputs is equivalent to removing the corresponding parameters. Please refer to \href{https://github.com/princeton-nlp/LLM-Shearing/blob/main/llmshearing/models/composer\_llama.py}{composer\_llama.py} for more details.
+
+\section{Reference Loss Predicted by Scaling Laws}
+\label{app:reference_loss}
+The scaling law of language modeling is a function of model size $N$ and dataset size $D$:
+$$
+L(N, D) = E + \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}}
+$$
+where $E$ captures the loss for the true language distribution in an ideal generation process, and $A, \alpha, B, \beta$ are scaling factors related to model scale or data size. Models in the same model family are usually trained with the same amount of tokens on the same data distribution. In this case, we need a minimum of three models to estimate the constant $E + \frac{B}{D^{\beta}}, A$ and $\alpha$. If the models are trained with different amount of tokens, we can estimate $E, A, \alpha, B, \beta$ with a minimal of $5$ models. Note that we will estimate the scaling factors for each domain seperately. 
+
+\textsc{LLaMA}$2$ models have been trained on the same $2$T tokens~\citep{touvron2023llama2}. We take the \llamatsmall{}, \llamatnormal{}, and \llamatlarge{} checkpoints, evaluate them on each domain's validation set, and fit the scaling factors with the corresponding loss. Given the limited data points for estimating the scaling law constant, the projected loss of a hypothetical LLaMA-2.7B model may be biased compared to the true value. \Cref{tab:scalinglaw} presents the predicted loss. The evaluation process takes less than 4 A100 GPU hours to complete.
+
+\begin{table}[h]
+    \centering
+    \caption{Estimated reference loss of hypothetical LLaMA2-1.3B and LLaMA2-2.7B models.}
+    \label{tab:scalinglaw}
+    \begin{tabular}{@{}lccccccc@{}}
+    \toprule
+         & \textbf{CC} & \textbf{GitHub} & \textbf{Book} & \textbf{StackExchange} & \textbf{Wiki} & \textbf{ArXiv} & \textbf{C4} \\ \midrule
+         LLaMA2-1.3B & 1.964       & 0.746           & 2.139         & 1.612                  & 1.759         & 1.445          & 2.125       \\
+         LLaMA2-2.7B & 1.871       & 0.688           & 2.033         & 1.535                  & 1.630         & 1.356          & 2.033       \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+
+
+
+\section{Training Details}
+\label{app:throughput}
+
+We present the hyperparameters used in our experiments in \Cref{tab:training_details}. We use fully sharded data parallel~\citep{zhao2023pytorch} to train our models in parallel. We use FlashAttention V1~\citep{dao2022flashattention} to speed up training. We use a cosine learning rate scheduler and decay the learning rate to a minimum of $10\%$ of the peak value. We conduct some preliminary experiment to determine the peak learning rate for learning the masking variables and Lagrange multiplers, and we find that a learning rate of $1.0$ works well for pruning. We do not tune any other hyper-parameters. The throughput is dependent on the implementations and we believe that our throughput can be further improved by adopting more advanced recent optimizations such as FlashAttention V2~\citep{dao2022flashattention} and a more recent version of \texttt{Composer}~\citep{mosaicml2022composer}.
+
+\begin{table}[h]
+    \label{tab:training_details}
+    \centering
+    \caption{Training hyper-parameters and throughput.}
+    \begin{tabular}{lcc} \toprule
+                                                                    & Pruning  & Contined Pre-training \\ \midrule
+    Training budget                                                 & $0.4$B     & $50$B                   \\
+    Learning rate of $z, \phi, \lambda$ & $1.0$        & -                     \\
+    Learning Rate of $\theta$                          & $0.0001$ & $0.0001$              \\
+    LR warmup ratio                                                 & $10\%$     & $3\%$                   \\
+    Batch size        (tokens)                                              & $131$K     & $1$M                    \\
+    Evaluation interval $m$       (steps)                                 & $50$       & $400$               \\ 
+    Steps & $3,200$ & $51,200$ \\
+    \# GPUs & $8$ & $16$ \\
+    Throughput (tokens/s) & $15$K & $145$K (1.3B) / $77$K (2.7B) 
+    \\
+    \bottomrule 
+    \end{tabular}
+\end{table}
+
+
+
+
+\section{Model Configurations}
+\label{app:modelconfig}
+
+
+In this section, we provide the model configurations for both our \ours{} models and the baseline models, as illustrated in \Cref{tab:detailconf}. Our design closely adheres to the architecture of Pythia-1.4B and INCITE-Base-3B, albeit with some nuanced distinctions. A noteworthy difference is found in the intermediate size of \ours{}, which is a consequence of its lineage from LLaMA2-7B. Notably, LLaMA2-7B employs a GLU variant~\citep{Shazeer2020GLUVI} within its feed-forward layer, comprising a gate matrix, an upward-projection matrix, and a downward-projection matrix. In contrast, other models employ the conventional double-matrix feed-forward layer structure. Furthermore, we acknowledge that the shearing algorithm will have to inherit the head dimension of the source model. Instead of explicitly specifying the number of heads based on existing language models, we set the target number of heads to be the target hidden dimension divided by the head dimension of the source model. 
+
+ 
+\begin{table}[h]
+    \caption{Model configurations of our \ours{} and baseline models. }
+    \centering
+    \small
+    \begin{tabular}{lcccccc}
+        \toprule
+        \textbf{Model} & \textbf{\#Param} & \textbf{\#Layers}  & \textbf{Hidden} & \textbf{Intermediate} &  \textbf{\#Heads} & \textbf{Head Dim}\\
+        \midrule
+        OPT-1.3B & 1.3B & 24 & 2048 & 8192 & 32 & 64\\
+        Pythia-1.4B & 1.4B & 24 & 2048 & 8192 & 16 & 128\\
+        TinyLlama-1.1B & 1.1B & 22 & 2048 & 5632 & 32 & 64\\
+        \ours-1.3B & 1.3B & 24 & 2048 & 5504 & 16 & 128 \\ \midrule
+        OPT-2.7B & 2.7B & 32  & 2560 & 10240 & 32 & 80\\
+        Pythia-2.8B & 2.8B & 32 & 2560 & 10240 & 32 & 80\\
+        INCITE-Base-3B & 2.8B & 32  & 2560 & 10240& 32 & 80\\
+        OpenLLaMA-3B & 2.7B & 26 & 3200 & 8640 &  32 & 100\\
+        \ours-2.7B & 2.7B & 32 & 2560 & 6912 & 20 & 128 \\
+        \midrule
+        LLaMA2-7B & 6.7B & 32 & 4096 & 11008 & 32 & 128  \\ 
+                \bottomrule
+    \end{tabular}
+    \label{tab:detailconf}
+\end{table}
+
+\section{Instruction Tuning}
+\label{app:instruction}
+
+We evaluate our models on instruction tuning and fine-tune both \ours{}
+and baseline models on  
+10,000 instruction-response pairs sampled from the ShareGPT dataset\footnote{\url{https://sharegpt.com}. We only use the first round in the multi-turn chat history.}. 
+For evaluation, we sample another 1,000 instructions from ShareGPT, generate responses from our fine-tuned models and other baseline models, and use 
+GPT-4 
+as an evaluator to compare the two responses~\citep{dubois2023alpacafarm}. 
+We report the win rate of our model compared to the baseline model.
+
+During instruction tuning training, the instruction is prepended with ``You are a helpful assistant. Write a response that appropriately completes the request.''. For evaluating the instruction tuning generations, \cite{wang2023faireval} observes using GPT models as a judge could change its preference when swapping the presentation order of the two outputs. Therefore, we compare each output pair twice by swapping the presentation order of the two outputs and finally report the average win-rate of the two rounds to eliminate the position bias. 
+
+We randomly select an output generated by \ours{}-1.3B and \ours{}-2.7B in response to a given instruction, and present the generations in Table \ref{tab:sg_ex1}. Our findings demonstrate that, after instruction tuning, \ours{}-2.7B consistently produces long, coherent, and informative outputs in response to the instruction.  
+
+\begin{table}[h]
+    \label{tab:instruction_tuning_hp}
+    \centering
+    \caption{Training hyper-parameters for instruction tuning.}
+    \begin{tabular}{lc} \toprule
+                                                                    & Instruction Tuning  \\ \midrule
+    Learning Rate of $\theta$                          & $5e-5$ \\
+    LR warmup ratio                                                 & $3\%$     \\
+    Batch size        (tokens)                                              & $128$    \\
+    \# GPUs & $8$ \\
+    \bottomrule 
+    \end{tabular}
+\end{table}
+
+
+
+\input{tables/generation.tex}
+
+\section{Additional Experiment Results}
+\label{app:addresult}
+
+\subsection{Data Usage in Continued Pre-training}
+\label{app:data_usage}
+
+\Cref{fig:data_weight} illustrates the evolution of domain weights throughout the training process and the final cumulative data usage for each domain. The trajectory reveals that the domain weights stabilize after approximately 30\% of the training. In contrast to other domains, Wikipedia exhibits an anomalous spike early in the training process. The remaining domains show a steady, monotonic change in data loading over time, as expected.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/data_weight.pdf}
+    \caption{Left: Data weight of each batch during the continued pre-training stage. Right: Cumulative data usage for each domain.}
+    \label{fig:data_weight}
+\end{figure}
+
+
+
+
+\subsection{Comparison to LLM-Pruner}
+\label{app:compare_to_ma}
+To ensure a fair comparison with the LLM-Pruner approach, we match the parameters (excluding embeddings) to be roughly the same as our final model (1.23B), as embedding sizes do not affect inference speed. We continue pre-training the pruned models derived from both LLM-Pruner and our proposed targeted structured pruning. The total number of tokens for pruning and continued pre-training is controlled to be the same, and data from the RedPajama dataset is used directly without applying dynamic batch loading. We demonstrate that our proposed targeted structured pruning is a better approach compared to LLM-Pruner from three aspects: the loss trajectory, the model architecture, and the inference speed.
+
+In terms of loss trajectory, \Cref{fig:ma} shows that our proposed targeted structured pruning achieves a lower loss than LLM-Pruner when consuming the same amount of data.
+
+\Cref{tab:model_structure} compares the model configurations for an LLM-Pruner pruned model and our pruned model. The LLM-Pruner model has an unconventional architecture where the intermediate size is smaller than the hidden size, largely due to the algorithm's inability to prune the hidden dimension and layers, revealing a limitation of LLM-Pruner.
+
+In terms of  training throughput and inference speed, we find Sheared-LLaMA structures run more efficiently than LLM-Pruner models. We performed an inference speed analysis comparing LLM-pruner and Sheared-LLaMA's model architectures using a single A100 GPU to generate up to 2048 tokens. As shown in \Cref{tab:ma_speed}, our pruned model architecture is significantly more efficient than LLM-Pruner at inference time. Additionally, LLM-Pruner's model architecture introduces substantial overhead during continued pretraining (Measured with 16 A100 80GB GPUs.), with a training throughput of around $60\%$ of Sheared-LLaMA's. Overall, our Sheared-LLaMA architecture enables higher throughput for both inference and continued training compared to LLM-Pruner.
+
+In summary, we have demonstrated that at the same parameter scale, our pruning method produces a model that has a lower perplexity (loss), a more reasonable final model architecture, and a faster inference speed. We have effectively shown our targeted structured pruning algorithm to be more effective for large-scale LLM pruning compared to LLM-Pruner.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/ma.pdf}
+    \caption{{The loss of LLM-Pruner and \ours{} during the continued pre-training stage. Note that we exclude dynamic batch loading and use the same data distribution for training both models for a fair comparison.}}
+
+    \label{fig:ma}
+\end{figure}
+
+
+
+\input{tables/ma.tex}
+
+
+\subsection{Coding and Math Reasoning}
+\label{app:coding}
+
+\input{tables/humaneval.tex}
+We examine the math and coding abilities of our pruned models compared to other language models. We find that the math ability of existing 3B parameter models, including Sheared-LLaMA, is still far below that of larger models. We also find that Sheared-LLaMA's coding ability lags behind models known to be trained on more code data, like Pythia-1.4B and Open-LLaMA-3B-v2. Sheared-LLaMA's coding ability likely comes from the original LLaMA2 model, speculated to have used more code data, and the minimal code data used in our pruning experiments. 
+
+
+\subsection{Scaling Reference vs. Source Reference}
+\label{app:scalinvssource}
+
+\Cref{fig:sourcevsscaling}
+This section compares the performance of \ours{} when trained with the scaling reference and the source reference in dynamic batch loading. The scaling reference uses the predicted loss from the scaling law as the reference loss, while the source reference uses the loss of the source model as the reference loss. Although both methods efficiently train the model, the scaling reference consistently achieves slightly better downstream performance.
+
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/sourcevsscaling.pdf}
+    \caption{Average downstream peformance of \ours{}-1.3B with the scaling reference and the source reference.}
+    \label{fig:sourcevsscaling} 
+    \end{minipage}
+\end{figure}
+
+
+\subsection{Pruning Pythia Models}
+\label{app:pythia}
+During the initial development of the approach, we experimented with a smaller-scale model on Pythia~\citep{biderman2023pythia}, a series of open-source models with open-source training data across scales from 70M to 13B. We took the Pythia-440M model, pruned it down to 160M parameters, and continued pre-training it using Pythia models' training data~\cite{gao2020pile}. Specifically, we used 0.4B tokens for pruning and 33B tokens (32,000 steps) for continued pre-training of the pruned model. \Cref{tab:pythia} shows that the pruned model achieves a lower perplexity than the original model, and continued pre-training further improves performance. Notably, with minimal compute consumption (10B tokens), pruning a Pythia-410M model reaches roughly the same performance as pretraining Pythia-160M from scratch. Adding more tokens further enhances the performance.
+
+\input{tables/pythia.tex}
+
+Additionally, we compared Sheared-Pythia-160M against keeping pre-training the Pythia-160M model with the same amount of tokens. From~\Cref{fig:cont_pythia}, we can see that continuing pre-training Pythia-160M starts off performing better, however, the Sheared-Pythia-160M learns faster and eventually exceeds the performance of continuing pretraining on Pythia-160M. These are some very preliminary results we see in this particular setting.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/cont_pythia.pdf}
+    \caption{{The downstream performance of continued pre-training Pythia-160M and Sheared-Pythia-160M. Sheared-Pythia-160M eventually outperforms the performance of continued pre-training Pythia-160M.}}
+    \label{fig:cont_pythia}
+\end{figure}
+
+We think that the benefit of pruning a larger model will be even more significant, based on the conclusions from a previous work~\citep{li2020train} showing that pruning larger than compress leads to better performance as the larger models are easier to optimize. However, we’d like to defer more detailed analysis to future work. 
+
+\subsection{Pruning from LLaMA1 vs LLaMA2}
+\label{app:llama1vsllama2}
+
+This section compares the performance of pruning from LLaMA1 and LLaMA2. Both models demonstrate strong downstream task performance, although pruning from LLaMA2 unsurprisingly yields a consistent advantage. However, it is worth noting that the performance difference between the two is not very large.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+    \includegraphics[width=\linewidth]{figures/llama1vs2.pdf}   
+    \label{fig:llama1vsllama2}
+    \vspace{-1em}
+    \caption{A comparison between pruning from LLaMA1 and LLaMA2 with dynamic loading for 1.3B.} 
+    \end{minipage}
+\end{figure}
+
+\subsection{Comparison to Further Continual Pre-training INCITE-Base-3B}
+We examine if pruning produces a better initialization for continued pre-training than an existing LLM of equivalent size by comparing the performance of a continually pre-trained INCITE-Base-3B model and \ours-2.7B. We present the loss curves in~\Cref{fig:cont_loss_incite} and the downstream performance in~\Cref{fig:cont_incite}. INCITE-Base-3B model starts with higher task accuracy but plateaus after training, while \ours{} rapidly improves and surpasses the INCITE-Base-3B model, suggesting that pruned models from a strong base model serve as a better initialization.\footnote{In cases where the existing small model is competitive compared to the pruning source model, the small model may offer a better starting point than a pruned model. Intuitively, the larger the discrepancy in performance between the source model and the small model, the more advantages the pruned model has.}
+
+We used a learning rate $1e-5$ for continued pre-training INCITE-Base-3B, along with a scheduler to warm up the learning rate to $1e-5$ in the first $3\%$ of the training steps, and follows a cosine decay schedule. In hindsight, how we continued pre-training the INCITE-Base-3B model may not be optimal according to recent research \citep{gupta2023continual}. 
+
+\begin{figure}
+    \begin{minipage}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/cont_incite_loss.pdf}
+        \caption{{The loss of continued pre-training INCITE-3B and our pruned LLaMA model. Both models have around 2.7B parameters.}}
+        \label{fig:cont_loss_incite}
+    \end{minipage}
+    \begin{minipage}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/vsincitecontinue.pdf}
+\caption{Average downstream performance of continuing pre-training \ours{} vs INCITE-Base-3B.}
+        \label{fig:cont_incite}
+    \end{minipage}
+\end{figure}
+
+
+\subsection{Excluding Easy Domains During Pruning}
+\label{app:excludeeasy}
+During the development of this project, we explored an easy and intuitive idea to address the imbalanced loss decreasing rate during pruning and continued pre-training. Specifically, we excluded GitHub, StackExchange, and ArXiv data during pruning since these three domains' losses decrease the fastest. We pruned LLaMA1-13B down to 7B using a composite dataset of C4, CC, Wiki, and Books, with a heuristically constructed proportion of $40\%, 40\%, 10\%, 10\%$, respectively. We then continued pre-training the pruned model on the RedPajama dataset, which includes the excluded domains during pruning.
+
+The results showed that the perplexity difference was more even across domains when pruning without using data from these three domains. However, after continued pre-training with all data from the seven domains in the RedPajama dataset, the loss disparity grew, with the GitHub difference being much smaller than domains like C4. These results demonstrate that simply excluding the domains that are easy to recover during the pruning stage does not inherently resolve the imbalance of loss difference across domains.
+
+This set of experiments motivated us to develop dynamic batch loading as a more effective and principled approach to address the domain-specific loss disparities that arise during pruning and continued pre-training.
+\input{tables/cc_pruning.tex}
+
+\subsection{Inference Speed Analysis}
+\label{app:inference_speed}
+In this section, we analyze the inference speed of different pruning approaches, including the following models:
+\begin{itemize}
+\item The source model, i.e., LLaMA2-7B.
+\item Sheared-LLaMA-1.3B and Sheared-LLaMA-2.7B.
+\item Wanda pruning~\citep{sun2023simple} to prune LLMs into a semi-structured 2:4 and 4:8 sparsity pattern in one-shot.
+\item LLM-Pruner~\citep{ma2023llm}, which produces a model with the same number of non-embedding parameters as Sheared-LLaMA.
+\end{itemize}
+
+We use an A100 GPU to test the generation speed (tokens/second) of all these pruned models. We generate up to 2048 tokens with a batch size of 1. We present the results in \Cref{tab:inference}. Sheared-LLaMA's speed is better than that of LLM-Pruner, largely due to the more optimized resulting architecture. As shown in \Cref{tab:model_structure}, LLM-pruner produces a model structure with a smaller intermediate size than the hidden size, which goes against the transformer designs where the intermediate size is at least 3-4 times the hidden size.
+
+Wanda-type semi-structured pruning also achieves inference speedup compared to the source model. However, it is not as fast as small dense models and is less flexible because inference speedup is only feasible when the sparsity is at $50\%$.
+
+\input{tables/inference}
+
+\section{Frequently Asked Questions}
+\label{app:faq}
+
+In this section, we provide answers to frequently asked questions about our work.
+
+$\triangleright$ \textbf{Is it fair to say that Sheared-LLaMA models can be produced using only 50B tokens, even though the source model (LLaMA2) was trained on 2T tokens?}
+
+% This question is frequently raised by reviewers and readers. 
+At the time of our paper submission, there were no models sufficiently trained for 2T tokens at the 1.3B and 2.7B scale to allow for a fair comparison. However, the recently released TinyLlama-1.1B models, trained on 3T tokens, provide a suitable point of reference. We observe that the performance of TinyLlama-1.1B is comparable to Sheared-LLaMA-1.3B on downstream benchmarks when used as base models, and a similar observation can be found in \citet{wang2023pangu}.
+% Furthermore, there is substantial parallel evidence indicating that TinyLlama-1.1B exhibits similar performance to Sheared-LLaMA-1.3B~\citep{wang2023pangu}. 
+Considering that TinyLlama-1.1B is trained with 3T tokens, which exceeds the total amount of pre-training and pruning used by Sheared-LLaMA-1.3B (2T for pre-training the source model, and 50.4B for pruning and continued training), we regard this as strong evidence suggesting that pruning might be an intrinsically more efficient and effective approach to training moderate-sized LMs.
+
+$\triangleright$ \textbf{How is dynamic batch loading different from Doremi~\citep{xie2023doremi}?}
+
+Dynamic batch loading and Doremi share the same principle, which adjusts the data distribution of each domain based on the model's loss using an exponential ascent algorithm. However, dynamic batch loading offers a more flexible and less complex approach that can be applied to various scenarios.
+
+Doremi follows a multi-step process: (1) Train a reference model. (2) Train a proxy model to estimate the proportion of data from each domain by adjusting the proportion based on the proxy model's loss. (3) Train the final model using the estimated data distribution. In contrast, dynamic batch loading can be directly applied to any model without the need for a reference or a proxy model. Dynamic batch loading begins by deriving a reference loss based on a fixed evaluation set. This reference loss can be estimated using scaling laws or simply by using the source model's evaluation loss. During training, the data proportion is adjusted in real-time based on the periodically measured evaluation loss. The dynamic batch loading process can be seamlessly integrated into the standard pre-training pipeline, as evaluating the loss is computationally efficient and does not introduce significant overhead. Although dynamic batch loading relies on a fixed evaluation set, which may not fully represent the model's performance on the entire dataset, this issue can be mitigated by periodically updating the evaluation set during training.
+
+$\triangleright$ \textbf{When multiple source model sizes are available, how do you choose the source model size for pruning?}
+
+Determining the optimal source model size for pruning is challenging. However, we can perform a thought experiment by considering each parameter as a uniform "unit of information." For instance, if a source model with 7B parameters is trained using 2T tokens, we can assume that each parameter carries approximately 285 tokens of information, assuming a uniform distribution of information across the parameters. When randomly pruning this model down to 1.3B parameters, the total amount of information is reduced to 1.3B × 285 = 0.37T tokens. In contrast, if we prune a 13B model (also trained with 2T tokens) down to 1.3B parameters, the total amount of information is reduced to 1.3B × (2T / 13B) = 0.2T tokens. Although this estimation is rough, it suggests that pruning from a larger model may be less effective, especially when the source models are trained with the same number of tokens. It is important to note that this is a simplified estimate, and the assumption of uniform information distribution across parameters may not hold in practice. Moreover, the structured pruning process itself clearly breaks this assumption. Nonetheless, this thought experiment provides a general sense of how the source model size can impact the effectiveness of pruning.
+
+
+
+
+
+% %(See~Table \ref{tab:main_result}) 
+% \begin{table}[t]
+% 	\caption{ Sheared-LLaMA outperforms publicly available models of comparable size
+% 	on downstream tasks. The shot number used is noted in parentheses, with 0-shot
+% 	if not specified. Models with $\dagger$ use a different training data from
+% 	RedPajama. Please refer to \Cref{tab:baseline_config} for details. }
+% 	\resizebox{\textwidth}{!}{%
+% 	\setlength{\tabcolsep}{3pt}
+% 	\begin{tabular}{lcccccc}
+% 		\toprule                                                                                                    & \multicolumn{6}{c}{\textbf{Commonsense \& Reading Comprehension}} \\
+% 		\cmidrule(lr){2-7} \textbf{Model} {\stable{} (\#tokens for training)}                                       & \textbf{SciQ}                                                    & \textbf{PIQA}       & \textbf{WinoGrande}                          & \textbf{ARC-E}   & \textbf{ARC-C (25)} & \textbf{HellaSwag (10)}            \\
+%         TinyLlama-1.1B {\stable{} (2T)} & 88.1 & 71.0 & 56.8 & 58.8 & 28.1 & 55.2 \\
+%         TinyLlama-1.1B {\stable{} (3T)}$^{\dagger}$ & textbf{88.9} & 73.3 & 58.8 & 55.3 & 30.1 & 60.3  \\
+% 		\ours-1.3B {\stable{} (50B)}                                                                                & {87.3}                                                    & \textbf{73.4}       & 57.9                                         & \textbf{61.5}    & \textbf{33.5}       & \textbf{60.7}                      \\
+%         \midrule
+% 		% \cmidrule(lr){2-3} \cmidrule(lr){4-4} \cmidrule(lr){5-6} 
+%         \textbf{Model} {\stable{} (\#tokens for training)} & \textbf{LogiQA}                                                  & \textbf{BoolQ (32)} & \textbf{LAMBADA}                             & \textbf{NQ (32)} & \textbf{MMLU (5)}   & \multirow{-2}{*}{\textbf{Average}} \\
+% 		\midrule LLaMA2-7B {\stable{} (2T)}$^{\dagger}$                                                             & 30.7                                                             & 82.1                & 28.8                                         & 73.9             & 46.6                & 64.6                               \\
+% 		\cmidrule(lr){1-1} \cmidrule(lr){2-7} OPT-1.3B {\stable{} (300B)}$^{\dagger}$                               & {26.9}                                                           & 57.5                & 58.0                                         & 6.9              & 24.7                & 48.2                               \\
+%         TinyLlama-1.1B {\stable{} (2T)} & 28.0 & 62.8 & 53.3 & 8.8 & 26.0 & 48.8 \\
+% 		TinyLlama-1.1B {\stable{} (3T)}$^{\dagger}$ & 26.3 & 60.9 & 58.8 & \textbf{12.1} & 25.5 & 50.0 \\
+% 		\ours-1.3B {\stable{} (50B)}                                                                                & {26.9}                                                           & \textbf{64.0}       & 61.0                                         & {9.6}     & \textbf{25.7}       & \tf{51.0}                          \\
+% 		\bottomrule
+% 	\end{tabular}} \label{tab:tinyllama}
+% \end{table}
