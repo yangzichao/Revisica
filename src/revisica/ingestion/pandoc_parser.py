@@ -37,7 +37,7 @@ class PandocParser(BaseParser):
         completed = subprocess.run(
             [
                 pandoc_path,
-                str(path),
+                path.name,
                 "--from=latex",
                 "--to=markdown",
                 "--wrap=none",
@@ -47,6 +47,7 @@ class PandocParser(BaseParser):
             text=True,
             check=False,
             timeout=60,
+            cwd=path.parent,
         )
 
         if completed.returncode != 0:
