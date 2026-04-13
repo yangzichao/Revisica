@@ -50,7 +50,7 @@ revisica benchmark-history
 
 Quickest sanity check after a change: `revisica benchmark-run --suite math-cases --mode deterministic-only`
 
-Unit tests: `pytest tests/` (29 ingestion tests). For end-to-end correctness: `revisica benchmark-run --suite math-cases --mode deterministic-only`.
+Unit tests: `pytest tests/test_ingestion.py` (29 tests). Ingestion benchmark: `pytest tests/test_ingestion_benchmark.py -v -s` (24 arXiv papers, 65.1% with Pandoc). For end-to-end correctness: `revisica benchmark-run --suite math-cases --mode deterministic-only`.
 
 ## Architecture
 

@@ -86,3 +86,4 @@ Local parsers are preferred over cloud to avoid silently uploading documents to 
 - [x] All parsers produce the same `RevisicaDocument` structure regardless of input format
 - [x] Auto-detection prefers local parsers over cloud for PDF
 - [x] Tests pass: `pytest tests/test_ingestion.py` — 29/29 passing
+- [x] Benchmark: `pytest tests/test_ingestion_benchmark.py` — 24 arXiv papers, 65.1% with Pandoc (51.0% without)

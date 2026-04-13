@@ -1,6 +1,6 @@
 # Spec: DMG Packaging — Bundling Python Backend + External Tools
 
-**Status:** draft
+**Status:** draft (Pandoc installed locally, benchmark validated)
 **Date:** 2026-04-12
 
 ## Problem
