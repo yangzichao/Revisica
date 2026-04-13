@@ -11,6 +11,33 @@ from .types import DocumentMetadata, DocumentSection, RevisicaDocument
 
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
 
+# Pandoc heading ID attributes: {#sec:intro .unnumbered}
+_PANDOC_ATTR_RE = re.compile(r"\s*\{[#.][^}]*\}\s*$")
+# Pandoc span attributes: [text]{.smallcaps}
+_PANDOC_SPAN_RE = re.compile(r"\[([^\]]+)\]\{[^}]+\}")
+# LaTeX line breaks and stray backslashes in titles
+_LATEX_LINEBREAK_RE = re.compile(r"\s*\\\\\s*")
+# \label{...} — benign but noisy
+_LABEL_RE = re.compile(r"\\label\{[^}]*\}")
+
+
+def _clean_title(title: str) -> str:
+    """Strip Pandoc attributes and LaTeX remnants from a title."""
+    title = _PANDOC_ATTR_RE.sub("", title)
+    title = _PANDOC_SPAN_RE.sub(r"\1", title)
+    title = _LATEX_LINEBREAK_RE.sub(" ", title)
+    title = title.replace("\\medskip", "").replace("\\Huge", "")
+    title = re.sub(r"\\texttt\{([^}]*)\}", r"`\1`", title)
+    # Strip stray braces left after LaTeX command removal
+    title = re.sub(r"\{+|\}+", "", title)
+    return title.strip()
+
+
+def _postprocess_markdown(markdown: str) -> str:
+    """Clean Pandoc/LaTeX artifacts from the Markdown output."""
+    markdown = _LABEL_RE.sub("", markdown)
+    return markdown
+
 
 def _extract_sections(markdown: str) -> list[DocumentSection]:
     """Build a flat list of sections from Markdown headings.
@@ -25,7 +52,7 @@ def _extract_sections(markdown: str) -> list[DocumentSection]:
         match = _HEADING_RE.match(line)
         if match:
             level = len(match.group(1))
-            title = match.group(2).strip()
+            title = _clean_title(match.group(2))
             headings.append((line_number, level, title))
 
     if not headings:
@@ -106,8 +133,13 @@ def _extract_metadata(markdown: str) -> DocumentMetadata:
     # Try YAML frontmatter first (Pandoc --standalone output)
     fm = _extract_yaml_frontmatter(markdown)
     if fm:
-        title = fm.get("title", "")
+        raw_title = fm.get("title", "")
+        if isinstance(raw_title, list):
+            raw_title = " ".join(str(t) for t in raw_title)
+        title = _clean_title(str(raw_title))
         abstract = fm.get("abstract", "")
+        if isinstance(abstract, list):
+            abstract = " ".join(str(a) for a in abstract)
         raw_authors = fm.get("author", [])
         if isinstance(raw_authors, list):
             authors = [a for a in raw_authors if isinstance(a, str) and a.strip()]
@@ -227,6 +259,7 @@ def normalize_to_document(
     parser_used: str,
 ) -> RevisicaDocument:
     """Normalize raw Markdown from any parser into a RevisicaDocument."""
+    raw_markdown = _postprocess_markdown(raw_markdown)
     sections = _extract_sections(raw_markdown)
     metadata = _extract_metadata(raw_markdown)
 
