@@ -50,8 +50,12 @@ Learning: `docs/learning/`
 - [ ] **Paper rendering** — `RevisicaDocument.markdown` → HTML + MathJax math formulas.
 - [ ] **Annotation overlay** — Findings as right-side margin notes anchored to sections.
 - [ ] **"深挖" (Focus) button** — Per-section deep-dive trigger in Results page.
-- [ ] **PyInstaller packaging** — Freeze Python backend to `desktop/resources/python-backend`.
-- [ ] **electron-builder macOS** — DMG output, code signing, notarization.
+- [ ] **Bundle Pandoc** — Download arm64+x86_64 static binaries (~25 MB each) from GitHub releases. Option A: `pypandoc-binary` in Python venv (PyInstaller picks it up). Option B: `electron-builder extraResources` to `Contents/Resources/bin/pandoc`. GPL-2 OK via subprocess (include license text + source link).
+- [ ] **Bundle Marker** — `pip install marker-pdf` (~300 MB with models, no GPU needed). Provides local PDF parsing out of the box. PyInstaller should bundle it with the Python backend.
+- [ ] **MinerU — user-installed optional** — Too heavy to bundle (~2+ GB, PyTorch + GPU). Document as optional: `pip install mineru`. App detects via `shutil.which("mineru")` at runtime.
+- [ ] **Mathpix — API key only** — No binary to bundle. User provides `MATHPIX_APP_ID` + `MATHPIX_APP_KEY` via Settings page.
+- [ ] **PyInstaller packaging** — Freeze Python backend (+ bundled Pandoc + Marker) to `desktop/resources/python-backend`.
+- [ ] **electron-builder macOS** — DMG output, code signing (including bundled binaries), notarization.
 - [ ] **GitHub Actions CI** — Build → sign → notarize → upload DMG.
 
 ### P4: Cleanup + module extraction
@@ -61,6 +65,14 @@ Learning: `docs/learning/`
 - [x] **`eval/` package** — Extracted 6 `benchmark_*.py` + 3 adapters + `hf_datasets.py` into `src/revisica/eval/`.
 - [ ] **Unify prompt docs** — Document that dynamic task builders stay in templates.py, static system prompts in agents/definitions/.
 - [ ] **Decompose `writing_review.py`** — 800 lines → smaller files as LangGraph nodes take over.
+
+### P5: Math Agent Benchmark + Optimization
+
+- [ ] **ProcessBench baseline** — v0 and v1 prompt comparison on `processbench --split math --limit 10+`
+- [ ] **Iterative prompt tuning** — Improve proof-reviewer prompt based on benchmark error analysis
+- [ ] **Claude + Codex parity** — Ensure both providers benefit from prompt improvements (Codex instructions mirror agent defs)
+- [ ] **Tool-augmented verification** — Validate that Bash/SymPy + WebSearch tools improve `exact_first_error_accuracy`
+- [ ] **Literature fact-check agent** — New agent to verify cited references exist and citation context is accurate
 
 ### Paused: Refine.ink Recall Gap
 
