@@ -1,7 +1,7 @@
 """Pure math analysis: extraction, symbolic checking, artifact rendering.
 
 No LLM runtime dependencies — LLM result dataclasses are defined here
-for shared typing, but all LLM calls live in ``math_llm_review``.
+for shared typing, but all LLM calls live in ``math_llm``.
 """
 
 from .artifacts import render_math_report, render_summary, write_math_artifacts

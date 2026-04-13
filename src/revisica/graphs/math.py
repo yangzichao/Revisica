@@ -23,7 +23,7 @@ from ..math_check import (
     issue_sort_key,
     write_math_artifacts,
 )
-from ..math_llm_review import run_llm_proof_review
+from ..math_llm import run_llm_proof_review
 from .state import MathState
 
 

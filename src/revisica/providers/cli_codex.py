@@ -139,45 +139,78 @@ class CodexCliProvider(BaseProvider):
         if model:
             command.extend(["--model", model])
 
+        max_retries = 20
+        retry_wait = 600  # 10 minutes between retries on rate limit
+
         try:
-            completed = subprocess.run(
-                command,
-                input=full_prompt,
-                text=True,
-                capture_output=True,
-                check=False,
-                timeout=timeout_seconds,
-                env=subprocess_env(),
-            )
-            output = (
-                output_path.read_text(encoding="utf-8")
-                if output_path.exists()
-                else completed.stdout
-            )
+            for attempt in range(max_retries + 1):
+                try:
+                    completed = subprocess.run(
+                        command,
+                        input=full_prompt,
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                        timeout=timeout_seconds,
+                        env=subprocess_env(),
+                    )
+                    is_rate_limited = (
+                        completed.returncode != 0
+                        and ("rate" in completed.stderr.lower() or "overloaded" in completed.stderr.lower())
+                    )
+                    if is_rate_limited and attempt < max_retries:
+                        import logging
+                        import time
+                        logging.getLogger(__name__).warning(
+                            "Codex CLI rate-limited (attempt %d/%d), waiting %ds before retry...",
+                            attempt + 1, max_retries, retry_wait,
+                        )
+                        time.sleep(retry_wait)
+                        continue
+
+                    output = (
+                        output_path.read_text(encoding="utf-8")
+                        if output_path.exists()
+                        else completed.stdout
+                    )
+                    return ReviewResult(
+                        provider="codex",
+                        model=model,
+                        command=command,
+                        returncode=completed.returncode,
+                        output=output,
+                        stderr=completed.stderr,
+                    )
+                except subprocess.TimeoutExpired as error:
+                    if attempt < max_retries:
+                        import logging
+                        import time
+                        logging.getLogger(__name__).warning(
+                            "Codex CLI timed out after %ds (attempt %d/%d), waiting %ds before retry...",
+                            timeout_seconds, attempt + 1, max_retries, retry_wait,
+                        )
+                        time.sleep(retry_wait)
+                        continue
+                    output = (
+                        output_path.read_text(encoding="utf-8")
+                        if output_path.exists()
+                        else ""
+                    )
+                    stderr = f"Timed out after {timeout_seconds} seconds ({max_retries + 1} attempts)."
+                    if error.stderr:
+                        stderr = f"{stderr}\n{error.stderr}"
+                    return ReviewResult(
+                        provider="codex",
+                        model=model,
+                        command=command,
+                        returncode=124,
+                        output=output,
+                        stderr=stderr,
+                    )
+            # All retries exhausted without timeout or rate limit
             return ReviewResult(
-                provider="codex",
-                model=model,
-                command=command,
-                returncode=completed.returncode,
-                output=output,
-                stderr=completed.stderr,
-            )
-        except subprocess.TimeoutExpired as error:
-            output = (
-                output_path.read_text(encoding="utf-8")
-                if output_path.exists()
-                else ""
-            )
-            stderr = f"Timed out after {timeout_seconds} seconds."
-            if error.stderr:
-                stderr = f"{stderr}\n{error.stderr}"
-            return ReviewResult(
-                provider="codex",
-                model=model,
-                command=command,
-                returncode=124,
-                output=output,
-                stderr=stderr,
+                provider="codex", model=model, command=command,
+                returncode=1, output="", stderr="All retries exhausted.",
             )
         finally:
             output_path.unlink(missing_ok=True)

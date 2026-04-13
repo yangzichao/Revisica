@@ -8,9 +8,11 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["category", "severity", "title", "snippet", "explanation", "fix", "rewrite"],
+        "required": ["step_index", "verdict", "category", "severity", "title", "snippet", "explanation", "fix", "rewrite"],
         "additionalProperties": false,
         "properties": {
+          "step_index": { "type": "integer", "description": "0-based step number matching 'Step N:' label in the proof" },
+          "verdict": { "type": "string", "enum": ["likely_error", "needs_human_check"] },
           "category": { "type": "string" },
           "severity": { "type": "string", "enum": ["critical", "major", "minor"] },
           "title": { "type": "string" },

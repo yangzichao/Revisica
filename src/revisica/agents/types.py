@@ -21,6 +21,7 @@ class AgentDefinition:
         output_format: "json" for structured findings, "markdown" for free-form.
         categories: Allowed finding categories for this agent.
         temperature: Model temperature hint.
+        version: Prompt version tag for benchmark tracking, e.g. "v0", "v1".
     """
 
     name: str
@@ -31,3 +32,4 @@ class AgentDefinition:
     output_format: str = "json"
     categories: list[str] = field(default_factory=list)
     temperature: float = 0.0
+    version: str = "v0"

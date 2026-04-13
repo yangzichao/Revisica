@@ -160,7 +160,7 @@ If someone wants to connect this explanation back to the code:
 - `math_review.py`: math review orchestration
 - `review.py`: shared provider execution layer
 - `math_check/`: pure math pipeline (types, extraction, deterministic analysis, artifact rendering)
-- `math_llm_review.py`: LLM-based proof review
+- `math_llm/`: LLM-based proof review (review, task, parse modules)
 - `eval/`: benchmarking and evaluation framework (math, writing, refine, HF dataset adapters)
 - `api.py`: FastAPI server (`/api/ingest`, `/api/review`, `/api/providers`, etc.)
 - `core_types.py`, `adjudication_policy.py`: shared infrastructure

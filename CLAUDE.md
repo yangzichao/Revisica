@@ -71,7 +71,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `unified_review.py` | Concurrent writing + math orchestration |
 | `writing_review.py` | Writing lane orchestration |
 | `math_review.py` | Math lane orchestrator |
-| `math_llm_review.py` | Multi-provider proof review + adjudication |
+| `math_llm/` | **Subpackage:** LLM proof review orchestration, task building, result parsing |
 | `math_check/` | **Subpackage:** types, extraction, deterministic analysis, artifact rendering (pure SymPy, no LLM deps) |
 | `review.py` | Shared provider execution; delegates to `providers/` registry |
 | `templates.py` | All prompt templates and venue profile definitions |

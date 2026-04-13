@@ -9,6 +9,7 @@ from .definitions.writing_basic import AGENT as WRITING_BASIC
 from .definitions.writing_structure import AGENT as WRITING_STRUCTURE
 from .definitions.writing_venue import AGENT as WRITING_VENUE
 from .definitions.writing_judge import AGENT as WRITING_JUDGE
+from .definitions.proof_reviewer import ALL_VERSIONS as PROOF_REVIEWER_VERSIONS
 from .definitions.proof_reviewer import AGENT as PROOF_REVIEWER
 from .definitions.proof_self_checker import AGENT as PROOF_SELF_CHECKER
 from .definitions.proof_adjudicator import AGENT as PROOF_ADJUDICATOR
@@ -26,7 +27,7 @@ _ALL_AGENTS: dict[str, AgentDefinition] = {
         WRITING_STRUCTURE,
         WRITING_VENUE,
         WRITING_JUDGE,
-        PROOF_REVIEWER,
+        *PROOF_REVIEWER_VERSIONS,
         PROOF_SELF_CHECKER,
         PROOF_ADJUDICATOR,
         CLAIM_VERIFIER,

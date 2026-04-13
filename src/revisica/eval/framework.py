@@ -66,6 +66,7 @@ class BenchmarkRun:
     report_dir: Path
     roles: BenchmarkRoles
     cases: list[BenchmarkCaseRun]
+    agent_version: str | None = None
 
 
 BenchmarkCase = dict[str, object]
@@ -97,6 +98,7 @@ def run_benchmark(
     adjudicator: ProviderModelSpec | None = None,
     force_bootstrap: bool = False,
     timeout_seconds: int = 120,
+    agent_version: str | None = None,
 ) -> BenchmarkRun:
     normalized_suite = _normalize_suite(suite)
     normalized_mode = _normalize_mode(mode)
@@ -121,6 +123,7 @@ def run_benchmark(
             roles=roles,
             force_bootstrap=force_bootstrap,
             timeout_seconds=timeout_seconds,
+            agent_version=agent_version,
         )
         passed, pass_message = _evaluate_expected(run, case.get("expected"))
         case_runs.append(
@@ -149,6 +152,7 @@ def run_benchmark(
         report_dir=report_dir,
         roles=roles,
         cases=case_runs,
+        agent_version=agent_version,
     )
     _write_benchmark_summary(benchmark)
     return benchmark
@@ -343,6 +347,7 @@ def _run_case(
     roles: BenchmarkRoles,
     force_bootstrap: bool,
     timeout_seconds: int,
+    agent_version: str | None = None,
 ) -> MathReviewRun:
     runner = _MODE_RUNNERS[mode]
     kwargs = runner(roles)
@@ -352,6 +357,7 @@ def _run_case(
         **kwargs,
         force_bootstrap=force_bootstrap,
         timeout_seconds=timeout_seconds,
+        agent_version=agent_version,
     )
 
 
@@ -399,9 +405,12 @@ def _evaluate_expected(run: MathReviewRun, expected: dict[str, object] | None) -
 def _extract_earliest_issue_step(run: MathReviewRun) -> int | None:
     steps: list[int] = []
     for issue in run.issues:
-        match = re.search(r"Step (\d+):", issue.snippet)
-        if match:
-            steps.append(int(match.group(1)))
+        # Search across all text fields for "Step N:" pattern
+        for text in [issue.snippet, issue.title, issue.explanation, issue.fix]:
+            match = re.search(r"Step (\d+)", text)
+            if match:
+                steps.append(int(match.group(1)))
+                break
     if not steps:
         return None
     return min(steps)
@@ -412,6 +421,7 @@ def _write_benchmark_summary(benchmark: BenchmarkRun) -> None:
     payload = {
         "suite": benchmark.suite,
         "mode": benchmark.mode,
+        "agent_version": benchmark.agent_version,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "roles": {
             "reviewer": _spec_to_json(benchmark.roles.reviewer),

@@ -32,6 +32,10 @@ def to_agent_spec(
         else None
     )
 
+    # Agents with Bash/WebSearch need write access for code execution
+    needs_execution = any(t in agent_definition.tools for t in ("Bash", "WebSearch", "WebFetch"))
+    codex_sandbox = "workspace-write" if needs_execution else "read-only"
+
     return AgentSpec(
         name=agent_definition.name,
         claude_agent_def={
@@ -40,7 +44,7 @@ def to_agent_spec(
         },
         codex_instructions_path=codex_instructions_path,
         codex_output_schema=effective_schema,
-        codex_sandbox="read-only",
+        codex_sandbox=codex_sandbox,
     )
 
 

@@ -241,6 +241,8 @@ def _add_benchmark_run_parser(sub: argparse._SubParsersAction) -> None:
                    help="Overwrite existing platform assets when auto-bootstrapping.")
     p.add_argument("--timeout-seconds", type=int, default=120,
                    help="Per-provider timeout for benchmark LLM calls.")
+    p.add_argument("--agent-version",
+                   help="Proof reviewer agent prompt version (e.g. v0, v1). Defaults to latest.")
 
 
 def _add_benchmark_refine_parser(sub: argparse._SubParsersAction) -> None:
@@ -429,10 +431,13 @@ def _handle_benchmark_run(args: argparse.Namespace) -> None:
         adjudicator=parse_provider_model_spec(args.adjudicator),
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
+        agent_version=getattr(args, "agent_version", None),
     )
     print("environment check: unified benchmark runner")
     print(f"suite: {result.suite}")
     print(f"mode: {result.mode}")
+    if result.agent_version:
+        print(f"agent version: {result.agent_version}")
     print(f"report dir: {result.report_dir}")
     print(f"summary: {result.report_dir / 'benchmark_summary.md'}")
 
