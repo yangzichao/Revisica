@@ -1,0 +1,59 @@
+\section{Data Design Goals}
+\label{sec:desiderata}
+
+
+
+We present the design goals of \dolma and discuss how these goals guided our decision-making during data curation.
+In sharing these, we hope to inform users of \dolma's strengths and limitations while also reinforcing practice around such disclosures in dataset curation research (see curation rationales in \citet{bender-friedman-2018-data} and motivation questions in \citet{gebru2021datasheets}).
+
+
+
+
+
+
+
+
+
+
+\paragraph{Be consistent with prior language model pretraining recipes.}
+By matching data sources and methods used to create other language modeling corpora, to the extent they are known, we enable the broader research community to use our artifacts to 
+study (and scrutinize) language models being developed today, even those developed behind closed doors.
+In this \textbf{reproduction} effort, we follow established practices 
+to the extent they are known.
+Notably, this also means scoping \dolma to \textbf{English-only} text to better leverage known curation practices and maximize generalizability of scientific work on \dolma to existing language models.\footnote{Recognizing that this focus reinforces the assumption of English as the ``default'' language, we hope to expand \dolma to more languages in the future. We release our data curation tools to support such efforts.
+}
+
+\paragraph{When in doubt, make evidence-backed decisions.} Still, there remain myriad data curation decisions for which there is no single clear recipe from prior work, both when best practice isn't known as well as when implementations differ in subtle ways.
+In such cases, we prioritize decisions that \textbf{maximize performance} of language models trained on \dolma over a diverse suite of tasks and datasets (see \S\ref{sec:experimental-methodology}).
+
+
+
+
+
+
+
+
+
+
+
+\paragraph{Large scale data to train large models.} 
+\citet{Hoffmann2022TrainingCL}  suggested that one can train compute-optimal models by maintaining a fixed ratio between language model size (in parameters) and a minimum number of training tokens. Recent works that follow these ``scaling laws,'' such as Llama 2, show that there is still room for performance improvement by increasing the number of training tokens.
+We aim for a sufficiently large corpus---\textbf{2--3T tokens}---to allow further study of the relationship between model and dataset size.
+
+
+\paragraph{Make necessary adjustments to preserve openness.}
+A core tenet of our work is openness, which we define to mean (\textit{i}) \textbf{sharing the data itself} and (\textit{ii}) \textbf{documenting the process to curate it}. 
+This requirement means we occasionally must deviate from known recipes due to additional practical, legal or ethical considerations that arise when pursuing dataset research in the open.
+For example, despite their use in training language models like LLaMA, we avoid sources like Books3~\citep{Gao2020ThePA} which are the center of ongoing legal cases around AI use of copyrighted materials~\citep{books3copyright}.
+Similarly, despite the lack of discussion around the removal of personally identifiable information in prior recipes, we perform this filtering to mitigate risks associated with data release~\citep{subramani-etal-2023-detecting}. 
+
+
+
+
+
+
+
+
+
+
+

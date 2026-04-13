@@ -1,0 +1,7 @@
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{img/gsm8k.pdf}
+    \caption{\textbf{Performance on the mathematical reasoning benchmark GSM8K \citep{cobbe2021training}.} We evaluate pretrained next-token and multi-token prediction models trained on 200B and 500B tokens of natural language in 8-shot mode using nucleus sampling \citep{holtzman2020curious} with probability mass 0.95 and various sampling temperatures. Reported are the frequencies of the correct final answer to appear among $k$ samples, for $k=1, 10, 100$, estimated from 200 samples like in code generation benchmarks \citep{chen2021evaluating}. After 200B tokens, the 2-token prediction model has a clear advantage over the next-token baseline but the order reverses after 500B tokens. The 4-token prediction model is worse throughout. We interpret this similarly to the findings in Section~\ref{sect:induction}: the follow-your-nose chains-of-thought required for GSM8K may be difficult to learn from a limited amount of data, attesting to the data efficiency of multi-token prediction training. Once the correct circuits for correct autoregressive chains-of-thought in this domain have formed, however, multi-token prediction comes at a cost.
+    }
+    \label{fig:gsm8k}
+\end{figure}

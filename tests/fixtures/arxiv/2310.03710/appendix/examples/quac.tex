@@ -1,0 +1,58 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The QUAC dataset is based on a dialog between a student and a teacher about a hidden Wikipedia text. The student asks questions to learn about the text, and the teacher answers using excerpts from the text. The questions can be open-ended, unanswerable, or context-dependent. 
+
+2. Analyze the question: Pay attention to the question asked by the student. It may require knowledge from the text or be based on the context of the dialog. 
+
+3. Generate the answer: Your answer should be based on the text provided. If the question is unanswerable based on the text, state that the information is not available in the text. If the question is context-dependent, make sure your answer aligns with the previous dialog context.
+
+4. Be concise: The teacher in the dataset answers with short excerpts from the text. Try to keep your answers brief and to the point.
+
+5. Be accurate: Ensure your answer is accurate according to the text. Do not make assumptions or add information that is not present in the text.
+
+6. Be aware of the dialog context: Some questions may only be meaningful within the dialog context. Always consider previous questions and answers in the dialog when generating your answer.
+
+7. Be open-ended: Some questions may be open-ended. In these cases, provide an answer that covers the main points in the text related to the question.
+
+Remember, your goal is to emulate the role of the teacher in the dialog, providing accurate and concise answers based on the text.
+
+Title: Anna Vissi
+
+Background: Anna Vissi (Greek: Anna Bisse (pronounced ['ana 'visi], locally ['an:a 'viS:i]); born 20 December 1957), also known as Anna Vishy, is a Greek Cypriot singer, songwriter, actress, television presenter, radio personality, and businesswoman.
+
+Section: 1983-1989: Collaboration with Nikos Karvelas
+
+Passage: In May 1983, she married Nikos Karvelas, a composer, with whom she collaborated in 1975 and in November she gave birth to her daughter Sofia. After their marriage, she started a close collaboration with Karvelas. Since 1975, all her releases have become gold or platinum and have included songs by Karvelas. In 1986, she participated at the Cypriot National Final for Eurovision Song Contest with the song Thelo Na Gino Star ("I Want To Be A Star"), taking second place. This song is still unreleased up to date. In 1984, Vissi left her record company EMI Greece and signed with CBS Records Greece, which later became Sony Music Greece, a collaboration that lasted until 2013. In March 1984, she released Na 'Hes Kardia ("If You Had a Heart"). The album was certified gold. The following year her seventh album Kati Simveni ("Something Is Happening") was released which included one of her most famous songs, titled "Dodeka" ["Twelve (O'Clock)"] and reached gold status selling 80.000 units. In 1986 I Epomeni Kinisi ("The Next Move") was released. The album included the hit Pragmata ("Things") and went platinum, becoming the best selling record of the year. In February 1988 she released her ninth album Tora ("Now") and in December the album Empnefsi! ("Inspiration!") which went gold. In 1988, she made her debut as a radio producer on ANT1 Radio. Her radio program was titled after one of her songs Ta Koritsia Einai Atakta ("Girls Are Naughty") and was aired every weekend. In the same year, she participated with the song Klaio ("I'm Crying") at the Greek National Final for Eurovision Song Contest, finishing third. In 1989, she released the highly successful studio album Fotia (Fire), being one of the first albums to feature western sounds. The lead single Pseftika ("Fake") became a big hit and the album reached platinum status, selling 180.000 copies and becoming the second best selling record of 1990. She performed at "Diogenis Palace" in that same year, Athens's biggest nightclub/music hall at the time.
+
+Question: what happened in 1983?
+
+Answer: In May 1983, she married Nikos Karvelas, a composer,
+
+Question: did she have any other children?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage mentions that Anna Vissi married Nikos Karvelas in May 1983, and that she gave birth to her daughter Sofia in November of the same year. Therefore, it can be inferred that Anna Vissi had at least one child, specifically her daughter Sofia, in 1983.
+
+Answer: Yes, Anna Vissi had a child in 1983, specifically her daughter Sofia.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+
+Answer: Yes.
+\end{alltt}
+}}
+\caption{A complete running example of QuAC.}
+\label{fig:quac_example}
+\end{figure*}

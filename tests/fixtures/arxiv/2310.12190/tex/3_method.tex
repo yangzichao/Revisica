@@ -1,0 +1,119 @@
+%---------------------------------------------
+\vspace{-1.5mm}
+\section{Method}
+\label{sec:method}
+%---------------------------------------------
+\vspace{-1.5mm}
+%
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/overview3.pdf}
+    \vspace{-6mm}
+    \caption{Flowchart of the proposed \emph{DynamiCrafter}. During training, we randomly select a video frame as the image condition of the denoising process through the proposed dual-stream image injection mechanism to inherit visual details and digest the input image in a context-aware manner. During inference, our model can generate animation clips from noise conditioned on the input still image.
+    }
+    \label{fig:overview}
+    \vspace{-5.5mm}
+\end{figure*}
+
+Given a still image, we aim at animating it to produce a short video clip, that inherits all the visual content from the image and exhibits an implicitly suggested and natural dynamics.
+Note that the still image can appear in the arbitrary location of the resultant frame sequence. 
+Technically, such challenge can be formulated as a special kind of image-conditioned video generation that highly requires visual conformity. We tackle this synthesis task by utilizing the generative priors of pre-trained video diffusion models.
+
+%---------------------------------------------
+\subsection{Preliminary: Video Diffusion Models}
+\label{subsec:preliminaries}
+%---------------------------------------------
+
+
+Diffusion models~\citep{ho2020denoising,sohldickstein2015deep} are generative models that define a forward diffusion process to convert data $\mathbf{x}_0 \sim p_{\text{data}}(\mathbf{x})$ into Gaussian noises $\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ and learn to reverse this process by denoising. The forward process $q(\mathbf{x}_t|\mathbf{x}_0,t)$ contains $T$ timesteps, which gradually adds noise to the data sample $\mathbf{x}_0$ to yield $\mathbf{x}_t$ through a parameterization trick. The denoising process $p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_t,t)$ obtains less noisy data $\boldsymbol{x}_{t-1}$ from the noisy input $\boldsymbol{x}_t$ through a denoising network $\mathbf{\epsilon}_{\theta}\left(\mathbf{x}_t, t\right)$, which is supervised by the objective:
+\begin{equation}
+\min _{\theta} \mathbb{E}_{t, \mathbf{x} \sim p_{\text{data}}, \mathbf{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})}\Vert\mathbf{\epsilon}-\mathbf{\epsilon}_{\theta}\left(\mathbf{x}_t, t\right)\Vert_2^2,
+\end{equation} 
+where $\mathbf{\epsilon}$ is the sampled ground truth noise and $\theta$ indicates the learnable network parameters. Once the model is trained, we can obtain denoised data $\mathbf{x}_0$ from a random noise $\mathbf{x}_T$ through iteratively denoising.
+
+For video generation tasks, Latent Diffusion Models (LDMs)~\cite{ho2022imagenvideo} are commonly used to reduce the computation complexity. In this paper, our study is conducted based on an open-source video LDM \textit{VideoCrafter}~\cite{chen2023videocrafter1}. Given a video $\mathbf{x} \in \mathbb{R}^{L\times 3\times H\times W}$, we first encode it into a latent representation $\mathbf{z}=\mathcal{E}(\mathbf{x}), \mathbf{z} \in \mathbb{R}^{L\times C\times h\times w}$ frame-by-frame. Then, both the forward diffusion process $\mathbf{z}_t=p(\mathbf{z}_0, t)$ and backward denoising process $\mathbf{z}_t=p_{\theta}(\mathbf{z}_{t-1}, \mathbf{c}, t)$ are performed in this latent space, where $\mathbf{c}$ denotes possible denoising conditions like text prompt. Accordingly, the generated videos are obtained through the decoder $\hat{\mathbf{x}}=\mathcal{D}(\mathbf{z})$.
+
+
+%---------------------------------------------
+\subsection{Image Dynamics from Video Diffusion Priors}
+\label{subsec:alignment}
+%---------------------------------------------
+
+
+An open-domain text-to-video diffusion model is assumed to have diverse dynamic visual content modeled conditioning on text descriptions.
+To animate a still image with the T2V generative priors, the visual information should be injected into the video generation process in a comprehensive manner.
+On the one hand, the image should be digested by the T2V model for context understanding, which is important for dynamics synthesis. On the other, the visual details should be preserved in the generated videos.
+Based on this insight, we propose a dual-stream conditional image injection paradigm, consisting of text-aligned context representation and visual detail guidance. The overview diagram is illustrated in Figure~\ref{fig:overview}.
+
+\vspace{-4mm}
+\paragraph{Text-aligned context representation.}
+To guide video generation with image context, we propose to project the image into a text-aligned embedding space, so that the video model can utilize the image information in a compatible fashion. 
+Since the text embedding is constructed with pre-trained CLIP~\cite{radford2021learning} text encoder, we employ the image encoder counterpart to extract image feature from the input image. Although the global semantic token $\mathbf{f}_{\text{cls}}$ from the CLIP image encoder is well-aligned with image captions, it mainly represents the visual content at the semantic level and fails to capture the image's full extent.
+To extract more complete information, we use the full visual tokens $\mathbf{F}_{\text{vis}}=\{\mathbf{f}^i\}^K_{i=1}$ from the last layer of the CLIP image ViT~\cite{dosovitskiy2020image}, which demonstrated high-fidelity in conditional image generation works~\cite{shi2023instancebooth,ye2023ipadapter}.
+To promote the alignment with text embedding, in other words, to obtain a context representation that can be interpreted by the denoising U-Net, we utilize a learnable lightweight model $\mathcal{P}$ to translate $\mathbf{F}_{\text{vis}}$ into the final context representation $\mathbf{F}_{\text{ctx}}=\mathcal{P}(\mathbf{F}_{\text{vis}})$. We employ the query transformer architecture~\cite{jaegle2021perceiver,awadalla2023openflamingo} in multi-modal fusion studies as $\mathcal{P}$, which comprises $N$ stacked layers of cross-attention and feed-forward networks (FFN), and is adept at cross-modal representation learning via the cross-attention mechanism.
+
+Subsequently, the text embedding $\mathbf{F}_{\text{txt}}$ and context embedding $\mathbf{F}_{\text{ctx}}$ are employed to interact with the U-Net intermediate features $\mathbf{F}_{\text{in}}$ through the dual cross-attention layers:
+\begin{equation}
+\mathbf{F}_{\text{out}} = \text{Softmax}(\frac{\mathbf{Q} \mathbf{K}_{\text{txt}}^{\top}}{\sqrt{d}})\mathbf{V}_{\text{txt}} + \lambda \cdot \text{Softmax}(\frac{\mathbf{Q} \mathbf{K}_{\text{ctx}}^{\top}}{\sqrt{d}})\mathbf{V}_{\text{ctx}},
+\end{equation}
+where $\mathbf{Q}=\mathbf{F}_{\text{in}}\mathbf{W}_\mathbf{Q}$, $\mathbf{K}_{\text{txt}}=\mathbf{F}_{\text{txt}}\mathbf{W}_\mathbf{K}$, $\mathbf{V}_{\text{txt}}=\mathbf{F}_{\text{txt}}\mathbf{W}_\mathbf{V}$, and $\mathbf{K}_{\text{ctx}}=\mathbf{F}_{\text{ctx}}\mathbf{W}'_\mathbf{K}$, $\mathbf{V}_{\text{ctx}}=\mathbf{F}_{\text{ctx}}\mathbf{W}'_\mathbf{V}$ accordingly.
+In particular, $\lambda$ denotes the coefficient that fuses text-conditioned and image-conditioned features, which is achieved through \texttt{tanh} gating and adaptively learnable for each layers. This design aims to facilitate the model's ability to absorb image conditions in a layer-dependent manner. As the intermediate layers of the U-Net are more associated with object shapes or poses, and the two-end layers are more linked to appearance~\cite{voynov2023p}, we expect that the image features will primarily influence the videos' appearance while exerting relatively less impact on the shape.
+
+
+
+\vspace{-4mm}
+\paragraph{Observations and analysis of $\lambda$.} Figure~\ref{fig:lambda} (left) illustrates the learned coefficients across different layers, indicating that the image information has a more significant impact on the two-end layers w.r.t. the intermediate layers. To explore further, we manually alter $\lambda$ in the intermediate layers. As depicted in Figure~\ref{fig:lambda} (right), increasing $\lambda$ leads to suppressed cross-frame movements, while decreasing $\lambda$ poses challenges in preserving the object's shape. This observation not only align with our expectations, but also suggests that in image-conditioned diffusion models, rich-context information influences certain intermediate layers (\eg, layers 7-9) of the U-Net, enabling the model to maintain object shape similar to the input in the presence of motions.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/lambda.pdf}
+    \vspace{-5mm}
+    \caption{Visualization of the learned $\lambda$ across U-Net layers (left), and visual comparisons when manually adjusting $\lambda$ (right).}
+    \label{fig:lambda}
+    \vspace{-4mm}
+\end{figure}
+
+
+
+\vspace{-4mm}
+\paragraph{Visual detail guidance (VDG).}
+The rich-informative context representation enables the video diffusion model to produce videos that closely resemble the input image. However, as shown in Figure~\ref{fig:visual_detail_guidance}, minor discrepancies may still occur. This is mainly due to the pre-trained CLIP image encoder's limited capability to fully preserve input image information, as it is designed to align visual and language features.
+To enhance visual conformity, we propose providing the video model with additional visual details from the image. Specifically, we concatenate the conditional image with per-frame initial noise and feed them to the denoising U-Net as a form of guidance. Therefore, in our proposed dual-stream image injection paradigm, the video diffusion model integrates both global context and local details from the input image in a complementary fashion.
+
+\vspace{-4mm}
+\paragraph{Discussion.}
+(i) \textit{Why are text prompts necessary when a more informative context representation is provided?}
+Although we construct a text-aligned context representation, it carries more extensive information than text embedding, which may overburden the T2V model to digest them properly, \eg, causing shape distortion. Additional text prompts can offer a native global context that enables the model to efficiently utilize image information. Figure~\ref{fig:visual_detail_guidance} (right) demonstrates how incorporating text can address the issue of shape distortion in the bear's head.
+Furthermore, as a still image typically contains multiple potential dynamic variations, text prompts can effectively guide the generation of dynamic content tailored to user preferences (see Sec.~\ref{sec:discussion}).
+(ii) \textit{Why is a rich context representation necessary when the visual guidance provides the complete image?}
+As previously mentioned, the pre-trained T2V model comprises a semantic control space (text embedding) and a complementary random space (initial noise).
+While the random space effectively integrates low-level information, concatenating the noise of each frame with a fixed image induces spatial misalignment potentially, which may misguide the model in uncontrollable directions. Regarding this, the precise visual context supplied by the image embedding can assist in the reliable utilization of visual details. The corresponding ablation study is presented in Sec.~\ref{subsec:ablation}.
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/visual_detail.pdf}
+    \vspace{-5mm}
+    \caption{(Left) Comparison of animations produced using rich context representation solely, and additionally visual detail guidance (VDG). (Right) Impact of text with context representation.}
+    \label{fig:visual_detail_guidance}
+    \vspace{-5mm}
+\end{figure}
+
+%---------------------------------------------
+\subsection{Training Paradigm}
+\label{subsec:training}
+%---------------------------------------------
+% do we need to mention the W_K(ctx), W_V(ctx) will be also learned?
+The conditional image is integrated through two complementary streams, which play roles in context control and detail guidance, respectively. To modulate them in a cooperative manner, we device a dedicated training strategy consisting of three stages, \ie, (i) training the image context representation network $\mathcal{P}$, (ii) adapting $\mathcal{P}$ to the T2V model, and (iii) joint fine-tuning with VDG.
+
+Specifically, to offer the image information to the T2V model in a compatible fashion, we propose to train a context representation network $\mathcal{P}$ to extract text-aligned visual information from the input image. Considering the fact that $\mathcal{P}$ takes numerous optimization steps to converge, %why?
+we propose to train it based on a lightweight T2I model instead of a T2V model, allowing it to focus on image context learning, and then adapt it to the T2V model by jointly training $\mathcal{P}$ and spatial layers (in contrast to temporal layers) of the T2V model.
+After establishing a compatible context conditioning branch for T2V, we concatenate the input image with per-frame noise for joint fine-tuning to enhance visual conformity. Here we only fine-tune $\mathcal{P}$ and the VDM's spatial layers to avoid disrupting the pre-trained T2V model's temporal prior knowledge with dense image concatenation, which could lead to significant performance degradation and contradict our original intention. Additionally, we randomly select a video frame as the image condition based on two considerations: (i) to prevent the network from learning a shortcut that maps the concatenated image to a frame in the specific location, and (ii) to force the context representation to be more flexible to avoid offering the over-rigid information for a specific frame, \ie, the objective in the context learning based on T2I.
+
+
+\begin{figure*}[!ht]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/qualitative_comparison2.pdf}
+    \vspace{-6mm}
+    \caption{Visual comparisons of image animation results from VideoComposer, I2VGen-XL, PikaLabs, Gen-2, and our DynamiCrafter.}
+    \label{fig:qualitative}
+    \vspace{-5mm}
+\end{figure*}

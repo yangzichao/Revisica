@@ -1,0 +1,79 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the structure of the dataset: The TAI Safety Research subset of the dataset contains fields for Title, Abstract Note, Publication Title, Item Type, Publication Year, and Label. 
+
+2. Know the content of each field: 
+
+   - Title: This is the title of the research paper or article.
+
+   - Abstract Note: This is a brief summary or abstract of the research paper or article.
+
+   - Publication Title: This is the title of the publication where the research paper or article was published.
+
+   - Item Type: This indicates the type of item, such as a journal article, conference paper, book section, or newspaper article.
+
+   - Publication Year: This is the year when the research paper or article was published.
+
+   - Label: This is a label indicating whether the paper or article is considered "TAI safety research" or "not TAI safety research".
+
+3. Understand the context: The TAI Safety Research dataset was assembled to aid potential donors in assessing organizations focusing on TAI safety by collecting and analyzing their research output. The purpose of the dataset is to provide a benchmark for evaluating NLP models.
+
+4. Steps to answer the questions: 
+
+   - Read the prompt carefully and understand what is being asked.
+
+   - Review the information provided in the fields of the dataset.
+
+   - Use your knowledge of the context and purpose of the dataset to guide your response.
+
+   - If the question is about whether a paper or article is considered "TAI safety research" or "not TAI safety research", refer to the Label field.
+
+   - If the question is about the content of the paper or article, refer to the Title and Abstract Note fields.
+
+   - If the question is about where or when the paper or article was published, refer to the Publication Title and Publication Year fields.
+
+   - If the question is about the type of item, refer to the Item Type field.
+
+   - Make sure your response is accurate, clear, and concise.
+
+Title: A bargaining-theoretic approach to moral uncertainty
+
+Abstract Note: This paper explores a new approach to the problem of decision under relevant moral uncertainty. We treat the case of an agent making decisions in the face of moral uncertainty on the model of bargaining theory, as if the decision-making process were one of bargaining among diﬀerent internal parts of the agent, with diﬀerent parts committed to diﬀerent moral theories. The resulting approach contrasts interestingly with the extant “maximise expected choiceworthiness” and “my favourite theory” approaches, in several key respects. In particular, it seems somewhat less prone than the MEC approach to ‘fanaticism’: allowing decisions to be dictated by a theory in which the agent has extremely low credence, if the relative stakes are high enough. Overall, however, we tentatively conclude that the MEC approach is superior to a bargaining-theoretic approach.
+Publication Title: 
+
+Item Type: report
+
+Publication Year: 2019
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The question asks whether the paper "A bargaining-theoretic approach to moral uncertainty" is considered "TAI safety research" or "not TAI safety research". To determine this, we need to refer to the Label field of the dataset.
+
+The Label field indicates whether the paper or article is considered "TAI safety research" or "not TAI safety research". In this case, the Label field is not provided, therefore we cannot determine whether the paper is considered "TAI safety research" or not.
+
+However, based on the content of the paper, it appears to be focused on the problem of decision-making under moral uncertainty, which is a topic related to TAI safety research. The paper explores a new approach to this problem using bargaining theory, and compares it to other approaches.
+
+Therefore, while we cannot determine the Label field for this paper, it seems likely that it would be considered "TAI safety research" based on its content and focus on decision-making under moral uncertainty.
+
+Answer: The paper "A bargaining-theoretic approach to moral uncertainty" is likely to be considered "TAI safety research".
+
+Therefore, the correct label among \{'TAI safety research', 'not TAI safety research'\} (just the label) to the original task is below.
+
+Label: TAI safety research
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Tai Safety Research).}
+\label{fig:raft_subset=tai_safety_research_example}
+\end{figure*}

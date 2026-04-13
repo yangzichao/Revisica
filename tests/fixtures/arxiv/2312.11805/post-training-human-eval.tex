@@ -1,0 +1,34 @@
+\subsection{Evaluation}
+\label{sec:post-training-eval}
+
+Evaluation of human preferences over model outputs provides critical signals for measuring performance. As part of our development process, we conduct human evaluation extensively across targeted capabilities. Human evaluation is instantiated as side-by-side blind evaluations where human raters judge responses of two models to the same prompt, as single-response ratings for certain capabilities, and as online testing. In addition, we build models for automated evaluation that faithfully imitate human preferences in order to guide development and continuously monitor online performance.
+
+\if0
+\textbf{LMSYS Chatbot Arena}: Benchmarks based on open-source tooling and data provide a valuable means of assessing model performance under a well-scrutinized setting. The LMSYS Chatbot Arena \citep{lmsys} is the most popular evaluation for chatbots, where a user writes a prompt, receives blinded responses from a pair of models, and continues the conversation until deciding which model is preferred. The Jan. 2024 version of Gemini, with Gemini Pro and online capabilities, has been recently evaluated on the Chatbot Arena (Figure \ref{fig:lmsys-elo}). It is ranked \#2 in Elo rating. Full scores including scores for Gemini Advanced will be updated as LMSYS gathers more data. Other Gemini Pro entries in the leaderboard are older generation models that have not been optimized for chat use cases.
+
+\begin{figure*}[h!]
+\centering
+\includegraphics[width=\textwidth,keepaspectratio]{figs/post-training.jpg}
+\caption{Elo leaderboard under the LMSYS Chatbot Arena (DATE).}
+\label{fig:lmsys-elo}
+\end{figure*}
+
+\textbf{Third-party Human Evaluation}: To study performance in more detail, we built an open-source eval set called lmsys-eval-10k \footnote{lmsys-eval-10k can be found here: [todo url]. The eval set was constructed after all models completed training and tuning. The evaluations did not inform model development}. lmsys-eval-10k sources from raw Chatbot Arena conversations from April-August 2023 in lmsys-chat-1m \citep{zheng2023lmsys}. The eval set contains 10k multi-turn English conversations spanning diverse capabilities such as coding, factuality, and safety, and features responses from 25 models, including OpenAI, Anthropic, and open-source models. We conduct human evaluation using third-party vendors: a rater returns a preference rating between a test model and baseline model’s responses given the context.
+
+Table \ref{table:lmsys-sxs} displays metrics for the pairwise preference ratings between Gemini services and another chatbot on the 10K lmsys-eval-10k prompts. In addition to comparing to top models with public benchmark results, we evaluate vs the latest GPT-4 Turbo 0125 API (other GPT-4 Turbo results are based on the 1106 API); and we evaluate vs ChatGPT 4, which is GPT-4 under the ChatGPT UI and is equipped with search and code execution tools like Gemini.
+
+We calculate two metrics:
+\begin{enumerate}
+\item Win rate is the percentage of ratings where the test model is preferred over the base model, excluding ties. Intuitively, a result greater than 50\% indicates a stronger model, where the test model is preferred over 50\% of the time.\\
+\item SxS score measures the average magnitude of a preference. Each rating is converted to an ordinal value centered at 0: ratings preferring the test are positive and ratings preferring the base are negative. The converted values are averaged to return the SxS score. Intuitively, a positive SxS score indicates the extent to which the test model’s response is preferred over the base model’s response.
+\end{enumerate}
+
+In Table \ref{table:lmsys-sxs}, Gemini Advanced has a >60\% win rate across the chatbots it is compared to, and with a positive SxS score. Gemini is on par or better than all chatbots except Gemini Advanced.
+
+
+% Table. Side-by-side comparison metrics between Gemini models and top models. \label{table:lmsys-sxs}
+
+The lmsys-eval-10k set includes annotations outlining what capabilities each prompt corresponds to. We split lmsys-eval-10k examples by capability and correspondingly split the preference ratings on the examples. Table \ref{table:elo-capability} displays the Elo ratings for the top 10 models on each capability’s split. Certain models have only a small number of ratings in a split, so we only report ratings for models with >=50 ratings. Uniformly, Gemini Advanced ranks #1 where it particularly has leading gaps in coding (+0.45 SxS score and 76.4\% win rate) and creativity (+0.32 SxS score and 68.7\% win rate). Gemini is typically \#2, sometimes \#3.
+
+% Figure. Elo ratings on each capability’s set of prompts. \label{table:elo-capability}
+\fi

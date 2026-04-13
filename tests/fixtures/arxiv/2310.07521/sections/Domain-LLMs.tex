@@ -1,0 +1,105 @@
+\subsection{Domain Factuality Enhanced LLMs}
+\label{sec:domain_llms}
+
+Domain Knowledge Deficit is not only an important reason for limiting the application of LLM in specific fields, but also a subject of great concern to both academia and industry. In this subsection, we discuss how those Domain-Specific LLMs enhance their domain factuality.
+% Exploring LLMs specifically fine-tuned or designed to excel in factuality within particular knowledge domains.
+
+
+\input{tables/tb-domain-LLMs}
+Table~\ref{tab:domain_llms} lists the domain-factuality enhanced LLMs. Here, we include several domains, including healthcare/medicine (H), finance (F), law/legal (L), geoscience/environment (G), education (E), food testing (FT), and home renovation (HR). 
+
+Based on the actual scenarios of Domain-Specific LLMs and our previous categorization of enhancement methods, we have summarized several commonly used enhancement techniques for Domain-Specific LLMs: %\wjdd{No references for the following approaches? R: We will add more references for each method}
+
+\emph{(1) Continual Pretraining: } A method that involves continuously updating and fine-tuning a pre-trained language model using domain-specific data. This process ensures that the model stays up-to-date and relevant within a specific domain or field. It starts with an initial pre-trained model, often a general-purpose language model, and then fine-tunes it using domain-specific text or data. As new information becomes available, the model can be further fine-tuned to adapt to the evolving knowledge landscape. Continual pretraining is a powerful approach for maintaining the accuracy and relevance of AI models in rapidly changing domains, such as technology or medicine \citep{zhang2023huatuogpt,yang2023zhongjing}.
+
+\emph{(2)
+Continual SFT: }  Another strategy for enhancing the factuality of AI models. In this approach, the model is fine-tuned using labeled or annotated data specific to the domain of interest. This fine-tuning process allows the model to learn and adapt to the nuances and specifics of the domain, improving its ability to provide accurate and contextually relevant information. It can be particularly useful in applications where access to domain-specific labeled data is available over time, such as in the case of legal databases, medical records, or financial reports \citep{bao2023disc,li2023chatdoctor}.
+
+\emph{(3) Train From Scratch:} It involves starting the learning process with minimal prior knowledge or pretraining. This approach can be likened to teaching a machine learning model with a blank slate. While it may not have the advantage of leveraging pre-existing knowledge, training from scratch can be advantageous when dealing with completely new domains or tasks where there is limited relevant data available. It allows the model to build its understanding from the ground up, although it may require substantial computational resources and time \citep{ross2022large,venigalla2022biomedlm}.
+
+\emph{ (4)
+External knowledge:} involves augmenting a language model's internal knowledge with information from external sources. This method allows the model to access databases, websites, or other structured data repositories to verify facts or gather additional information when responding to user queries. By integrating external knowledge, the model can enhance its fact-checking capabilities and provide more accurate and contextually relevant answers, especially when dealing with dynamic or rapidly changing information. Below, we introduce these methods \citep{wang2023augmenting,fan2023grammargpt}.
+
+For each Domain-specific LLM, we list its respective enhancement methods, which are presented in Table \ref{tab:domain_llms}.
+
+
+\subsection{Healthcare domain-enhanced LLMs} 
+% \wjd{I think this part is too long since we spend 1 paragraph to introduce each work. Can we try to merge similar work and save more space? R: We will simplify the statements and join the similar ones.}
+These LLMs have emerged as powerful tools in the medical field, offering a diverse range of capabilities. These models, such as CohortGPT\citep{guan2023cohortgpt}, ChatDoctor\citep{li2023chatdoctor}, DeID-GPT\citealp{liu2023deid}, BioMedLM\citealp{venigalla2022biomedlm}, DoctorGLM\citealp{DoctorGLM}, MedChatZH\citealp{tan2023medchatzh}, BioGPT\citep{luo2022biogpt}, GeneGPT\citep{jin2023genegpt}, Almanac\citep{hiesinger2023almanac}, and MolXPT\citep{liu2023molxpt}, harness the potential of LLMs to revolutionize healthcare. They are equipped with features like classifying unstructured medical text into disease labels, improving performance with knowledge graphs and sample selection strategies, fine-tuning on large datasets of patient-doctor dialogues, enabling automatic medical text de-identification, excelling in medical question-answering tasks, handling traditional Chinese medical question-answering, and outperforming in various biomedical NLP tasks. Some models interact with web APIs for genomics questions, while others specialize in clinical guidelines and treatment recommendations. These LLMs not only demonstrate state-of-the-art performance on healthcare domain but also emphasize the importance of domain-specific training and evaluation, showcasing their potential in transforming healthcare and clinical decision-making.
+
+
+\citet{zhang2023huatuogpt} present HuatuoGPT, a medical language model that uses data from ChatGPT and doctors, resulting in state-of-the-art performance in medical consultations. It is based on Baichuan-7B and Ziya-LLaMA-13B-Pretrain-v1, continually pre-trained on both distilled data (from ChatGPT) and real-world data (from Doctors). 
+
+Likewise, \citet{yang2023zhongjing} introduce Zhongjing, the first Chinese medical language model based on LLaMA, which utilizes a comprehensive training pipeline and a multi-turn medical dialogue dataset. Specifically, it is enhanced with a multi-turn medical dialogue dataset called CMtMedQA, consisting of 70,000 authentic doctor-patient dialogues, enabling complex dialogue and proactive inquiry. The backbone model used is Ziya-LLaMA-13B-v1, and the evaluation dataset is CMtMedQA and huatuo-26M~\citep{li2023huatuo}. 
+
+\citet{wang2023augmenting}
+unveil a system, LLM-AMT, that improves large-scale language models like GPT-3.5-Turbo and LLaMA-2-13B  with medical textbooks, notably enhancing open-domain medical question-answering tasks. At the same time, the external knowledge source is a Hybrid Textbook Retriever comprising 51 textbooks from the MedQA dataset and Wikipedia.
+
+% Conversely, \citet{mahjour2023designing} use ChatGPT to automatically generate reaction arrays for common chemical synthesis reactions, with successful experimental results. Introducing the MoLFormer, \citet{ross2022large} present a transformer encoder model that outperforms existing models in molecular property prediction tasks. It is pre-trained on 1.1 billion unlabelled molecules from PubChem and ZINC datasets. 
+
+\citet{bao2023disc} present DISC-MedLLM, a solution that uses LLMs to provide accurate medical responses in conversational healthcare services, utilizing strategies like medical knowledge graphs, real-world dialogue reconstruction, and human-guided preference rephrasing to create high-quality SFT datasets, applied on Baichuan-13B-Base. The paper uses various datasets for fine-tuning, including Re-constructed AI Doctor-Patient Dialogue, MedDialog, cMedQA, Knowledge Graph QA pairs (CMeKG), Behavioral Preference Dataset (Manual selection), MedMCQA, MOSS6, and Alpaca-GPT.
+
+Similarly, \citet{guan2023cohortgpt} introduce CohortGPT, a model that uses LLMs for participant recruitment in clinical research by classifying complex medical text into disease labels. CohortGPT enhances ChatGPT performance with the use of a knowledge graph as auxiliary information and a CoT sample selection strategy. The tasks involve IU-RR (Preparing a collection of radiology examinations for distribution and retrieval) and MIMIC-CXR (Mimic-cxr, a de-identified publicly available database of chest radiographs with free-text reports). \citet{li2023chatdoctor} introduce ChatDoctor, a refined LLaMA-based model. It is fine-tuned using a dataset of 100,000 patient-doctor dialogues, and equipped with a self-directed information retrieval mechanism.
+
+\citet{liu2023deid} introduce DeID-GPT, a framework leveraging GPT-4 for automatic medical text de-identification. Additionally, the paper mentions the use of HIPAA identifiers as an extra knowledge source to enhance the de-identification process.
+
+\citet{venigalla2022biomedlm} present BioMedLM, a domain-specific LLM trained on PubMed data, for medical QA tasks. \citet{xiong2023doctorglm} introduce DoctorGLM, a Chinese-focused language model fine-tuned for healthcare-specific tasks. Both \citet{tan2023medchatzh} and \citet{luo2022biogpt} introduce dialogue and generative Transformer language models for traditional Chinese medical question-answering and biomedical NLP tasks, respectively.
+
+\citet{jin2023genegpt} present GeneGPT, a method for teaching LLMs to answer genomics questions using NCBI Web APIs. 
+\citet{hiesinger2023almanac} introduce Almanac, a LLM with retrieval capabilities for medical guideline recommendations. Lastly, \citet{liu2023molxpt} introduce MolXPT, a unified language model adept in molecular property prediction and molecular generation.
+
+\subsection{Legal domain enhanced LLMs} These LLMs, such as LawGPT \citep{nguyen2023brief}, and ChatLaw \citep{ChatLaw}, have been fine-tuned to provide comprehensive legal assistance, from answering intricate legal queries and generating legal documents to offering expert legal advice. Leveraging extensive corpora of legal text, these models ensure context-aware and accurate responses. Moreover, their continual development involves injecting domain knowledge, designing supervised fine-tuning tasks, and incorporating retrieval modules to address issues like hallucination and ensure high-quality legal assistance. These innovations not only pave the way for more accessible and reliable legal services but also open up new avenues for research and exploration within the legal domain.
+
+
+\citet{nguyen2023brief} 
+introduce LawGPT 1.0, a fine-tuned GPT-3 language model for the legal domain to provide conversational legal assistance, including answering legal questions, generating legal documents, and offering legal advices.
+ The paper mentions the use of a large corpus of legal text for fine-tuning the model to adapt it to the legal domain.
+
+\citet{savelka2023explaining}
+ evaluate the performance of GPT-4 in generating explanations of legal terms in legislation, comparing a baseline approach to an augmented approach that uses a legal information retrieval module to provide context from case law, revealing improvements in quality and addressing issues of factual accuracy and hallucination.
+
+
+\citet{huang2023lawyer} address the challenge of enhancing LLMs like LLaMA for domain-specific tasks, particularly in the legal domain, by injecting domain knowledge during continual training, designing appropriate supervised finetune tasks and incorporating a retrieval module to improve factuality during text generation. They release their data and model for further research in Chinese legal tasks.
+
+
+\citet{cui2023chatlaw} introduce ChatLaw, an open-source legal LLM, designed for the Chinese legal domain. The paper introduces a method to improve model factuality during data screening, and a self-attention method for error handling.
+The paper uses various datasets for fine-tuning ChatLaw, including a collection of original legal data, data constructed based on legal regulations and judicial interpretations, and crawled real legal consultation data.
+The primary model used in this paper is Ziya-LLaMA-13B, which serves as the backbone for ChatLaw, tailored for the Chinese legal domain and optimized to handle legal questions and tasks. Additionally, the paper uses of a vector database retrieval method, keyword retrieval, and a self-attention method to enhance the model's performance in the legal domain.
+
+
+
+\subsection{Finance Domain-enhanced LLMs} These LLMs combine sophisticated language models designed specifically for commercial and financial tasks to deliver robust processing capabilities. They focus on creating tailor-made solutions optimized for both financial text analysis and e-commerce settings, trained on datasets containing myriad business-related tasks and copious financial tokens. They are designed to perform a plethora of functions, ranging from understanding and generating instructions for various E-commerce assignments to identifying sentiment, recognizing named entities, and answering questions in financial contexts. The models are further fine-tuned for zero-shot generalization on diverse tasks and benchmarks. 
+
+\citet{li2023ecomgpt} introduce EcomGPT, a language model tailored for E-commerce scenarios, trained on the newly created EcomInstruct dataset, which consists of 2.5 million instruction data spanning various E-commerce tasks and data types.
+The dataset covers product information, user reviews, and more. It defines atomic tasks and Chain-of-Task tasks to enable comprehensive training for E-commerce scenarios.
+The backbone model used is BLOOMZ, which is fine-tuned with the EcomInstruct dataset. The evaluation dataset includes 12 tasks, encompassing classification, generation, extraction, and other E-commerce-related tasks.
+
+
+\citet{BloombergGPT} introduce BloombergGPT, a specialized 50 billion-parameter language model for the financial domain, trained on a massive 363 billion token dataset, which combines Bloomberg's extensive financial data sources with general-purpose datasets.
+ The dataset used in this paper is an extensive 363 billion token dataset, which includes a significant portion of financial data from Bloomberg's sources (51.27\% of the training data).
+  BloombergGPT is based on a decoder-only causal language model architecture known as BLOOM. The evaluation includes various financial NLP tasks such as sentiment analysis, named entity recognition, binary classification, and question answering.
+  
+% \citep{leippold2023sentiment}
+
+% \citep{yang2023large}
+% \citep{biswas2023potential}
+\subsection{Other Domain-Enhanced LLMs}
+
+\paragraph{Geoscience and  Environment domain-enhanced LLMs} are expertly designed, leveraging vast corpora to provide precise and robust results pertaining to geoscience and renewable energy. K2, a trailblazer in geoscience LLM, was trained on a massive geoscience text corpus and further refined using the GeoSignal dataset. Meanwhile, the HouYi model, another pioneering LLM focusing on renewable energy, harnessed the Renewable Energy Academic Paper dataset, containing over a million academic literature sources. These LLMs are fine-tuned to deliver adept performance in their respective fields, showing substantial capabilities in aligning their responses with user queries and renewable energy academic literature. 
+
+\citet{deng2023learning}
+ introduce K2, the first LLM designed specifically for geoscience, which is a LLaMA-7B continuously trained on a 5.5 billion token geoscience text corpus and fine-tuned using the GeoSignal dataset.
+ The paper also presents resources like GeoSignal, a geoscience instruction tuning dataset, and GeoBench, the first geoscience benchmark for evaluating LLMs in the context of geoscience.
+ 
+\citet{bai2023houyi} present the development of the HouYi model, the first LLM specifically designed for renewable energy, utilizing the newly created Renewable Energy Academic Paper (REAP) dataset, which contains over 1.1 million academic literature sources related to renewable energy, and the HouYi model is fine-tuned based on general LLMs such as ChatGLM-6B.
+
+\citet{bi2023oceangpt} present OceanGPT, the first-ever LLM in the ocean domain, which is expert in various ocean science tasks. They also propose  a novel framework called DoInstruct to automatically obtain a large volume of ocean domain data.  OceanGPT is evaluated in OceanBench and  shows a higher level of knowledge expertise for oceans science tasks.
+
+\paragraph{Education domain-enhanced LLMs} are used for assisting education scenarios. An example is GrammarGPT \citep{fan2023grammargpt}, which provides an innovative approach to language learning, particularly focusing on error correction in Chinese grammar. It is an open-source LLM designed for native Chinese grammatical error correction, which leverages a hybrid dataset of ChatGPT-generated and human-annotated data, along with heuristic methods to guide the model in generating ungrammatical sentences. The backbone model used is phoenix-inst-chat-7b.
+
+\paragraph{Food domain-enhanced LLMs} are language models specifically designed to meet the distinct requirements of food testing protocols. For example, \citet{qi2023foodgpt} introduce FoodGPT, a LLM for food testing that incorporates structured knowledge and scanned documents using an incremental pre-training approach, with a focus on addressing machine hallucination by constructing a knowledge graph as an external knowledge base, utilizing the Chinese-LLaMA2-13B as the backbone model and collecting food-related data for training.
+
+
+\paragraph{Home renovation domain-enhanced LLMs} are domain-specific language models tailored for home renovation tasks. For example, 
+ \citet{wen2023chathome} introduce ChatHome, which uses a dual-pronged methodology involving domain-adaptive pretraining and instruction-tuning on an extensive dataset comprising professional articles, standard documents, and web content relevant to home renovation. The backbone model is Baichuan-13B, and the evaluation datasets include C-Eval, CMMLU, and the newly created "EvalHome" domain dataset, while the fine-tuning data sources encompass National Standards, Domain Books, Domain Websites, and WuDaoCorpora.
+

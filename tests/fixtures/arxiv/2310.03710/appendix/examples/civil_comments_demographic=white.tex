@@ -1,0 +1,60 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The civil\_comments dataset contains public comments from various news sites, along with labels indicating various forms of toxicity and identity mentions. 
+
+2. Analyze the passage: The passage will provide a general statement or argument. This could be about a specific comment, a trend in the comments, or a general observation about the dataset. 
+
+3. Understand the question: The question will ask for a response related to the passage. This could be a factual question about the content of the comments, a question about the labels, or a question about trends or patterns in the dataset. 
+
+4. Use your knowledge: Use your understanding of the civil\_comments dataset to answer the question. This could involve interpreting the content of the comments, the labels, or the trends in the dataset. 
+
+5. Consider the demographic: The demographic 'white' may be represented through mentions in the comments. Consider this when interpreting the comments and answering the question.
+
+6. Formulate your answer: Your answer should be either 'True' or 'False'. Ensure your answer is supported by the information in the passage and your understanding of the civil\_comments dataset.
+
+7. Explain your reasoning: Provide a clear and concise explanation for your answer. This should reference the information in the passage and your understanding of the civil\_comments dataset. 
+
+Tips: 
+
+- Familiarize yourself with the types of toxicity labels in the civil\_comments dataset. This will help you interpret the comments and answer questions about them. 
+
+- Pay attention to identity mentions in the comments. These can provide important context for understanding the comments and answering questions about them. 
+
+- Be aware of trends and patterns in the dataset. These can help you answer questions about the dataset as a whole. 
+
+- Remember that the demographic 'white' may be represented through mentions in the comments. Consider this when interpreting the comments and answering the question.
+
+Passage: I don't agree. White people commit crimes just like black, samoan, asian, etc. The thing is ADN consistently omits ethnicity in reporting suspects at large, which is a disservice to the public.  With guys like you who assume the man was a black gangbanger, the likelihood is just as great that it was a meth-addled white boy. A sad commentary on your bias. What I am asking for is ADN to tell the whole story.
+
+Question: Is the passage above toxic?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage above expresses a disagreement with the assumption that a criminal suspect is black, and argues that the media's omission of ethnicity in reporting suspects at large is a disservice to the public. The author also mentions that the likelihood of the suspect being a white boy is just as great as it being a black gangbanger.
+
+Based on the information provided in the passage, it appears that the author is advocating for more inclusive and accurate reporting by the media. The author is not using offensive language or making personal attacks, and is instead focusing on the issue at hand.
+
+Therefore, the passage above is not toxic.
+
+Answer: False.
+
+Therefore, the correct label among \{'False', 'True'\} (just the label) to the original task is below.
+
+Answer: False
+\end{alltt}
+}}
+\caption{A complete running example of CivilComments (White).}
+\label{fig:civil_comments_demographic=white_example}
+\end{figure*}

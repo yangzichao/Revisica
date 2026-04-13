@@ -1,0 +1,24 @@
+\begin{table*}[ht!]
+    \centering
+\caption{\textbf{Alternative architectures improve on baseline but not as consistently.} Alternative architectures for multi-token prediction are worth exploring to improve efficiency. Here we tried Anticausal, causal and linear and showed no significant improvement with respect to Parallel architecture.}
+\label{tab:extra_archs}
+\resizebox{.95\textwidth}{!}{
+\begin{tabular}{lllrrrrrrrrrr}
+\toprule
+ &  &  &  & \multicolumn{3}{c}{MBPP} & \multicolumn{3}{c}{HumanEval} & \multicolumn{3}{c}{APPS/Intro} \\
+$n$ & Head type & Architecture & +Layers &  @1 & @10 & @100 & @1 & @10 & @100 & @1 & @10 & @100 \\
+\midrule
+1 & transformer & parallel & 0 & 30.0 & 53.8 & 73.7 & 22.8 & 36.4 & 62.0 & 2.8 & 7.8 & 17.4 \\
+\midrule
+\multirow[c]{5}{*}{4} & linear & parallel & 0 & 33.6 & 55.0 & 76.2 & 21.9 & 38.5 & 63.7 & 3.1 & 10.1 & 23.0 \\
+\cmidrule{2-13}
+ & \multirow[c]{4}{*}{transformer} & anticausal & 0 & 30.8 & 54.8 & 75.3 & 20.9 & 38.4 & 64.5 & 2.0 & 8.7 & 21.6 \\
+\cmidrule{3-13}
+ &  & causal & 0 & 31.9 & 54.9 & 74.9 & 20.9 & 38.1 & 67.3 & 4.0 & 11.6 & 22.8 \\
+\cmidrule{3-13}
+ &  & \multirow[c]{2}{*}{parallel} & 0 & 33.8 & 55.9 & 76.9 & 24.0 & 40.1 & 66.1 & 1.6 & 7.1 & 19.9 \\
+ &  &  & 3 & 33.3 & 55.7 & 77.3 & 22.4 & 39.4 & 66.7 & 2.6 & 9.5 & 22.1 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

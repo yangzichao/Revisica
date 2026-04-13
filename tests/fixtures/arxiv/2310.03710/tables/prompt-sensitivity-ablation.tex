@@ -1,0 +1,25 @@
+\begin{table*}[h!]
+\caption{Prompt sensitivity analysis of chain of thought reasoning of \zeroshotmid\ \method\ with Llama-2-70b-chat on AddSub. The default prompts are in bold. Higher scores are better.}
+\vskip 0.15in
+\centering
+\small
+\resizebox{0.8\linewidth}{!}{%
+\begin{tabular}{p{1.5cm}p{10cm}p{1.5cm}}
+\toprule
+CoT \hspace{5mm}Reasoning & Prompt & \hspace{-3mm}Quasi-Exact Match (\%)\\
+\midrule
+Reasoning extraction & \textbf{Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer.\textbackslash n\textbackslash nExplanation:} & \textbf{79.5} \\ \cmidrule(r){2-3}
+&Let's think step-by-step according to the instructions. End with the correct answer. Explanation:  & 77.5 \\ \cmidrule(r){2-3}
+&Let's think step-by-step according to the instructions. First, & 75.2 \\ \cmidrule(r){2-3}
+&Use the instructions to guide you towards your answer.\textbackslash nExplanation: & 79.0 \\ \cmidrule(r){2-3}
+& Explanation: & 78.5 \\
+\midrule
+Answer \hspace{5mm} extraction & \textbf{Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct. \textbackslash nAnswer:} & 79.5 \\ \cmidrule(r){2-3}
+& Therefore, the answer to the task is below.\textbackslash nAnswer: & \textbf{79.7} \\ \cmidrule(r){2-3}
+& Therefore, the answer is & 79.2 \\ \cmidrule(r){2-3}
+& Answer: & 77.7 \\
+\bottomrule
+\end{tabular}
+}
+\label{table:prompt-sensitivity-overview} 
+\end{table*}

@@ -1,0 +1,207 @@
+\documentclass[10pt,journal,compsoc]{IEEEtran}
+
+% \makeatletter
+% \renewcommand{\paragraph}[1]{%
+%   \@startsection{paragraph}{4}%
+%   {\z@}{1.25ex \@plus .2ex \@minus .2ex}{0em}%
+%   {\normalfont\normalsize}%
+%   {\textbf{#1}}%
+% }
+% \makeatother
+
+\makeatletter
+\renewcommand{\paragraph}[1]{%
+\vspace{.5mm}
+\noindent\textbf{#1:}
+}
+\makeatother
+
+\ifCLASSOPTIONcompsoc
+  % The IEEE Computer Society needs nocompress option
+  % requires cite.sty v4.0 or later (November 2003)
+  \usepackage[nocompress]{cite}
+\else
+  % normal IEEE
+  \usepackage{cite}
+\fi
+
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+
+\usepackage{amsmath}
+\usepackage{acronym}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amssymb} 
+\usepackage{enumitem}
+\usepackage{adjustbox}
+
+
+\newcommand\MYhyperrefoptions{bookmarks=true,bookmarksnumbered=true,
+pdfpagemode={UseOutlines},plainpages=false,pdfpagelabels=true,
+colorlinks=true,linkcolor={black},citecolor={black},urlcolor={black},
+pdftitle={Bare Demo of IEEEtran.cls for Computer Society Journals},%<!CHANGE!
+pdfsubject={Typesetting},%<!CHANGE!
+pdfauthor={Michael D. Shell},%<!CHANGE!
+pdfkeywords={Computer Society, IEEEtran, journal, LaTeX, paper,
+             template}}%<^!CHANGE!
+\usepackage{xspace}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subfigure}
+%\usepackage{forest}
+\usepackage{url}
+\usepackage{todonotes}
+\usepackage{xcolor}
+\usepackage{comment}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{makecell}
+\usepackage{adjustbox}
+\usepackage{pifont}
+\newcommand{\wjdd}[1]{\todo[linecolor=cyan,backgroundcolor=cyan!25,bordercolor=cyan,size=\scriptsize]{(WJD): #1}}
+\newcommand{\wjd}[1]{{\color{cyan}{[(WJD): #1]}}}
+%% CUSTOM COMMANDS
+\newcommand{\llms}{LLMs\xspace}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+%%%%%%%% define tree graph %%%%%%%%%%
+\usepackage{tikz}
+\usepackage[edges]{forest}
+\definecolor{hidden-draw}{RGB}{0,0,0}
+\definecolor{hidden-pink}{RGB}{168,191,143}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\title{Survey on Factuality in Large Language Models: Knowledge, Retrieval and Domain-Specificity}
+
+
+\author{Cunxiang Wang*,
+Xiaoze Liu*, Yuanhao Yue*, % Qipeng Guo, Xiangkun Hu, 
+Xiangru Tang, Tianhang Zhang,\\ Cheng Jiayang, Yunzhi Yao, Wenyang Gao, Xuming Hu, Zehan Qi, Yidong Wang, \\Linyi Yang, Jindong Wang, Xing Xie, Zheng Zhang,
+        Yue Zhang
+        % <-this % stops a space
+\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem The first three authors contribute equally.
+\IEEEcompsocthanksitem Cunxiang Wang (wangcunxiang@westlake.edu.cn), Wenyang Gao, Yidong Wang, Linyi Yang and Yue Zhang are with Westlake University, Hangzhou, China.
+\IEEEcompsocthanksitem Xiaoze Liu is with Purdue University, IN, USA.
+\IEEEcompsocthanksitem Yuanhao Yue is with Fudan Univerisity, Shanghai, China.
+\IEEEcompsocthanksitem Xiangru Tang is with Yale University, CT, USA.
+% \IEEEcompsocthanksitem Qipeng Guo, Xiangkun Hu and Zheng Zhang are with Amazon AWS AI Lab, Shanghai, China.
+\IEEEcompsocthanksitem Tianhang Zhang is with Shanghai Jiao Tong University, Shanghai, China.
+\IEEEcompsocthanksitem Cheng Jiayang is with the Hong Kong University of Science and Technology, Hong Kong SAR, China.
+\IEEEcompsocthanksitem Cunxiang Wang, Wenyang Gao and Yunzhi Yao are with Zhejiang University, Hangzhou, China.
+\IEEEcompsocthanksitem Xuming Hu and Zehan Qi are with Tsinghua University, Beijing, China.
+\IEEEcompsocthanksitem Jindong Wang and Xing Xie are with Microsoft Research, Beijing, China.
+\IEEEcompsocthanksitem Zheng Zhang is with NYU Shanghai University, Shanghai, China.
+\IEEEcompsocthanksitem Correspondence to: Yue Zhang (zhangyue@westlake.edu.cn).}% <-this % stops a space
+%\thanks{Manuscript received April 19, 2005; revised August 26, 2015.}
+}
+
+% The paper headers
+\markboth{Preprint}%
+{Shell \MakeLowercase{\textit{et al.}}: Bare Advanced Demo of IEEEtran.cls for IEEE Computer Society Journals}
+
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+
+\end{abstract}
+
+% Note that keywords are not normally used for peerreview papers.
+\begin{IEEEkeywords}
+Large language Models, Factuality, Knowledge, Retrieval, Domain-Specificity, Evaluation, Enhancement
+\end{IEEEkeywords}}
+
+
+% make the title area
+\maketitle
+
+
+\IEEEdisplaynontitleabstractindextext
+
+\IEEEpeerreviewmaketitle
+
+
+
+\begin{figure*}
+    \centering
+        \begin{adjustbox}{width=\textwidth}
+            \begin{forest}
+                [
+                    [Left Child]
+
+                ]
+            \end{forest}
+        \end{adjustbox}
+    \end{figure*}
+
+
+% \begin{figure*}
+%         \centering
+%         \begin{adjustbox}{width=\textwidth}
+%             \begin{forest}
+%                 [
+%                     [Left Child]
+%                     [Right Child]
+%                 ]
+%             \end{forest}
+%         \end{adjustbox}
+%     \end{figure*}
+
+% \appendices
+% \section{Proof of the First Zonklar Equation}
+% Appendix one text goes here.
+
+% % you can choose not to have a title for an appendix
+% % if you want by leaving the argument blank
+% \section{}
+% Appendix two text goes here.
+
+
+
+
+% \section*{Acknowledgments}
+% The authors would like to thank...
+
+
+% Can use something like this to put references on a page
+% by themselves when using endfloat and the captionsoff option.
+\ifCLASSOPTIONcaptionsoff
+  \newpage
+\fi
+
+% \bibliographystyle{apalike} 
+\bibliographystyle{acl_natbib} 
+\bibliography{references, references_domain}%, references_web, references_metrics, references_enhancement}
+% biography section
+% 
+
+
+
+% that's all folks
+\end{document}
+
+

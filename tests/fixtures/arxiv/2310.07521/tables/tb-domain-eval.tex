@@ -1,0 +1,103 @@
+\begin{table*}[]\small
+\centering
+\caption{Benchmarks for domain-specific factuality evaluation. The table presents the domain, tasks, datasets, and the LLMs evaluated in the respective study.}
+\vspace{-2mm}
+\label{tab:domain-eval}
+\begin{adjustbox}{max width=\textwidth}
+  \setlength{\tabcolsep}{2mm}
+{
+\begin{tabular}{lllll}
+\toprule
+Reference &
+  Domain &
+  Task &
+  Metrics &
+  %Human &
+  Evaluated LLMs \\
+  \midrule FLARE \citep{xie2023pixiu} &
+  Finance  &
+  \begin{tabular}[c]{@{}l@{}}Sentiment analysis, \\ News headline classification \\ Named entity recognition \\ Question answering \\ Stock movement prediction\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}F1, ACC,\\Avg F1, \\ Entity F1, \\ EM, MCC\end{tabular} &
+  %\checkmark &
+  \begin{tabular}[c]{@{}l@{}}GPT-4 , \\ BloombergGPT, \\  FinMA-(7B, 30B, 7B-full), \\ Vicuna-7B \end{tabular}\\
+   \midrule EcomInstruct \citep{li2023ecomgpt} & Finance  
+   & 134 E-com tasks
+   & \begin{tabular}[c]{@{}l@{}} Micro-F1, \\Macro-F1, \\
+  ROUGE\end{tabular}
+   & \begin{tabular}[c]{@{}l@{}}BLOOM, BLOOMZ,\\ ChatGPT, EcomGPT\end{tabular}
+   \\
+   \midrule CMB \citep{wang2023cmb} &
+  Medicine &
+  Multi-Choice QA &
+  ACC &
+  \begin{tabular}[c]{@{}l@{}}GPT-4, ChatGLM2-6B,\\ ChatGPT, DoctorGLM,\\ Baichuan-13B-chat,\\ HuatuoGPT, MedicalGPT,\\ ChatMed-Consult,\\ ChatGLM-Med ,\\ Bentsao, BianQue-2\end{tabular} \\
+   \midrule Huatuo-26M \citep{li2023huatuo} &
+Medicine & Generative-QA
+    &
+  \begin{tabular}[c]{@{}l@{}}BLEU, \\ROUGE, \\ GLEU\end{tabular} &
+  T5, GPT2 \\
+   \midrule NCBI \citep{jin2023genegpt} &
+  Medicine &
+  \begin{tabular}[c]{@{}l@{}}Nomenclature, \\ Genomic location, \\
+  Functional analysis, \\
+  Sequence alignment \end{tabular} &
+  ACC & 
+   \begin{tabular}[c]{@{}l@{}}GPT-2, BioGPT, \\
+   BioMedLM, 
+   GPT-3, \\
+   ChatGPT, New Bing
+   \end{tabular} \\
+   \midrule LegalBench \citep{guha2023legalbench} &
+  Law &
+  \begin{tabular}[c]{@{}l@{}}Issue-spotting,  \\
+  Rule-recall, \\
+  Rule-application, \\ Rule-conclusion,
+  \\
+  Interpretation,
+  \\
+  Rhetorical-understanding
+  \end{tabular}  &
+  \begin{tabular}[c]{@{}l@{}} 
+          ACC, EM
+   \end{tabular}
+  & 
+   \begin{tabular}[c]{@{}l@{}}
+   GPT-4, GPT-3.5, \\
+   Claude-1, Incite, OPT\\
+   Falcon, LLaMA-2, FLAN-T5...
+   \end{tabular} \\
+   \midrule 
+   LawBench \citep{fei2023lawbench} &
+  Law &
+  \begin{tabular}[c]{@{}l@{}}Legal QA, NER, \\
+  Sentiment Analysis, \\
+  Reading Comprehension
+  \end{tabular}  &
+  \begin{tabular}[c]{@{}l@{}} 
+         F1, ACC,\\
+        ROUGE-L,\\
+         Normalized \\log-distance	...
+   \end{tabular}
+  & 
+   \begin{tabular}[c]{@{}l@{}}GPT-4,\\ 
+   ChatGPT, \\
+   InternLM-Chat,\\
+   StableBeluga2...
+   \end{tabular} \\
+   \midrule 
+   OceanBench \citep{bi2023oceangpt} &
+  Geoscience &
+  \begin{tabular}[c]{@{}l@{}}15  ocean-\\related tasks
+  \end{tabular}  &
+  \begin{tabular}[c]{@{}l@{}} 
+         ACC
+   \end{tabular}
+  & 
+   \begin{tabular}[c]{@{}l@{}}GPT-4
+   \end{tabular} \\
+  \bottomrule
+\end{tabular}
+}
+\end{adjustbox}
+
+\end{table*}

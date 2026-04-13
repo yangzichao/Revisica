@@ -1,0 +1,160 @@
+%---------------------------------------------
+\section{Experiment}
+\label{sec:experiment}
+%---------------------------------------------
+
+\subsection{Implementation Details}
+Our development is based on the open-source T2V model VideoCrafter~\cite{chen2023videocrafter1} (@$256\times 256$ resolution) and T2I model Stable-Diffusion-v2.1 (SD)~\cite{rombach2022high}. We firstly train $\mathcal{P}$ and the newly injected image cross-attention layers based on SD, with 1000K steps on the learning rate $1\times 10^{-4}$ and valid mini-batch size 64. Then we replace SD with VideoCrafter and further fine-tune $\mathcal{P}$ and spatial layers with 30K steps for adaptation, and additional 100K steps with image concatenation on the learning rate $5\times 10^{-5}$ and valid mini-batch size 64. Our DynamiCrafter was trained on WebVid-10M~\cite{bain2021frozen} dataset by sampling 16 frames with dynamic FPS at the resolution of $256\times 256$ in a batch. At inference, we adopt DDIM sampler~\cite{song2021denoising} with multi-condition classifier-free guidance~\cite{ho2022classifier}. Specifically, similar to video editing~\cite{esser2023structure}, we introduce two guidance scales $s_\text{img}$ and $s_\text{txt}$ to text-conditioned image animation, which can be adjusted to trade off the impact of two control signals:
+\vspace{-3mm}
+\begin{align}
+    \nonumber \mathbf{\hat{\epsilon}}_{\theta}\left(\mathbf{z}_t, \mathbf{c}_\text{img}, \mathbf{c}_\text{txt}\right) &=   \mathbf{\epsilon}_{\theta}\left(\mathbf{z}_t, \varnothing, \varnothing\right)\\ \nonumber & +s_\text{img}(\mathbf{\epsilon}_{\theta}\left(\mathbf{z}_t, \mathbf{c}_\text{img}, \varnothing\right)-\mathbf{\epsilon}_{\theta}\left(\mathbf{z}_t, \varnothing, \varnothing\right))\\ \nonumber & +s_\text{txt}(\mathbf{\epsilon}_{\theta}\left(\mathbf{z}_t, \mathbf{c}_\text{img}, \mathbf{c}_\text{txt}\right)-\mathbf{\epsilon}_{\theta}\left(\mathbf{z}_t, \mathbf{c}_\text{img}, \varnothing\right)). 
+\end{align}
+\vspace{-8mm}
+
+
+\subsection{Quantitative Evaluation}
+\paragraph{Metrics and datasets.} To evaluate the quality and temporal coherence of synthesized videos in both the spatial and temporal domains, we report Fr\'echet Video Distance (FVD)~\cite{unterthiner2019fvd} as well as Kernel Video Distance (KVD)~\cite{unterthiner2019fvd}.
+Following~\cite{zhou2022magicvideo,blattmann2023align}, we evaluate the zero-shot generation performance of all the methods on UCF-101~\cite{soomro2012ucf101} and MSR-VTT~\cite{xu2016msr}.  
+To further investigate the perceptual conformity between the input image and the animation results, we introduce Perceptual Input Conformity (PIC), which is computed by $\frac{1}{L}\sum_l (1-D(\mathbf{x}^\text{in},\mathbf{x}^l))$, where $\mathbf{x}^\text{in},\mathbf{x}^l$, $L$ are the input image, video frames, and video length, respectively, and we adopt the perceptual distance metric DreamSim~\cite{fu2023dreamsim} as the distance function $D(\cdot,\cdot)$.
+We evaluate each error metric at the resolution of $256\times 256$ with 16 frames.
+
+
+As open-domain image animation is a nascent area of computer vision, there are limited publicly available research works for comparison. We evaluate our method against VideoComposer~\cite{wang2023videocomposer} and I2VGen-XL~\cite{I2VGen-XL}, with the quantitative results presented in Table~\ref{tab:i2v_quan}. According to the results, our proposed method significantly outperforms previous approaches in all evaluation metrics, except for KVD on UCF-101, thanks to the effective dual-stream image injection design for fully exploiting the video diffusion prior.
+
+\begin{table}[t]
+  \caption{Quantitative comparisons with state-of-the-art open-domain image-to-video generation methods on UCF-101 and MSR-VTT for the zero-shot setting.}%%%\vspace{-0.5em}
+  \label{tab:i2v_quan}
+  \vspace{-0.8em}
+\resizebox{\linewidth}{!}{
+  \setlength{\tabcolsep}{2.7pt}
+  \centering
+  \begin{tabular}{lcccccc}
+  \toprule
+    \multirow{2}{*}{Method}  & \multicolumn{3}{c}{UCF-101}  & \multicolumn{3}{c}{MSR-VTT} \\
+    \cmidrule(lr){2-4}\cmidrule(lr){5-7}
+     &FVD $\downarrow$ & KVD $\downarrow$ &PIC $\uparrow$ &FVD $\downarrow$ & KVD $\downarrow$ &PIC $\uparrow$\\
+    \midrule
+    VideoComposer &576.81 &65.56 &0.5269 &377.29 &26.34 &0.4460\\ 
+    I2VGen-XL    &571.11 &\best{58.59} &0.5313 &289.10 &14.70 &0.5352\\
+    \rowcolor{Gray}
+    Ours          &\best{429.23} &62.47 &\best{0.6078} &\best{234.66} &\best{13.74} &\best{0.5803}\\
+    % true &\ding{51} false:\ding{55} 
+  \bottomrule
+  \end{tabular}
+}
+%%%
+\vspace{-4mm}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Qualitative Evaluation}
+ In addition to the aforementioned approaches, we include two more proprietary commercial products, \ie, PikaLabs~\cite{PikaLabs} and Gen-2~\cite{Gen-2}, for qualitative comparison. Note that the results we accessed on Nov. 1$^{\text{st}}$,~2023 might differ from the current product version due to rapid version iterations. Figure~\ref{fig:qualitative} presents the visual comparison of image animation results with various content and styles. Among all compared methods, our approach generates temporally coherent videos that adhere to the input image condition. In contrast, VideoComposer struggles to produce consistent video frames, as subsequent frames tend to deviate from the initial frame due to inadequate semantic understanding of the input image. I2VGen-XL can generate videos that semantically resemble the input images but fails to preserve intricate local visual details and produce aesthetically appealing results. As commercial products, PikaLabs and Gen-2 can produce appealing high-resolution and long-duration videos. However, Gen-2 suffers from sudden content changes (the `Windmill' case) and content drifting issues (`The Beatles' and `Girl' cases). PikaLabs tends to generate still videos with less dynamic and exhibits blurriness when attempting to produce larger dynamics (`The Beatles' case). It is worth noting that our method allows dynamic control through text prompts while other methods suffers from neglecting the text modality (\eg, \emph{talking} in the `Girl' case). More videos are provided in the \emph{Supplement}.
+
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+  \caption{User study statistics of the preference rate for Motion Quality (M.Q.) \& Temporal Coherence (T.C.), and selection rate for visual conformity to the input image (I.C.=Input Conformity).}
+  \vspace{-0.8em}
+  \label{tab:user_study}
+\resizebox{\linewidth}{!}{
+  \setlength{\tabcolsep}{2.1pt}
+  \centering
+  \begin{tabular}{lcccca}
+  \toprule
+    \multirow{2}{*}{Property} &\multicolumn{2}{c}{Proprietary} & \multicolumn{3}{c}{Open-source} \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-6}
+    & PikaLabs&Gen-2& VideoComposer & I2VGen-XL   & \mc{1}{\multirow{1}{*}{Ours}} \\
+    \midrule
+    M.Q. $\uparrow$& 28.60\%& 22.91\%&  2.09\%&  7.56\%& \best{38.84}\%\\
+    T.C. $\uparrow$& 32.09\%& 26.05\%&  2.21\%&  6.51\%& \best{33.14}\%\\
+    I.C. $\uparrow$&  79.07\%& 64.77\%& 18.14\%& 15.00\%& \best{79.88}\%\\
+  \bottomrule
+  \end{tabular}
+}
+\vspace{-4mm}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-4mm}
+\paragraph{User study.}
+We conduct a user study to evaluate the perceptual quality of the generated images. 
+The participants are asked to choose the best result in terms of motion quality and temporal coherence, and to select the results with good visual conformity to the input image for each case. The statistics from 49 participants' responses are presented in Table~\ref{tab:user_study}. Our method demonstrates significant superiority over other open-source methods. Moreover, our method achieves comparable performance in terms of temporal coherence and input conformity compared to commercial products, while exhibiting superior motion quality.
+
+
+
+\subsection{Ablation Studies}
+\label{subsec:ablation}
+\paragraph{Dual-stream image injection.} To investigate the roles of each image conditioning stream, we examine two variants: \textbf{i). Ours w/o ctx}, by removing the context conditioning stream, \textbf{ii). Ours w/o VDG}, by removing the visual detail guidance stream. Table~\ref{tab:ablation_1} presents a quantitative comparison between our full method and these variants. 
+%
+The performance of `w/o ctx' declines significantly due to its inability to semantically comprehend the input image without injection of rich-context representation, leading to temporal inconsistencies in the generated videos (see the 2nd row in Figure~\ref{fig:ablation1}).
+%
+Although removing the VDG (w/o VDG) can yield better FVD scores, it causes severe shape distortions and exhibits limited motion magnitude, as the remaining context condition can only provide semantic-level image information.
+%
+Moreover, while it achieves a higher PIC score, it fails to capture all the visual details of the input image, as evidenced by the 3rd row in Figure~\ref{fig:ablation1}.
+%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table}[t]
+  \caption{Ablation study on the dual-stream image injection and training paradigm.}%\vspace{-1em} 
+  \label{tab:ablation_1}
+  \vspace{-0.8em}
+\resizebox{\linewidth}{!}{
+  \setlength{\tabcolsep}{2.1pt}
+  \centering
+  \begin{tabular}{lacccccc}
+  \toprule
+    \multirow{2}{*}{Metric} & \mc{1}{\multirow{2}{*}{Ours}} &\multicolumn{4}{c}{Dual-stream image injection} & \multicolumn{2}{c}{Training paradigm}\\
+    \cmidrule(lr){3-6}\cmidrule(lr){7-8}
+    & \mc{1}{}& w/o ctx & w/o VDG& w/o $\lambda$ & Ours$_\text{G}$   & Ft. ent. & 1st frame \\
+    \midrule
+    FVD $\downarrow$ & 234.66& 372.80 & 159.24 &  241.38  &  286.84  & 364.11& 309.23\\
+    PIC $\uparrow$ & 0.5803& 0.4916   & 0.6945 &  0.5708  &  0.5717  &0.5564 &0.5673\\
+  \bottomrule
+  \end{tabular}
+}
+\vspace{-4mm}
+\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/ablation1.pdf}
+    \vspace{-6mm}
+    \caption{Visual comparisons of different variants of our method.}
+    \label{fig:ablation1}
+    \vspace{-5mm}
+\end{figure}
+
+We then study several key designs in the context representation stream: adaptive gating $\lambda$ and full visual tokens in CLIP image encoder.
+%
+Eliminating the adaptive gating $\lambda$ (w/o $\lambda$) leads to a slight decrease in model performance. This is because, without considering the nature of the denoising U-Net layers, context information cannot be adaptively integrated into the T2V model, resulting in shaky generated videos and unnatural motions (see the 4th row in Figure~\ref{fig:ablation1}). 
+%
+On the other hand, using a strategy (Ours$_\text{G}$) like I2VGen-XL that utilizes a single CLIP global token may generate results that are only semantically similar to the input due to the absence of full image extent. 
+%
+In contrast, our full method effectively leverages the video diffusion prior for image animation with natural motion, coherent frames, and visual conformity to the input image.
+
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/ablation2.1.pdf}
+    \vspace{-6mm}
+    \caption{Visual comparisons of the context conditioning stream learned in one-stage and our two-stage adaption strategy.}
+    \label{fig:ablation2.1}
+    \vspace{-3mm}
+\end{figure}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/ablation2.2.pdf}
+    \vspace{-6mm}
+    \caption{Visual comparisons of different training paradigms.}
+    \label{fig:ablation2.2}
+    \vspace{-4.5mm}
+\end{figure}
+
+
+
+
+\vspace{-4.5mm}
+\paragraph{Training paradigm.}
+We further examine the specialized training paradigm to ensure the model works as expectation. We firstly construct a baseline by training the context representation network $\mathcal{P}$ based on the pre-trained T2V and keeping other settings unchanged. As illustrated in Figure~\ref{fig:ablation2.1}, this baseline (one-stage) converges at a significantly slow pace, resulting in only coarse-grained context conditioning with the same optimization steps. This may potentially make it challenging for the T2V model to harmonize the dual-stream conditions after incorporating the VDG.
+
+
+After obtaining a compatible context conditioning stream $\mathcal{P}$, we further incorporate image concatenation with per-frame noise to enhance visual conformity by jointly fine-tuning $\mathcal{P}$ and \emph{spatial layers} of the T2V model. We construct a baseline by fine-tuning the entire T2V model, and the quantitative comparison in Table~\ref{tab:ablation_1} (Ft. ent.) shows that this baseline results in an unstable model that is prone to collapse, disrupting the temporal prior. Additionally, to study the effectiveness of our random selection conditioning strategy, we train a baseline (1st frame cond.) that consistently uses the first video frame as the conditional image. Table~\ref{tab:ablation_1} reveals its inferior performance in terms of both FVD and PIC, which can be attributed to the ``content sudden change" effect observed in the generated videos (Figure~\ref{fig:ablation2.2} (bottom)). We hypothesize that the model may discover a suboptimal shortcut for mapping the concatenated image to the first frame while neglecting other frames.

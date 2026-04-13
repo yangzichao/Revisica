@@ -1,0 +1,408 @@
+\section{Experimental Setup}
+\label{sec:main-experimental-setup}
+\subsection{Datasets}
+We evaluate \zeroshotmid\ \method\ on a wide selection of datasets consisting of all HELM core scenarios \citep{liang2022holistic} and all the reasoning datasets used to benchmark zero-shot CoT \citep{kojima2023large}. The datasets are listed in Table~\ref{dataset-overview}, along with their categorizations. See Figure~\ref{table:reasoning-prompts-1} for general details and \ref{sec:info-about-each-dataset} for the collection and processing of each dataset in more detail.
+
+\subsection{Models} 
+\label{sec:models}
+We focus on the following large language models:
+\begin{itemize}
+    \item Vicuna-13b \citep{vicuna2023}: A finetuned version of LLaMA-13b~\citep{touvron2023llama} which was trained on an additional 70 thousand user-shared conversations from ShareGPT~\citep{sharegpt}. Version 1.1 weight deltas were used.
+    \item Llama-2-chat \citep{touvron2023llama2}: A family of chat models based on Llama-2. Llama-2-chat was further trained using supervised finetuning, reward modeling, and reinforcement learning from human feedback, and comes in three sizes: 7b, 13b, and 70b. We focus on the 70b model, but share results from the 7b and 13b models in Figure \ref{fig:llama2chat-scaling} and Appendix \ref{sec:additional-results}.
+    \item GPT-3.5 Turbo \citep{openaichatgpt}: A finetuned version of GPT-3.5 which was further trained using reinforcement learning from human feedback. Specifically, the 0301 version was used.
+\end{itemize}
+
+\subsection{Implementation Details}
+\label{sec:implementation-details}
+
+\subsubsection{\zeroshotcap\ \method\ Details}
+\paragraph{Agent Instructions}
+We implement our agent based on LangChain's zero-shot ReAct implementation \citep{langchain, yao2023react}.
+To initiate instruction generation, we build the agent input based on basic dataset information including the name of the dataset, possible outputs (labels if applicable, else type of dataset like generation), and a few input-only examples without ground truth labels.
+We use GPT-4~\citep{openai2023gpt4} inside our agent with default temperature of 0.3 and the snapshot gpt-4-0613 when generating instructions. Given the temperature, if rerun it is not guaranteed to generate the same outputs each time, nor is there any guarantee that the same steps of our pipeline are reached. In the case that instructions were not returned, we reran the pipeline until there were valid instructions. We also reran the pipeline on a select number of datasets (\InstrReranDatasets) where the name of the dataset was unhelpful. In this case, we use an alias for the name of the dataset. Using the GPT-3.5 tokenizer (cl100k\_base), the average number of tokens in the instructions is approximately 265. Based on a rough estimate, the average number of tokens used when generating instructions is 7000 per dataset.
+Below we provide an end-to-end example for instruction generation with IMDB:
+\begin{enumerate}
+    \item We start by collecting the dataset name, input-only example, and possible outputs. On IMDB, we collect the following information:
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+dataset\_name = "IMDB"
+
+possible\_outputs = "Negative", "Positive"
+
+input\_only\_examples = [
+
+\hspace{\parindent} 1. Passage: Lemuel Gulliver (Ted Danson) is a doctor who goes missing at sea, leaving pregnant wife Mary (Mary Steenburgen) behind...
+
+\hspace{\parindent} 2. Passage: To tell you the truth, I do not speak Tamil, and I did not understand the film...
+
+\hspace{\parindent} 3. Passage: The main reason I loved this movie is because IMx (formerly Immature) were in it...
+
+\hspace{\parindent} 4. Passage: During the 13 years of schooling I had from Kindergarten through high school, there was only one day that my class took a field trip...
+
+\hspace{\parindent} 5. Passage: I'm not sure whether i like this film or not. I think it is creepy and completely weird... 
+
+] 
+\end{alltt} 
+}} 
+\end{figure*}
+    \item Next we generate an abstract prompt template from the input-only examples with a call to GPT-3.5. As a general note, the input-only examples aren’t directly used as input to our agent. Instead, they are first placed into the prompt template, using GPT-3.5. Our prompt templates can range from having the bare minimum information (e.g., “Question” and “Answer” tags and newlines only) to having some amount of content-related information like that the passage provided is a summary (see NarrativeQA prompt template). Importantly, nothing about the actual instances are needed. We use the following prompt to generate the prompt template:
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+Given the following instances from a dataset, please isolate the structure of each instance such that a general template is created. Do not include any specific information, just what each instance looks like before its specific information was filled in (the template should have empty brackets in the spots that are different for each instance). We will use this to write our own instances that must follow the same format. Remember to be as general as possible; there are likely some instances in the dataset that are quite different than the ones presented here.\textbackslash nExample Instances:\textbackslash n\textbackslash n{instances}\textbackslash n\textbackslash nFormat:"
+\end{alltt}
+}}
+\end{figure*}
+
+For IMDB, the resulting prompt template is ``\texttt{Passage: \textbackslash n\textbackslash nSentiment:}''.
+For additional context, the prompt templates for AddSub and NarrativeQA are
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+AddSub: There are [number] [object] [preposition] [location]. [Location] [verb] [object] [preposition] [location]. After [verb] [object], there are [number] [object] [preposition] [location]. How many [object] [verb] [subject] [preposition] [location]?
+\\
+\\
+NarrativeQA: “Passage: [Brief summary of the plot or topic of the passage].\textbackslash nQuestion: [Specific question about the passage].\textbackslash nAnswer: [Answer to the specific question, without any additional information].”
+\end{alltt}
+}}
+\end{figure*}
+    \item Next, we query the Bing Search API with the dataset name to retrieve the URLs of the top 5 search results:
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+\hspace{\parindent} 1. "https://www.imdb.com/interfaces/"
+
+\hspace{\parindent} 2. "https://www.kaggle.com/datasets/ashirwadsangwan/imdb-dataset"
+
+\hspace{\parindent} 3. "https://paperswithcode.com/dataset/imdb-movie-reviews"
+
+\hspace{\parindent} 4. "https://opendata.stackexchange.com/questions/1073/where-to-get-imdb-datasets"
+
+\hspace{\parindent} 5. "https://learnsql.com/blog/sql-imdb-dataset/"
+\end{alltt}
+}}
+\end{figure*}
+    \item We scrape the text of each webpage and store it in a vector database that can be queried by the agent using our “Ask\_about\_dataset” tool (QA API), using LangChain’s RetrievalQA tool\footnote{\url{https://api.python.langchain.com/en/latest/chains/langchain.chains.retrieval_qa.base.RetrievalQA.html}} and GPT-4. Since the documents are long, they are added to a vector database so they do not expand past the context length of the LLM powering the agent.
+    
+    \item We prompt the agent with the dataset name, prompt template, and possible outputs using the following prompt: 
+\begin{figure*}[h!]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+The dataset name is \{dataset\_name\}. Use your resources to ask a series of simple questions to create instructions for the dataset. These instructions will be prepended to the prompt template during inference to help a large language model answer the prompt correctly. Include detailed tips on what topics to know and steps on how to answer the questions. For each instance, the model will apply these instructions to create an explanation that guides it towards the correct answer.\textbackslash nPrompt Template (use for reference but no need to include in the instructions):\textbackslash n\{prompt\_template\}\textbackslash nPossible outputs:\textbackslash n\{possible\_outputs\}
+\end{alltt}
+}}
+\end{figure*}
+
+\newpage
+    \item Now, the agent will come up with intermediate Thought, Action, Observation steps using the “Ask\_about\_dataset” tool. On IMDB, the agent’s intermediate steps, including the queries and results to the vector database, are
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+\textbf{Thought}: I need to create instructions for the IMDb dataset. The IMDb dataset is a large database of information related to films, television programs, video games, and streaming content online. It's likely that the dataset contains information such as movie titles, genres, directors, actors, user ratings, and possibly user reviews. The prompt template suggests that the task involves determining the sentiment of a passage, which could be a movie review. The possible outputs are 'Negative' and 'Positive', indicating that the task is a binary sentiment analysis task.
+
+\textbf{Action}: Ask\_about\_dataset[What are the features and labels in the IMDb dataset?]
+
+\textbf{Observation}: The IMDb dataset consists of several subsets, each with different features:\textbackslash n\textbackslash n1. title.akas.tsv.gz: Features include titleId, ordering, title, region, language, types, attributes, isOriginalTitle.\textbackslash n\textbackslash n2. title.basics.tsv.gz: Features include tconst, titleType, primaryTitle, originalTitle, isAdult, startYear, endYear, runtimeMinutes, genres.\textbackslash n\textbackslash n3. title.crew.tsv.gz: Features include tconst, directors, writers.\textbackslash n\textbackslash n4. title.episode.tsv.gz: Features include tconst, parentTconst, seasonNumber, episodeNumber.\textbackslash n\textbackslash n5. title.principals.tsv.gz: Features include tconst, ordering, nconst, category, job, characters.\textbackslash n\textbackslash n6. title.ratings.tsv.gz: Features include tconst, averageRating, numVotes.\textbackslash n\textbackslash n7. name.basics.tsv.gz: Features include nconst, primaryName, birthYear, deathYear, primaryProfession, knownForTitles.\textbackslash n\textbackslash nIn the IMDb Movie Reviews dataset, the features are the text of the reviews and the labels are binary, indicating whether the review is positive (score \u2265 7 out of 10) or negative (score \u2264 4 out of 10).
+
+\textbf{Thought}: The IMDb dataset is quite extensive and contains a lot of information about movies, including titles, genres, directors, writers, ratings, and more. However, for the task at hand, we are interested in the IMDb Movie Reviews dataset, which contains the text of the reviews and binary labels indicating whether the review is positive or negative. The sentiment of a review is determined based on the score given by the reviewer, with scores of 7 or higher out of 10 considered positive and scores of 4 or lower considered negative. This information will be useful in creating the instructions.
+
+\textbf{Action}: Ask\_about\_dataset[Can you provide more details about the IMDb Movie Reviews dataset? Specifically, how is the sentiment of the reviews determined and how are the reviews structured?]
+
+\textbf{Observation}: The IMDb Movie Reviews dataset is a binary sentiment analysis dataset that consists of 50,000 reviews from the Internet Movie Database (IMDb). These reviews are labeled as either positive or negative. The dataset contains an even number of positive and negative reviews. \textbackslash n\textbackslash nThe sentiment of the reviews is determined based on the score given by the reviewer. Only highly polarizing reviews are considered. A review is labeled as negative if it has a score of 4 or less out of 10, and it is labeled as positive if it has a score of 7 or more out of 10. \textbackslash n\textbackslash nThe dataset does not include more than 30 reviews per movie. In addition to the labeled reviews, the dataset also contains additional unlabeled data. The structure of the reviews is not explicitly mentioned in the provided context.
+\end{alltt}
+}}
+\end{figure*}
+    \item After the agent decides it’s done, it uses the finish action and returns the final instructions. On IMDB, the instructions generated are
+\begin{figure*}[h!]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.8\textwidth}{
+\begin{alltt}
+1. Understand the Dataset: The IMDb Movie Reviews dataset contains 50,000 reviews from the Internet Movie Database (IMDb). These reviews are labeled as either positive or negative, with an even number of each. The sentiment of the reviews is determined based on the score given by the reviewer. A review is labeled as negative if it has a score of 4 or less out of 10, and it is labeled as positive if it has a score of 7 or more out of 10. The dataset does not include more than 30 reviews per movie.\textbackslash n\textbackslash n2. Analyze the Passage: Read the passage carefully. This will be a review from the IMDb dataset. Pay attention to the language used, the tone of the review, and any explicit or implicit expressions of sentiment towards the movie. \textbackslash n\textbackslash n3. Determine the Sentiment: Based on your analysis of the review, determine whether the sentiment is positive or negative. Remember that positive reviews generally contain praise for the movie, its plot, characters, cinematography, etc., and have a score of 7 or more out of 10. Negative reviews, on the other hand, generally contain criticism of the movie and have a score of 4 or less out of 10.\textbackslash n\textbackslash n4. Answer the Question: Based on your determination of the sentiment, select the appropriate output: 'Negative' or 'Positive'.\textbackslash n\textbackslash nRemember, the goal is to correctly identify the sentiment of the review based on the text provided.
+\end{alltt}
+}}
+\end{figure*}
+\end{enumerate}
+
+\input{tables/dataset-overview}
+
+\newpage
+\paragraph{Chain of Thought Reasoning}
+\label{sec:inference-setup}
+The reasoning extraction prompt of the chain of thought reasoning pipeline is in Table \ref{table:reasoning-prompts-1}. The answer extraction prompts for generation, classification (excluding multi-choice), and classification (multi-choice) datasets are in Tables~\ref{table:reasoning-prompts-generation}, \ref{table:reasoning-prompts-classification}, and \ref{table:reasoning-prompts-mc} respectively. The prompts for reasoning tasks follow the corresponding prompts of either generation or classification based on their general categorization. We take the output of the answer extraction prompt as the answer, applying parsing as dictated by the dataset. Note that for generation, we encouraged shorter answers in the answer extraction prompt due to the nature of the datasets we used. 
+\input{appendix/reasoning-prompts-1}
+\input{appendix/reasoning-prompts-generation}
+\input{appendix/reasoning-prompts-classification}
+\input{appendix/reasoning-prompts-mc}
+
+Inference requests on Vicuna and Llama-2-chat were submitted from HELM to a TorchServe API running on a local cluster containing 2 nodes, each with 8x NVIDIA RTX A6000 GPUs. As a general rule, models were loaded at the highest precision while still allowing each GPU to contain an entire copy of the full model. Llama-2-7b-chat, Llama-2-13b-chat, and Vicuna-13b were run in FP16, while Llama-2-70b-chat was quantized to NF4. NaturalQuestions (open-book), NewsQA, and QuAC runs with Llama-2-70b-chat required 2 GPUs per worker in order to handle longer sequence lengths. Inference requests on GPT-3.5 Turbo were submitted to OpenAI's API.
+
+For Llama-2-chat runs, we prepend the necessary special tokens, including an empty system message. Also, we include a special designation [\textbackslash INST] during the reasoning extraction prompt to signify the transition from User to Assistant roles. Initial experimentation with formatting revealed that Llama-2-chat was very sensitive to this designation, and would often fail to generate thoughtful reasoning steps if omitted during runs with \zeroshotmid\ \method\ or standard zero-shot CoT. We made no such User/Assistant distinction before the answer extraction prompts. For Vicuna and GPT-3.5 Turbo runs, we made no User/Assistant distinctions either, effectively treating all model input as part of the User role. Generally, we use each dataset's default generation parameters outlined in HELM. All inference was done using a temperature of 0.0, except on datasets that involved summarization, where a temperature of 0.3 was used. For the reasoning extraction prompt, we request a maximum of 512 new tokens, and for the answer extraction prompt, the number of tokens requested is specific to each dataset.
+\subsubsection{Evaluation Details}
+Each dataset uses one of the following accuracy metrics:
+\begin{itemize}
+    \item Exact Match (EM): A binary indicator that awards correctness if and only if the output exactly matches one or more of the correct references. We primarily use this metric for classification, in particular for multi-choice classification tasks.
+    \item Quasi-Exact Match (QEM): A more lenient version of Exact Match which awards correctness if the output text matches the correct reference after both have been normalized (i.e., after removing extra white space, articles, punctuation, and capitalization) \citep{choi-etal-2018-quac}. This metric is primarily used for classification tasks, as well as some generation tasks.
+    \item Quasi-Prefix Exact Match (QPEM): A more lenient version of Quasi-Exact Match that awards correctness if the normalized output begins with the normalized reference. Hence, ``Yes, Elmendorf'' would be marked correct if the reference was ``Yes''. The metric is useful on several classification tasks where the model has a tendency to generate additional tokens beyond that of the correct answer.
+    \item F1: Instead of checking for an exact match, this metric will award partial correctness for any string overlap \citep{rajpurkar-etal-2016-squad}. The metric is used for a number of question answering tasks with open-ended generation.
+    \item ROUGE-2: This metric scores correctness based on bigram overlap \citep{lin-2004-rouge}. We use ROUGE-2 as the accuracy measure for generation tasks involving summarization.
+    \item RR@10: This metric is used for MS MARCO (Regular) and it uses the reciprocal rank of the first relevant document. 
+    \item NDCG@10: This metric is used for MS MARCO (TREC) to assess the normalized discounted cumulative gain using the set of graded rankings \citep{ndcg}. 
+\end{itemize}
+
+Prior to evaluation, we often perform some post-processing to clean the generated text. On mathematical generation datasets, we parse out the first number in the output and use that for our final answer. Similarly, on classification (multi-choice) datasets, we grab the first letter in the output. Appendix \ref{sec:info-about-each-dataset} gives a compact description of each dataset, as well as the accuracy metric used, and any initial or post-processing done. These choices followed HELM or other relevant papers. 
+
+In general, we report evaluation results using the default accuracy metric outlined in HELM. For datasets with various subsets, we report the macro-average accuracy score across all subsets. Prompts, parsing techniques, and instructions were tested using 50 samples on most datasets to ensure the explanations and parsing were valid. Note that we are including these 50 samples in the full (up to) 1,000 sample evaluation, so there is a possibility of bias, especially regarding some of the smaller datasets. Note that all experiments done in this paper are the result of a single run on our pipeline. We only generate instructions once and run inference once as well due to the cost of running our models on all datasets with a high amount of samples.
+
+\subsection{Additional Information About Each Dataset}
+\label{sec:info-about-each-dataset}
+
+\input{appendix/datasets_info}
+
+\section{Additional Related Work}
+\label{sec:additional-related-work}
+
+\paragraph{Knowledge Distillation}
+Knowledge distillation in the context of LLMs aims to use the knowledge from a teacher (or powerful) model to improve the performance of a student (or smaller) model.
+\citet{cai2023large} proposes a framework that uses a more powerful model to generate Python-based tools used by a less powerful model on reasoning tasks. In our work, we follow a similar generate-then-apply approach, but have our model generate instructions instead of code, which simplifies inference and is more grounded in the base abilities of the LLM. However, in \citet{cai2023large}, they create new tools each time a new type of instance is seen, then store them to be used in the future. Our method cannot currently handle this type of in-the-wild generalization, but can be expanded in a similar way, by modifying the inference LLM to identify which task an instance belongs to, then choose from the previously generated instructions for inference.
+\citet{hsieh2023distilling} extracts step-by-step reasoning from a large model and uses it to train smaller models. We follow the same intuition, but instead of a larger model generating instance-specific step-by-step reasoning, we have the larger model generate instance-agnostic instructions that mimic how the larger model would solve the problem. Because only one instruction is needed per dataset, we do not need to learn and can instead utilize the in-context abilities of the smaller model.
+Recent work (Alpaca, Vicuna, Koala) have also shown remarkable results through knowledge distillation by training a model (LLaMA) on the outputs of a model (GPT-3.5 Turbo) \citep{alpaca2023, vicuna2023, koala2023}. We draw inspiration from these literature but instead of training focus on in-context knowledge distillation during inference.
+
+\section{Additional Results}
+\label{sec:additional-results}
+Table \ref{table:results-numerical-table} presents the results of zero-shot, zero-shot CoT, and \zeroshotmid\ \method\ on Vicuna-13b, Llama-2-70b-chat, and GPT-3.5 Turbo, as well as the smaller 7b and 13b sizes of Llama-2-chat, across \NumDatasets\ datasets and \NumSubsets\ subsets. Also, scores of task-specific models are included for comparison. If there are multiple subsets, the score of task-specific models is only given for all subsets on average, not for individual subsets. Figure \ref{table:main-results-table} plots the results for each dataset on Vicuna-13b, Llama-2-70b-chat, and GPT-3.5 Turbo, and Table \ref{table:result-breakdown} gives the average for each of the five models on each task category. Similar to our three main models, Llama-2-7b-chat and Llama-2-13b-chat with \zeroshotmid\ \method\ outperform both zero-shot and zero-shot CoT, on average, in each category of tasks.
+
+
+\input{tables/dataset_results}
+
+\input{tables/main_results}
+
+\input{tables/result-breakdown-921}
+
+\clearpage
+
+\section{Additional Result Analysis}
+\subsection{Additional Descriptions of Ablation Study}
+\label{sec:table1-clarifications}
+\begin{itemize}
+    \item w/o Agent Instructions: We compare the zero-shot AgentInstruct methodology to zero-shot CoT. This setting is exactly zero-shot CoT on Llama-2-70b-chat.
+    \item w/o Input Examples: We remove the examples from the input to the agent. Typically, the agent is given 5 input-only examples to reference when generating the instructions. These examples do not include the ground truth answers. In this setting, we have the agent generate instructions without providing example inputs to the agent. 
+    \item w/o Label Description: We remove the description of the labels from the input to the agent. Specifically, this is applicable for classification tasks such as IMDB, for example, where the expected outputs are either ‘True’ or ‘False’. For multiple-choice and open-ended generation tasks, we provide a simple description of ‘multiple choice’ or ‘generation’ instead of providing a list of output labels. With this setting, we have the agent generate instructions without providing any information or description of the output labels for any task type. An example is given in Figure~\ref{fig:full-pipeline} and Figure~\ref{fig:agent-details}.
+    \item w/o GPT-4: We use GPT-3.5 Turbo to generate the instructions instead of GPT-4. Note that we were not able to generate coherent instructions while using the same agent framework due to the model being weaker. So, instead we prompted the model to give instructions in one call without the web.
+\end{itemize}
+
+\subsection{Importance of Agent Synthesizing Instructions}
+\label{sec:comparison-against-information-baselines}
+Essentially, there are two parts to our agent: 1) Collecting the dataset information, including the name and retrieving the websites and 2) Synthesizing that information into human-understandable instructions used to guide an LLM for inference. Though more data is provided for the \method\ step over zero-shot or zero-shot CoT, the way the agent thinks through the data then formulates the instructions is crucial for increasing performance, as it allows smaller models to gain the information in a condensed, well-structured manner. Our belief is that the agent is able to better understand and integrate the dataset information into instructions for a weaker LLM, than a weaker LLM could on its own. To test this, we prepend additional information used in the instruction generation step to the zero-shot and zero-shot CoT settings, so each setting has the same amount of information. The results are below, with ``+ Data Information'' representing the associated setting when it is provided additional information about the dataset. The additional information includes the dataset name, prompt template, possible outputs, and all the queried responses from the retrieval tool (information from the web). Results on Llama-2-70b-chat are shown in Table~\ref{table:equal-info-baselines-full}.
+\begin{table*}[h!]
+\caption{Comparison on Llama-2-70b-chat when providing the dataset information to zero-shot and zero-shot CoT.}
+\label{table:equal-info-baselines-full}
+\vskip 0.1in
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & AddSub & IMDB & NarrativeQA \\
+\midrule
+Zero-Shot & 36.2 & 43.5 & 45.9 \\
+Zero-Shot + Data Information & 65.3 & 93.4 & \textbf{69.2} \\
+Zero-Shot CoT & 73.2 & 89.0 & 62.3 \\
+Zero-Shot CoT + Data Information & 71.6 & 90.5 & 58.2 \\
+\zeroshotcap\ \method & \textbf{79.5} & \textbf{94.0} & 65.0 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+An example of the additional information provided to zero-shot and zero-shot CoT for the IMDB dataset is in Figure~\ref{fig:additional-info-imdb}.
+
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+The dataset name is imdb. Prompt Template:\textbackslash nPassage: \textbackslash n\textbackslash nSentiment:\textbackslash nPossible outputs:\textbackslash n'Negative', 'Positive'. Some additional infomation about the dataset: The IMDb dataset consists of several subsets, each with different features:\textbackslash n\textbackslash n1. title.akas.tsv.gz: Features include titleId, ordering, title, region, language, types, attributes, isOriginalTitle.\textbackslash n\textbackslash n2. title.basics.tsv.gz: Features include tconst, titleType, primaryTitle, originalTitle, isAdult, startYear, endYear, runtimeMinutes, genres.\textbackslash n\textbackslash n3. title.crew.tsv.gz: Features include tconst, directors, writers.\textbackslash n\textbackslash n4. title.episode.tsv.gz: Features include tconst, parentTconst, seasonNumber, episodeNumber.\textbackslash n\textbackslash n5. title.principals.tsv.gz: Features include tconst, ordering, nconst, category, job, characters.\textbackslash n\textbackslash n6. title.ratings.tsv.gz: Features include tconst, averageRating, numVotes.\textbackslash n\textbackslash n7. name.basics.tsv.gz: Features include nconst, primaryName, birthYear, deathYear, primaryProfession, knownForTitles.\textbackslash n\textbackslash nIn the IMDb Movie Reviews dataset, the features are the text of the reviews and the labels are binary, indicating whether the review is positive (score \u2265 7 out of 10) or negative (score \u2264 4 out of 10). The IMDb Movie Reviews dataset is a binary sentiment analysis dataset that consists of 50,000 reviews from the Internet Movie Database (IMDb). These reviews are labeled as either positive or negative. The dataset contains an even number of positive and negative reviews. \textbackslash n\textbackslash nThe sentiment of the reviews is determined based on the score given by the reviewer. Only highly polarizing reviews are considered. A review is labeled as negative if it has a score of 4 or less out of 10, and it is labeled as positive if it has a score of 7 or more out of 10. \textbackslash n\textbackslash nThe dataset does not include more than 30 reviews per movie. In addition to the labeled reviews, the dataset also contains additional unlabeled data. The structure of the reviews is not explicitly mentioned in the provided context.
+\end{alltt}
+}}
+\caption{Additional information provided for the IMDB dataset.}
+\label{fig:additional-info-imdb}
+\end{figure*}
+
+
+On these datasets, we see \method\ continues to perform better than zero-shot CoT, meaning our method is able to successfully synthesize the information into the instructions in a way that is more useful to guide the reasoning steps than just putting the information in alone. Including information boosts zero-shot performance, but \method\ still wins on all but one of the datasets. In the future, we can also do experiments with instructions but without reasoning steps (based the zero-shot setting, not zero-shot CoT) to see if \method\ retains its performance boost, and can do better on that dataset. However, our main focus is on guiding reasoning steps. It is clear that \method\ offers a substantial improvement over zero-shot CoT, even when additional information is present. In fact, on zero-shot CoT we see decreases in performance on two datasets, AddSub and NarrativeQA, further exemplifying the importance in the structure of our instructions through our agent, as opposed to inclusion of additional information alone, which may be seen as noise.
+
+\subsection{Manual Prompt Sensitivity}
+\label{sec:prompt-sensitivity-1}
+In Table~\ref{table:prompt-sensitivity-overview}, we tested various manual prompts on Llama-2-70b-chat on AddSub. In Table~\ref{table:prompt-sensitivity-overview-appendix}, we focus on formatting, specifically whether the instruction should appear before or after the instance. Again, the difference is minor suggesting that the methodology behind \zeroshotmid\ \method\ is robust.
+
+\begin{table*}[h]
+\caption{Prompt sensitivity analysis on Llama-2-70b-chat on AddSub.}
+\label{table:prompt-sensitivity-overview-appendix}
+\vskip 0.1in
+\centering
+\small
+\begin{tabular}{p{1.5cm}p{4cm}p{2cm}}
+\toprule
+CoT\hspace{5mm}Reasoning & Prompt & Quasi-Exact Match (\%) \\
+\midrule
+Format & \textbf{Instruction $->$ Instance} & 79.5 \\ \cmidrule(r){2-3}
+& Instance $->$ Instruction & \textbf{80.0} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Error Analysis}
+\label{sec:error-analysis}
+Overall errors by error type are in Table~\ref{table:error-analysis-reasoning}.
+\begin{figure}[h]
+    \captionof{table}{Error analysis for zero-shot \method\ Llama-2-70b-chat on AddSub, IMDB, and NewsQA.
+    }
+    \label{table:error-analysis-reasoning}    
+    \vskip 0.1in
+\centering
+    \small
+    \resizebox{0.48\linewidth}{!}{%
+    \begin{tabular}{llc}
+    \toprule
+     & Error Type & \multicolumn{1}{c}{Percentage}\\
+    \midrule
+    Reasoning & Incorrect reasoning & 32.0 \\
+    & Not factual & 12.0 \\
+    Answer & Ambiguity & 22.7 \\
+    & Invalid label & 14.7 \\    
+    & Short answer & 10.6 \\   
+    & Incorrect format & 8.0 \\
+    \bottomrule
+    \end{tabular}
+    }
+\end{figure}
+
+\paragraph{Further Description of Errors} We provide more specific errors for each dataset in Table~\ref{table:error-analysis-reasoning-by-dataset}, accounting for all instances in the 25 samples of AddSub, IMDB, and NewsQA respectively.
+\input{tables/error-analysis-reasoning-by-dataset}
+
+Moreover, for each error category, we provide an example in Table \ref{appendix:error-analysis-examples}. Note that we do not include NewsQA examples due to the dataset's restrictive license. 
+
+\paragraph{Summarization Datasets}
+For each model, \zeroshotmid\ \method\ tends to lose on summarization datasets. So, we select 25 random instances from XSUM (with an F1 score less than 1) on Llama-2-70b-chat and find summarization-specific error cases.
+
+In all but one of the instances, the summary extracted using the answer extraction prompt was not the same summary given after the reasoning extraction prompt. It was often kept around the same length but reworded or changed to contain somewhat different information from the first summary. This suggests that for the answer extraction prompt, the LLM still feels the need to write a new summary instead of relying entirely on the one generated during its intermediate reasoning steps.
+
+We identify four summaries given by \zeroshotmid\ \method\ with incorrect information and three others that are satisfactory but a little misleading, which could be due to the intermediate reasoning steps reinforcing incorrect answers.
+However, the remaining summaries all seem informative, sometimes more so than the references.
+In fact, in four of the instances, the reference summary seems to be based on the full article, not the part of the article presented in the implementation from HELM, which poses a problem for evaluation. Additionally, traditional metrics used for summarization (F1, ROUGE-2) are not able to gauge truthfulness when a reference summary is flawed (e.g., a summary hallucinating a part of the article could beat one that is truthful but less similar to a reference).
+
+\newpage
+\input{appendix/error-analysis-examples}
+
+\paragraph{Agent Instruction Issues}
+
+\input{appendix/instruction-analysis}
+In Table \ref{table:instruction-analysis}, we list all the main datasets where the QA API was not able to gain any relevant information about the task. 
+
+When relevant information was found, note that there is a possibility of leakage from the web search. When we manually analyze the intermediate steps during instruction generation, we find that the model sees instances from at least OpenBookQA, NarrativeQA (abbreviated), RAFT -- Banking 77, CNN/Daily Mail. However, AgentInstruct is worse on OpenBookQA, RAFT -- Banking 77, and CNN/Daily Mail for all models, and worse on NarrativeQA for 2 models, meaning these examples gave no discernible benefit to our method.
+
+% Truncated fig
+\begin{figure}[h]
+ \centering
+   \includegraphics[width=0.5\linewidth]{figures/pdfs/context_length.pdf}
+   \caption{Truncating context lengths on Llama-2-70b-chat with \zeroshotmid\ \method\ on AddSub, IMDB, and NarrativeQA.}
+   \label{fig:context-len-ablation}
+\end{figure}
+\subsection{Truncated Context Length} 
+In Figure~\ref{fig:context-len-ablation}, we test how \zeroshotmid\ \method\ performs on various context lengths. We artificially reduce the context length of Llama-2-70b-chat from 4,000 (maximum context length) to 2,048, 1,024, 768, and 640. The results suggest that the performance of \zeroshotmid\ \method\ is worse for models with smaller context lengths. While the impact is minimal on AddSub and IMDB, performance on NarrativeQA steeply declines below a context length of 2,048, which is due to truncation. This is because the instances of NarrativeQA are much longer, with an average length of 855 tokens compared to the instances of AddSub and IMDB, with average lengths of 330 tokens and 48 tokens respectively. 
+
+\section{Dataset Examples}
+\label{sec:all_examples}
+
+\textit{\textcolor{orange}{WARNING: this section contains examples of text that may be considered unsafe, offensive, or upsetting.}}
+
+Complete running examples including agent instructions and CoT reasoning paths for each dataset are presented in Figure~\ref{fig:addsub_example} to Figure~\ref{fig:summarization_xsum_example}.
+
+\input{appendix/examples/addsub}
+\input{appendix/examples/aqua}
+\input{appendix/examples/boolq}
+\input{appendix/examples/civil_comments_demographic=all}
+\input{appendix/examples/civil_comments_demographic=black}
+\input{appendix/examples/civil_comments_demographic=christian}
+\input{appendix/examples/civil_comments_demographic=female}
+\input{appendix/examples/civil_comments_demographic=LGBTQ}
+\input{appendix/examples/civil_comments_demographic=male}
+\input{appendix/examples/civil_comments_demographic=muslim}
+\input{appendix/examples/civil_comments_demographic=other_religions}
+\input{appendix/examples/civil_comments_demographic=white}
+\input{appendix/examples/summarization_cnndm}
+\input{appendix/examples/coin}
+\input{appendix/examples/commonsense_qa}
+\input{appendix/examples/date_understanding}
+\input{appendix/examples/gsm}  
+\input{appendix/examples/commonsense_dataset=hellaswag}
+\input{appendix/examples/imdb}
+\input{appendix/examples/letter}
+\input{appendix/examples/mmlu_subject=abstract_algebra}
+\input{appendix/examples/mmlu_subject=college_chemistry}
+\input{appendix/examples/mmlu_subject=computer_security}
+\input{appendix/examples/mmlu_subject=econometrics}
+\input{appendix/examples/mmlu_subject=us_foreign_policy}
+\input{appendix/examples/msmarco=regular}
+\input{appendix/examples/msmarco=trec}
+\input{appendix/examples/multi_arith}
+\input{appendix/examples/narrative_qa}
+\input{appendix/examples/natural_qa_mode=closedbook}
+\input{appendix/examples/natural_qa_mode=openbook_longans}
+\input{appendix/examples/commonsense_dataset=openbookqa}
+\input{appendix/examples/quac}
+\input{appendix/examples/raft_subset=ade_corpus_v2}
+\input{appendix/examples/raft_subset=banking_77}
+\input{appendix/examples/raft_subset=neurips_impact_statement_risks}
+\input{appendix/examples/raft_subset=one_stop_english}
+\input{appendix/examples/raft_subset=overruling}
+\input{appendix/examples/raft_subset=semiconductor_org_types}
+\input{appendix/examples/raft_subset=systematic_review_inclusion}
+\input{appendix/examples/raft_subset=tai_safety_research}
+\input{appendix/examples/raft_subset=terms_of_service}
+\input{appendix/examples/raft_subset=tweet_eval_hate}
+\input{appendix/examples/raft_subset=twitter_complaints}
+\input{appendix/examples/singleeq}
+\input{appendix/examples/shuffled_objects=five_objects}
+\input{appendix/examples/shuffled_objects=seven_objects}
+\input{appendix/examples/shuffled_objects=three_objects}
+\input{appendix/examples/big_bench-task=strategyqa}
+\input{appendix/examples/svamp}
+\input{appendix/examples/truthful_qa_task=mc_single}
+\input{appendix/examples/summarization_xsum}

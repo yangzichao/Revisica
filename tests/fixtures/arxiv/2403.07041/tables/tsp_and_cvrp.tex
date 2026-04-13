@@ -1,0 +1,85 @@
+\begin{tabular}{lcccccclcccccc}
+\cmidrule[1.0pt](lr{0.1em}){1-7}
+\cmidrule[1.0pt](lr{0.1em}){8-14}
+ & \multicolumn{3}{c}{TSP500} & \multicolumn{3}{c}{TSP1000} &
+ & \multicolumn{3}{c}{CVRP500} & \multicolumn{3}{c}{CVRP1000} 
+\\ 
+\cmidrule[0.5pt](lr{0.2em}){2-4}
+\cmidrule[0.5pt](lr{0.2em}){5-7}
+\cmidrule[0.5pt](lr{0.2em}){9-11}
+\cmidrule[0.5pt](lr{0.2em}){12-14}
+Method & Obj. & Gap(\%) & Time
+ & Obj. & Gap(\%) & Time &
+Method & Obj. & Gap(\%) & Time
+ & Obj. & Gap(\%) & Time 
+\\ 
+\cmidrule[1.0pt](lr{0.1em}){1-7}
+\cmidrule[1.0pt](lr{0.1em}){8-14}
+Concorde & 16.55 & - & 10.7s & 23.12 & - & 108s &
+PyVRP & 62.96 & - & 21.0m & 119.29 & - & 1.4h 
+\\
+LKH-3 & 16.55 & 0.02 & 31.7s & 23.14 & 0.10 & 102s &
+LKH-3 & 63.07 & 0.18 & 18.6m & 119.52 & 0.20 & 2.1h
+\\
+\cmidrule(lr{0.1em}){1-1}
+\cmidrule(lr{0.1em}){2-4}
+\cmidrule(lr{0.1em}){5-7}
+\cmidrule(lr{0.1em}){8-8}
+\cmidrule(lr{0.1em}){9-11}
+\cmidrule(lr{0.1em}){12-14}
+AM{*} & 21.46 & 29.07 & 0.6s & 33.55 & 45.10 & 1.5s 
+\\
+POMO{*} & 20.57 & 24.40 & 0.6s & 32.90 & 42.30 & 4.1s &
+POMO & 68.69 & 9.08 & 2s & 145.74 & 22.14 & 3s
+\\
+\qquad+EAS & 18.25 & 10.29 & 300s & 30.77 & 33.06 & 600s & 
+\qquad+EAS & 64.76 & 2.85 & 5.0m & 126.25 & 5.83 & 10.0m
+\\
+\qquad+SGBS & 18.86 & 13.98 & 318s & 28.58 & 23.61 & 605s &
+\qquad+SGBS & 65.44 & 3.93 & 5.2m & 127.90 & 7.21 & 10.1m  
+\\
+%GCN+MCTS{*} {[}{]} & 10.81 & 0.88 & 149.6 & 16.97 & 2.54 & 50 & 23.86 & 3.22 & 100 
+%\\
+DIMES{*} & 17.01 & 2.78 & 11s & 24.45 & 5.75 & 32s &
+Sym-NCO  & 68.81 & 9.28 & 2s & 141.82 & 18.86 & 3s 
+\\
+%DIFUSCO+MCTS{*} {[}{]} & - & - & - & 16.63 & 0.46 & 4.7 & 23.39 & 1.17 & 11 
+%\\
+SO{*} & 16.94 & 2.40 & 15s & 23.77 & 2.80 & 26s &
+\qquad+EAS & 64.63 & 2.65 & 5.0m & 125.58 & 5.27 & 10.0m 
+\\
+Pointerformer{*} & 17.14 & 3.56 & 14s & 24.80 & 7.90 & 40s &
+\qquad+SGBS  & 65.40 & 3.87 & 5.2m & 127.53 & 6.90 & 10.1m 
+\\
+%H-TSP{*} & - & - & - & - & - & - & 24.65 & 6.62 & 0.3 
+%\\
+\cmidrule(lr{0.1em}){1-1}
+\cmidrule(lr{0.1em}){2-4}
+\cmidrule(lr{0.1em}){5-7}
+\cmidrule(lr{0.1em}){8-8}
+\cmidrule(lr{0.1em}){9-11}
+\cmidrule(lr{0.1em}){12-14}
+ACO & 17.38 & 5.04 & 14s & 24.76 & 7.09 & 57s &
+ACO & 64.62 & 2.63 & 36s & 122.82 & 2.96 & 1.3m 
+\\
+DeepACO & 16.84 & 1.77 & 15s & 23.78 & 2.87 & 66s &
+DeepACO & 64.49 & 2.43 & 36s & 122.15 & 2.40 & 1.3m
+\\ 
+GFACS (ours) & \textbf{16.80} & \textbf{1.56} & 15s & \textbf{23.72} & \textbf{2.63} & 66s &
+GFACS (ours) & \textbf{64.19} & \textbf{1.95} & 36s & \textbf{121.80} & \textbf{2.11} & 1.3m
+\\
+%DeepACO {$(T = 2)$} & 10.82 & 0.97 & - & 16.94 & 2.36 & 2.0 & 23.99 & 3.76 & 6.4
+%\\
+%Ours {$(T = 2)$} & 10.77 & 0.49 & - & - & - & -
+%\\ 
+%DeepACO {$(T = 10)$} & 10.78 & 0.57 & 2.4 & 16.86 & 1.84 & 10 & 23.85 & 3.16 & 32
+%\\ 
+%Ours {$(T = 10)$} & 10.75 & 0.26 & 2.5 & - & - & -
+%\\
+%DeepACO {$(T = 100)$} & - & - & - & - & - & - & - & - & - 
+%\\ 
+%Ours {$(T = 100)$} & - & - & - & - & - & - & - & - & - 
+%\\
+\cmidrule[1.0pt](lr{0.1em}){1-7}
+\cmidrule[1.0pt](lr{0.1em}){8-14}
+\end{tabular}

@@ -1,0 +1,67 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table*}[t]\small
+\centering
+\caption{Performance of Selected Factuality Enhancement Methods. The table displays performance metrics on various datasets for both baseline models and their enhanced counterparts, denoted with a $\rightarrow$. Due to space constraints, only a subset of datasets, metrics, and models from each work is presented.}
+\label{tab:enhance-table}
+\vspace{-2mm}
+\begin{adjustbox}{max width=\textwidth}
+  \setlength{\tabcolsep}{.3mm}
+    \renewcommand{\arraystretch}{1.2}
+{\begin{tabular}{ccclc|c|ccl}
+\toprule 
+Reference & Dataset & Metrics & Baselines $\rightarrow$ Theirs &&& Dataset & Metrics & Baselines $\rightarrow$ Theirs \\     
+\midrule  
+\citet{li2022decoupled} & NQ & EM & 34.5 $\rightarrow$ 44.35 (T5 11B) & & & GSM8K & ACC & 77.0 $\rightarrow$ 85.0 (ChatGPT) \\
+\midrule  
+GenRead \citep{yu2023generate} & NQ & EM & 20.9 $\rightarrow$ 28.0 (InstructGPT) &&& TriviaQA & EM & 57.5 $\rightarrow$ 59.0 (InstructGPT) \\
+& & & &&& WebQA & EM & 18.6 $\rightarrow$ 24.6 (InstructGPT) \\
+\midrule  
+DoLa \citep{chuang2023dola} & FACTOR News & ACC & 58.3 $\rightarrow$ 62.0 (LLaMa-7B) &&& FACTOR News & ACC & 61.1 $\rightarrow$ 62.5 (LLaMa-13B) \\
+& FACTOR News & ACC& 63.8 $\rightarrow$ 65.4 (LLaMa-33B) &&& FACTOR News & ACC& 63.6 $\rightarrow$ 66.2 (LLaMa-65B) \\
+& FACTOR Wiki  & ACC & 58.6 $\rightarrow$ 62.2 (LLaMa-7B) &&& FACTOR Wiki  & ACC & 62.6 $\rightarrow$ 66.2 (LLaMa-13B) \\
+& FACTOR Wiki  & ACC& 69.5 $\rightarrow$ 70.3 (LLaMa-33B) &&& FACTOR Wiki  & ACC& 72.2 $\rightarrow$ 72.4 (LLaMa-65B) \\
+& TruthfulQA & \%Truth * Info & 32.4 $\rightarrow$ 44.6 (LLaMa-13B) &&& TruthfulQA & \%Truth * Info  & 34.8 $\rightarrow$ 49.2 (LLaMa-65B) \\
+\midrule
+CD \citep{li2022contrastive} & TruthfulQA & \%Truth * Info & 32.4 $\rightarrow$ 44.4 (LLaMa-13B) &&& TruthfulQA & \%Truth * Info & 31.7 $\rightarrow$ 36.7 (LLaMa-33B) \\
+& TruthfulQA & \%Truth * Info & 34.8 $\rightarrow$ 43.4 (LLaMa-65B) &&& \\
+\midrule
+ITI \citep{li2023inferencetime} & NQ & ACC & 46.6 $\rightarrow$ 51.3 (LLaMA-7B) &&& TriviaQA & ACC & 89.6 $\rightarrow$ 91.1 (LLaMA-7B) \\
+& MMLU& ACC  & 35.7 $\rightarrow$ 40.1 (LLaMA-7B) &&& TruthfulQA & \%Truth * Info & 32.5 $\rightarrow$ 65.1 (Alpaca) \\
+&  TruthfulQA & \%Truth * Info & 26.9 $\rightarrow$ 43.5 (LLaMa-7B) &&&  TruthfulQA & \%Truth * Info & 51.5 $\rightarrow$ 74.0 (Vicuna) \\
+% & &  &&&&  TruthfulQA & \%Truth * Info & 26.9 $\rightarrow$ 43.5 (LLaMa-7B) \\
+\midrule
+FactTune \citep{ovadia2023finetuning} & Biographies  & ACC & 74.8 $\rightarrow$ 83.1 (Llama-2-Chat) &&& Medical QA & ACC & 63.6 $\rightarrow$ 68.2 (Llama-2-Chat)  \\
+\midrule
+LM vs LM \citep{cohen2023lm} & LAMA & F1 & 50.7 $\rightarrow$ 80.8 (ChatGPT) &&& TriviaQA & F1 & 56.2 $\rightarrow$ 82.6 (ChatGPT) \\
+& NQ & F1 & 60.6 $\rightarrow$ 79.1 (ChatGPT) &&& PopQA & F1 & 65.2 $\rightarrow$ 85.4 (ChatGPT) \\
+& LAMA & F1 & 42.5 $\rightarrow$ 79.3 (GPT-3) &&& TriviaQA & F1 & 46.7 $\rightarrow$ 77.2 (GPT-3) \\
+& NQ & F1 & 52.0 $\rightarrow$ 78.0 (GPT-3) &&& PopQA & F1 & 43.7 $\rightarrow$ 77.4 (GPT-3) \\
+\midrule
+\citet{weller2023according} & TriviaQA & QUIP & 31.6 $\rightarrow$ 33.6 (ChatGPT) &&& NQ & QUIP & 32.8 $\rightarrow$ 34.3 (ChatGPT) \\
+& HotpotQA & QUIP & 28.3 $\rightarrow$ 29.2 (ChatGPT) &&& ELI5  & QUIP & 24.1 $\rightarrow$ 26.5 (ChatGPT) \\
+& TriviaQA & EM & 77.8 $\rightarrow$ 78.8 (ChatGPT) &&& NQ & EM & 32.9 $\rightarrow$ 34.8 (ChatGPT) \\
+& HotpotQA & F1 & 35.7 $\rightarrow$ 36.6 (ChatGPT) &&& ELI5  & R-L & 22.7 $\rightarrow$ 21.7 (ChatGPT) \\
+\midrule
+Chain-of-Verification \citep{dhuliawala2023chain} & MultiSpanQA & F1 & 39.0 $\rightarrow$ 48.0 (LLaMA 65B) &&& - & FactScore & 55.9 $\rightarrow$ 71.4 (LLaMA 65B) \\
+&&&&&& - & Avg. \# facts & 16.6$\rightarrow$ 12.3  (LLaMA 65B)  \\
+\midrule
+ReAct \citep{yao2023react} & HotpotQA & EM & 28.7 $\rightarrow$ 35.1 (PaLM-540B) &&& FEVER & ACC & 57.1 $\rightarrow$ 62.0 (PaLM-540B)\\
+\midrule
+\citet{jiang2023active} & 2WikiMultihopQA & EM & 28.2 $\rightarrow$ 51 (ChatGPT) &&& StrategyQA & EM & 72.9 $\rightarrow$ 77.3 (ChatGPT) \\
+& WikiAsp & UniEval & 47.1 $\rightarrow$ 53.4 (ChatGPT) &&& ASQA & EM & 33.8 $\rightarrow$ 41.3 (ChatGPT) \\
+&&&&&& ASQA-hint & EM & 40.1 $\rightarrow$ 46.2 (ChatGPT) \\
+\midrule
+Atlas \citep{Atlas} & MMLU & ACC & 42.4 $\rightarrow$ 56.3 (T5-770M) &&& MMLU & ACC & 50.4 $\rightarrow$ 59.9 (T5-3B) \\
+&&&&&& MMLU & ACC & 54 $\rightarrow$ 65.8 (T5-11B) \\
+\midrule 
+REPLUG \citep{REPLUG} & MMLU & ACC & 68.3 $\rightarrow$ 73.2 (Codex) &&& NQ & EM & 40.6 $\rightarrow$ 45.5(Codex) \\
+&&&&&& TriviaQA & EM & 73.6 $\rightarrow$ 77.3 (Codex) \\
+\midrule 
+Self-RAG \citep{asai2023selfrag} & TriviaQA & ACC & 30.0 $\rightarrow$ 72.4 (LLaMA2-7B) &&& ALCE-ASQA & EM & 15.2 $\rightarrow$ 30.0 (LLaMA2-13B)\\
+& TriviaQA & ACC &30.2 $\rightarrow$ 74.5 (LLaMA2-7B)&&&   ALCE-ASQA & EM & 16.3 $\rightarrow$ 31.7 (LLaMA2-13B) \\
+\bottomrule
+\end{tabular}
+}
+\end{adjustbox}
+\end{table*}

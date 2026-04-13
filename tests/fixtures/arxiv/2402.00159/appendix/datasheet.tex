@@ -1,0 +1,434 @@
+
+\section{Datasheet}
+\label{sec:datasheet}
+
+Following the template by \citet{gebru2021datasheets}, we provide a Datasheet for \dolma.
+
+
+\subsection{Motivation for Dataset Creation}
+
+\paragraph{Why was the dataset created?}~ 
+
+\dolma was created with the primary purpose of training \olmo autoregressive language model. It is a mixture of documents from multiple data sources. Documents have been transformed using a combination of rule-based and statistical tools to extract textual content, remove layout information, and filter for English content. 
+
+\dolma contains data sourced from different domains. In particular, it contains a mixture of text obtained from a web scrape, scientific content extracted from academic PDFs and its associated metadata, code over a variety of programming languages, reference material from Wikipedia and Wikibooks, as well as public domain books from Project Gutenberg.
+
+\paragraph{What (other) tasks could the dataset be used for?}~
+
+We expect this dataset to be useful to train other language models, either in its current form or through further filtering and combining it with other datasets. 
+
+Beside language model training, this dataset could be used to study interaction between pretraining corpora and models trained on them. For example, one could study provenance of generations from the model, or perform further corpus analysis. 
+
+Specific subset of \dolma could be used to train domain specific models. For example, the code subset could be used to train an AI programming assistant. 
+
+\paragraph{Are there obvious tasks for which it should not be used?}~
+
+
+Due to the myriad transformations applied to the original source materials to derive our dataset, we believe it is ill-suited as a replacement for users seeking to directly consume the original content. 
+We refer users of our dataset to our license and terms on the Hugging Face Hub \href{https://huggingface.co/datasets/allenai/dolma}{\path{huggingface.co/datasets/allenai/dolma}} which detail any use restrictions.
+
+
+\paragraph{Has the dataset been used for any tasks already?}~
+
+The \olmo~\citep{olmo20247b} model family is trained on this dataset. 
+
+\paragraph{If so, where are the results so others can compare?}~
+
+Experimental results are detailed in this paper and in the \olmo~\citep{olmo20247b} manuscript.
+
+\paragraph{Who funded the creation of the dataset?}~
+
+All individuals who are responsible for this dataset are employed by the Allen Institute for AI. Similarly, computing resources are provided by AI2. 
+
+\paragraph{If there is an associated grant, provide the grant number.}~
+
+Compute for the \olmo project is provided by AMD and CSC, using GPUs on the LUMI supercomputer.
+
+\subsection{Dataset Composition}
+
+
+\paragraph{What are the instances? Are there multiple types of instances?}~
+
+Instances are plain-text spans on English text or computer code.
+Each instance was obtained by processing web pages (which might include news, documents, forums, etc), academic articles, computer code from GitHub, encyclopedic content from Wikipedia, or Project Gutenberg books. 
+
+\paragraph{Are relationships between instances made explicit in the data?}~
+
+Metadata for subsets of \dolma could be used to reconstruct relationships between items:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Common Crawl}. Each document uses the URL of the web page from which it was extracted as its identifier; therefore, it can be used to identify relationships between documents.
+    \item \textbf{C4}. The URL of each web page from which documents were extracted is included as metadata; therefore, it can be used to identify relationships between documents.
+    \item \textbf{Reddit}. The originating subreddits and thread ids of documents are included in the metadata. 
+    \item \textbf{Semantic Scholar}. The id of each document is the Semantic Scholar Corpus ID of its corresponding manuscript. Metadata for each manuscript can be obtained using the Semantic Scholar APIs~\citep{kinney2023semantic}.
+    \item \textbf{GitHub}. The name of the GitHub repository each document belongs to is included as metadata. 
+    \item \textbf{Project Gutenberg}. The title of each book is included as the first line of each document.
+    \item \textbf{Wikipedia}, \textbf{Wikibooks}. For both, metadata includes the URL corresponding to the page content was extracted from. Structure and connections between documents can be recovered through the URL.
+\end{itemize}
+
+
+\paragraph{How many instances of each type are there?}~
+
+Summary statistics are reported in Table 1.
+
+
+\paragraph{What data does each instance consist of? ``Raw'' data (e.g., unprocessed text or images)? Features/attributes?}~
+
+For each source, raw data is not available directly but could be recovered using source-specific methods:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Common Crawl}. We obtain data from common crawl snapshots from 2020-05 to 2023-06. WARC files from Common Crawl can be intersected with \dolma ids to recover original HTML files.
+    \item \textbf{C4}. We obtained this corpus from the Hugging Face Hub\footnote{\label{foot:c4}\href{https://huggingface.co/datasets/allenai/c4}{\path{hf.co/datasets/allenai/c4}}}. In turn, documents in C4 have been derived from a Common Crawl snapshot for 04/2019. URLs in C4 can be used to recover HTML files.
+    \item \textbf{Reddit}. The complete set of monthly data dumps used in this work are no longer distributed by Pushshift, however they can still be obtained through torrents and some public web archives.   
+    \item \textbf{Semantic Scholar}. peS2o is derived from S2ORC~\citep{lo-etal-2020-s2orc}. Original parsed documents can be obtained from extracting documents in S2ORC that share the same ID with peS2o. Further, metadata in S2ORC can be used to obtain original PDF.
+    \item \textbf{GitHub}. The filename and repository name, both available in metadata, can be used to recover original file contents.
+    \item \textbf{Project Gutenberg}. The title of each book is the first line of each document.
+    \item \textbf{Wikipedia}, \textbf{Wikibooks}. For both, metadata includes the URL corresponding to the page content was extracted from. Structure and connections between documents can be recovered through the URL.
+\end{itemize}
+
+
+\paragraph{Is there a label/target associated with instances? If the instances are related to people, are subpopulations identified (e.g., by age, gender, etc.) and what is their distribution?}~
+
+There are no labels associated with instances. 
+Many text instances were likely created by people or groups of people, but in the vast majority of cases authorship information is unavailable let alone subpopulation metadata. we leave aggregation and reporting of these statistics to future work.
+
+\paragraph{Is everything included or does the data rely on external resources? (e.g., websites, tweets, datasets) If external resources, a) are there guarantees that they will exist, and remain constant, over time; b) is there an official archival version. Are there licenses, fees or rights associated with any of the data?}~
+
+The data are derived from the web and the original resources may not persist over time. However, each source represents an archival snapshot of that data that should remain fixed and available: 
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Common Crawl}. The Common Crawl data is available on Amazon S3 as part of the Amazon Web Services’ Open Data Sponsorship program and can be freely downloaded\footnote{\href{https://commoncrawl.org/the-data/get-started/}{\path{commoncrawl.org/the-data/get-started}}}. 
+    We followed Common Crawl terms of use\footnote{\label{foot:cc-start}\href{https://commoncrawl.org/terms-of-use/}{\path{commoncrawl.org/terms-of-use}}}.
+    \item \textbf{C4}. This corpus can be obtained from from the Hugging Face Hub\fnref{foot:c4} and is released under ODC-By 1.0~\citep{odc-by}. 
+    \item \textbf{Reddit}. Pushshift no longer distributes this dataset due to changes to the Reddit API's terms. Unofficial copies of the data might be be available through torrents and some public web archives. Pushshift data dumps inherit\footnote{\href{https://www.reddit.com/r/pushshift/comments/d6luj5/comment/f0ugpqp}{\path{reddit.com/r/pushshift/comments/d6luj5/comment/f0ugpqp}}} the Terms of use of the Reddit API at the time of their collection (March 2023).
+    \item \textbf{Semantic Scholar}. peS2o is derived from S2ORC~\citep{lo-etal-2020-s2orc}. S2ORC is released through the Semantic Scholar Public API\footnote{\href{https://www.semanticscholar.org/product/api}{\path{semanticscholar.org/product/api}}} under ODC-By 1.0~\citep{odc-by}.
+    \item \textbf{GitHub}. The corpus is available on the Hugging Face Hub\footnote{\label{foot:stack}\href{https://huggingface.co/datasets/bigcode/the-stack-dedup}{\path{hf.co/datasets/bigcode/the-stack-dedup}}} and consists of code released under a variety of permissive licenses. More details including terms of use for hosting or sharing the corpus are provided in the datacard at the link above.
+    \item \textbf{Project Gutenberg}. Project Gutenberg consists of books that are not protected under U.S. copyright law. The corpus is available at \href{https://www.gutenberg.org/}{\path{gutenberg.org}}.
+    \item \textbf{Wikipedia}, \textbf{Wikibooks}. Wikimedia data dumps are freely available\footnote{\label{foot:wiki}\href{https://dumps.wikimedia.org}{\path{dumps.wikimedia.org}}} and released under CC BY-SA 4.0 license~\citep{cc-by-sa-4}.
+\end{itemize}
+
+\paragraph{Are there recommended data splits or evaluation measures? (e.g., training, development, testing; accuracy/AUC)}~
+
+No. 
+See current manuscript Section \S\ref{sec:experimental-methodology}.
+
+\paragraph{What experiments were initially run on this dataset? Have a summary of those results and, if available, provide the link to a paper with more information here.}~
+
+See current manuscript Section \S\ref{sec:experimental-methodology} for description of data ablation methodology, and remainder of paper for full set of experiments. 
+Every experimental result is available through links provided in the manuscript.
+
+\subsection{Data Collection Process}
+\label{datasheet:collection}
+
+\paragraph{How was the data collected? (e.g., hardware apparatus/sensor, manual human curation, software program, software interface/API; how were these constructs/measures/methods validated?)}~
+
+Data acquisition for each subset was performed as follows:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Common Crawl}. snapshots were downloaded from Common Crawl's official S3 bucket\footnote{\texttt{s3://commoncrawl/}} using the \texttt{cc\_net} pipeline~\citep{wenzek-etal-2020-ccnet}. Data was obtained between March 17$^\textrm{th}$ and March 27$^\textrm{th}$, 2023.
+    \item \textbf{C4}. We clone C4 from the Hugging Face Hub\fnref{foot:c4} using Git with the Git-LFS extension. Repository cloned on May 24$^\textrm{th}$, 2023.
+    \item \textbf{Reddit}. Reddit was acquired in the form of monthly data dumps of  comments and submissions collected and distributed by the Pushshift project\footnote{\href{https://files.pushshift.io/reddit/submissions/}{\path{files.pushshift.io/reddit/submissions}} and \href{https://files.pushshift.io/reddit/comments/}{\path{files.pushshift.io/reddit/comments}}}. We used the complete set of 422 publicly available dumps (208 comments, 214 submissions) spanning a period from 06/2005--03/2023. The majority of Dumps were acquired in March, 2023 with the last dumps downloaded in May of 2023.
+    \item \textbf{Semantic Scholar}. We clone peS2o from the Hugging Face Hub\footnote{\href{https://huggingface.co/datasets/allenai/peS2o}{\path{hf.co/datasets/allenai/peS2o}}} using Git with the Git-LFS extension. We use pes2o V2. Repository cloned on June 30$^\textrm{th}$, 2023.
+    \item \textbf{GitHub}. We clone The Stack (deduplicated) from the Hugging Face Hub\fnref{foot:stack} using Git with the Git-LFS extension. Repository cloned on May 28$^\textrm{th}$, 2023.
+    \item \textbf{Project Gutenberg}. Data was downloaded directly from \url{gutenberg.org}. We used \texttt{GutenbergPy}~\citep{GutenbergPy} to extract books. Website accessed on April 3$^\textrm{rd}$, 2023.
+    \item \textbf{Wikipedia}, \textbf{Wikibooks}. Dumps were downloaded from Wikimedia's website\fnref{foot:wiki}. We use the dump from March 20$^\textrm{th}$, 2023.
+\end{itemize}
+
+\paragraph{Who was involved in the data collection process? (e.g., students, crowdworkers) How were they compensated? (e.g., how much were crowdworkers paid?)}~
+
+Data was collected and postprocessed by full-time employees at the Allen Institute for AI. No instances in this dataset are manually annotated.
+
+\paragraph{Over what time-frame was the data collected? Does the collection time-frame match the creation time-frame?}~
+
+Please see list above. 
+
+\paragraph{How was the data associated with each instance acquired? Was the data directly observable (e.g., raw text, movie ratings), reported by subjects (e.g., survey responses), or indirectly inferred/derived from other data (e.g., part of speech tags; model-based guesses for age or language)? If the latter two, were they validated/verified and if so how?}~
+
+
+Any metadata associated with each instance was obtained directly from each source. 
+
+
+\paragraph{Does the dataset contain all possible instances? Or is it, for instance, a sample (not necessarily random) from a larger set of instances? 
+If the dataset is a sample, then what is the population? What was the sampling strategy (e.g., deterministic, probabilistic with specific sampling probabilities)? Is the sample representative of the larger set (e.g., geographic coverage)? If not, why not (e.g., to cover a more diverse range of instances)? How does this affect possible uses?}~
+
+Sampling for each subset was performed as follows:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Common Crawl}. Common Crawl is not a representative sample of the web. Summary statistics about Common Crawl are reported through the \texttt{cc-crawl-statistics}~\citep{cc-crawl-statistics} project, available at \href{https://commoncrawl.github.io/cc-crawl-statistics/}{\texttt{commoncrawl.github.io/cc-crawl-statistics}}. \dolma uses  Common Crawl snapshots from \texttt{2020-05} to \texttt{2023-06}\footnote{Common Crawl snapshots follow naming convention \texttt{xxxx-yy}, where \texttt{xxxx} is the year the snapshot was finalized, and \texttt{yy} is the week, ranging from \texttt{01} to \texttt{52}.}.
+    \item \textbf{C4}. We use C4 in its entirety. 
+    \item \textbf{Reddit}. We use all available Reddit content from from 06/2005--03/2023.
+    \item \textbf{GitHub}. We use The Stack (deduplicated) in its entirety. 
+    \item \textbf{Semantic Scholar}. We use pes2o V2 in its entirety. 
+    \item \textbf{Project Gutenberg}. We process all Gutenberg books. 
+    \item \textbf{Wikipedia}, \textbf{Wikibooks}. We use the \textit{English} and \textit{Simple} subset of Wikipedia and Wikibooks in their entirety.  
+\end{itemize}
+
+\paragraph{Is there information missing from the dataset and why? (this does not include intentionally dropped instances; it might include, e.g., redacted text, withheld documents) Is this data missing because it was unavailable?}~
+
+Common Crawl is the only source we did not use in its entirety. 
+We use only about a quarter of all snapshots available. 
+This amount was deemed sufficient for the goal of the \dolma project.
+We decided to use the 24 most recent Common Crawl snapshots at the time.
+
+\paragraph{Are there any known errors, sources of noise, or redundancies in the data?}~
+
+Not that we are aware of, although a negligible portion of Common Crawl data could have been lost due to network issues with S3 storage. 
+When accessing Common Crawl, we implemented retry mechanisms, but copy could have failed due to exceeding the retry limits. 
+
+\subsection{Data Preprocessing}
+\label{datasheet:processing}
+
+
+\paragraph{What preprocessing/cleaning was done? (e.g., discretization or bucketing, tokenization, part-of-speech tagging, SIFT feature extraction, removal of instances, processing of missing values, etc.)}~
+
+
+
+All data sources are filtered using FastText language identification models~\citep{joulin2016fasttext,joulin2016bag} with an English threshold of 0.5.
+
+For the \textbf{Common Crawl} and \textbf{C4} subsets, we use the following filters that substantially modify the original data. 
+Note that data might be tagged for removal by one or more filter.
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{\textit{Only \underline{Common Crawl}, as part of their distribution pipeline}}: Linearize all HTML into plain text files (\texttt{WET} files generation\fnref{foot:cc-start});
+    \item \textbf{\textit{Only \underline{Common Crawl}, as part of CCNet pipeline}}: We remove frequently occurring paragraph in Common Crawl by identifying repeated paragraphs on small subsets of each snapshots. This step gets rid of headers that are shared across many pages, such as navigational headers. 
+    Removal is operationalized as follows: given $1\ldots,n,\ldots,N$ shards each snapshot is comprised to, group shards in sets $S=\{n-k, n\}$; then, remove exact duplicates of paragraphs in $S$. Paragraphs are defined as newline-separated slices of documents, and compared using their SHA1. We choose $k$ such that each set is at most 20GB\footnote{This is a slight modification of the original CCNet pipeline, where $k$ is chose so that each set is 2\% of snapshot. We chose to use a fixed shard size, rather an a percentage of the corpus, because fixed size is more predictable in terms of resource usage, leading to less-error prone code. Conceptually it’s equivalent to putting a threshold on the absolute probability of a paragraph occurring}. (\textit{approximately 70\% of paragraph removed});
+    \item \textbf{\textit{Only \underline{Common Crawl}, deduplication by URL}}: We deduplicate pages by URL (\textit{53\% of duplicates removed});
+    \item \textbf{Language identification}: remove all documents with an English score lower than 0.5, as determined by FastText language identification models~\citep{joulin2016fasttext,joulin2016bag} (\textit{removed 61.69\% of web pages by size});
+    \item \textbf{Quality filter\footnote{\label{foot:quality}The term ``quality filter'', while widely used in literature, does not appropriately describe the outcome of filtering a dataset. Quality might be perceived as a comment on the informativeness, comprehensiveness, or other characteristics valued by humans. However, the filters used in \dolma and other language models efforts select text according to criteria that are inherently ideological~\citep{gururangan-etal-2022-whose}.}}: Remove documents with more than half of their line not ending in ``\texttt{.}'', ``\texttt{?}'', ``\texttt{!}'', or ``\texttt{"}''. (\textit{22.73\% of characters tagged for removal});
+    \item \textbf{Quality filter}\fnref{foot:quality}: Remove any document that does not pass any of the Gopher rules~\citep{Rae2021ScalingLM} (\textit{15.23\% of characters tagged for removal}); 
+    \begin{itemize}
+        \item Fraction of characters in most common ngram greater than a threshold\footnote{For bigrams, threshold of 0.20. For trigrams, 0.18. For 4-grams, 0.16.}
+        \item Fraction of characters in duplicate ngrams greater than a threshold\footnote{For 5-grams, 0.15. For 6-grams, 0.14. For 7-grams, 0.13. For 8-grams, 0.12. For 9-grams, 0.11. For 10-grams, 0.10.}
+        \item Contains fewer than 50 or more than 100K words
+        \item Median word length is less than 3 or greater than 10
+        \item Symbol to word ratio greater than 0.10
+        \item Fraction of words with alpha character less than 0.80
+        \item Contains fewer than 2 of a set of required words\footnote{``the'', ``be'', ``to'', ``of'', ``and'', ``that'', ``have'', ``with''}
+        \item Fraction of lines in document starting with bullet point greater than 0.90
+        \item Fraction of lines in document ending with ellipsis greater than 0.30
+        \item Fraction of lines in document that are duplicated greater than 0.30
+        \item Fraction of characters in duplicated lines greater than 0.30
+    \end{itemize}
+    \item \textbf{Quality filter}\fnref{foot:quality}: Remove any document that contains a token or sequence of tokens repeating over 100 times\footnote{\label{foot:reps}We use \href{https://huggingface.co/allenai/gpt-neox-olmo-dolma-v1_5}{\path{allenai/gpt-neox-olmo-dolma-v1\_5}} to obtain tokens.}
+    (\textit{0.003\% of characters tagged for removal}); 
+    \item \textbf{Content filter}: Remove sentences that get ranked as toxic by a FastText classifier (score above $0.4$). We train a bigram classifier on the Jigsaw dataset~\citep{jigsaw} (\textit{1.01\% of data tagged for removal});
+    \item  \textbf{Content filter}: Mask Personal Identifiable Information (PII) using regular expressions that identify emails, phone numbers, 
+    and IP addresses; pages containing 6 or more PIIs are completely removed from the corpus (\textit{0.05\% tagged for masking, 0.11\% tagged for removal}); 
+    \item \textbf{Exact document deduplication}: duplicate documents the same text. No punctuation or whitespace is removed. Empty documents count as duplicates (\textit{14.9\% of documents tagged for removal}).
+    \item \textbf{\textit{Only \underline{Common Crawl}, deduplication by paragraph}}: We deduplicate the web subset at a paragraph level using a Bloom filter (\textit{19.1\% of UTF-8 characters tagged for removal}).
+\end{itemize}
+
+
+For the \textbf{Reddit} subset, we use the following filters that substantially reduce the original data. 
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Language identification}: remove all documents with an English score lower than 0.5, as determined by a FastText language identification model.
+    \item \textbf{Quality filter\fnref{foot:quality}}: Remove comments and submissions shorter than 500 characters in length.
+    \item \textbf{Quality filter\fnref{foot:quality}}: Remove user comments with fewer than three upvotes (Reddit users vote on the quality of submissions and comments).
+    \item \textbf{Content filter\fnref{foot:quality}}: Remove comments and submissions from banned,  toxic, or NSFW subreddits.
+    \item \textbf{Content filter\fnref{foot:quality}}: Remove sentences that get ranked as toxic or as hatespeech by a FastText classifier (score above $0.4$).
+    \item  \textbf{Content filter}: Mask Personal Identifiable Information (PII) using regular expressions that identify emails, phone numbers, 
+    and IP addresses
+    \item \textbf{Deduplication}: We deduplicate comments and submissions (jointly) at a paragraph level using a Bloom filter.
+\end{itemize}
+
+
+For the code subset derived from The Stack (deduplicated), we use the following filters:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Language filter}: Removed files associated with the following programming languages:
+    \begin{itemize}
+        \item Data or numerical content: \textit{csv, json, json5, jsonld, jsoniq, svg}
+        \item Assembly code: \textit{assembly}
+    \end{itemize}
+    \item \textbf{Quality filter\fnref{foot:quality}}: Removed copyright statements in code files from document preamble\footnote{Code license and provenance is still tracked in metadata.};
+    \item \textbf{Quality filter\fnref{foot:quality}}: Removed documents matching any of the RedPajama v1~\citep{together2023redpajama} code filters (\textit{41.49\% of data tagged for removal}):
+    \begin{itemize}
+    \item Maximum line length > 1000 characters.
+    \item Average line length > 100 characters.
+    \item Proportion of alpha-numeric characters < 0.25.
+    \item Ratio of alphabetical characters to number of tokens < 1.5\footnote{Tokens counted using whitespace tokenizer}.
+    \end{itemize}
+    \item \textbf{Quality filter\fnref{foot:quality}}: Removed documents matching any of the following Starcoder filters~\citep{Li2023StarCoderMT}:
+    \begin{itemize}
+        \item Contains XML template code.
+        \item HTML code-to-text ratio <= 0.2.
+        \item Java, Javascript, Python code-to-comment ratio <= 0.01 or > 0.8.
+    \end{itemize}
+    \item  \textbf{Content filter}: Mask Personal Identifiable Information (PII) using regular expressions that identify emails, phone numbers, 
+    and IP addresses; pages containing 6 or more PIIs are completely removed from the corpus. 
+\end{itemize}
+
+The \textbf{Common Crawl}, \textbf{C4}, \textbf{Reddit}, and \textbf{Code} subsets used the same regular expressions for identifying PII:
+
+\begin{itemize}
+    \item \textbf{Email addresses:}\\
+    \texttt{[.\textbackslash{}s@,?!;:)(]*([\textbackslash{}\textasciicircum{}\textbackslash{}s@]+@[\textbackslash{}\textasciicircum{}\textbackslash{}s@,?!;:)}
+    \newline\texttt{(]+?)[.\textbackslash{}s@,?!;:)}\texttt{(]?[\textbackslash{}s\textbackslash{}n\textbackslash{}r]
+}
+    \item \textbf{IP addresses:} \\
+    \texttt{\textbackslash{}s+\textbackslash{}(?(\textbackslash{}d\{3\})\textbackslash{})?[-\textbackslash{}.}
+    \newline\texttt{]*(\textbackslash{}d\{3\})[-. ]?(\textbackslash{}d\{4\})}
+    \item \textbf{Phone numbers:} \\
+    \texttt{(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]}
+    \newline\texttt{\{1,2\})\textbackslash.)\{3\}}\texttt{(?:25[0-5]|2[0-4][0-9]|}
+    \newline\texttt{[01]?[0-9]\{1,2\})}
+\end{itemize}
+
+
+
+For the \textbf{Wikipedia and Wikibooks} subsets, we remove pages that contain fewer than 25 UTF-8 words. 
+
+For the \textbf{Gutenberg} subset:
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Language identification}: for each paragraph (defined as newline-separated spans of text), we use FastText to perform language identification. 
+    Then, we compute the average language score by averaging the score for all passages. 
+    If a document has a language score lower than $0.5$, it is discarded;
+    \item \textbf{Quality filter\fnref{foot:quality}}: we remove pages that contain fewer than 25 UTF-8 words;
+    \item \textbf{Quality filter}\fnref{foot:quality}: Remove any document that contains a token or sequence of tokens repeating over 100 times\fnref{foot:reps}.
+\end{itemize}
+
+For the \textbf{Semantic Scholar} subset, we remove any document that contains a token or sequence of tokens repeating over 100 times\fnref{foot:reps} .
+
+For \dolma versions \texttt{1.0} and \texttt{1.5}, we perform decontamination for all subsets of \dolma. In particular, we remove paragraphs that are shared with documents in the Paloma evaluation suite~\citep{paloma}.
+Overall, only 0.003\% of our dataset is removed due to contamination with this evaluation set. 
+\dolma version \texttt{1.6} is not decontaminated.
+
+\paragraph{Was the ``raw'' data saved in addition to the preprocessed/cleaned data? (e.g., to support unanticipated future uses)}~
+
+Raw data is available for all subsets except Common Crawl. 
+Due to space constrains, we only keep linearized version of Common Crawl snapshots, filtered by Language ID as described above. 
+
+Raw data is not available for download outside the Allen Institute for AI. 
+Interested individuals may contact authors of this manuscript if they require access to raw data.
+
+\paragraph{Is the preprocessing software available?}~
+
+Yes, all preprocessing software is available on GitHub at \href{https://github.com/allenai/dolma}{\texttt{github.com/allenai/dolma}} and on PyPI\footnote{\href{https://pypi.org/project/dolma/}{\path{pypi.org/project/dolma}}}.
+
+\paragraph{Does this dataset collection/processing procedure achieve the motivation for creating the dataset stated in the first section of this datasheet?}~
+
+Yes, it does. 
+
+\subsection{Dataset Distribution}
+
+\paragraph{How is the dataset distributed? (e.g., website, API, etc.; does the data have a DOI; is it archived redundantly?)}~
+
+\dolma is distributed via the Hugging Face Hub, which offers access via the \texttt{datasets}~\citep{Lhoest_Datasets_A_Community_2021} Python package, direct download, and Git using the Git-LFS extension.
+Additionally, a copy is stored on the cloud storage of 
+the Allen Institute for AI.
+
+\paragraph{When will the dataset be released/first distributed? (Is there a canonical paper/reference for this dataset?)}~
+
+The dataset is available now. 
+This manuscript serves as a reference for the dataset.
+
+\paragraph{What license (if any) is it distributed under? Are there any copyrights on the data?}~
+
+Information about the license associated with \dolma are available on its release page on the Hugging Face Hub: \href{https://huggingface.co/datasets/allenai/dolma}{\path{huggingface.co/datasets/allenai/dolma}}.
+
+\paragraph{Are there any fees or access/export restrictions?}~
+
+The dataset is distributed for free. 
+Users should verify any restrictions on its release page on the Hugging Face Hub: \href{https://huggingface.co/datasets/allenai/dolma}{\path{huggingface.co/datasets/allenai/dolma}}.
+
+
+
+
+\subsection{Dataset Maintenance}
+
+\paragraph{Who is supporting/hosting/maintaining the dataset? How does one contact the owner/curator/manager of the dataset (e.g. email address, or other contact info)?}~
+
+The Allen Institute for AI maintains the dataset. 
+For support questions, users are invited to open an issue on GitHub\footnote{\href{https://github.com/allenai/dolma/issues}{\path{github.com/allenai/dolma/issues}}} or on the community tab of dataset page\footnote{\href{https://huggingface.co/datasets/allenai/dolma/discussions}{\path{hf.co/datasets/allenai/dolma/discussions}}} (the former being preferred over the latter).
+Any other inquiry should be sent to \texttt{ai2-info@allenai.org}.
+
+
+\paragraph{Will the dataset be updated? How often and by whom? How will updates/revisions be documented and communicated (e.g., mailing list, GitHub)? Is there an erratum?}~
+
+Dataset will be uploaded on a need-to basis by maintainers at the Allen Institute for AI.
+Newer version of the dataset will be labeled accordingly. 
+The latest version of the dataset, as well as a changelog, will be made available starting from the first revision.
+
+\paragraph{If the dataset becomes obsolete how will this be communicated? Is there a repository to link to any/all papers/systems that use this dataset?}~
+
+Users should keep track of the version of the dataset in use. 
+Information about latest version of \dolma  are available on its release page on the Hugging Face Hub: \href{https://huggingface.co/datasets/allenai/dolma}{\path{huggingface.co/datasets/allenai/dolma}}.
+\dolma users should cite this manuscript when using this data.
+
+
+
+
+\paragraph{If others want to extend/augment/build on this dataset, is there a mechanism for them to do so? If so, is there a process for tracking/assessing the quality of those contributions. What is the process for communicating/distributing these contributions to users?}~
+
+Creation and distribution of derivatives is described above. 
+In case contributors want to flow their improvement back to future \dolma releases, they should contact corresponding authors of this manuscript.
+
+\subsection{Legal \& Ethical Considerations}
+\paragraph{If the dataset relates to people (e.g., their attributes) or was generated by people, were they informed about the data collection? (e.g., datasets that collect writing, photos, interactions, transactions, etc.)}~
+
+Subsets of \dolma derived from web data are likely created by people or groups of people, however authorship information is often unavailable. 
+
+Authors were not directly informed about the data collection. 
+For encyclopedic and web content, logs of web servers will contain records of spiders ran by Common Crawl.
+For academic content, the pes2o subset~\citep{peS2o} is derived from manuscripts that are licensed for permissive distribution by their authors.
+Reddit content was acquired through a public API adherent to terms of service; individual authors of Reddit posts were not contacted directly.
+Finally, the Allen Institute for AI did not contact Project Gutenberg.
+ 
+\paragraph{If it relates to other ethically protected subjects, have appropriate obligations been met? (e.g., medical data might include information collected from animals)}~
+
+Due to the nature of and size of \dolma, it is impossible to determine which obligations, if any, are appropriate. 
+
+
+\paragraph{If it relates to people, were there any ethical review applications/reviews/approvals? (e.g. Institutional Review Board applications) If it relates to people, were they told what the dataset would be used for and did they consent? What community norms exist for data collected from human communications? If consent was obtained, how? Were the people provided with any mechanism to revoke their consent in the future or for certain uses?}~
+
+The \dolma project includes Ethics committee comprised of 
+internal and external members to the Allen Institute for AI.
+Plans for the creation of \dolma were reviewed with the committee, and we incorporated their recommendations. 
+
+Following practices established in similar efforts, no consent was collected from individuals who might be represented in the dataset.
+We make available a form\footnote{\label{foot:data-removal}\href{https://forms.gle/q4BNUUxUxKwKkfdT6}{\path{forms.gle/q4BNUUxUxKwKkfdT6}}} for individuals who wish to be removed from the dataset. 
+
+\paragraph{If it relates to people, could this dataset expose people to harm or legal action? (e.g., financial social or otherwise) What was done to mitigate or reduce the potential for harm?}~
+
+\dolma contains text instances that have been derived from web pages Common Crawl crawled from the web. 
+Content might contain sensitive information including personal information, or financial information users of the web chose to put publicly online. 
+This data is taken only from public places, so the same data is or has been accessible via browsing the web. 
+We have measured a variety of types of personal information, and built tools specifically to remove some types of sensitive information, and through our license we restrict what users can do with this data. 
+
+We recommend individuals to submit a request using through our form\fnref{foot:data-removal} if they wish their information to be removed. 
+
+\paragraph{If it relates to people, does it unfairly advantage or disadvantage a particular social group? In what ways? How was this mitigated?}~
+
+\dolma is not a representative sample of none of its sources. 
+It might underrepresent or overrepresent some communities on the internet;
+further, papers in the peS2o subset are skewed towards STEM disciplines;
+books in the Gutenberg library are mostly from the public domain (at the time of publication, books published before 1927);
+finally, the English and Simple subset of Wikipedia and Wikibooks might be biased towards events and people from the global north.
+
+We did not attempt to alter distribution of social groups in \dolma. 
+Large-scale interventions to correct societal biases in large datasets remain challenging, and are left to future work.
+
+\paragraph{If it relates to people, were they provided with privacy guarantees? If so, what guarantees and how are these ensured?}~
+
+This datasets contains text that was derived from web paged scraped by Common Crawl from the web. 
+For much of that data it’s not possible identify the authors. 
+In many instances, creators purposely choose to post anonymously online, so aiming to infer authorship can be ethically fraught. We provide access to our data, and encourage any creators that would likely to have data from or about them removed to reach out.
+
+
+\paragraph{Does the dataset comply with the EU General Data Protection Regulation (GDPR)? Does it comply with any other standards, such as the US Equal Employment Opportunity Act?}~
+
+We created this dataset in aggregate, not separately identifying any individual’s content or information. 
+We took reasonable steps to remove types of personal information that were possible to reliably detect. 
+We restrict who has access to the data, and we release this under a license that prohibits uses that might be deemed discriminatory. 
+We also provide an avenue for any person to contact us to have text from or about them removed from our corpus\fnref{foot:data-removal}.
+
+
+\paragraph{Does the dataset contain information that might be considered sensitive or confidential? (e.g., personally identifying information) Does the dataset contain information that might be considered inappropriate or offensive?}~
+
+This datasets contains text that was derived from web paged scraped by Common Crawl from the web. 
+Therefore, it can contain text posted on public websites by creators on the internet. 
+If an author publicly posted personal information or offensive content, it could be included in this dataset. 
+We took reasonable steps to remove types of personal information that were possible to reliably detect. 
+We also removed documents that contained sentences that were classified as being toxic. 
+

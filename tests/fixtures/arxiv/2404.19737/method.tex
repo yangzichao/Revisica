@@ -1,0 +1,60 @@
+\label{sect:method}
+Standard language modeling learns about a large text corpus $x_1, \ldots x_T$ by implementing a next-token prediction task.
+Formally, the learning objective is to minimize the cross-entropy loss
+\begin{align}
+     L_1
+     &= - \sum_t \log P_\theta(x_{t+1} \mid x_{t:1}),
+\end{align}
+where $P_\theta$ is our large language model under training, as to maximize the probability of $x_{t+1}$ as the next future token, given the history of past tokens $x_{t:1} = x_{t}, \ldots, x_{1}$.
+
+In this work, we generalize the above by implementing a multi-token prediction task, where at each position of the training corpus, the model is instructed to predict $n$ future tokens at once.
+This translates into the cross-entropy loss
+\begin{equation}
+    L_n = - \sum_t \log P_\theta(x_{t+n:t+1} \mid x_{t:1}).
+\end{equation}
+To make matters tractable, we assume that our large language model $P_\theta$ employs a shared trunk to produce a latent representation $z_{t:1}$ of the observed context $x_{t:1}$, then fed into $n$ independent heads to predict in parallel each of the $n$ future tokens (see~\cref{fig:main_figure_col}).
+This leads to the following factorization of the multi-token prediction cross-entropy loss:
+\begin{align*} \label{eq:loss-n}
+    L_n
+    &= - \sum_t \log P_\theta(x_{t+n:t+1} \mid z_{t:1}) \cdot P_\theta(z_{t:1} \mid x_{t:1}) \\
+    &= - \sum_t \sum_{i=1}^{n} \log P_\theta(x_{t+i} \mid z_{t:1}) \cdot P_\theta(z_{t:1} \mid x_{t:1}).
+\end{align*}
+
+In practice, our architecture consists of a shared transformer trunk $f_s$ producing the hidden representation $z_{t:1}$ from the observed context $x_{t:1}$, $n$ independent output heads implemented in terms of transformer layers $f_{h_i}$, and a shared unembedding matrix $f_u$.
+Therefore, to predict $n$ future tokens, we compute:
+$$P_\theta(x_{t+i} \mid x_{t:1}) = \text{softmax}(f_u(f_{h_i}(f_s(x_{t:1})))),$$
+for $i=1,\ldots n$, where, in particular, $P_\theta(x_{t+1} \mid x_{t:1})$ is our next-token prediction head.
+See Appendix~\ref{app:architecture} for other variations of multi-token prediction architectures.
+
+
+
+
+
+
+
+
+
+
+
+
+
+\paragraph{Memory-efficient implementation}
+One big challenge in training multi-token predictors is reducing their GPU memory utilization.
+To see why this is the case, recall that in current LLMs the vocabulary size $V$ is much larger than the dimension $d$ of the latent representation---therefore, logit vectors become the GPU memory usage bottleneck.
+Naive implementations of multi-token predictors that materialize all logits and their gradients, both of shape $(n, V)$, severely limit the allowable batch-size and average GPU memory utilization.
+Because of these reasons, in our architecture we propose to carefully adapt the sequence of forward and backward operations, as illustrated in Figure~\ref{fig:backward}.
+In particular, after the forward pass through the shared trunk $f_s$, we sequentially compute the forward \emph{and} backward pass of each independent output head $f_i$, accumulating gradients at the trunk.
+While this creates logits (and their gradients) for the output head $f_i$, these are freed before continuing to the next output head $f_{i+1}$, requiring the long-term storage only of the $d$-dimensional trunk gradient $\partial L_n / \partial f_s$.
+In sum, we have reduced the peak GPU memory utilization from $O(nV + d)$ to $O(V + d)$, at no expense in  runtime (Table~\ref{tab:wps}).
+
+\paragraph{Inference}
+During inference time, the most basic use of the proposed architecture is vanilla next-token autoregressive prediction using the next-token prediction head $P_\theta(x_{t+1} \mid x_{t:1})$, while discarding all others.
+However, the additional output heads can be leveraged to speed up decoding from the next-token prediction head with \emph{self-speculative decoding} methods such as blockwise parallel decoding~\citep{stern2018blockwise}---a variant of speculative decoding~\citep{leviathan2023fast} without the need for an additional draft model---and speculative decoding with Medusa-like tree attention~\citep{cai2024medusa}.
+
+\input{figures/backward}
+
+
+
+
+
+

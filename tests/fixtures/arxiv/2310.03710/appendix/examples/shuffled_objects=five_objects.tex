@@ -1,0 +1,81 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Read the prompt carefully. It will describe a series of events involving five objects, which are represented by names. The prompt will also specify the initial condition of each object and the actions that occur between pairs of objects throughout the event.
+
+2. Understand the sequence of events. Pay close attention to the actions that occur between pairs of objects. These actions will likely affect the final condition of the objects.
+
+3. Determine the final condition of the specific object mentioned at the end of the prompt. Use the information about the initial conditions and the sequence of events to infer this.
+
+4. Choose the option that best matches your determination. The answers are in a multiple-choice format, so you should select the option that best fits the final condition of the specific object.
+
+5. Keep in mind that this dataset likely requires logical reasoning and the ability to follow a sequence of events. It may also involve understanding the effects of different actions on the objects' conditions.
+
+6. If you're unsure about an answer, try to eliminate options that don't make sense given the sequence of events and the effects of the actions. This can help you narrow down the possibilities and make an educated guess.
+
+Question: Alice, Bob, Claire, Dave, and Eve are dancers at a square dance. At the start of a song, they each have a partner: Alice is dancing with Patrick, Bob is dancing with Sam, Claire is dancing with Jamie, Dave is dancing with Lola, and Eve is dancing with Melissa.
+
+Throughout the song, the dancers often trade partners. First, Dave and Eve switch partners. Then, Dave and Alice switch partners. Then, Eve and Alice switch partners. Then, Claire and Bob switch partners. Finally, Dave and Alice switch partners. At the end of the dance, Alice is dancing with
+
+Options:
+
+(A) Patrick
+
+(B) Sam
+
+(C) Jamie
+
+(D) Lola
+
+(E) Melissa
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The prompt describes a series of events involving five dancers, Alice, Bob, Claire, Dave, and Eve, who are dancing in a square dance. The initial condition of each dancer is specified, along with the actions that occur between pairs of dancers throughout the event.
+
+The sequence of events is as follows:
+
+1. Dave and Eve switch partners.
+
+2. Dave and Alice switch partners.
+
+3. Eve and Alice switch partners.
+
+4. Claire and Bob switch partners.
+
+5. Dave and Alice switch partners.
+
+Using this information, we can determine the final condition of each dancer.
+
+Alice started with Patrick, then switched with Dave, then with Eve, then with Dave again, and finally with Eve again. Therefore, Alice's final partner is Eve.
+
+Bob started with Sam, then switched with Claire. Therefore, Bob's final partner is Claire.
+
+Claire started with Jamie, then switched with Bob. Therefore, Claire's final partner is Bob.
+
+Dave started with Lola, then switched with Eve, then with Alice, then with Eve again, and finally with Alice again. Therefore, Dave's final partner is Alice.
+
+Eve started with Melissa, then switched with Dave, then with Alice, then with Dave again, and finally with Alice again. Therefore, Eve's final partner is Alice.
+
+Therefore, the correct answer is (E) Alice.
+
+Answer: (E) Alice
+
+Therefore, the correct multiple choice label (just the letter) to the task is below.
+
+Answer: E
+\end{alltt}
+}}
+\caption{A complete running example of Shuffled Objects (Five Objects).}
+\label{fig:shuffled_objects=five_objects_example}
+\end{figure*}

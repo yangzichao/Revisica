@@ -1,0 +1,62 @@
+
+\section{Training a Language Model on \dolma}
+\label{sec:using}
+
+
+
+
+
+As a final validation step of the \dolma pipeline, we train, evaluate and release a decoder-only, autoregressive language model which we call \OlmoTiny.  
+We present zero-shot experimental results of \OlmoTiny on a range of downstream tasks demonstrating comparable quality to other released language models of comparable size.
+
+
+
+
+
+\subsection{Evaluating \OlmoTiny}
+\label{sec:evaluating-1b}
+
+\input{tables/1b}
+
+In \autoref{table:1b-eval} we compare \OlmoTiny with other 1B models. 
+We note that, while all models share a roughly comparable number of parameters, only TinyLlama was trained on roughly the same number of tokens as \OlmoTiny.
+Pythia was trained on nearly 10 times fewer tokens and 
+$\text{StableLM}_2$ was trained on 2 trillion tokens for two epochs (data composition not shared).
+Nevertheless, we find that \OlmoTiny performs better on average than the most comparable model, TinyLlama, outperforming it in 4 out of 8 tasks from our evaluation suite \S\ref{sec:experimental-methodology}. 
+Though zero-shot evaluations of such tasks are often challenging for smaller 1B models, we see that performance across all tasks and models is above naive random performance.
+
+
+
+
+
+
+\subsection{Measuring Domain Fit}
+\label{sec:ppl_eval}
+
+In \S\ref{sec:desiderata}, we motivated our decision in curating \dolma to cover a diverse set of sources.
+In this section, we use \OlmoTiny to assess \dolma's distribution of documents leads to pretrained language models that fit well to diverse textual domains, compared to training on other open corpora.
+To represent diverse domains, we use Paloma~\citep{paloma}, a stratified collection of hundreds of fine-grained textual sources; thus, training on more diverse datasets should result in models with lower overall perplexity on Paloma. 
+We repeat our data ablation methodology, training 1.2B models on 150B token samples from C4, mC4 (English-only)~\citep{mc4}, RedPajama v1, RefinedWeb~\citep{falcon40b}, Pile, and \dolma.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=.9\linewidth]{figures/models_by_ppl_over_all_tasks.pdf}
+    \caption{
+    1.2B parameter language models trained on 150B tokens from \dolma and other open corpora, evaluated across training iterations on perplexity over diverse domains in Paloma~\citep{paloma}.
+    }
+    \label{fig:models_by_ppl_over_all_tasks}
+\end{figure}
+
+
+From the results in Figure~\ref{fig:models_by_ppl_over_all_tasks}, we observe the following: (1) The model trained on Pile performs well as it is comprised of many diverse sources, despite its overall smaller scale. (2) Larger multi-source datasets like \dolma and, to a lesser extent, RedPajama v1 yield models with similar coverage of diverse domains to Pile.
+(3) Finally, training on single-source corpora like C4, mC4 (English-only), and RefinedWeb leads to models with poor fit to diverse domains as indicated by higher average perplexity.
+
+
+
+
+Our controlled perplexity analysis reveals the importance of including non-web data from diverse curated sources. 
+The metric that we use from Paloma surfaces how models fit more heterogeneous data, because it samples marked domains from each source equally rather than by their unequal proportions in the source. 
+Intuitively, the model trained on the Pile is well-fit to such data as that pretraining corpus is mostly sourced from similar smaller, hand-picked sources. 
+But as we wish to scale the total number of tokens in a corpus, the challenge becomes how to integrate more available web data without losing sample efficiency on diverse evaluations such as Paloma.
+In this case, we see that \OlmoTiny nearly matches the perplexity curve of the Pile model despite a much larger fraction of web data included.

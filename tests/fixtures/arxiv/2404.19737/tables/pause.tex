@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Utilization of additional whitespace tokens in code benchmarks.}}
+\label{tab:pause}
+\begin{tabular}{llrr}
+\toprule
+Task  & Whitespace & $n = 1$      &  $n = 4$     \\
+\midrule
+APPS/Intro & spaces + newline &  +0.21 &  \textbf{+0.34} \\
+APPS/Intro & newline  &  \textbf{+0.79} &  +0.69 \\
+HumanEval & spaces + newline & -0.72 & \textbf{-0.16} \\
+HumanEval & newline  & -0.26 &  \textbf{+0.10} \\
+MBPP & spaces + newline & -0.10 & \textbf{-0.06} \\
+MBPP & newline  &  \textbf{+0.03} & -0.08 \\
+\midrule
+\emph{Average} & & -0.01 & \textbf{+0.14} \\
+\bottomrule
+\end{tabular}
+\end{table}

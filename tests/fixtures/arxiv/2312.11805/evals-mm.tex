@@ -1,0 +1,263 @@
+\clearpage
+\subsection{Multimodal}
+\label{sec:mm}
+Gemini models are natively multimodal. These models exhibit the unique ability to seamlessly combine their capabilities across modalities (e.g. extracting information and spatial layout out of a table, a chart, or a figure) with the strong reasoning capabilities of a language model 
+(e.g. its state-of-art-performance in math and coding) as seen in examples in Figures~\ref{fig:inverse_graphics_3} and~\ref{fig:demo_example6}. 
+The models also show strong performance in discerning fine-grained details in inputs, aggregating context across space and time, and applying these capabilities over a temporally-related sequence of video frames and/or audio inputs. 
+
+The sections below provide more detailed evaluation of the model across different modalities (image, video, and audio), together with qualitative examples of the model's capabilities for image generation and the ability to combine information across different modalities. 
+
+\subsubsection{Image Understanding}
+\label{sec:image}
+We evaluate post-trained Gemini API models on four different capabilities: high-level object recognition using captioning or question-answering tasks such as VQAv2; fine-grained transcription using tasks such as TextVQA and DocVQA requiring the model to recognize low-level details; chart understanding requiring spatial understanding of input layout using ChartQA and InfographicVQA tasks; and multimodal reasoning using tasks such as Ai2D, MathVista and MMMU. For zero-shot QA evaluation, the model is instructed to provide short answers aligned with the specific benchmark. All numbers are obtained using greedy sampling and without any use of external OCR tools. 
+
+
+\definecolor{light-gray}{gray}{0.92}
+\begin{table}[ht!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+\begin{tabular}{p{3.5cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.5cm}|p{1.5cm}p{2.5cm}}
+\toprule
+ & Gemini \newline Ultra \newline \tiny{(pixel only)} & Gemini \newline Pro \newline \tiny{(pixel only)} & Gemini \newline Nano 2 \newline \tiny{(pixel only)} & Gemini \newline Nano 1 \newline \tiny{(pixel only)} & GPT-4V & Prior SOTA \\
+\midrule
+\textbf{MMMU (val)} \newline \tiny{Multi-discipline college-level problems \citep{mmmu}} & \sota{59.4\%} \newline \tiny{pass$@$1} \newline \newline \scriptsize{\sota{62.4\%}} \newline \tiny{Maj1$@$32} & 47.9\% & 32.6\% & 26.3\% & 56.8\% & 56.8\% \newline \tiny{GPT-4V, 0-shot} \\
+\addlinespace[1ex]
+\textbf{TextVQA (val)} \newline \tiny{Text reading on natural images \newline \citep{textvqa}} & \sota{82.3\%} & 74.6\% & 65.9\% & 62.5\% & 78.0\% & \colorbox{light-gray}{79.5\%} \newline \tiny{Google PaLI-3, fine-tuned} \\
+\addlinespace[1ex]
+\textbf{DocVQA (test)} \newline \tiny{Document understanding \newline\citep{docvqa}} &   \sota{90.9\%} & 88.1\% & 74.3\% & 72.2\% & 88.4\% \newline \tiny{(pixel only)} & 88.4\% \newline \tiny{GPT-4V, 0-shot} \\
+\addlinespace[2ex]
+\textbf{ChartQA (test)} \newline \tiny{Chart understanding \newline \citep{chartqa}} & \sota{80.8\%} & 74.1\% & 51.9\% & 53.6\% & 78.5\% \newline  \tiny{(4-shot CoT)} & 79.3\% \newline \tiny{Google DePlot, 1-shot PoT} \newline \tiny{\hypersetup{citecolor=black}{\citep{deplot}}} \\
+\addlinespace[1ex]
+\textbf{InfographicVQA (test)} \newline \tiny{Infographic understanding \newline \citep{infographicvqa}} & \sota{80.3\%} & 75.2\% & 54.5\% & 51.1\% & 75.1\% \newline \tiny{(pixel only)} & 75.1\% \newline  \tiny{GPT-4V, 0-shot} \\
+\addlinespace[1ex]
+\textbf{MathVista (testmini)} \newline \tiny{Mathematical reasoning \newline \citep{MathVista}} & \sota{53.0\%} & 45.2\% & 30.6\% & 27.3\% & 49.9\% & 49.9\% \newline \tiny{GPT-4V, 0-shot} \\
+\addlinespace[1ex]
+\textbf{AI2D (test)} \newline \tiny{Science diagrams \newline\citep{ai2d}} &  \sota{79.5\%} & 73.9\% & 51.0\% & 37.9\% & 78.2\% &  \colorbox{light-gray}{81.4\%} \newline \tiny{Google PaLI-X, fine-tuned} \\
+\addlinespace[1ex]
+\textbf{VQAv2 (test-dev)} \newline \tiny{Natural image understanding \newline\citep{vqav2}} &  \sota{77.8\%} & 71.2\% & 67.5\% & 62.7\% & 77.2\% &  \colorbox{light-gray}{86.1\%} \newline \tiny{Google PaLI-X, fine-tuned} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Image understanding} Gemini Ultra consistently outperforms existing approaches even in zero-shot, especially for OCR-related image understanding tasks for natural images, text, documents, and figures without using any external OCR engine (`pixel only'). Many existing approaches fine-tune on the respective tasks, highlighted in gray, which makes the comparison with 0-shot not apples-to-apples.
+\label{tab:mm_image_text}
+}
+\vspace{-0.1cm}
+\end{table}
+
+We find that Gemini Ultra is state of the art across a wide range of image-understanding benchmarks in Table~\ref{tab:mm_image_text}. It achieves strong performance across a diverse set of tasks such as answering questions on natural images and scanned documents as well as understanding infographics, charts and science diagrams. When compared against publicly reported results from other models (most notably GPT-4V), the Gemini model is better in zero-shot evaluation by a significant margin. It also exceeds several existing models that are specifically fine-tuned on the benchmark's training sets for the majority of tasks. The capabilities of the Gemini models lead to significant improvements in the state of the art on academic benchmarks like MathVista (+3.1\%)\footnote{MathVista is a comprehensive mathematical reasoning benchmark consisting of 28 previously published multimodal datasets and three newly created datasets. Our MathVista results were obtained by running the \href{https://github.com/lupantech/MathVista/tree/main/evaluation}{MathVista authors’ evaluation script}.} or InfographicVQA (+5.2\%). 
+
+MMMU \citep{mmmu} is a recently released evaluation benchmark, which consists of questions about images across 6 disciplines with multiple subjects within each discipline that require college-level knowledge to solve these questions. Gemini Ultra achieves the best score on this benchmark advancing the state-of-the-art result by more than 5 percentage points and outperforms the previous best result in 5 of 6 disciplines (see Table~\ref{tab:mmmu}), thus showcasing its multimodal reasoning capabilities. 
+
+\begin{table}[h!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+\begin{tabular}{L{3.5cm}L{1.4cm}L{1.4cm}L{1.5cm}}
+    \toprule
+MMMU (val) & 
+\multicolumn{2}{l}{Gemini Ultra (0-shot)} & 
+\multicolumn{1}{l}{GPT-4V (0-shot)} \\
+& \tiny{Maj@32} & \tiny{pass@1} & \tiny{pass@1} \\
+\midrule
+Art \& Design & \sota{74.2}& {70.0} & 65.8 \\
+Business & \sota{62.7} & 56.7 & {59.3} \\
+Science & 49.3& 48.0 & \sota{54.7} \\
+Health \& Medicine & \sota{71.3} & {67.3} & 64.7  \\
+Humanities \& Social Science & \sota{78.3} & {78.3} & 72.5  \\
+Technology \& Engineering & \sota{53.0} & {47.1} & 36.7 \\
+\midrule
+Overall & \sota{62.4} & {59.4} & 56.8 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Gemini Ultra performance on the MMMU} benchmark~\citep{mmmu} per discipline. Each discipline covers multiple subjects, requiring college-level knowledge and complex reasoning.} 
+\label{tab:mmmu}
+\end{table}
+
+Gemini models are also capable of operating across modalities and a diverse set of global languages simultaneously, both for image understanding tasks (e.g., images containing text in Icelandic) and for generation tasks (e.g., generating image descriptions for a wide range of languages). We evaluate the performance of generating image descriptions on a selected subset of languages in the Crossmodal-3600 (XM-3600) benchmark in a 4-shot setting, using the Flamingo evaluation protocol \cite{flamingo}, without any fine-tuning for all models. As shown in Table~\ref{table:mm_xm3600}, Gemini models achieve a significant improvement over the existing best model, Google PaLI-X.
+
+\begin{table}[h!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+     \scriptsize
+\begin{tabular}{p{3.5cm}p{2.5cm}p{2.5cm}p{2.5cm}}
+\toprule
+XM-3600 (CIDER) & 
+{Gemini Ultra \newline 4-shot} & 
+{Gemini Pro \newline 4-shot} & 
+{Google PaLI-X \newline 4-shot} \\
+\midrule
+English &  86.4 & \sota{87.1} & 77.8 \\
+French &  \sota{77.9} & 76.7 & 62.5 \\
+Hindi &  \sota{31.1} & 29.8 & 22.2 \\
+Modern Hebrew &  \sota{54.5} & 52.6 & 38.7 \\
+Romanian &  \sota{39.0} & 37.7 & 30.2 \\
+Thai &  \sota{86.7} & 77.0 & 56.0 \\
+Chinese &  \sota{33.3} & 30.2 & 27.7 \\
+\midrule
+Average (of 7) &  \sota{58.4} & 55.9 & 45.0 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Multilingual image understanding} Gemini models outperform existing models in captioning images in many languages when benchmarked on a subset of languages in XM-3600 dataset \cite{xm3600}. 
+\label{table:mm_xm3600}}
+\end{table}
+
+\clearpage
+\begin{figure}[ht!]
+\centering
+ \includegraphics[width=\textwidth,keepaspectratio]{figs/inverse_graphics_3_two_column.jpg}
+ \caption{\textbf{Using Gemini models' multimodal reasoning capabilities} to generate $\textrm{matplotlib}$ code for rearranging the subplots. The multimodal prompt is shown at the top-left in gray. Gemini Ultra's response, including its generated code, is shown in the right column in blue. The bottom left figure shows rendered version of the generated code. Successfully solving this task shows the model's capability to combine several capabilities: (1) \textbf{recognition} of the functions depicted in the plots; (2) \textbf{inverse graphics} to infer the code that would have generated the subplots; (3) \textbf{instruction-following} to put subplots in their desired positions; and (4) \textbf{abstract reasoning} to infer that the exponential plot must stay in its original place, because the sine plot must move out of the way for the 3-dimensional plot. 
+}
+ \label{fig:inverse_graphics_3}
+\end{figure}
+
+Qualitative evaluation in Figure~\ref{fig:inverse_graphics_3} illustrates an example of Gemini Ultra's multimodal reasoning capabilities. The model is required to solve the task of generating $\textrm{matplotlib}$ code that would rearrange a set of subplots provided by the user. The model output shows that it successfully solves this task combining multiple capabilities of understanding the user plot, inferring the code required to generate it, following user instructions to put subplots in their desired positions, and abstract reasoning about the output plot. This highlights Gemini Ultra's native multimodality and alludes to its more complex reasoning abilities across interleaved sequences of image and text. We refer the reader to the appendix for more qualitative examples.
+
+\subsubsection{Video Understanding}
+\label{sec:video}
+Understanding video input is an important step towards a useful generalist agent. We measure the video understanding capability across several established benchmarks that are held-out from training. These tasks measure whether the model is able to understand and reason over a temporally-related sequence of frames. For each video task, we sample 16 equally-spaced frames from each video clip and feed them to the Gemini models. For the YouTube video datasets (all datasets except NextQA and the Perception test), we evaluate the Gemini models on videos that were still publicly available in the month of November, 2023. 
+
+Gemini Ultra achieves state-of-the-art performance on various few-shot video captioning tasks as well as zero-shot video question answering tasks as shown in Table~\ref{tab:video}. This demonstrates its capability of strong temporal reasoning across several frames. Figure~\ref{fig:demo_example16} in the appendix provides a qualitative example of understanding the video of the ball-striking mechanics of a soccer player and reasoning about the player can improve their game.
+
+\begin{table}[h!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+    \begin{tabular}{p{4.5cm}p{2.5cm}p{2.5cm}L{3cm}}
+    \toprule
+Task & 
+{Gemini Ultra} &
+{Gemini Pro} & 
+{Few-shot SoTA}
+ \\
+\midrule
+\textbf{VATEX (test)} & \sota{62.7} & 57.4 & 56.0 \\
+\tiny{English video captioning \newline\citep{vatex}} & {\tiny{4-shots}} & \tiny{4-shots} &  \tiny{DeepMind Flamingo, 4-shots} \\
+
+\addlinespace[2ex]
+
+\textbf{VATEX ZH (test)} & \sota{51.3} & 50.0 &  --\\
+\tiny{Chinese video captioning \newline\citep{vatex}} & {\tiny{4-shots}} & \tiny{4-shots} &  \\
+
+\addlinespace[2ex]
+
+\textbf{YouCook2 (val)} & \sota{135.4} & 123.2 & 74.5 \\
+\tiny{English cooking video captioning \newline\citep{youcook2}} &  {\tiny{4-shots}} & \tiny{4-shots} & \tiny{DeepMind Flamingo, 4-shots} \\
+
+\addlinespace[2ex]
+
+\textbf{NextQA (test)} & \sota{29.9} & 28.0 & 26.7 \\
+\tiny{Video question answering \newline\citep{nextqa}} & {\tiny{0-shot}} & \tiny{0-shot} &  \tiny{DeepMind Flamingo, 0-shot}\\
+
+\addlinespace[2ex]
+
+\textbf{ActivityNet-QA (test) } & \sota{52.2} & 49.8 & 45.3 \\
+\tiny{Video question answering \newline\citep{activitynetqa}} & {\tiny{0-shot}} & \tiny{0-shot} & \tiny{Video-LLAVA, 0-shot} \\
+
+\addlinespace[2ex]
+
+\textbf{Perception Test MCQA (test) } & \sota{54.7} & 51.1 & 46.3 \\
+\tiny{Video question answering \newline\citep{puatruaucean2023perception}} & {\tiny{0-shot}}  & \tiny{0-shot} &  \tiny{SeViLA \citep{yu2023self}, 0-shot}\\
+
+\bottomrule
+\end{tabular}
+\caption{\textbf{Few-shot video understanding across tasks and languages} on selected academic benchmarks. The reported metric is CIDER for video captioning, WUPS for NextQA, and top-1 accuracy for the Perception Test and ActivityNet-QA. For ActivityNet-QA, we use the Video-LLAVA \citep{lin2023video} evaluation protocol.}
+\label{tab:video}
+\end{table}
+
+
+\subsubsection{Image Generation}
+\label{sec:imagegen}
+Gemini models are able to output images natively, without having to rely on an intermediate natural language description that can bottleneck the model's ability to express images. This uniquely enables the model to generate images with prompts using interleaved sequences of image and text in a few-shot setting. For example, the user might prompt the model to design suggestions of images and text for a blog post or a website (see Figure~\ref{fig:demo_example4} in the appendix).
+
+Figure~\ref{fig:image_generation} shows an example of image generation in 1-shot setting. Gemini Ultra model is prompted with one example of interleaved image and text where the user provides two colors (blue and yellow) and image suggestions of creating a cute blue cat or a blue dog with yellow ear from yarn. The model is then given two new colors (pink and green) and asked for two ideas about what to create using these colors. The model successfully generates an interleaved sequence of images and text with suggestions to create a cute green avocado with pink seed or a green bunny with pink ears from yarn. 
+
+\begin{figure}[h!]
+\centering
+ \includegraphics[width=\textwidth,keepaspectratio]{figs/image_generation.jpg}
+ \caption{\textbf{Image Generation.} Gemini models can output multiple images interleaved with text given a prompt composed of image and text. In the left figure, Gemini Ultra is prompted in a 1-shot setting with a user example of generating suggestions of creating cat and dog from yarn when given two colors, blue and yellow. Then, the model is prompted to generate creative suggestions with two new colors, pink and green, and it generates images of creative suggestions to make a cute green avocado with pink seed or a green bunny with pink ears from yarn as shown in the right figure.}
+ \label{fig:image_generation}
+\end{figure}
+
+\clearpage
+\subsubsection{Audio Understanding}
+\label{sec:audio}
+We evaluate the Gemini Nano-1 and Gemini Pro models on a variety of public benchmarks and compare it with Universal Speech Model (USM)~\cite{usm} and Whisper (large-v2~\cite{whisper} or large-v3~\cite{whisper-v3} as indicated). These benchmarks include automatic speech recognition (ASR) tasks such as FLEURS \cite{conneau2023fleurs}, VoxPopuli, \cite{wang2021voxpopuli}, Multi-lingual Librispeech \cite{pratap2020mls}, as well as the speech translation task CoVoST 2, translating different languages into English~\cite{wang2020covost}. We also report on an internal benchmark YouTube test set. ASR tasks report a word error rate (WER) metric, where a lower number is better. Translation tasks report a BiLingual Evaluation Understudy (BLEU) score, where a higher number is better. FLEURS is reported on 62 languages that have language overlap with the training data. Four segmented languages (Mandarin, Japanese, Korean and Thai) report character error rate (CER), instead of WER, similar to Whisper~\cite{whisper}.
+
+Table~\ref{tab:audio-results} indicates that our Gemini Pro model significantly outperforms the USM and Whisper models across all ASR and AST tasks, both for English and multilingual test sets. Note that there is a large gain in FLEURS, compared to USM and Whisper, as our model is also trained with the FLEURS training dataset. However, training the same model without FLEURS dataset results in a WER of 15.8, which still outperforms Whisper. Gemini Nano-1 model also outperforms both USM and Whisper on all datasets except FLEURS. Note that we did not evaluate Gemini Ultra on audio yet, though we expect better performance from increased model scale.
+
+\begin{table}[h!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+    \begin{tabular}{p{2.5cm}p{2.5cm}p{1.25cm}p{1cm}p{1cm}p{1.5cm}p{1.5cm}}
+    \toprule
+& Task & Metric & Gemini Pro & Gemini Nano-1 & Whisper\newline\tiny{\cite{whisper,whisper-v3}} & USM\newline\tiny{\cite{usm}}  \\
+\midrule
+Automatic Speech \newline Recognition & \textbf{YouTube} \newline \tiny{(en-us)} & WER (↓) & \sota{4.9\%} & 5.5\% & 6.5\% \newline\tiny{(v3)} & 6.2\% \\
+
+\addlinespace[1ex]
+
+& \textbf{Multilingual \newline Librispeech} \newline \tiny{(en-us)~\newline\cite{pratap2020mls}} & WER (↓) & \sota{4.8\%} & 5.9\% & 6.2\% \newline\tiny{(v2)} & 7.0 \% \\
+
+\addlinespace[1ex]
+
+& \textbf{FLEURS} \newline \tiny{(62 lang)~\newline\cite{conneau2023fleurs}} & WER (↓) & \sota{7.6\%} & 14.2\% & 17.6\% \newline\tiny{(v3)} & 11.8\% \\
+
+\addlinespace[1ex]
+
+& \textbf{VoxPopuli} \newline \tiny{(14 lang)~\newline\cite{wang2021voxpopuli}} & WER (↓) & \sota{9.1\%} & 9.5\% & 15.9\% \newline\tiny{(v2)} & 13.4\% \\
+
+\addlinespace[1ex]
+
+Automatic Speech \newline Translation & \textbf{CoVoST 2} \newline \tiny{(21 lang)~\newline\cite{wang2020covost}} & BLEU (↑) & \sota{40.1} & 35.4 & 29.1 \newline\tiny{(v2)} & 30.7 \\
+\bottomrule
+\end{tabular}
+\caption{Speech evaluation results on selected benchmarks for ASR and AST. For ASR, the reported metric  is WER where lower is better. For AST, the reported metric is BLEU where higher is better.}
+\label{tab:audio-results}
+\vspace{-0.2cm}
+\end{table}
+
+Table~\ref{tab:audio-qualitative} shows further error analysis with USM and Gemini Pro. We find that Gemini Pro produces more understandable responses, particularly on rare words and proper nouns.
+
+\definecolor{darkspringgreen}{rgb}{0.09, 0.45, 0.27}
+\begin{table}[h!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+    \begin{tabular}{p{.8cm}p{4.4cm}p{4.4cm}p{4.4cm}p{0.5cm}}
+    \toprule
+Domain & Truth & USM & Gemini Pro & Wav\\
+\midrule
+Fleurs & Scotturb bus 403 travels regularly to Sintra, stopping at Cabo da Roca. & \red{Scotboard} bus \red{four3} \red{traversed} regularly to \red{Centra} stopping at Cabo de \red{Roga}. & \textcolor{darkspringgreen}{Scotturb bus 403 travels regularly to Sintra, stopping at Cabo da Roca.} &  \href{https://storage.googleapis.com/deepmind-media/gemini/fleurs1.wav}{\LARGE \loudspeaker} \\
+Fleurs & The archipelago lies 120 km north of the Peninsula. The largest is King George Island, with the settlement of Villa Las Estrellas. & The archipelago \red{lines} 120 km north of peninsula. The largest is \red{Kingurch} island with the settlement of \red{Cua Losas}. & \textcolor{darkspringgreen}{The archipelago lies 120 km north of the Peninsula. The largest is King George Island, with the settlement of Villa Las Estrellas.} &  \href{https://storage.googleapis.com/deepmind-media/gemini/fleurs2.wav}{\LARGE \loudspeaker} \\
+\bottomrule
+\end{tabular}
+\caption{Qualitative examples for the ASR task in the benchmark. Incorrect transcriptions are highlighted in red.}
+\label{tab:audio-qualitative}
+\vspace{-0.3cm}
+\end{table}
+
+\clearpage
+\subsubsection{Modality Combination}
+Multimodal demonstrations often include a combination of text interleaved with a single modality, usually images. We demonstrate the ability to process a sequence of audio and images natively. 
+
+Consider a cooking scenario about making an omelet where we prompt the model with a sequence of audio and images. Table~\ref{tab:modality-combo} indicates a turn-by-turn interaction with the model, providing pictures and verbally asking questions about the next steps for cooking an omelet. We note that the model response text is reasonably accurate, and shows that model processes fine-grained image details to evaluate when the omelet is fully cooked. See demo on the \href{https://deepmind.google/gemini}{website}.
+
+\begin{table}[ht!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+    \begin{tabular}{p{3.5cm}p{6cm}p{6cm}}
+    \toprule
+Input Image & Input Audio (transcribed) & Model Response: Text \\
+\midrule
+\rowincludegraphics[width=3.5cm]{figs/modality_combination/whats_the_first_step.jpg} & \href{https://storage.googleapis.com/deepmind-media/gemini/gemini_av_input_1.wav}{\LARGE \loudspeaker} What’s the first step to make a veggie omelet with these ingredients? & Crack the eggs into a bowl and whisk them. \\ \\
+\rowincludegraphics[width=3.5cm]{figs/modality_combination/not_ready_squared.jpg} & \href{https://storage.googleapis.com/deepmind-media/gemini/gemini_av_input_2.wav}{\LARGE \loudspeaker} Thank you for the instructions. I started making my omelet, does it look ready now? & It looks like it's almost ready. You can flip it over to cook the other side. \\ \\
+(No image - it’s a follow up on the previous question) & \href{https://storage.googleapis.com/deepmind-media/gemini/gemini_av_input_3.wav}{\LARGE \loudspeaker} Why is it not ready? & It's not ready because the eggs are still runny. \\ \\
+\rowincludegraphics[width=3.5cm]{figs/modality_combination/what_about_now.jpg} & \href{https://storage.googleapis.com/deepmind-media/gemini/gemini_av_input_4.wav}{\LARGE \loudspeaker} What about now? & It looks ready now. You can take it off the heat and serve it. \\ \\
+\bottomrule
+\end{tabular}
+\caption{Audio-visual qualitative example showcasing the ability of Gemini models to process interleaved sequences of text, vision, and audio, as well as reason across modalities. This example inputs interleaved images and audio from the user in a cooking scenario. The user prompts the model for instructions to make an omelet and to inspect whether it is fully cooked.
+}
+\label{tab:modality-combo}
+\end{table}

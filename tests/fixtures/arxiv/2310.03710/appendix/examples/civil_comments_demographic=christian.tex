@@ -1,0 +1,56 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The civil\_comments dataset contains public comments from various news sites. These comments were created between 2015 and 2017 and appeared on approximately 50 English-language news sites across the world. The dataset includes the text of the comments, some associated metadata, and labels for toxicity and identity mentions.
+
+2. Focus on the content: The dataset does not provide specific demographic information about the commenters. Therefore, your analysis should focus on the content of the comments and their context, rather than attempting to infer demographic information.
+
+3. Analyze the toxicity: The dataset includes labels for toxicity. Use these labels to help determine the tone and intent of the comments.
+
+4. Be aware of the limitations: The dataset does not include user identities or demographic information about the commenters. Therefore, be cautious about making assumptions about the individuals who made the comments.
+
+5. Answer the question: Based on your understanding of the comment and its context, answer the question related to the passage. Your answer should be either 'True' or 'False'. Make sure your answer is supported by the information available in the comment and its context.
+
+6. Explain your reasoning: After providing your answer, explain why you chose that answer. Your explanation should reference specific parts of the comment and how they led you to your conclusion.
+
+Passage: Keep God out of politics...I'd rather expose the politicians for creating phony front groups designed to mislead Catholics.
+
+Question: Is the passage above toxic?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage above expresses a negative sentiment towards politicians and their involvement in religion. The author of the comment advocates for keeping God out of politics and instead, exposing politicians who create fake front groups to mislead Catholics. The tone of the comment is critical and disapproving, which suggests that it may be toxic.
+
+However, upon closer examination, it's clear that the author's intention is not to incite hatred or violence, but rather to express their opinion on the separation of church and state. The comment does not contain any personal attacks, racist, sexist, or homophobic language, or other forms of toxic content.
+
+Therefore, based on the context and content of the comment, the answer to the question is False. The passage is not toxic.
+
+Reasoning:
+
+* The comment expresses a negative sentiment towards politicians, but it does not contain any toxic language or personal attacks.
+
+* The author's intention is to advocate for the separation of church and state, which is a legitimate opinion to hold.
+
+* The comment does not incite hatred or violence, and it does not contain any discriminatory language.
+
+Answer: False. The passage is not toxic.
+
+Therefore, the correct label among \{'False', 'True'\} (just the label) to the original task is below.
+
+Answer: False
+\end{alltt}
+}}
+\caption{A complete running example of CivilComments (Christian).}
+\label{fig:civil_comments_demographic=christian_example}
+\end{figure*}

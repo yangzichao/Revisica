@@ -1,0 +1,108 @@
+%2multibyte Version: 5.50.0.2960 CodePage: 65001
+
+\section{Application to Hong Kong license plate auctions}
+\label{sec:application}
+
+In this section, we apply our proposed inference methods to Hong Kong vehicle license plate auctions. We begin with some administrative details about these auctions. Since 1973, the Hong Kong government has used standard oral ascending auctions to sell license plates. As mentioned in Section \ref{sec:sp}, this auction format is weakly equivalent to a second-price auction. There are two types of license plates: personalized and traditional. Personalized plates feature a combination of letters and numbers (subject to certain rules) proposed by the individuals. In contrast, traditional plates have a random combination of letters and numbers assigned by the government. Both types of plates are sold via public auctions, and there is no resale market. The government holds public auctions monthly and posts the available license plates a few days before the auction. Anyone interested in participating must pay a fully refundable deposit. The reserve price is set at 1,000 HKD, which is small compared to the average annual salary (above 435,000 HKD in 2024). The revenue from all auctions will go to the lotteries fund for charity purposes.
+
+Personalized license plates typically feature more attractive letter/number combinations, resulting in higher transaction prices. The government introduced personalized license plates in 2006 and has maintained records of all auction results since then.\footnote{Data are publicly available at https://www.td.gov.hk/en/public\_services/vehicle\_registration\_mark.html} However, aside from the letter/number combinations and transaction prices, the government does not record other auction details, such as the number of bidders. Having said this, we interviewed recent auction attendees to get a sense of the typical number of participants in these auctions. Our anecdotal evidence suggests that the number of participants in a typical auction is around 100. The government also holds a Lunar New Year special auction every February (or March), where some very popular plates are auctioned. In these special auctions, the number of participants can be significantly higher, around 300.
+
+We now examine three cases in detail: (i) luxurious license plates with a single letter, (ii) luxurious license plates with two letters and two numbers, and (iii) ordinary license plates with two letters and four numbers. 
+The first two cases contain only personalized plates, while the third contains both personalized and traditional plates.
+
+\subsection{Luxurious license plates with a single letter}
+
+Our first analysis investigates the super-luxury license plates containing only a single letter, corresponding to our running example. Only four such plates have ever been auctioned, and the transaction prices were exorbitant. For example, the plate with a single letter "\texttt{D}" was sold on February 25, 2024 for 20.2 million HKD. The total revenue from all auctions that day was 24.5 million HKD, of which 82\% was due to this single luxurious plate. 
+
+Table \ref{tab:case1} presents the letters, auction dates, and transaction prices for all four auctions of single-letter plates. The government's expected revenue and the winner's expected utility are important features of these auctions. To our knowledge, no existing method can conduct inference on these quantities given only transaction prices for only four auctions. Assuming that the value distribution remains unchanged and the number of participants is approximately the same across these four auctions, we construct the 95\% CIs for the expected revenue and the winner's expected utility. The transaction prices are adjusted for inflation\footnote{Annual inflation in Hong Kong was 2.88\%, 0.25\%, 1.57\%, 1.88\%, and 2.10\% in 2019 to 2023, respectively. Data source: https://www.statista.com/statistics/1365695/inflation-rate-in-hong-kong/}, and the CIs are measured in million HKD in 2024. These values are substantial, as shown in Table \ref{tab:case1}. 
+
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{ccccc}
+\hline\hline
+Plate &  & Auction Date &  & Price (million HKD) \\ \hline
+\texttt{D} &  & Feb. 25 2024 &  & $20.2$ \\ 
+\texttt{R} &  & Feb. 12 2023 &  & $25.5$ \\ 
+\texttt{W} &  & Mar. 07 2021 &  & $26.0$ \\ 
+\texttt{V} &  & Feb. 24 2019 &  & $13.0$ \\ \hline
+\multicolumn{3}{l}{95\% CI for winner's utility $\mu _{K}$} &  & $[2.185$,~ $58.885]$ \\ 
+\multicolumn{3}{l}{95\% CI for seller's revenue $\pi _{K}$} &  & $[8.696$,~ $37.649]$ \\ 
+\multicolumn{3}{l}{$p$-value for $H_{0}:\xi =-1$} &  & $0.64$ \\ 
+\hline\hline
+\end{tabular}
+\caption{95\% CIs for the winner's expected utility and the government's expected revenue (in million HKD, adjusted by inflation) and $p$-values for the test in \eqref{eq:compTest} for $H_0:\xi = -1$ in Hong Kong car license plate auctions, using four license plates with a single letter.}
+\label{tab:case1}
+\end{table}
+
+\subsection{Luxurious plates with two letters and two numbers}
+
+Our second analysis focuses on a single auction held on February 25, 2024, the most recent Lunar New Year special auction. Based on interviews with participants, the number of bidders in this auction was very large. On that day, only five personalized license plates featuring two letters and two numbers were sold. Table \ref{tab:case21} shows that their transaction prices ranged from 23,000 HKD to 185,000 HKD. Given the similarity in the combinations of letters and numbers, it is reasonable to assume that their underlying valuation distributions are the same, which is our primary assumption. Using our proposed method, we construct the 95\% CI for the government's expected revenue and the winner's expected utility. Additionally, our five observations allow us to reject the hypothesis of $\xi =-1$, which suggests that this dataset does not satisfy the standard regularity conditions in the auction literature.
+
+\begin{table}
+\renewcommand{\arraystretch}{1.5}
+\centering
+\begin{tabular}{ccccc}
+\hline\hline
+Plate &  & Auction Date &  & Price (1,000 HKD) \\ \hline
+\texttt{BE22} &  & Feb. 25 2024 &  & $40$ \\ 
+\texttt{HE68} &  & Feb. 25 2024 &  & $23$ \\ 
+\texttt{WE88} &  & Feb. 25 2024 &  & $185$ \\ 
+\texttt{LY38} &  & Feb. 25 2024 &  & $40$ \\ 
+\texttt{ME33} &  & Feb. 25 2024 &  & $105$ \\ \hline
+\multicolumn{3}{l}{95\% CI for winner's utility $\mu _{K}$} &  & $[57,~524]$ \\ 
+\multicolumn{3}{l}{95\% CI for seller's revenue $\pi _{K}$} &  & $[3, ~212]$ \\ 
+\multicolumn{3}{l}{$p$-value for $H_{0}:\xi =-1$} &  & $0.03$ \\ 
+\hline\hline
+\end{tabular}
+\caption{95\% CIs for the winner's expected utility and the government's expected revenue (in 1,000 HKD) and $p$-values for the test in \eqref{eq:compTest} for $H_0:\xi = -1$ in Hong Kong car license plate auctions, using five license plates with two letters and two numbers.}\label{tab:case21}
+\end{table}
+
+We notice that three of these five plates share the same two numbers, i.e., \texttt{BE22}, \texttt{WE88}, and \texttt{ME33}. We now repeat the analysis with these three plates. The left panel of Table \ref{tab:case22} again presents the 95\% CIs for the government's expected revenue and the winner's expected utility. Compared with the previous table, using only three observations results in much wider confidence intervals, as expected. The lower bound of the expected revenue reaches the reserve price of 1,000 HKD. Note that having three auctions is the minimum amount we require. In the right panel of Table \ref{tab:case22}, we collect three plates with letters \texttt{UU} and numbers 28, 38, and 68, respectively. We adjusted the inflation and reported the CIs in 1,000 HKDs in 2021. The results are comparable to those in the left panel. 
+
+\begin{table}
+\renewcommand{\arraystretch}{1.5}
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{ccccccccc}
+\hline\hline
+Plate &  & Auction Date & Price (1,000 HKD) &  & Plate &  & Auction Date & 
+Price (1,000 HKD) \\ \hline
+\texttt{BE22} &  & Feb. 25 2024 & $40$  &  & \texttt{UU28} &  & Mar. 07 2021 & $170$ \\ 
+\texttt{WE88} &  & Feb. 25 2024 & $185$ &  & \texttt{UU38} &  & Feb. 24 2019 & $59$ \\ 
+\texttt{ME33} &  & Feb. 25 2024 & $105$ &  & \texttt{UU68} &  & Feb. 24 2019 & $91$ \\ \hline
+\multicolumn{3}{l}{95\% CI for winner's utility $\mu _{K}$} & $[32,~1122]$ & & \multicolumn{3}{l}{95\% CI for winner's utility $\mu _{K}$} & $[22,~848]$\\ 
+\multicolumn{3}{l}{95\% CI for seller's revenue $\pi _{K}$} & $[1,~ 403]$ &  & \multicolumn{3}{l}{95\% CI for seller's revenue $\pi _{K}$} & $[1, ~331]$ \\ 
+\multicolumn{3}{l}{$p$-value for $H_{0}:\xi =-1$} & $0.33$ &  & 
+\multicolumn{3}{l}{$p$-value for $H_{0}:\xi =-1$} & $0.24$ \\ 
+\hline\hline
+\end{tabular}
+\end{adjustbox}
+\caption{95\% CIs for the winner's expected utility and the government's expected revenue (in 1,000 HKD) and $p$-values for the test in \eqref{eq:compTest} for $H_0:\xi = -1$ in Hong Kong car license plate auctions, using three license plates with two letters and the same two numbers (left) and the same two letters \texttt{UU} and two numbers (right).}\label{tab:case22}
+\end{table}
+
+\subsection{Ordinary plates with two letters and four numbers}
+
+Our third analysis studies ordinary plates. Due to its large volume, the government only releases the results of the three most recent auctions on its website. We use the dataset that \cite{ng/chong/du:2010} obtained from the Hong Kong Transport Department. The data include a detailed description of 292 license plate auctions conducted between 1997 and 2008, resulting in the sale of 40,000 license plates. On average, each auction sells more than a hundred different plates sequentially. In our asymptotic framework, each license plate is treated as an individual instance of a second-price auction with a large number of bidders. Although the dataset includes numerous individual license plate auction instances, significant heterogeneity exists among them. In fact, the main finding in \cite{ng/chong/du:2010} is that certain plates are more valuable due to superstition. To account for this observed heterogeneity, we focus on ordinary license plates that meet specific criteria: the letters are not \texttt{HK}, the letters are not the same (e.g., not \texttt{AA}, \texttt{BB}, \texttt{CC}, etc.), the numbers on the plate are not in order (e.g., not 1369), or in reverse order (e.g., not 9631), the number part of the plate has 4 digits, none of these digits is an 8 or a 4 (considered fortunate or unfortunate), and the transaction price exceeds the reserve price. After imposing these restrictions, we are left with 318 license plates sold between 1997 and 2008. These data are further divided by year, allowing valuation distributions to vary over time. This results in 12 separate datasets, one for each year from 1997 to 2008, with an average of 26.5 auctions per year. We assume that the selected auctions within each year are homogeneous, with a large and relatively constant number of bidders. Under these conditions, we can implement our methods for each one of these years.
+
+Table \ref{tab:case3} displays the confidence intervals for the expected utility of the winner and the $p$-values of the test \eqref{eq:compTest} with the null hypothesis $H_{0}:\xi=-1$ using data from each year. Our analysis reveals several interesting empirical observations. First, the expected utility of the winner is economically substantial, with the midpoints of the 95\% confidence intervals ranging from approximately 1,500 to 7,000 HKDs (equivalent to 192 to 895 USD at the current exchange rate). Second, prior to 2006, the average confidence interval had a midpoint of approximately 3500 HKDs and a width of around 4,500 HKD. After 2006, these figures decreased to 1,600 HKD and 2,300 HKD, respectively. We speculate that these differences could be attributed to the introduction of special license plates in these auctions in 2006. Third, compared to the winner's utility, the CI for the government's expected revenue is much narrower. There also seems to be a decrease in the midpoint after 2006, which could also be explained by the introduction of special license plates. Finally, the hypothesis of $\xi =-1$ is strongly rejected for all years. This suggests that the standard regularity conditions imposed by traditional inference methods in auction literature do not hold in this dataset.
+
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.5}
+ \begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{cccccccccccccccc}
+\hline\hline
+year & $n$ & 95\% CI & 95\% CI & $p$-value for &  & year & $n$ & 95\% CI & 
+95\% CI & $p$-value for \\ 
+&  & for $\mu _{K}$ & for $\pi _{K}$ & $H_{0}$:$\xi =-1$ &  &  &  & for $\mu_{K}$ & for $\pi _{K}$ & $H_{0}$:$\xi =-1$ \\ \hline
+1997 & 26 & $[2.23,9.23]$ & $[3.20,5.61]$ & $0.00$ &  & 2003 & 46 & $[0.82,2.98]$ & $[2.25,3.00]$ & $0.00$ \\ 
+1998 & 27 & $[1.71,7.29]$ & $[2.97,4.89]$ & $0.00$ &  & 2004 & 12 & $[0.69,5.59]$ & $[2.44,4.00]$ & $0.00$ \\ 
+1999 & 32 & $[1.22,5.72]$ & $[3.58,4.63]$ & $0.00$ &  & 2005 & 22 & $[0.61,3.83]$ & $[2.18,3.23]$ & $0.00$ \\ 
+2000 & 29 & $[1.58,6.63]$ & $[2.92,4.62]$ & $0.00$ &  & 2006 & 17 & $[0.12,1.69]$ & $[2.03,2.52]$ & $0.00$ \\ 
+2001 & 34 & $[1.23,4.71]$ & $[2.74,3.82]$ & $0.00$ &  & 2007 & 31 & $[0.69,3.07]$ & $[2.40,3.10]$ & $0.00$ \\ 
+2002 & 18 & $[1.02,6.30]$ & $[2.62,4.23]$ & $0.00$ &  & 2008 & 24 & $[0.58,3.54]$ & $[2.16,3.16]$ & $0.00$ \\ \hline\hline
+\end{tabular}
+\end{adjustbox}
+\caption{95\% CIs for the winner's expected utility $\mu_K$ and the government's expected revenue $\pi_K$ (in 1,000 HKD) and $p$-values for the test in \eqref{eq:compTest} for $H_0:\xi = -1$ in Hong Kong car license plate auctions, using ordinary plates with two letters and four different numbers. }\label{tab:case3}
+\end{table}

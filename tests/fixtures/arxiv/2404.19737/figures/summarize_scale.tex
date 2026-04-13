@@ -1,0 +1,11 @@
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{img/summarization_valid.pdf}
+    \caption{\textbf{Performance on abstractive text summarization.}
+    Average ROUGE-L (longest common subsequence overlap) $F_1$ score for 7B models trained on 200B and 500B tokens of natural language on eight summarization benchmarks.
+    We finetune the respective models on each task's training data separately for three epochs and select the checkpoints with highest ROUGE-L $F_1$ validation score.
+     Both $n=2$ and $n=4$ multi-token prediction models have an advantage over next-token prediction models.
+    Individual scores per dataset and more details can be found in Appendix~\ref{app:summarzation_all}.
+    }
+    \label{fig:summarization_scale}
+\end{figure}

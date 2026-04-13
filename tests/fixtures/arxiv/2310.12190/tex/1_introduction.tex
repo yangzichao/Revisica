@@ -1,0 +1,31 @@
+%---------------------------------------------
+\section{Introduction}
+\label{sec:introduction}
+%---------------------------------------------
+
+Image animation has been a longstanding challenge in the fields of computer vision, with the goal of converting still images into video counterparts that display natural dynamics while preserving the original appearance of the images. Traditional heuristic approaches primarily concentrate on synthesizing stochastic and oscillating motions~\cite{lee2018stochastic,li2023generative} or customizing for specific object categories~\cite{holynski2021animating,karras2023dreampose}. However, the strong assumptions imposed on these methods limit their applicability in general scenarios, such as animating open-domain images.
+Recently, text-to-video (T2V) generative models have achieved remarkable success in creating diverse and vivid videos from textual prompts. This inspires us to investigate the potential of leveraging such powerful video generation capabilities for image animation.
+
+\if 0
+Recent advances in generative models, specifically conditional diffusion models, have enabled us to model highly intricate and rich distributions. This capability has led to numerous previously unattainable applications, such as the text-conditioned generation of diverse and realistic videos. Since video diffusion models can synthesize various dynamic contents, we are interested in exploring the possibility of leveraging video diffusion priors to animate arbitrary still images.
+It has the potential to overcome the domain limitation of existing image animation techniques, which primarily emphasize generating stochastic and oscillating motions~\cite{lee2018stochastic,li2023generative} or customizing for particular object categories~\cite{holynski2021animating,karras2023dreampose}.
+\fi
+
+Our key idea is to govern the video generation process of T2V diffusion models by incorporating a conditional image. However, achieving the goal of image animation is still non-trivial, as it requires both visual context understanding (essential for creating dynamics) and detail preservation.
+Recent studies on multi-modal controllable video diffusion models, such as VideoComposer~\cite{wang2023videocomposer} and I2VGen-XL~\cite{I2VGen-XL}, have made preliminary attempts to enable video generation with visual guidance from an image. Unfortunately, both are incompetent for image animation due to their less comprehensive image injection mechanisms, which results in either abrupt temporal changes or low visual conformity to the input image (see Figure~\ref{fig:qualitative}).
+To address this challenge, we propose a dual-stream image injection paradigm, comprised of text-aligned context representation and visual detail guidance, which ensures that the video diffusion model synthesizes detail-preserved dynamic content in a complementary manner. We call this approach \textit{DynamiCrafter}.
+
+Given an image, we first project it into the text-aligned rich context representation space through a specially designed context learning network. Specifically, it consists of a pre-trained CLIP image encoder to extract text-aligned image features and a learnable query transformer to further promote its adaptation to the diffusion models. The rich context features are used by the model via cross attention layers, which will then be combined with the text-conditioned features through gated fusion.
+In some extend, the learned context representation trades visual details with text alignment which helps facilitate semantic understanding of image context so that reasonable and vivid dynamics could be synthesized. To supplement more precise visual details, we further feed the full image to the diffusion model by concatenating it with the initial noise. This dual-stream injection paradigm guarantees both plausible dynamic content and visual conformity to the input image.
+
+Extensive experiments are conducted to evaluate our proposed method, which demonstrates notable superiority over existing competitors and even comparable performance with the latest commercial demos (like Gen-2~\cite{Gen-2} and PikaLabs~\cite{PikaLabs}). Furthermore, we offer discussion and analysis on some insightful designs for diffusion model based image animation, such as the roles of different visual injection streams, the utility of text prompts and their potential for dynamics control, which may inspire follow-ups to push forward this line of technique.
+Besides of image animation, \textit{DynamiCrafter} can be easily adapted to support applications like storytelling video generation, looping video generation, and generative frame interpolation.
+Our contributions are summarized as follows:
+\begin{itemize}
+\itemindent=5pt
+    \item We introduce an innovative approach for animating open-domain images by leveraging video diffusion prior, significantly outperforming contemporary competitors.
+    \item We conduct a comprehensive analysis on the conditional space of text-to-video diffusion models and propose a dual-stream image injection paradigm to achieve the challenging goal of image animation.
+    \item We pioneer the study of text-based motion control for open-domain image animation and demonstrate the proof of concept through preliminary experiments.
+    %\item we re-annotate the webvid10M dataset base on camera motion, text-video alignment, dynamic wording, confidence, dynamic source category.
+    % \item Our code, model weights, and related dataset annotations will be made publicly accessible upon publication.% to facilitate both research and aesthetic creation.
+\end{itemize}

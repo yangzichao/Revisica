@@ -1,0 +1,32 @@
+\section{Discussions on Motion Control using Text}
+\label{sec:discussion}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/dataset.pdf}
+    \vspace{-6mm}
+    \caption{Illustration of dataset filtering and annotation process.}
+    \label{fig:dataset}
+    \vspace{-2mm}
+\end{figure}
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{Figures/text_motion.pdf}
+    \vspace{-6mm}
+    \caption{Visual comparisons of image animation results from different methods with motion control using text.}
+    \label{fig:text_motion}
+    \vspace{-4mm}
+\end{figure}
+
+Since images are typically associated with multiple potential dynamics in its context, text can complementarily guide the generation of dynamic content tailored to user preference. However, captions in existing large-scale datasets often consist of a combination of a large number of scene descriptive words and less dynamic/motion descriptions, potentially causing the model to overlook dynamics/motions during learning. For image animation, the scene description is already included in the image condition, while the motion description should be treated as text condition to train the model in a \emph{decoupled} manner, providing the model with stronger text-based control over dynamics. 
+
+
+\vspace{-4mm}
+\paragraph{Dataset construction.}
+To enable the decoupled training, we construct a dataset by filtering and re-annotating the WebVid10M dataset, as illustrated in Figure~\ref{fig:dataset}. The constructed dataset contains captions with purer \emph{dynamic wording}, such as ``Man doing push-ups.", and categories, \eg., \texttt{human}.
+
+
+
+
+We then train a model DynamiCrater$_\text{DCP}$ using the dataset and validate its effectiveness with 40 image-prompt testing cases featuring human figures with ambiguous potential actions, and prompts describing various motions (\eg., ``Man waving hands" and ``Man clapping"). We measure the average CLIP similarity (CLIP-SIM) between the prompt and video results, and DynamiCrater$_\text{DCP}$ improves the performance from 0.17 to 0.19 in terms of CLIP-SIM score. The visual comparison in Figure~\ref{fig:text_motion} shows that Gen-2 and PikaLabs cannot support motion control using text, while our DynamiCrafter reflects the text prompt and is further enhanced in DynamiCrafter$_\text{DCP}$ with the proposed decoupled training. More details are in the \emph{Supplement}.
+

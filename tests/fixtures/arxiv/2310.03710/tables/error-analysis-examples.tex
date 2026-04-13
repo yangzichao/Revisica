@@ -1,0 +1,25 @@
+\begin{figure}[ht]    
+    \footnotesize
+    \centering
+    \setlength{\fboxsep}{0.005\textwidth} %
+    \setlength{\fboxrule}{0.4pt} %
+    \fcolorbox{gray}{white!20}{ %
+    \parbox{0.9\linewidth}{
+    \begin{alltt}
+    {\scriptsize
+    \vspace{-1.2mm}Passage: As an avid Disney fan, I was \hl{not totally impressed by this movie}, certainly not motivated to catch it in the theaters. 
+    I am, however, so glad that I caught it on DVD and watched the special features.
+    You MUST check out the ``Moose commentary''
+    \hl{The enjoyment I got from this commentary completely made up for the tepid reaction I had to the film itself.}
+    \\
+    \textbf{CoT Reasoning:} 
+    Based on the language used in the passage, it is clear that \hl{the reviewer has a positive sentiment towards the movie.} The reviewer uses \hl{positive adjectives such as ``enjoyment'' to describe their experience with the movie}...
+    \\
+    Answer: \underline{\textcolor{incorrect}{Positive}}\hspace{1mm}{\Large \textcolor{incorrect}{\ding{55}}}\/}\vspace{-1.2mm}
+    \end{alltt}
+    }
+    }
+    \caption{An incorrect reasoning example for Llama-2-70b-chat with \zeroshotmid\ \method\ on IMDB for error analysis. Here, the model mistook the love of the commentary as the love of the movie (highlighted).
+    }
+    \label{table:error-analysis-one-example}
+\end{figure}

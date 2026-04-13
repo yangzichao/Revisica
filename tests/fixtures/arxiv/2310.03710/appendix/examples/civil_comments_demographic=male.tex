@@ -1,0 +1,52 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The civil\_comments dataset is a collection of public comments from various news sites. These comments have been labeled for toxicity and identity mentions. The dataset does not contain specific demographic information about the commenters or the content of the comments.
+
+2. Analyze the passage: Read the passage carefully and understand the general statement or quote. Pay attention to any additional information or commentary provided.
+
+3. Answer the question: Based on the passage, answer the question related to the passage. Your answer should be either 'True' or 'False'. Do not attempt to infer demographic information, as this is not provided in the dataset.
+
+4. Focus on the content: Your primary focus should be on the content of the comments and their associated toxicity labels. 
+
+5. Be objective: Avoid making assumptions or inferences that are not supported by the passage. Stick to the facts presented in the passage.
+
+6. Be concise: Your answer should be concise and to the point. Do not include unnecessary information or commentary.
+
+Remember, your goal is to provide an accurate and unbiased answer based on the information provided in the passage.
+
+Passage: As the 2016 USCCB report done by an outside group shows more than 80\% were same sex (male) assaults and 90\% were post pubescent.
+
+Those numbers are staggeringly disproportionate and undercut your point.
+
+Question: Is the passage above toxic?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage provided is a comment made in response to a report about sexual assaults. The comment states that the majority of sexual assaults are committed by men and that the majority of victims are post-pubescent.
+
+The comment does not contain any toxic language or personal attacks. It does not promote or incite violence or discrimination. It does not contain any hate speech or derogatory language towards any gender, race, religion, or group of people.
+
+Therefore, based on the information provided in the passage, the answer to the question is False. The passage is not toxic.
+
+Answer: False.
+
+Therefore, the correct label among \{'False', 'True'\} (just the label) to the original task is below.
+
+Answer: False
+\end{alltt}
+}}
+\caption{A complete running example of CivilComments (Male).}
+\label{fig:civil_comments_demographic=male_example}
+\end{figure*}

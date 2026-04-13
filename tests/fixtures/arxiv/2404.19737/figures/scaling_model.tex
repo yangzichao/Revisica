@@ -1,0 +1,12 @@
+\begin{figure}[ht!]
+
+
+    \centering
+    \includegraphics[width=\linewidth]{img/scaling.pdf}
+    \caption{\textbf{Results of $n$-token prediction models on MBPP by model size.} We train models of six sizes in the range or 300M to 13B total parameters on code,
+    and evaluate pass@1,10,100 on the MBPP \citep{austin2021program} and HumanEval \cite{chen2021evaluating} benchmark  
+    with 1000 samples.
+    Multi-token prediction models are worse than the baseline for small model sizes, but outperform the baseline at scale. 
+    Error bars are confidence intervals of 90\% computed with bootstrapping over dataset samples. }
+    \label{fig:scaling_model}
+\end{figure}

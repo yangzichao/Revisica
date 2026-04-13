@@ -1,0 +1,22 @@
+\begin{table*}[h]
+    \centering
+   
+    \small
+    \begin{tabular}{llll}
+        \toprule
+        \textbf{Dataset} & \textbf{0\% Code} & \textbf{5\% Code} & \textbf{15\% Code} \\
+        \midrule
+	bAbI (ICL) & 0.0~~~\textpm~0.0 & 8.8~~~\textpm~0.9 & 10.1 \textpm~2.8 \\
+	WebNLG (ICL) & 16.8 \textpm~1.1 & 19.3 \textpm~1.1 & 22.0 \textpm~1.3 \\
+	GSM8K (FT) & 0.0~~~\textpm~0.0 & 0.0~~~\textpm~0.0 & 0.0~~~\textpm~0.0 \\
+	GSM8K+PAL (FT) & 11.8 \textpm~0.8 & 14.2 \textpm~1.3 & 14.7 \textpm~0.9 \\
+    \bottomrule
+    
+    \end{tabular}
+    \caption{
+    Performance of three models pre-trained with increasing amounts of code on three datasets, across 5 random seeds. 
+    We measure exact match for bAbI and GSM8K, and Rouge-2 for WebNLG.
+    }
+    \label{tab:code-reasoning}
+\end{table*}
+

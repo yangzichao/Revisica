@@ -1,0 +1,35 @@
+
+
+\paragraph{Language modeling losses}
+
+\citet{dong2019unified} and \citet{tay2022ul2} train on a mixture of denoising tasks with different attention masks (full, causal and prefix attention) to bridge the performance gap with next token pretraining on generative tasks. \citet{tay2022ul2} uses the span corruption objective, which replaces spans of tokens with special tokens for the encoder and the decoder then predicts the contents of those spans. Unlike UniLM, this allows full causal training with teacher forcing. Similarly, \citet{yang2019xlnet} train on permuted sequences, while conserving the original positional embeddings, effectively training the model to predict various parts of the sequence given a mix of past and future information. This permuted language modeling is the closest task to ours since it allows predicting beyond the next token. However all of these language modeling tasks train on a small percentage of the input text: on average only 15\% of the tokens are backwarded through. For \citet{dong2019unified}, where the masking is done in BERT style, it is hard to mask more than 15\% since it destroys too much information. For \citet{tay2022ul2}, it is technically possible to have a larger proportion but in practice, the settings used have between 15\% and 25\% of masked tokens. \cite{yang2019xlnet} also makes it possible to train on the whole sequence since it is only permuted, and no information is lost. Yet, in practice, since the completely random permutation is very hard to reconstruct, only 15\% are predicted for training stability reasons. 
+
+\paragraph{Multi-token prediction in language modelling}
+\citet{qi2020prophetnet} argue that multi-token prediction encourages planning, improves representations and prevents the overfitting on local patterns that can result from teacher-forced training. However, their technical approach replicates the residual stream $n$-fold while ours allows for compute-matched comparisons and makes the residual representations participate more directly in the auxiliary loss terms. \citet{stern2018blockwise} and \citet{cai2024medusa} propose model finetunings with multi-token prediction for faster inference but do not study the effects of such a loss during pretraining. \citet{pal2023future} use probing methods to show that next-token prediction models are able to predict additional consecutive tokens to a certain extent, but less so than our models which are specifically trained for this task.
+\citet{jianyu_leon} observe improvements in language modelling tasks with multi-label binary classification over the occurrence of vocabulary words in the future as an auxiliary learning task.
+
+\paragraph{Self-speculative decoding}
+\citet{stern2018blockwise} are, to the best of our knowledge, the first to suggest a speculative decoding scheme for faster inference. Our architecture replaces their linear prediction heads by transformer layers, but is otherwise similar. By reorganizing the order of the forward/backward, we can use all loss terms instead of stochastically picking one head for loss computation. \citet{cai2024medusa} present a more elaborate self-speculative decoding scheme that uses the top-$k$ predictions of each head instead of the best one only. It can be used with the multi-token prediction models we train.
+
+\paragraph{Multi-target prediction}
+Multi-task learning is the paradigm of training neural networks jointly on several tasks to improve performance on the tasks of interest \citep{caruana1997multitask}. Learning with such auxiliary tasks allows models to exploit dependencies between target variables and can even be preferable in the case of independent targets \citep{waegeman2019multi}. While more specifically tailored architectures for multi-target prediction are conceivable \citep{spyromitros2016multi,read2021classifier}, modern deep learning approaches usually rely on large shared model trunks with separate prediction heads for the respective tasks \citep{caruana1997multitask,silver2016mastering,lample2022hypertree} like we do. Multi-target prediction has been shown to be a successful strategy in various domains, e.g. for learning time series prediction with more distant time steps in the future as auxiliary targets \citep{vapnik2009new} or for learning from videos with several future frames \citep{mathieu2016deep,srivastava2016unsupervised} or representations of future frames \citep{vondrick2016anticipating} as auxiliary targets.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

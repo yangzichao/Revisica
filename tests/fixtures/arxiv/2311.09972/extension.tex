@@ -1,0 +1,195 @@
+\section{Extensions}\label{sec:extension}
+
+Our analysis thus far considers second-price auctions in an IPV setup and does not allow the seller to use a reserve price. 
+This section first extends our analysis to first-price auctions. In addition, we briefly explain how our analysis can be extended beyond the IPV setup and to allow for a binding reserve price. 
+
+
+\subsection{First-price auctions}\label{sec:fp}
+
+We now consider first-price sealed-bid actions, in which the highest bidder gets the object and pays the highest bid. This type of auction is strategically equivalent to an open descending price (or Dutch) auction (see \citet[page 4]{krishna2009book}). By standard arguments (e.g., \citet[Proposition 2.2]{krishna2009book}), the symmetric equilibrium strategy for a bidder with valuation $v$ in an auction with $K_{j}$ participants is to bid $\beta_{j}(v) \equiv E[\check{V}_{(1),j}|\check{V}_{(1),j}<v]$, where $\check{V}_{(1),j}$ denotes the highest bid among the remaining $(K_{j}-1)$ participants. Note that
+\begin{align}
+\beta_{j}(v) ~\overset{(1)}{=}~ \frac{K_j-1}{F_V(v)^{K_j-1}}\int_{v_{L}}^{v} {u F_V(u)^{K_j-2}f_V(u)} du~\overset{(2)}{=}~
+v - \frac{\int_{v_{L}}^{v} {F_V(u)^{K_j-1}} du}{F_V(v)^{K_j-1}},
+\label{eq:bid_first}
+\end{align}
+where (1) holds by computing $E[\check{V}_{(1),j}|\check{V}_{(1),j}<v]$ using the fact that the remaining $(K_{j}-1)$ participants have a common valuation distribution with PDF $f_V$, and (2) by integration by parts. 
+Since $\beta (v)$ is increasing, the auction is won by the highest-valuation bidder, with a transaction price equal to
+\begin{equation}
+P_{j}~=~V_{(1),j}-\frac{\int_{v_{L}}^{V_{(1),j}}{F_{V}(u)^{K_{j}-1}}du}{F_{V}(V_{(1),j})^{K_{j}-1}}.  \label{eq:price_first}
+\end{equation}
+
+Lemma \ref{lem:joint_first} uses \eqref{eq:price_first} to deduce that 
+\begin{equation}
+\Big\{ \frac{P_{j}-b_{K}}{a_{K}}:j=1,\dots ,n\Big\} ~\overset{d}{\to }~\{ X_{j}:j=1,\dots ,n\} , 
+\label{eq:aux_first}
+\end{equation}
+where, for each $j=1,\dots ,n$, 
+\begin{equation}
+X_{j}~\equiv ~H_{\xi }( E_{1,j}) -\frac{\int_{-\infty }^{H_{\xi }( E_{1,j}) }G_{\xi }( h) dh}{G_{\xi }( H_{\xi }( E_{1,j}) ) },  \label{eq:aux_RV}
+\end{equation}
+with $G_{\xi }$ is as in \eqref{eq:G}, and $\{(a_{K},b_{K})\in \mathbb{R}_{++}\times \mathbb{R}:K\in \mathbb{N}\}$, $\{E_{1,j}:~j=1,\dots ,n\}$, and $H_{\xi }$ are as specified in Lemma \ref{lem:joint}.
+
+As in Section \ref{sec:sp}, the statement in \eqref{eq:aux_first} cannot be directly used for inference as it requires the unknown normalizing constants $\{(a_{K},b_{K})\in \mathbb{R}_{++}\times \mathbb{R}:K\in \mathbb{N}\}$. Nevertheless, we can reiterate the idea of considering sorted and self-normalized prices in \eqref{eq:P*}; for $j=1,\dots,N = n-2\geq 1$, let
+\begin{equation}
+\tilde{P}_{j}~\equiv ~\bigg\{
+\begin{array}{cc}
+     \frac{P_{(j+1)}-P_{(1)}}{P_{(n)}-P_{(1)}}&\text{ if }P_{(n)} > P_{(1)}  \\
+    0&\text{ if }P_{(n)} = P_{(1)} , 
+\end{array}
+    \label{eq:P*fp}
+\end{equation}
+and let $\mathbf{\tilde{P}}=\{ \tilde{P}_{j}:j=1,\dots,N\} \in \Sigma$. The next result characterizes the asymptotic distribution of $\mathbf{\tilde{P}}$ as $K \to \infty$.
+
+\begin{lemma}\label{lem:densityFirst}
+Assume \eqref{eq:DomainOfAttraction} holds. For any $ N\in \mathbb{N}$, and as $K\to \infty $, 
+\begin{equation}
+\mathbf{\tilde{P}}=\{\tilde{P}_{j}:j=1,\dots ,N\}~\overset{d}{\to }~\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\},  \label{eq:P*joint_fp}
+\end{equation}
+where $\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\}\in \Sigma $ is obtained as follows: for $j=1,\dots ,N = n-2\geq 1$, 
+\begin{equation}
+\tilde{X}_{j}~\equiv ~\bigg\{ 
+\begin{array}{cc}
+\frac{X_{(j+1)}-X_{(1)}}{X_{(n)}-X_{(1)}} & \text{ if }X_{(n)}>X_{(1)} \\ 
+0 & \text{ if }X_{(n)}=X_{(1)},
+\end{array}
+ \label{eq:Xtilde}
+\end{equation}
+with $\{ X_{j}:j=1,\dots ,n\}$ is i.i.d.\ according to \eqref{eq:aux_RV}.
+\end{lemma}
+
+Given that the random variable in \eqref{eq:aux_RV} is informative about the tail EV index $\xi $, Lemma \ref{lem:densityFirst} implicitly reveals that the asymptotic distribution of $\mathbf{\tilde{P}}$ can be used to conduct inference on functions of $\xi $. From this point onward, the remainder of this section is analogous to that of Section \ref{sec:sp}. The main difference is that the explicit PDF of the asymptotic distribution of $\mathbf{\tilde{P}}$ in Lemma \ref{lem:densitySecond} is replaced by the implicit distribution in Lemma \ref{lem:densityFirst}. 
+
+Analogous to the second-price auctions, we construct confidence intervals for the winner's expected utility and seller's expected revenue and the test for $\xi$. 
+See Appendix \ref{sec:appendix-fp} for details.
+%While the latter distribution does not have a closed form, it can be approximated via simulations.
+
+\subsection{Beyond the IPV setup}
+
+According to Section \ref{sec:setup}, the $K_{j}$ bidders in auction $j=1,\dots,n$ have IPV distributed according to a common CDF $F_{V}$. The auctions may differ in the number of potential bidders, but these are assumed to coincide asymptotically in the sense that  $K_{j}/K\to 1$ with $K\equiv \min \{ K_{1},\dots,K_{n}\} $. 
+
+The IPV assumption may be restrictive in certain empirical settings. For example, consider the case where the $K_{j}$ bids in auction $j$ depend on an auction-specific feature $A_{j}$. In this context, it is plausible that auctions are independent and, conditional on $A_{j}$, the $K_{j}$ bids in auction $j$ are independent and distributed according to a common CDF $ F_{V|A_{j}}$. This is known as the conditional IPV model, and it is an extension of the standard IPV setup that allows for heterogeneity across auctions and (unconditional) dependence among private values within an auction. See \citet{li2000cipv} for a discussion of the conditional IPV model. As we now explain, it is possible to adapt our methodology to the conditional IPV setup.
+
+First, consider the case in which the auction-specific features $\{A_j: j=1, \dots, n\}$ are observed. In this case, one can always apply our analysis to collections of auctions that have the same (or similar) feature value, which we refer to as clusters. One can apply the analysis to each cluster with more than three auctions without any modification. This extension illustrates one of the advantages of our methodology, as it does not require the number of auctions to diverge.
+
+Second, consider the case in which $\{ A_{j}:j=1,\ldots ,n\} $ are unobserved. 
+The existing literature proposes to (i) exploit the joint distribution of three bids from the same auction and (ii) require the number of auctions to be infinitely large \citep[e.g.,][]{hu2013identification, luo2024order}. 
+Instead of requiring a large number of auctions, it is still possible to implement inference based on our asymptotic framework provided that we observe at least three bids from each action. The basic insight is to treat each auction as its own cluster (in the sense of the previous paragraph), which naturally satisfies the IPV model in Section \ref{sec:setup}. For illustration, we consider the second-price auctions, in which bidders declare their true valuations. Suppose that for auction $j=1,\ldots ,n$ we observe $m\geq 3$ bids $ \{P_{(k_{1}),j},P_{(k_{2}),j},\ldots,P_{(k_{m}),j}\}$ for known indices $ (k_{1},k_{2},\ldots,k_{m})\in \mathbb{N}$, which are in increasing order without loss of generality (i.e., $k_{1}<k_{2}<\ldots <k_{m}$). These bids need not be consecutive (i.e., $k_{u+1}$ need not equal $k_{u}+1$ for $u=1,\ldots ,m-1$) or include the maximum in the auction (i.e., $k_{m}$ need not equal $m$). Given that the bids belong to the same auction, the unobserved auction-specific feature $A_{j}$ is conditioned upon in these data. By repeating the arguments in Lemma \ref{lem:joint}, it follows that, as $ K\rightarrow \infty ,$
+\begin{equation}
+\Big( \frac{P_{(k_{1}),j}-b_{K,j} }{a_{K,j} },\cdots ,\frac{P_{(k_{m}),j}-b_{K,j} }{a_{K,j}}\Big) ~\overset{d}{\to }~\Bigg( H_{\xi_j }\Bigg( \sum_{s=1}^{k_{1}}E_{s,j}\Bigg) ,\cdots ,H_{\xi_j }\Bigg( \sum_{s=1}^{k_{m}}E_{s,j}\Bigg) \Bigg) ,
+\label{eq:EVT_extension}
+\end{equation}
+where $\{(a_{K,j} ,b_{K,j} )\in \mathbb{R} _{++}\times \mathbb{R}:K\in \mathbb{N}\}$ are auction-specific normalizing constants, $H_{\xi_j }\left( \cdot \right) $ is defined in \eqref{eq:H_function} with auction-specific EV index $\xi_j \equiv \xi ( A_{j}) $, and $\{E_{s,j}:s=1,\dots ,k_{m}\}$ are i.i.d.\ standard exponential random variables. Given these bids, we can construct the auction-specific self-normalized statistics: for $u=1,\ldots ,M\equiv m-2\geq 1,$
+\begin{equation*}
+\tilde{P}_{u,j}~\equiv ~\Bigg\{
+\begin{array}{cc}
+\frac{P_{(k_{u+1}),j}-P_{(k_{1}),j}}{P_{(k_{m}),j}-P_{(k_{1}),j}} & \text{ if }P_{(k_{m}),j}>P_{(k_{1}),j} \\
+0 & \text{ if }P_{(k_{m}),j}=P_{(k_{1}),j},
+\end{array}
+\end{equation*}
+and let $\mathbf{\tilde{P}}_{j}=\{\tilde{P}_{u,j}:u=1,\dots ,M\}\in \Sigma \equiv \{h\in [0,1]^{M}:0\leq h_{1}\leq \dots \leq h_{M}\leq 1\}$. We can then derive the asymptotic distribution of $\mathbf{\tilde{P}}_{j}$ as $ K\rightarrow \infty $ from \eqref{eq:EVT_extension}. If we observe multiple bids from several independent auctions, we can combine the self-normalized statistics $ \mathbf{\tilde{P}}_{j}$ for $j=1,\dots, J$ for further analysis. Since auctions are independent, the limiting distribution of the combined self-normalized statistics is the product of their limiting distributions. We can then test hypotheses about these auctions similar to the one in our paper. In addition, we can test the homogeneity of the $J$ auctions (i.e., $\xi ( A_{j}) =\xi $ for all $j=1,\dots, J$) by using a generalized likelihood ratio test.
+
+Last, we can further generalize our analysis to allow for dependence among valuations provided some additional assumptions. Specifically, we can show that the EV convergence in Lemma \ref{lem:joint} still holds if the valuations $V_{i,j}$ for $i=1,\dots,K_j$ are dependent and satisfy the so-called $D$-condition \citep[e.g.,][]{o1974limit, leadbetter1982extremes}. This condition essentially controls the dependence so that extreme values do not show up consecutively. We leave this aspect for future research. 
+
+%% SELECTIVE ENTRY SEEMS A BIT DISCONNECTED FROM THE PREVIOUS SECTION.
+% Furthermore, the aforementioned modification also accommodates selective entry, presenting an additional advantage. \citet{GentryLi2014} investigates a two-stage auction process wherein the $i$-th bidder in the $j$-th auction receives a pair $\left( S_{i,j},V_{i,j}\right) $, where $S_{i,j}\sim U\left[0,1\right] $ represents a signal about the quality of the good, and $V_{i,j}$ denotes her valuation. In the initial stage, only bidders with a signal $S_{i,j}$ exceeding a certain threshold $\bar{s}$ participate in the auction. Subsequently, in the second stage, the entrants behave in accordance with classic auction protocols. For instance, in second-price auctions, entrants continue to bid their true valuations \citep[][Section 2.2]{GentryLi2014}.
+
+% By observing the number of potential bidders, the number of entrants, a vector of submitted bids, and an instrument $Z$ that influences the signal threshold, \citet{GentryLi2014} establishes (partial) identification of the valuation distribution $F_{V|S}$ conditional on the signal. If a bidder's signal surpasses the threshold $\bar{s}$, her valuation follows the distribution $F_{V|S>\bar{s}}$. Consequently, the EV convergence \eqref{eq:EVT_extension} holds with $\xi =\xi \left( \bar{s}\right) $. With at least three bids from a single auction,  we can undertake the same analytical procedures as previously outlined.
+
+
+\subsection{Reserve price}
+
+Our analysis can be adapted to allow for the presence of a reserve price $r$ set by the seller. For concreteness, we assume that  $r\in (v_{L},v_{H}) $. By setting a reserve price, the seller reserves the right not to sell the object if the price determined in the auction is below this price. \citet[Section 2.5]{krishna2009book} analyses the effect of the reserve price on the equilibrium bidding behavior. In second-price auctions, bidders still have a weakly dominant strategy to bid their valuation, i.e., \eqref{eq:bidSecond} holds. In first-price auctions, the symmetric equilibrium strategy for a bidder with valuation $v$ in an auction with $K_{j}$ participants and reserve price $r$ is to bid $\beta _{j}(v)\equiv E[\max \{\check{V}_{(1),j},r\}|\check{V}_{(1),j}<v]$, where $\check{V}_{(1),j}$ denotes the highest bid among the remaining $(K_{j}-1)$ participants.
+% HIDDEN PROOF: Note that 
+% \begin{eqnarray*}
+% &&\beta _{j}(v) \\
+% &&\overset{(1)}{=}\frac{K_{j}-1}{F_{V}(v)^{K_{j}-1}}\int_{r}^{v}{uF_{V}(u)^{K_{j}-2}f_{V}(u)}du+\frac{K_{j}-1}{F_{V}(v)^{K_{j}-1}}\int_{v_{L}}^{r}{rF_{V}(u)^{K_{j}-2}f_{V}(u)}du \\
+% &=&\frac{K_{j}-1}{F_{V}(v)^{K_{j}-1}}\int_{r}^{v}{uF_{V}(u)^{K_{j}-2}f_{V}(u)}du+r\frac{F_{V}(r)^{K_{j}-1}}{F_{V}(v)^{K_{j}-1}} \\
+% &&\overset{(2)}{=}v-r\frac{F_{V}(r)^{K_{j}-1}}{F_{V}(v)^{K_{j}-1}}-\frac{\int_{r}^{v}{F_{V}(u)^{K_{j}-1}}du}{F_{V}(v)^{K_{j}-1}}+r\frac{F_{V}(r)^{K_{j}-1}}{F_{V}(v)^{K_{j}-1}} \\
+% &=&v-\frac{\int_{r}^{v}{F_{V}(u)^{K_{j}-1}}du}{F_{V}(v)^{K_{j}-1}}
+% \end{eqnarray*}
+% where (1) holds by computing $E[\max \{\check{V}_{(1),j},r\}|\check{V} _{(1),j}<v]$ using the fact that the remaining $(K_{j}-1)$ participants have a common valuation distribution with PDF $f_{V}$, and (2) by integration by parts. 
+By repeating arguments used in Section \ref{sec:fp}, we can show that the resulting formula for $\beta _{j}(v)$ is as in \eqref{eq:bid_first} but with $v_{L}$ replaced by $r$. 
+
+These results imply that reserve prices do not affect the asymptotic distribution of the transaction prices in our asymptotic framework. That is, reserve prices have no effect on Lemmas \ref{lem:densitySecond} and \ref{lem:densityFirst}, or any of the subsequent asymptotic results. Since $v_{L}$ does not appear on our asymptotic distributions, these remain unaltered when $v_{L}$ is replaced by $r$. Intuitively, the asymptotic behavior of transaction prices with $K\rightarrow \infty $ is naturally focused on the upper tail of the valuation distribution (i.e., valuations in the neighborhood of $v_{H}$), which remains unaffected by the introduction of a reservation price $r<v_{H}$.
+
+The fact that reserve prices do not affect the asymptotic analysis is a by-product of our limiting framework in which $K \to \infty$ and $r<v_H$. If one were interested in making reserve prices a salient feature in the asymptotic analysis, one would need to consider an asymptotic framework in which the reserve prices approach $v_H$ as $K\to \infty$. (As with any other asymptotic analysis, this is not meant to be taken literally, but rather as an approximation to a finite-sample situation in which $K$ is large and $r$ is relatively close to $v_H$). We decided to omit the results under this alternative asymptotic framework for brevity, but these are available upon request. 
+% In the more traditional asymptotic framework in which the number of bidders is fixed, the reserve prices do affect the limiting distribution. 
+
+% The lack of influence of the reserve prices on the limiting results provides another distinction between our asymptotic framework and the more traditional framework in which the number of bidders remains fixed. 
+
+% %%%%
+% \newpage
+
+% When a seller establishes a reserve price sufficiently high before the auction begins, it effectively screens out bidders whose valuations fall below this threshold. The imposition of a binding reserve price does not alter the Bayesian Nash equilibrium strategy, thereby leaving the bidding function unchanged. In the context of second-price auctions, bidders continue to bid their valuations, while in first-price auctions, the bidding function remains consistent with prior formulations \eqref{eq:bid_first}. However, the introduction of a binding reservation price poses a novel challenge for existing methodologies reliant on the observation of bidder counts. Specifically, these methods may necessitate information on both the potential and actual numbers of bidders. For instance, \citet{LiZheng2009} defines the number of potential bidders as planholders, whereas \citet{RobertsSweeting2013} considers it in the context of related auctions. The number of actual bidders is typically inferred from the number of submitted bids.
+
+% In our many-bidder framework, let $K_{j}$ represent the number of \textit{potential} bidders in the $j$-th auction. Given that the bidding function remains unaffected, the EV convergence as per Lemma \ref{lem:joint} still holds as $K_{j}\rightarrow \infty $. Consequently, as long as the winning
+% bid surpasses the reserve price, our preceding analysis relying solely on the transaction price remains applicable. This insight proves invaluable in empirical settings where the observed number of bidders may be limited despite a potentially large pool of prospective participants, such as in
+% online auctions where the number of potential buyers is effectively infinite \citep[e.g.,][p.128]{gentry2018review}.
+
+% Another pertinent example arises in the domain of art painting auctions. As elucidated by \citet{BeggsGladdy2009}, art is typically auctioned in an English or ascending format, with the transaction price corresponding to the valuation of the second highest bidder. Given the diverse characteristics of paintings, including dimensions, titles, sizes, and artist provenance, the recurrence of identical auctions for the same artwork is limited. However, the potential pool of bidders remains substantial and unobservable, prompting auction houses to strategically set aggressive reserve prices to
+% selectively screen participants.
+
+% Furthermore, the imposition of a binding reserve price complicates the identification of the entire valuation distribution. Denoting $v_{0}$ as the reserve price, \citet[][Section 4]{guerre2000} establishes the identification of $F_{V}\left( v\right) $ for $v\geq v_{0}$. Nevertheless,
+% our focus on the tail characteristics of the distribution remains unaffected provided that $v_{0}$ lies strictly below the upper endpoint $v_H$.
+
+% Actually our new framework leads to an alternative optimal reserve price that maximizes the seller's expected revenue. In the classic setup where the seller's own value of the good, denoted as $v_{0K}$, is a constant, \citet[][Proposition 3]{rileysamuelson1981} demonstrates that the optimal reserve price is also a constant regardless of the number of bidders. As the number of bidders increases, the transaction price will surpass the reserve price almost surely \citep[cf.][]{wilson1977}. As a consequence, the effect of the reserve price on the seller's revenue becomes degenerate asymptotically. 
+
+% To generate a non-degenerate asymptotic reserve price, we consider a different framework in which the seller's value of the good is of the same order of magnitude as the transaction price. To this end, we assume $\left(v_{0K}-b_{K}\right) /a_{K}\rightarrow v_0$ for some $v_0 \in \mathbb{R}$. 
+% Then the optimal reserve price $\gamma _{K}$ in the second price auction maximizes the seller's expected revenue 
+% \begin{equation*}
+% \pi _{K}\left( \gamma _{K}\right) \equiv \mathbb{E}\left[ \gamma_{K}\mathbf{1}%
+% \left[ V_{(2),j }\leq \gamma _{K}\leq V_{(1),j }\right]
+% +V_{\left( 2\right),j }\mathbf{1}\left[ \gamma _{K}\leq V_{(2),j}\right] 
+% +v_{0K} \mathbf{1}\left[V_{(1),j} \leq \gamma_K \right]
+% \right].
+% \end{equation*}
+
+% As $K\rightarrow\infty$, the optimal $\gamma _{K}$ should have the same order of magnitude
+% as the transaction price $V_{(2),j}$. Writing the normalization $\left( \gamma
+% _{K}-b_{K}\right) /a_{K}\rightarrow \gamma$, we employ Lemma \ref{lem:joint} to derive the
+% asymptotic expression of the revenue as 
+% \begin{eqnarray*}
+% & & \frac{\pi _{K}\left( \gamma _{K}\right) -b_{K}}{a_{K}} \\
+% &=&\mathbb{E}\left[ 
+% \frac{\left( r_{K}-b_{K}\right) }{a_{K}}\mathbf{1}\left[ \frac{V_{\left(
+% 2\right),j }-b_{K}}{a_{K}}\leq \frac{\gamma _{K}-b_{K}}{a_{K}}\leq \frac{%
+% V_{\left( 1\right),j }-b_{K}}{a_{K}}\right] \right]  \\
+% &&+\mathbb{E}\left[ \frac{\left( V_{\left( 2\right),j }-b_{K}\right) }{a_{K}}%
+% \mathbf{1}\left[ \frac{\gamma _{K}-b_{K}}{a_{K}}\leq \frac{V_{\left(
+% 2\right),j }-b_{K}}{a_{K}}\right] \right]  \\
+% &&+\mathbb{E}\left[ \frac{\left( V_{0K }-b_{K}\right) }{a_{K}}%
+% \mathbf{1}\left[ \frac{V_{\left(1\right),j }-b_{K}}{a_{K}} \leq \frac{\gamma _{K}-b_{K}}{a_{K}} \right] \right]  \\
+% &\rightarrow & \gamma \mathbb{P}\left( H_{\xi}(E_{1,j}+E_{2,j})\leq \gamma\leq H_{\xi}(E_{1,j})\right) +\mathbb{E}%
+% \left[ H_{\xi}(E_{1,j}+E_{2,j})\mathbf{1}\left[ \gamma\leq H_{\xi}(E_{1,j}+E_{2,j})\right] \right] \\ 
+% &&+ v_0 \mathbb{P}\left( H_{\xi}(E_{1,j}) \leq \gamma \right) \\
+% &\equiv &\pi\left( \gamma \right) ,
+% \end{eqnarray*}%
+% where $H_{\xi}(E_{1,j})$ and $H_{\xi}(E_{1,j}+E_{2,j})$ are jointly EV distributed as in \eqref{eq:EVT}. Their joint density is given by 
+% \begin{equation}
+% f_{H_{1},H_{2}|\xi }(x_{1},x_{2})=\left\{ 
+% \begin{array}{lcc}
+% \left( 1+\xi x_{1}\right) ^{-\frac{1+\xi }{\xi }}\left( 1+\xi x_{2}\right)
+% ^{-\frac{1+\xi }{\xi }}\exp \left( -\left( 1+\xi x_{2}\right) ^{-1/\xi
+% }\right)  &  & \text{if }\xi \neq 0 \\ 
+% \exp (-x_{1})\exp (-x_{2})\exp \left( -\exp (-x_{2})\right)  &  & \text{if }%
+% \xi =0%
+% \end{array}%
+% \right.   \label{eq:pdf_e1e2}
+% \end{equation}%
+% on $x_{2}\leq x_{1}$ and zero otherwise, where $H_{1}$ is short for $H_{\xi}(E_{1,j})$ and $H_{2}$ is short for $H_{\xi}(E_{1,j}+E_{2,j})$. 
+% The following lemma derives the asymptotic expression of the optimal reserve price. 
+% \begin{lemma}
+% \label{lem:sp-rp}Under \eqref{eq:pdf_e1e2} with $\xi<1$, $\gamma^{\ast }\equiv \arg \max_{\gamma}
+% \pi\left( \gamma\right) =(1+v_0)/(1-\xi )$.
+% \end{lemma}
+
+% Given the knowledge of $v_0$, say zero, we can construct the confidence interval for the optimal reserve price $\gamma^{\ast}_K$ similarly as in \eqref{eq:Lambda-rp}.  
+% In particular, we have that 
+% \begin{eqnarray*}
+% \left( \frac{\gamma^{\ast}_K - P_{n} }{P_{n-1}-P_{n}}, \left(P^{\ast}_1,\dots,P^{\ast}_{n^{\ast}}\right) \right)
+% \overset{d}{\to} \left( \frac{\gamma^{\ast} - Z_{n} }{Z_{n-1}-Z_{n}}, \left(Z^{\ast}_1,\dots,Z^{\ast}_{n^{\ast}}\right) \right) 
+% \equiv \left( \tilde{Y}_{\gamma}, \tilde{\mathbf{Z}} \right),
+% \end{eqnarray*} 
+% where $\gamma^{\ast}_K = \equiv \arg \max_{\gamma_K} \pi_K\left( \gamma_K\right)$. 
+% The interval \eqref{eq:Lambda-rp} can be implemented with $\tilde{Y}_{\pi}$ replaced by $\tilde{Y}_{\gamma}$.
+

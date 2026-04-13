@@ -1,0 +1,22 @@
+\begin{tabular}{lcccc}
+\toprule[1.0pt]
+\multicolumn{1}{c}{} & \multicolumn{2}{c}{TSP200} & \multicolumn{2}{c}{CVRP200}\\
+\cmidrule[0.5pt](lr{0.2em}){2-3}
+\cmidrule[0.5pt](lr{0.2em}){4-5}
+Method & Obj. & Gap (\%) & Obj. & Gap (\%) \\
+\midrule
+Concorde / PyVRP & 10.72 & 0.00 & 27.93 & 0.00 \\
+\midrule
+Ant System & 10.91 & 1.77 & 28.45 & 1.86 \\
+DeepACO + Ant System & 10.77 & 0.45 & 28.44 & 1.80 \\
+GFACS + Ant System & \textbf{10.75} & \textbf{0.26} & \textbf{28.32} & \textbf{1.40} \\
+\midrule
+Elitist & 10.97 & 2.31 & 28.46 & 1.90 \\
+DeepACO + Elitist & 10.77 & 0.49 & 28.45 & 1.84 \\
+GFACS + Elitist & \textbf{10.75} & \textbf{0.28} & \textbf{28.34} & \textbf{1.47} \\
+\midrule
+MAX-MIN & 10.97 & 2.34 & 28.46 & 1.88 \\
+DeepACO + MAX-MIN & 10.78 & 0.57 & 28.44 & 1.82 \\
+GFACS + MAX-MIN & \textbf{10.75} & \textbf{0.32} & \textbf{28.33} & \textbf{1.43} \\
+\bottomrule
+\end{tabular}

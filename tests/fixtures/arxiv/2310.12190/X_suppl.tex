@@ -1,0 +1,254 @@
+\clearpage
+\newcommand{\nocontentsline}[3]{}
+\newcommand{\tocless}[2]{\bgroup\let\addcontentsline=\nocontentsline#1{#2}\egroup}
+
+\newcommand{\Appendix}[1]{
+  \refstepcounter{section}
+  \section*{Appendix \thesection:\hspace*{1.5ex} #1}
+  \addcontentsline{toc}{section}{Appendix \thesection}
+}
+\newcommand{\SubAppendix}[1]{\tocless\subsection{#1}}
+% \setcounter{page}{1}
+% \setcounter{section}{0}
+% \setcounter{figure}{0}
+% \setcounter{table}{0}
+\maketitlesupplementary
+\appendix
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table*}[!ht]
+  \caption{Summary of open-domain (text-)image-to-video generation methods. $^*$The resolution is obtained by inputting a square-sized image into these methods.}
+  % \vspace{-0.8em}
+  \label{tab:baselines}
+\resizebox{\linewidth}{!}{
+  % \setlength{\tabcolsep}{2.1pt}
+  \centering
+  \begin{tabular}{lccccccc}
+  \toprule
+    Method &Open-source &Verison (Date) & Resolution$^*$ & Duration & FPS & Text input & Description (visual condition injection) \\
+    \midrule
+    \multirow{2}{*}{VideoComposer}  & \multirow{2}{*}{\cmark} &\multirow{2}{*}{23.06.29}& \multirow{2}{*}{$256\times 256$} & \multirow{2}{*}{2s} & \multirow{2}{*}{8} & \multirow{2}{*}{\cmark} & The encoded image information is injected via \\
+    & & & & & & &  frame-wise concatenation with the noisy latent.\\
+    \multirow{2}{*}{I2VGen-XL} & \multirow{2}{*}{\cmark} &\multirow{2}{*}{23.10.30}& \multirow{2}{*}{$256\times 448$} & \multirow{2}{*}{3s} & \multirow{2}{*}{8} & \multirow{2}{*}{\xmark} & Image information is injected by cross-attention via  \\
+    & & & & & & &  the global token from CLIP image encoder.\\
+    PikaLabs & \xmark &23.11.01& $768\times 768$ & 3s & 24 & \cmark & Unknown\\
+    Gen-2 & \xmark &23.11.01& $896\times 896$ & 4s & 24 & \cmark & Unknown\\
+  \bottomrule
+  \end{tabular}
+}
+% \vspace{-4mm}
+\end{table*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{supp/hyper-parameters}
+
+
+\tableofcontents
+\addtocontents{toc}{\setcounter{tocdepth}{2}}
+
+\vspace{4mm}
+Please check our project page \url{https://doubiiu.github.io/projects/DynamiCrafter} for video results.
+
+
+
+\section{Implementation Details}
+\label{sec:implmentation}
+
+\subsection{Network Architecture}
+Our \emph{DynamiCrafter} is built upon VideoCrafter, a latent VDM-based text-to-video (2TV) generation model, so we recommend that readers refer to VideoCrafter~\cite{chen2023videocrafter1} for more details of the T2V backbone. It is worth noting that our approach of leveraging the video diffusion prior for image animation can theoretically be applied to any other T2V diffusion models that incorporate a cross-attention text-conditioning mechanism.
+To improve the reproducibility of our method, we provide a more detailed description of the network architecture for the FPS embedding layer and context query transformer.
+%
+As depicted in Figure~\ref{fig:network_arch} (left), the FPS condition is embedded via Sinusoidal and several Fully-Connected (FC) layers activated by SiLU~\cite{hendrycks2016gaussian}, which is then added to the timestep embedding $\mathbf{f}_\text{emb}$. In Figure~\ref{fig:network_arch} (right), the context query transformer first projects the concatenation of frame-wise context queries and CLIP tokens into \emph{keys} and \emph{values}, while projecting context queries solely into \emph{queries}. The cross-attention results are subsequently computed using the keys, values, and queries, and projected via a Feed-forward layer. The final frame-wise context representation is then employed through the spatial dual-attn transformer in the denoising U-Net, as illustrated in Figure 1 and Equation 2 in the main paper.
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{supp/network_arch.pdf}
+    \caption{Network architecture of the FPS embedding layer (left) and query transformer for context representation learning (right).}
+    \label{fig:network_arch}
+\end{figure}
+
+
+\subsection{Hyper-parameters}
+Following~\cite{blattmann2023align}, all architecture parameter details, diffusion process details, as well as training hyper-parameters are provided in Table~\ref{table:hyperparameters}, which should be mostly self-explanatory. Here we give some additional description for some parameters:
+\begin{itemize}
+    \item Input channels (Architecture): The number of input tensor channels for the denoising U-Net, which is twice the channel number of $\mathbf{z}_t$ due to the channel-wise concatenation of visual detail guidance.
+    \item CA ctx sequence length (Dual-CA Conditioning): The token length of the context representations for each frame.
+\end{itemize}
+
+\subsection{Training}
+Since we concatenate the conditional image latent with noisy latents in the channel dimension (\ie, visual detail guidance in Section 3.2 of the main paper), we add additional input channels to the first convoluional layer. All available weights of the video diffusion model are initialized from the pre-trained checkpoints, and weights that operate on the newly added input channels are initialized to zero.
+We utilize only eight NVIDIA V100 GPUs to fine-tune the T2V model that is relatively resource-friendly in the context of developing an image-to-video diffusion model.
+As mentioned in Section 4.1 of the main paper, we fine-tune the T2V model using WebVid10M, primarily consists of real-world videos. Despite this, the model demonstrates strong generalizability when animating images that are even outside its domain, such as anime or paintings.
+
+
+
+
+
+\section{Additional Evaluation Details}
+\label{sec:evaluation}
+\subsection{Dataset and metric}
+To evaluate the quality and temporal coherence of synthesized videos in both the spatial and temporal domains, we report Fr\'echet Video Distance (FVD)~\cite{unterthiner2019fvd} as well as Kernel Video Distance (KVD)~\cite{unterthiner2019fvd}, which evaluate video quality by measuring the feature-level similarity between synthesized and real videos based on the Fr\'echet distance and kernel methods, respectively. 
+Specifically, they are computed by comparing 2048 model samples with samples from evaluation datasets, where we adopt commonly used UCF-101~\cite{soomro2012ucf101} and MSR-VTT~\cite{xu2016msr} for benchmarking. For UCF-101, we directly use UCF class names~\cite{blattmann2023align} as text conditioning, while for MSR-VTT, we utilize accompanied captions of each video from the dataset. 
+We evaluate each error metric at the resolution of $256\times 256$ with 16 frames.
+
+%% 2048 samples, need to be clear in the fs3
+\subsection{Baselines}
+In the emerging field of open-domain image animation, there are limited baselines available for comparison. In this study, We evaluate our method against two open-source research works, \ie, VideoComposer~\cite{wang2023videocomposer} and I2VGen-XL~\cite{I2VGen-XL}, and two proprietary commercial products, \ie, PikaLabs~\cite{PikaLabs} and Gen-2~\cite{Gen-2}, which are summarized in Table~\ref{tab:baselines}. Note that we employ the image-to-video (first-stage) generation of I2VGen-XL for the evaluation experiment, as its refinement stage (text-to-video) primarily functions as a super-resolution process, with the dynamics and temporal coherence already determined by the first stage.
+
+
+
+\section{User Study}
+\label{sec:user_study}
+The designed user study interface is shown in Figure~\ref{fig:user_study_screenshot}. We collect 20 image cases with a wide range of content and styles from the Internet and create corresponding captions. We then generate the image animation results by either executing the official code~\cite{wang2023videocomposer,I2VGen-XL} or accessing the online demo interface~\cite{Gen-2,PikaLabs}. For the user study, we use these video results produced by shuffled methods based on the same input still image (and text prompt, if applicable). In addition, we conceal the lower watermark region and standardize the all the produced results by first setting FPS=8, and then trimming the videos to two seconds at the same resolution level ($256\times 448$ for I2VGen-XL, while $256\times 256$ for other methods). This process ensures a fair comparison by eliminating the potential impact of engineering tricks. 
+
+The user study is expected to be completed with 5--10 minutes (20 cases $\times$ 3 sub-questions $\times$ 5--10 seconds for each judgement). To remove the impact of random selection, we filter out those comparison results completed within three minutes. For each participant, the user study interface shows 20 video comparisons, and the participant is instructed to evaluate the videos for three times, i.e answering the following questions respectively: (i) ``Which one has the best motion/dynamic quality?"; (ii) ``Which one has the best temporal coherence?"; (iii) ``Which results conform to the input image?". Finally, we received 49 valid responses from the participants.
+
+
+\section{Details of Constructed Dataset}
+\label{sec:dataset}
+
+\subsection{Dataset construction details}
+As depicted in Figure 8 of the main paper, we first filter out data with large camera movement, poor caption-video alignment, and Graphics/CGI content. We then feed captions to GPT4~\cite{openai2023gpt4} (temperature=0.2, frequency\_penalty=0) to generate the following: \emph{dynamic confidence}, which represents the level of confidence that the caption describes a dynamic scene, \emph{dynamic wording}, such as ``man doing push-ups", and the category of this dynamic scene. The used dialog instructions are as follows:
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+\vspace{-8mm}
+\paragraph{User:} You are an expert assistant. There some caption-video pairs in the dataset, and you can only access the captions. You need to check if the caption describes the scene dynamics in the video, for example some actions of humans and animals, etc. 
+Please output the following: 
+1. Dynamic confidence. Output how confident you feel that it is describing a dynamic scene, from 0 to 100. 0 means lowest confidence and 100 means the highest confidence. 
+2. Dynamic wording. Output the subject followed by actions and corresponding objects, for example ``man playing football". It must be compact. Output ``none" when the caption does not describe any scene dynamics. 
+3. Dynamic source category. Classify the dynamics, the categories are \texttt{human}, \texttt{animal}, \texttt{nature}, \texttt{machine}, \texttt{others}, and \texttt{none}. \texttt{none} is used when the corresponding dynamic wording is none. \texttt{nature} indicates those dynamics related to natural phenomena, while \texttt{machine} corresponds those movements related to vehicles and technical devices. 
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{supp/dataset_stat.pdf}
+    \caption{Statistics of the dataset and human validation results.}
+    \label{fig:dataset_stat}
+    \vspace{-2mm}
+\end{figure}
+
+The input is in the format of ``$\textless$question index$\textgreater$\%\%$\textless$caption$\textgreater$", The output must be in the format of ``$\textless$question index$\textgreater$\%\%$\textless$confidence$\textgreater$\%\%$\textless$dynamic wording$\textgreater$ \%\%$\textless$dynamic source category$\textgreater$". 
+Here are some examples: 
+\vspace{-5mm}
+\paragraph{\emph{Input:}} [``1\%\%Woman in gym working out", ``2\%\%4k corporate shot of a business woman working on computer eating funny banana", ``3\%\%Rainy clouds sailing above a city", ``4\%\%View of the great salt lake", ``5\%\%Old house with a ghost in the forest at night or abandoned haunted horror house in fog."]
+\vspace{-4mm}
+\paragraph{\emph{Output:}} [``1\%\%80\%\%woman working out\%\%human", ``2\%\%80\%\%business woman working on computer, eating banana\%\%human", ``3\%\%50\%\%Rainy clouds sailing\%\%nature", ``4\%\%5\%\%none\%\%none", ``5\%\%10\%\%none\%\%none"].
+
+Input captions are in an array: [caption1, caption2, $\ldots$].
+\vspace{-4mm}
+\paragraph{System:} Answer for every caption in the array and reply with an array of all completions.
+
+\noindent\makebox[\linewidth]{\rule{\linewidth}{0.4pt}}
+
+Here are some sampled inputs and outputs (w/o index):
+\vspace{-5mm}
+\paragraph{\emph{Input}:}[``Young man in bathrobe brushing his teeth in front of the window.", ``Summer green maple tree swinging in the wind.", ``Ripe rambutan fruits on a street market. sri lanka."]
+\vspace{-5mm}
+\paragraph{\emph{Output}:}[``70\%\%man brushing teeth\%\%human", ``50\%\%maple tree swinging\%\%nature", ``5\%\%none\%\%none"]
+
+
+\subsection{Statistics of the dataset}
+The constructed dataset contains around 2.6 million caption-video pairs, with the corresponding statistics and dynamic confidence for each category shown in Figure~\ref{fig:dataset_stat} (a) and (b), respectively. We exclude certain combinations of classes, such as `\texttt{animal}\&\texttt{human}', `\texttt{human}\&\texttt{machine}', `\texttt{animal}\&\texttt{machine}' due to their small proportions. To support potential research on motions and dynamics, we will make the annotations of the constructed dataset publicly available. 
+
+
+% count of each category
+% none               948254
+% human              941259
+% nature             265321
+% machine            207793
+% animal             172737
+% others              35090
+% animal, human         618
+% human, machine        203
+% animal, machine        75
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{supp/fps_control3.pdf}
+    \caption{Visual comparisons of image animation results produced by our DynamiCrafter with FPS control.}
+    \label{fig:fps_control}
+\end{figure}
+\subsection{Human validation on the dataset}
+We also validate GPT4's responses through human judgement on randomly sampled 1K respones. We ask volunteers to determine if the original video caption describes a dynamic scene and if the dynamic wording and category generated by GPT4 are accurate. In Figure~\ref{fig:dataset_stat} (c), we plot an accuracy-threshold curve by adjusting the confidence threshold and calculating the accuracy based on human judgments of dynamic scenes. We observe that \emph{dynamic confidence}=40 serves as a sweet spot in aligning with human judgement. The accuracy of dynamic wording and category for each category are shown in Figure~\ref{fig:dataset_stat} (d). The validation results indicate that GPT4's responses generally align with human judgments, making them reliable for dataset annotation.
+
+\subsection{DynamiCrafter$_\text{DCP}$}
+Finally, we initialize DynamiCrater$_\text{DCP}$ using an intermediate checkpoint (60K iterations) from DynamiCrafter, and then continue to train it with another 40K iterations using \texttt{human} category data in the constructed dataset with \emph{dynamic wording} as text prompts. The baseline model is our DynamiCrafter, trained for 100K iterations. In addition, we maintain all other settings identical for fair comparison. As mentioned in Section 5 of the main paper, we use CLIP-SIM to evaluate the performance of DynamiCrafter$_\text{DCP}$, considering that CLIP is an open-domain text-image representation learner and is capable of associating the dynamics in the image with the appropriate dynamic wording.
+
+
+\section{Other Controls}
+\label{sec:control}
+
+
+\subsection{FPS Control}
+Since our model is also conditioned on FPS and trained with dynamic FPS, \ie 5--30, it is capable of generating image animations with varying motion magnitudes, as demonstrated in Figure~\ref{fig:fps_control}, where we show the results with `low FPS' and `high FPS' for simplicity.
+
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{supp/cfg.pdf}
+    \caption{Visual comparisons of image animation results produced by various combinations of $s_\text{img}$ and $s_\text{txt}$.}
+    \label{fig:cfg}
+\end{figure}
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=1\linewidth]{supp/limitation.pdf}
+    \caption{Failure cases of the challenging input condition in terms of semantic understanding (top), specific motion control with text (middle) and face distortion (bottom).}
+    \label{fig:limitation}
+\end{figure}
+
+
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.7\linewidth]{supp/user_study_screenshot.pdf}
+    \caption{Designed user study interface. Each participant is required to evaluate 20 video comparisons and respond to three corresponding sub-questions for each comparison. Only one video is shown here due to the page limit.}
+    \label{fig:user_study_screenshot}
+\end{figure*}
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{supp/more_1.pdf}
+    \caption{Visual comparisons of image animation results from VideoComposer, I2VGen-XL, PikaLabs, Gen-2, and our \emph{DynamiCrafter}.}
+    \label{fig:more_1}
+\end{figure*}
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{supp/more_2.pdf}
+    \caption{Gallery of our image animation results.}
+    \label{fig:more_2}
+\end{figure*}
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.95\linewidth]{supp/more_3.pdf}
+    \caption{Gallery of our image animation results.}
+    \label{fig:more_3}
+\end{figure*}
+
+\subsection{Multi-condition Classifier Free Guidance}
+During inference, we adopt DDIM with multi-condition classifier guidance~\cite{ho2022classifier} and can adjust the introduced two guidance scales $s_\text{img}$ and $s_\text{txt}$ to trade off the impact of two control signals, as mentioned in Section 4.1 of the main paper. Specifically, it will affect how strongly the generated samples correspond with the input image and how strongly they correspond with the text prompt. Here we present the visual comparisons in Figure~\ref{fig:cfg}. In most cases, setting $s_\text{img}=s_\text{txt}=7.5$ works well, as the generated animations can well adhere to the input image and reflect the text prompt, as shown in Figure~\ref{fig:cfg}(top). By decreasing $s_\text{txt}$, the animation results tend to ignore the text condition, \eg, ``dancing", as shown in Figure~\ref{fig:cfg}(middle). Conversely, if $s_\text{img}$ is reduced, the results may not conform to the input image but well reflect the text prompt (see Figure~\ref{fig:cfg}(bottom)). This multi-condition classifier guidance offers greater flexibility based on user requirements.
+
+\section{Limitations}
+\label{sec:limitation}
+
+
+Our approach is limited in several ways. Firstly, if the input image condition cannot be semantically understood, our model might struggle to produce convincing videos. Secondly, although we construct a dataset to improve motion control with text, which still lacks precise motion descriptions, rendering the inability to generate specific motions. Additionally, we adopt the LatentVDM pre-trained at low resolutions and with short durations due to limited computational resources, resulting in inheriting its slight flickering artifacts in high-frequency regions (see supplemental video results) and human face distortion issues, which are technically caused by the frame-wise VAE decoding. Thus the resultant frame quality of our method (such as resolution and fidelity) and video length may limit practical applications. Consequently, our method may not be ready for product (in contrast to commercial products like PikaLabs and Gen-2). Figure~\ref{fig:limitation} shows the examples of the mentioned failure cases. We leave these directions as future works.
+
+
+
+
+
+
+
+
+\section{More Qualitative Results}
+\label{sec:more}
+\paragraph{More qualitative comparisons.}
+In addition to Figure~4 in the main paper, we provide more qualitative comparisons in Figure~\ref{fig:more_1}. Consistent with the observations in the main paper, VideoComposer struggles to produce coherence video frames and tends to be misled by the text prompt. I2VGen-XL fails to preserve the local visual details of the input image and can only generate animations that semantically resemble the input. PikaLabs tends to generate still videos or videos with limited dynamics. Gen-2 may incorrectly interpret the given image, rendering unreasonable results and temporal inconsistency (as seen in the `Bird' and `Guitar' cases). Moreover, these baseline methods have difficulty considering the text prompt for motion control (\eg, \emph{raising hands} in the `Astronaut' case). In contrast, our approach can produce image animations with natural dynamics, better adherence to the input image, and motion control guided by the text prompt.
+
+\paragraph{Gallery of our results.} We show more image animation results produced by our method in Figure~\ref{fig:more_2} and Figure~\ref{fig:more_3}. We collect those input images from the Internet, DAVIS~\cite{davis}, and JourneyDB~\cite{pan2023journeydb}.
+
+\paragraph{Video results.}
+%(html better)
+We provide the video result at \url{https://doubiiu.github.io/projects/DynamiCrafter}. It contains the following parts: i). Showcases produced by our method, ii). Comparisons with baseline methods, iii). Motion control using text, iv). Applications, v). Other controls, vi). Ablation study, and vii). Limitations.
+
+
+
+
+
+
+

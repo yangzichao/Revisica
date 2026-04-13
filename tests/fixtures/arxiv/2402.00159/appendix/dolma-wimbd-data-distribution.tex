@@ -1,0 +1,24 @@
+\section{\dolma data distribution figures using WIMBD}
+\label{sec:dolma-data-distribution-wimbd}
+
+
+We use the tool from \citet{wimbd} to inspect the final data composition in Figure~\ref{fig:wimbd-domains-dates-lang-dist}.
+In particular, we analyze web domain, year, and language distributions.
+
+\begin{figure*}[h!]
+    \subfloat[Web (URL) domains]{{\includegraphics[width=.33\linewidth]{figures/wimbd/domains_per_tok.pdf} }}\label{fig:wimbd-domains}%
+    \subfloat[Dates of documents]{{\includegraphics[width=.33\linewidth]{figures/wimbd/date_dist.pdf} }}\label{fig:wimbd-dates}%
+    \subfloat[Non-English languages]{{\includegraphics[width=.33\linewidth]{figures/wimbd/lang_dist.pdf} }}\label{fig:wimbd-lang}%
+    \caption{
+        Frequencies over different document metadata as computed using the WIMBD tool from \citet{wimbd}. 
+        In subfigure (c), \texttt{un} denotes documents whose language could not be identified;
+        \texttt{long} indicates documents that are too long to be processed with the tool's language ID module. 
+    }%
+    \label{fig:wimbd-domains-dates-lang-dist}%
+\end{figure*}
+
+
+We note that \dolma contains documents from a broad set of internet domains, mostly from 2020, 2022, and 2021.
+The most common internet domains in \dolma, per token, are \url{patents.google.com}, followed by \url{www.nature.com} and \url{www.frontiersin.org}.
+In fact, similar to other corpora reported in \citet{wimbd}, 63.6\% of Dolma's web documents are from `.com' sites (followed then by `.org' and `.co.uk' sites).
+Finally, as all language identification tools are imperfect, we summarize what languages are remaining post English-only filtering: We find the most common language after English is not well identified (`un') with 0.86\% of the documents, followed by 0.06\% of the documents identified as Chinese.

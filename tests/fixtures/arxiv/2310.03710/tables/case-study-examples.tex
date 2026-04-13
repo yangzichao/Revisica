@@ -1,0 +1,22 @@
+\begin{figure}[h!]
+    \centering
+    \footnotesize
+    \setlength{\fboxsep}{0.005\textwidth} %
+    \setlength{\fboxrule}{0.4pt} %
+    \fcolorbox{gray}{white!20}{ %
+    \parbox{0.9\linewidth}{
+    \begin{alltt}
+    {\scriptsize
+    \vspace{-1.2mm}Passage: This is a \hl{good movie}. Terrance Stamp is great, \hl{the music is sweet}, \hl{Carol White is very believeable.} The only thing that marred this was \hl{the shakey acting of Carol's first husband}, but if you can get past that, you're OK. Donovan provides some of the most languid, mellow, bittersweet lyrics from the 60s.
+    \\
+    \textbf{CoT Reasoning:} 
+    The reviewer mentions that \hl{the movie is ``good''} and that it has \hl{a ``sweet'' soundtrack.} They also mention that \hl{the acting by Carol White is ``believeable''.} However, they also mention that \hl{the acting by Carol's first husband is ``shakey.''}\\
+    Answer: \underline{\textcolor{correct}{Positive}}\hspace{1mm}{\Large \textcolor{correct}{\ding{51}}}\/}\vspace{-1.2mm}
+    \end{alltt}
+    }
+    }
+    \caption{Case study example for Llama-2-70b-chat with \zeroshotmid\ \method\ on IMDB. Here, the answer is correct and the task-specific reasoning is helpful for finding the answer (highlighted).
+    }
+    \label{table:case-study-reasoning-attempted-error}
+    \vskip -0.2in
+\end{figure}

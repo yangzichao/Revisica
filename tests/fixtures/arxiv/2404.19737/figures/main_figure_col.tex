@@ -1,0 +1,17 @@
+\begin{figure}[ht!]
+
+
+    \centering
+    \includegraphics[width=\linewidth]{img/main_fig_col.png}
+    \vspace{0.2em}
+    \caption{
+    \textbf{Overview of multi-token prediction.}
+    (Top) During training, the model predicts $4$ future tokens at once, by means of a shared trunk and $4$ dedicated output heads.
+    During inference, we employ only the next-token output head.
+    Optionally, the other three heads may be used to speed-up inference time.
+    (Bottom) Multi-token prediction improves pass@1 on the MBPP code task, significantly so as model size increases.
+    Error bars are confidence intervals of 90\% computed with bootstrapping over dataset samples.
+    }
+    \label{fig:main_figure_col}
+\end{figure}
+

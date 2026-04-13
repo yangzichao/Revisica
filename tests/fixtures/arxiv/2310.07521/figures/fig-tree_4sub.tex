@@ -1,0 +1,223 @@
+\definecolor{mycolor}{RGB}{215, 245, 200}
+
+\tikzstyle{my-box}=[
+    rectangle,
+    draw=hidden-draw,
+    rounded corners,
+    text opacity=1,
+    minimum height=1.5em,
+    minimum width=5em,
+    inner sep=2pt,
+    align=center,
+    fill opacity=.5,
+    line width=0.8pt,
+]
+\tikzset{
+leaf/.style={
+my-box,
+minimum height=1.5em,
+fill=mycolor, % Change the RGB values to the desired values
+text=black,
+align=left,
+font=\footnotesize,
+inner xsep=2pt,
+inner ysep=4pt,
+line width=0.8pt
+}
+}
+\begin{figure*}[t!]
+    \centering
+    \begin{adjustbox}{width=0.9\textwidth}
+        \begin{forest}
+            forked edges,
+            for tree={
+                grow=east,
+                reversed=true,
+                anchor=base west,
+                parent anchor=east,
+                child anchor=west,
+                base=center,
+                font=\large,
+                rectangle,
+                draw=hidden-draw,
+                rounded corners,
+                align=left,
+                text centered,
+                minimum width=5em,
+                edge+={darkgray, line width=1pt},
+                s sep=3pt,
+                inner xsep=2pt,
+                inner ysep=3pt,
+                line width=0.8pt,
+                ver/.style={rotate=90, child anchor=north, parent anchor=south, anchor=center},
+            },
+            where level=1{text width=6em,font=\normalsize,}{},
+            where level=2{text width=9em,font=\normalsize,}{},
+            where level=3{text width=9em,font=\normalsize,}{},
+            where level=4{text width=7em,font=\normalsize,}{},
+            [
+                Factuality
+                [
+                    The Issue\\(Sec \ref{sec:the_issue})
+                    [
+                        Definition (Sec \ref{sec:definition})
+                    ]
+                    [
+                        Setting (Sec \ref{sec:definition})
+                        [
+                            Standalone LLMs
+                            [
+                                ChatGPT~\citep{chatgpt}{, } GPT-4~\citep{GPT4}{, }\\BARD \citep{bard}\\
+                                 , leaf, text width=15em
+                            ]
+                        ]
+                        [
+                            Retrieval Aug-\\mented LLMs
+                            [
+                                BingChat \citep{BingChat}{,} Llama-Index \citep{LlamaIndex}
+                                , leaf, text width=15em
+                            ]
+                        ]
+                    ]
+                ]
+                [
+                    Evaluation\\(Sec \ref{sec:evalution})
+                    [
+                        Factuality Evaluation\\Benchmark \ref{sec:eval_benchmark}
+                        [
+                            MMLU~\citep{MMLU}{, } TruthfulQA~\citep{TruthfulQA}{, }\\C-Eval~\citep{C-Eval}{, } AGIEval~\citep{AGIEval}{, } \\ RealTimeQA~\citep{kasai2022realtimeqa}{, } FreshQA~\citep{vu2023freshllms}, leaf, text width=24em
+                        ]
+                    ]
+                    [
+                        Factuality\\Evaluation \ref{sec:factuality-eval}
+                        [
+                            SelfCheckGPT~\citep{SelfCheckGPT}{, } FActScore~\citep{Min2023-FActScore}{, } \\ \citet{wang2023evaluating}{, } \citet{yu2023generate}{, } \citet{kadavath2022language}, leaf, text width=24em
+                        ]
+                    ]
+                ]
+                [
+                    Analysis\\
+                    (Sec \ref{sec:analysis})
+                    [
+                        Factuality Analysis\\
+                        (Sec \ref{sec:factuality_analysis})
+                        [
+                            Knowledge Storage (Sec \ref{sec:analy_store})\\
+                            Knowledge Completeness and Awareness (Sec \ref{sec:analy_aware})\\
+                            Contextual Influence and Knowledge Conflict (Sec \ref{sec:analy_confict}), leaf, text width=27em 
+                        ]
+                    ]
+                    [
+                        Error Causes\\(Sec \ref{sec:causes})
+                        [
+                            Model-Level \ref{sec:model-causes}
+                            [
+                                Domain Knowledge Deficit{, } Outdated Information{, }\\ Immemorization{, } Forgetting{, } Reasoning Failure, leaf, text width=18em
+                            ]
+                        ]
+                        [
+                            Retrieval-Level \ref{sec:retrieval-causes}
+                            [
+                                Insufficient Information{, } Distracting Information{, } \\ Misinformation Not Recognized by LLMs{, }\\
+                                Misinterpretation of Related Information, leaf, text width=18em
+                            ]
+                        ]
+                        [
+                            Inference-Level \ref{sec:inference-causes}
+                            [
+                                Snowballing{, } Erroneous Decoding{, } Exposure Bias, leaf, text width=18em
+                            ]
+                        ]
+                    ]
+                ]
+                [
+                    Enhancement\\ (Sec \ref{sec:enhancement})
+                    [
+                        On Standalone\\LLMs
+                        (Sec \ref{sec:enhace_pure})
+                        [
+                            Pretrain-based
+                            \ref{sec:enhace_pure}
+                            [
+                                Initial Pretraining: \citet{sadeq-etal-2023-unsupervised}{; }\\
+                                Continual Pretraining: TOPICPREFIX \citep{lee2022factuality}\\
+                                , leaf, text width=18em
+                            ]
+                        ]
+                        [
+                            SFT-based \ref{sec:enhace_pure_sft}
+                            [
+                                Continual SFT: \citet{moiseev-etal-2022-skill}{;}\\
+                                Model Editing: \citet{dong-etal-2022-calibrating}{, }\\ CaliNET \citep{huang2023transformerpatcher}{, }  KN \citep{dai-etal-2022-knowledge}{, }\\ T-Patcher \citep{dai-etal-2022-knowledge}{, }
+                                SERAC \citep{Mitchell2022MemoryBasedME}\\
+                                , leaf, text width=18em
+                            ]
+                        ]
+                        [
+                            Multi-Agent \ref{sec:enhace_pure_multi}
+                            [
+                                Multi-debate: \citet{multiagent_debate}\\
+                                Multi-role: \citet{cohen2023lm}\\
+                                , leaf, text width=18em
+                            ]
+                        ]
+                        [
+                            Decoding \ref{sec:enhace_pure_decoding}
+                            [
+                                \citet{lee2022factuality}{,} \citet{chuang2023dola}\\
+                                , leaf, text width=18em
+                            ]
+                        ]
+                    ]
+                    [
+                        On Retrieval-\\Augmented\\LLMs(Sec \ref{sec:enhace_rag})
+                        [
+                            Normal RAG
+                            \ref{sec:enhace_rag_normal})
+                            [
+                                \citet{borgeaud2022improving}{, } \citet{LlamaIndex} \\
+                                , leaf, text width=18em
+                            ]
+                        ]
+                        [
+                            Interactive\\Retrieval \ref{sec:enhace_rag_inter}
+                            [
+                                CoT-based path: \citet{he2022rethinking}{, } IRCoT \citep{trivedi-etal-2023-interleaving} \\
+                                Agent-based Retrieval: ReAct \citep{yao2023react}
+                                , leaf, text width=16em
+                            ]
+                        ]
+                        [
+                            Retrieval\\Adaptation  \ref{sec:enhace_rag_adapt}
+                            [
+                                Prompt-based: LLM-Augmenter \citep{peng2023check}{, } \\
+                                SFT-based: ATLAS \citep{Atlas}{, } \\REPLUG \citep{REPLUG}{, } SAIL \citep{luo2023sail}  \\
+                                RLHF-based: GopherCite \citep{GopherCite}\\
+                                , leaf, text width=16em
+                            ]
+                        ]
+                        [
+                            Retrieval on External \\ Memory \ref{sec:enhace_rag_mem}
+                            [
+                                 General Knowledge: \citet{li2022decoupled}{,}\\ \citet{houlsby2019parameterefficient}{,} G-MAP \citep{wan2022gmap}  \\
+                                Entity Knowledge: knowledge plugin \citep{zhang-etal-2023-plug}\\KALA \citep{KALA} TOME \citep{jong2022mention}{, }  \\
+                                , leaf, text width=16em
+                            ]
+                        ]
+                        [
+                            Retrieval on\\Structured Data
+                            \ref{sec:enhace_rag_kg}
+                            [
+                                StructGPT \citep{StructGPT} {, } \citet{zhang2023mitigating}
+                                , leaf, text width=16em
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        \end{forest}
+    \end{adjustbox}
+        \vspace{-4mm}
+    \caption{Taxonomy of research on factuality in Large Language Models that consists of the issue, evaluation, analysis and enhancement.}
+    \label{fig:tree}
+\end{figure*}

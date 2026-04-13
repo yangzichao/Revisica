@@ -1,0 +1,57 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the structure of the dataset: The 'twitter\_complaints' subset of the 'raft' dataset contains tweets that are classified as either containing a complaint or not. The fields include 'Tweet text', 'ID', and 'Label'. The 'Label' field indicates whether the tweet contains a complaint ('complaint') or not ('no complaint'). 
+
+2. Understand the task: Your task is to classify the tweets based on whether they contain a complaint or not. 
+
+3. Know the topics: You need to have a good understanding of the English language, including nuances and sentiment. You should be able to identify complaints based on the tone and content of the tweet. 
+
+4. Steps to answer the questions: 
+
+   - Read the 'Tweet text' carefully.
+
+   - Identify the sentiment of the tweet. If it expresses dissatisfaction or a problem, it is likely a complaint.\\
+   - Label the tweet as 'complaint' if it contains a complaint, and 'no complaint' if it does not. 
+
+5. Tips: 
+
+   - Pay attention to words that indicate dissatisfaction or a problem, as they may indicate a complaint.
+
+   - Consider the overall tone of the tweet. Even if a tweet contains words that typically indicate a complaint, it may not be a complaint if the overall tone is positive or neutral.
+
+   - Remember that sarcasm can be common on social media, so a tweet that seems positive on the surface may actually be a complaint.
+
+Tweet text: @mckelldogs This might just be me, but-- eyedrops? Artificial tears are so useful when you're sleep-deprived and sp… https://t.co/WRtNsokblG
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The tweet in question is "This might just be me, but-- eyedrops? Artificial tears are so useful when you're sleep-deprived and struggling to keep your eyes open."
+
+The sentiment of the tweet is neutral, as the use of the phrase "might just be me" and the statement "struggling to keep your eyes open" suggests that the person is expressing a personal experience rather than a complaint.
+
+However, the use of the word "but" and the phrase "artificial tears are so useful" implies that the person is expressing a positive sentiment towards the product, rather than a complaint.
+
+Therefore, the correct answer for this tweet is "no complaint".
+
+Answer: No complaint.
+
+Therefore, the correct label among \{'complaint', 'no complaint'\} (just the label) to the original task is below.
+
+Label: no complaint
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Twitter Complaints).}
+\label{fig:raft_subset=twitter_complaints_example}
+\end{figure*}

@@ -1,0 +1,46 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The data you are working with comes from the 'overruling' subset of the RAFT dataset. This subset contains sentences from legal documents. The task is to classify these sentences into two categories: 'overruling' and 'not overruling'. An 'overruling' sentence indicates a previous legal ruling is being overruled, while a 'not overruling' sentence does not.
+
+2. Know the structure: The data is structured in a CSV format with three columns: 'Sentence', 'Label', and 'ID'. The 'Sentence' column contains the text of the sentence, the 'Label' column contains the classification label ('overruling' or 'not overruling'), and the 'ID' column is used for indexing data points.
+
+3. Understand the labels: The labels are 'overruling' and 'not overruling'. An 'overruling' label means that the sentence indicates a previous legal ruling or precedent is being overruled or overturned. A 'not overruling' label means the sentence does not indicate any such action.
+
+4. Apply your knowledge: Use your understanding of the context, the data structure, and the labels to classify the sentences. This may require some knowledge of legal terminology and context.
+
+5. Be careful with ambiguous cases: Some sentences may not clearly indicate whether a ruling is being overruled. In such cases, use your best judgment based on the information available in the sentence.
+
+6. Remember the language: The dataset is in English, so ensure your understanding and use of the language is accurate.
+
+7. Be aware of the data splits: There are 50 training examples and 2350 test examples in the 'overruling' subset. Make sure to use the appropriate split for your task.
+
+Sentence: accordingly, it is overruled.
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The sentence "accordingly, it is overruled" indicates that a previous ruling or precedent is being overturned or overruled. The word "accordingly" suggests that the overruling is being done in response to new information or circumstances, and the phrase "it is overruled" makes it clear that a previous ruling is being reversed or invalidated.
+
+Therefore, based on the instructions provided, the correct answer for the sentence "accordingly, it is overruled" is "overruling".
+
+Answer: overruling
+
+Therefore, the correct label among \{'not overruling', 'overruling'\} (just the label) to the original task is below.
+
+Label: overruling
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Overruling).}
+\label{fig:raft_subset=overruling_example}
+\end{figure*}

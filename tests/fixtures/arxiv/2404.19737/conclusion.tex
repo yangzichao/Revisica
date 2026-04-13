@@ -1,0 +1,18 @@
+\label{sect:conclusion}
+
+
+
+
+
+We have proposed multi-token prediction as an improvement over next-token prediction in training language models for generative or reasoning tasks. 
+Our experiments (up to 7B parameters and 1T tokens) show that this is increasingly useful for larger models and in particular show strong improvements for code tasks.  
+We posit that our method reduces distribution mismatch between teacher-forced training and autoregressive generation. %
+When used with speculative decoding, exact inference gets 3 times faster.
+
+In future work we would like to better understand how to automatically choose $n$ in multi-token prediction losses.
+One possibility to do so is to use loss scales and loss balancing~\cite{defossez2022highfi}.
+Also, optimal vocabulary sizes for multi-token prediction are likely different from those for next-token prediction, and tuning them could lead to better results, as well as improved trade-offs between compressed sequence length and compute-per-byte expenses.
+Finally, we would like to develop improved auxiliary prediction losses that operate in embedding spaces~\cite{lecun2022path}.
+
+
+

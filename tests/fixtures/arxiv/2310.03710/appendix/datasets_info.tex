@@ -1,0 +1,385 @@
+\subsubsection{AddSub} 
+\paragraph{Description} AddSub \citep{koncel-kedziorski-etal-2016-mawps} is a generation dataset containing addition and subtraction math word problems. We also classify AddSub as a reasoning dataset because of its inclusion in \citet{kojima2023large}. The dataset contains 395 test instances. 
+
+\paragraph{Implementation Details} 
+AddSub is a generation dataset. Specifically, we prompt for an answer that is at most 10 tokens. During few-shot runs, we use the 5 in-context learning examples extracted from the math word problem instances presented in the chain of thought paper \citep{wei2023chainofthought}. Responses undergo a post-processing step where the first number in the output is extracted for evaluation. The evaluation metric used is quasi-exact match.
+
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:addsub_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-4 model achieved the state-of-the-art \citep{zhao2023automatic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{AQuA}
+\paragraph{Description} AQuA \citep{ling2017program} is a classification (multi-choice) dataset containing various math word problems. Because it is in \citet{kojima2023large}, we consider it a reasoning dataset. The dataset contains 254 test instances.
+
+\paragraph{Implementation Details}
+We prompt for an answer that is at most 5 tokens. Responses undergo a post-processing step where the first letter in the output is extracted for evaluation. The evaluation metric used is exact match.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:aqua_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-4 model achieved the state-of-the-art \citep{zheng2023progressivehint}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{BoolQ}
+\paragraph{Description} BoolQ \citep{clark2019boolq} is a classification benchmark where yes/no questions are asked about a given passage. We sample 1,000 test instances following HELM.
+
+\paragraph{Implementation Details}
+BoolQ is a core scenario in HELM~\citep{liang2022holistic}, and we use the implementation parameters outlined in HELM. Specifically, we prompt for an answer that is at most 5 tokens. Quasi-prefix exact match is used for evaluation.
+
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:boolq_example}.
+
+\paragraph{Comparison Methods}
+The result of finetuned ST-MoE-32B achieved the state-of-the-art \citep{zoph2022stmoe}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{CivilComments} 
+\paragraph{Description} Civil Comments \citep{wilds2021, borkan2019nuanced} is a classification dataset to identify toxicity in online comments. The dataset is split by demographic (All, Black, Christian, Female, LGBTQ, Male, Muslim, Other religions, White). We sample 1,000 test instances from each subset following HELM.
+
+\paragraph{Implementation Details}
+CivilComments is a core scenario in HELM, and we use the implementation parameters outlined in HELM. We prompt for an answer that is at most 5 tokens. Following HELM, we report the macro-average accuracy of each subset below with respect to the toxic/non-toxic classes, as well as the average accuracy across all subsets. We found it necessary to map yes/no outputs to true/false during zero-shot runs. Quasi-prefix exact match is used for evaluation.
+
+\paragraph{Examples} Examples are shown in Figures \ref{fig:civil_comments_demographic=all_example}, \ref{fig:civil_comments_demographic=black_example}, \ref{fig:civil_comments_demographic=christian_example}, \ref{fig:civil_comments_demographic=female_example}, \ref{fig:civil_comments_demographic=LGBTQ_example}, \ref{fig:civil_comments_demographic=male_example}, \ref{fig:civil_comments_demographic=muslim_example}, \ref{fig:civil_comments_demographic=other_religions_example}, \ref{fig:civil_comments_demographic=white_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-3.5 Turbo model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{CNN/Daily Mail} 
+\paragraph{Description} CNN/Daily Mail \citep{see2017point} is a generation dataset where the goal is to summarize a selection of news articles. The dataset contains 466 test instances.
+
+\paragraph{Implementation Details}
+CNN/Daily Mail is a core scenario in HELM. We generate a summary of no more than 128 tokens and use a temperature of 0.3. The ROUGE-2 metric is used for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:summarization_cnndm}.
+
+\paragraph{Comparison Methods}
+The result of the PEGASUS\textsubscript{LARGE} (HugeNews) model achieved the state-of-the-art \citep{zhang2020pegasus}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{Coin Flip}
+\paragraph{Description} Coin Flip \citep{wei2023chainofthought} is a classification task where the objective is to determine the state of a coin after a number of successive flips. We consider Coin Flip a reasoning task because it is included in \citet{kojima2023large}. The dataset contains 500 test instances.
+
+\paragraph{Implementation Details}
+We recreated the Coin Flip dataset following the details in \citet{kojima2023large}. We generate a response of no more than 4 tokens and use quasi-exact match for evaluation. 
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:coin_example}.
+
+\paragraph{Comparison Methods}
+The result of the GPT-3.5 (text-davinci-002) model achieved the state-of-the-art \citep{zhang2022automatic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{CommonsenseQA}
+\paragraph{Description} CommonsenseQA \citep{talmor2019commonsenseqa} is a classification (multi-choice) dataset focusing on common sense. Because it is in \citet{kojima2023large}, we consider it a reasoning dataset. We sample 1,000 instances from the test set mirroring the existing implementation in HELM.
+
+\paragraph{Implementation Details}
+Though CommonsenseQA was already implemented into HELM, we added a separate implementation to better align with \citet{kojima2023large}. We use the joint multiple-choice adapter in HELM rather than the separate multiple-choice adapter. We generate a response of no more than 5 tokens, and grab the first letter from the output and then use exact match for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:commonsense_qa_example}.
+
+\paragraph{Comparison Methods}
+The result of the DeBERTaV3-large model achieved the state-of-the-art \citep{xu2022human}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{Date Understanding}
+\paragraph{Description} Date Understanding \citep{srivastava2023imitation,suzgun2022challenging} is a classification (multi-choice) dataset from the BIG-bench benchmark \citep{srivastava2023imitation}, which aims to assess pretrained language models' capacity to comprehend dates through inquiries about specific days' dates. The dataset contains 369 test instances.
+
+\paragraph{Implementation Details}
+We use the Date Understanding instances from \citet{suzgun2022challenging}. We generate up to 60 tokens, though in practice, the generation ends much quicker when it hits a stop token: either ``\textbackslash n'' or ``)''. As with other classification multi-choice, we extract the first letter from the response. Quasi-exact match is used as the evaluation metric.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:date_understanding_example}.
+
+\paragraph{Comparison Methods}
+The few-shot CoT results on the PaLM 2 model achieved the state-of-the-art \citep{anil2023palm}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{GSM8K}
+\paragraph{Description} GSM8K \citep{cobbe2021training} is a generation dataset focused on mathematical reasoning. Because it is in \citet{kojima2023large}, we consider it a reasoning dataset. We sample 1,000 test instances following HELM.
+
+\paragraph{Implementation Details} 
+GSM8K is included in HELM as a target scenario. We leverage this implementation, which generates up to 400 new tokens. Responses undergo a post-processing step where the first number in the output is extracted for evaluation. The evaluation metric used is quasi-exact match.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:gsm_example}.
+
+\paragraph{Comparison Methods}
+The result of the GPT-4 code interpreter achieved the state-of-the-art \citep{zhou2023solving}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{HellaSwag}
+\paragraph{Description} HellaSwag \citep{zellers2019hellaswag} is a classification (multi-choice) dataset comprised of 70,000 multiple-choice questions about grounded situations, originating from ActivityNet and wikiHow domains, with human-verified adversarial incorrect answers and one correct answer aimed at studying grounded commonsense inference. We sample 1,000 test instances following HELM.
+
+\paragraph{Implementation Details}
+We use the implementation of HellaSwag in HELM, but use the joint adapter to mimic a standard multiple-choice question, rather than the separate adapter which scores each reference separately using the sentence probability normalized by the sentence length. We generate only a single token. During zero-shot and zero-shot CoT runs, we include the following instructions from HELM: ``The following are multiple choice questions (with answers) about common sense.'' The exact match metric is used for evaluation. Like with other classification (multi-choice) datasets, we parse out the first letter from the response for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:commonsense_dataset=hellaswag_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-4 model achieved the state-of-the-art \citep{openai2023gpt4}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{IMDB}
+\paragraph{Description} IMDB \citep{maas-etal-2011-learning} is a classification dataset comprising 50,000 movie reviews, with 25,000 for training and 25,000 for testing, focused on binary sentiment classification. We sample 1,000 test instances following HELM.
+
+\paragraph{Implementation Details}
+IMDB is a core scenario in HELM, and we follow their implementation. We generate up to 5 new tokens. During few-shot runs, we sampled 5 in-context examples from the IMDB training set. Quasi-exact match is used for evaluation. 
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:imdb_example}.
+
+\paragraph{Comparison Methods}
+The result of the ERNIE-DOC-Large model achieved the state-of-the-art \citep{ding2021erniedoc}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{Last Letter Concatenation} 
+\paragraph{Description} Last Letter Concatenation \citep{wei2023chainofthought} is a generation task where the objective is to concatenate the last letters of a series of two words. Because it is in \citet{kojima2023large}, we consider it a reasoning dataset. We generate full names by randomly concatenating names from the top one-thousand first and last names from name census data (\url{https://namecensus.com/}), as referenced in \citet{wei2023chainofthought}. The dataset contains 500 test instances.
+
+\paragraph{Implementation Details}
+We recreated the Last Letter Concatenation dataset following the details in \citet{kojima2023large, wei2023chainofthought}. Unlike \citet{kojima2023large} which does concatenation on 4 words, we only do so on 2. We generate a response of no more than 4 tokens. We noticed that quasi-exact match unfairly penalized zero-shot CoT runs, so for all runs we extract the answer directly from the generated text, grabbing only the first 2 letters after stripping away white space and punctuation.  
+
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:letter_example}.
+
+\paragraph{Comparison Methods}
+The few-shot CoT results on the PaLM-540B model achieved the state-of-the-art \citep{wei2023chainofthought}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{MMLU}
+\paragraph{Description} MMLU \citep{hendrycks2021measuring} is a classification (multi-choice) benchmark comprised of 57 diverse subjects, ranging from elementary to professional levels, encompassing STEM, humanities, social sciences, and specialized fields. Following HELM, we focus on 5 subjects (Abstract Algebra, College Chemistry, Computer Security, Econometrics, and US Foreign Policy) totaling 514 test instances. 
+
+\paragraph{Implementation Details}
+MMLU is a core HELM scenario, and we use HELM's implementation of the dataset. We prompt for a single token. HELM's implementation includes the following instructions, where ``\{subject\}'' is replaced with the subject of the dataset: ``The following are multiple choice questions (with answers) about \{subject\}.'' We prepend these instructions to instances during zero-shot and zero-shot CoT runs. We parse out the first letter from the response, and the exact match metric is used for evaluation.
+
+\paragraph{Examples} Examples are shown in Figures \ref{fig:mmlu_subject=abstract_algebra_example}, \ref{fig:mmlu_subject=college_chemistry_example}, \ref{fig:mmlu_subject=computer_security_example}, \ref{fig:mmlu_subject=econometrics_example}, \ref{fig:mmlu_subject=us_foreign_policy_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the Palmyra X (43B) model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{MS MARCO (Regular)}
+\label{appendix:ms-marco}
+
+\paragraph{Description} MS MARCO \citep{bajaj2018ms, nogueira2020document, MacAvaney_2021} is a classification dataset containing real Bing search queries and nearly 9 million web passages, annotated for relevance. It consists of two tracks: the Regular track uses binary RR@k metric, while the TREC track employs graded annotations with NDCG as the main metric, featuring more extensively annotated queries and passages with relevance grades. We sample 1,000 test instances for the Regular track following HELM.
+
+\paragraph{Implementation Details}
+We use the default HELM implementation for MS MARCO (Regular) and evaluate using RR@10.  
+
+\paragraph{Examples} An example is shown in Figures \ref{fig:msmarco=regular_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the Cohere Command beta (52.4B) model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{MS MARCO (TREC)}
+
+\paragraph{Description} 
+This is the TREC track of MS MARCO \citep{bajaj2018ms, nogueira2020document, MacAvaney_2021} as introduced in Appendix~\ref{appendix:ms-marco}.
+The TREC track contains 43 instances.
+
+\paragraph{Implementation Details}
+We use the default HELM implementation for MS MARCO (TREC) and evaluate using NDCG@10.  
+
+\paragraph{Examples} An example is shown in Figure~\ref{fig:msmarco=trec_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the Cohere Command beta (52.4B) model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{MultiArith}
+\paragraph{Description} MultiArith \citep{roy2016solving} is a generation dataset containing a comprehensive collection of arithmetic word problems, encompassing various mathematical operations and ranging in complexity. Because it is in \citet{kojima2023large} as a reasoning task, we consider it a reasoning dataset. The dataset contains 600 test instances.
+
+\paragraph{Implementation Details}
+We prompt for up to 10 new tokens. As with other math generation datasets, we extract the first number from the generated text and use that as the final answer. Quasi-exact match is used for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:multi_arith_example}.
+
+\paragraph{Comparison Methods}
+The result of the self-consistency strategy on the GPT-3 (code-davinci-002) model achieved the state-of-the-art \citep{wang2023selfconsistency}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{NarrativeQA} 
+\paragraph{Description} NarrativeQA \citep{kocisky-etal-2018-narrativeqa} is a generation dataset focused on reading comprehension where the model answers a question about a passage. The dataset is comprised of 355 test instances.
+
+\paragraph{Implementation Details}
+We use the implementation of NarrativeQA in HELM. We generate up to 100 new tokens, and use F1 score for evaluation. For few-shot runs, we sampled 5 in-context examples from the training set.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:narrative_qa_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the Llama 2 (70B) model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{NaturalQuestions (closed-book)} 
+\label{appendix:NaturalQuestions}
+\paragraph{Description} NaturalQuestions \citep{kwiatkowski-etal-2019-natural} is a generation dataset comprised of anonymized real search queries posed to Google. We focus on two subsets: closed-book where the model is not given any external context, and open-book long answer, where a passage is given prior to the question. We sample 1,000 test instances following HELM.
+
+\paragraph{Implementation Details}
+We use the implementation of the Natural Questions dataset within HELM. Up to 300 new tokens are generated, and we use F1 score as the evaluation metric.
+
+\paragraph{Examples} An example is shown in Figure~\ref{fig:natural_qa_mode=closedbook_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the Llama 2 (70B) model achieved the state-of-the-art on the NaturalQuestions (closed-book) dataset \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{NaturalQuestions (open-book)}
+\paragraph{Description} This is the open-book subset of NaturalQuestions \citep{kwiatkowski-etal-2019-natural} as introduced in Appendix~\ref{appendix:NaturalQuestions}.
+
+\paragraph{Implementation Details} We use the same implementation as introduced in Appendix~\ref{appendix:NaturalQuestions}.
+
+\paragraph{Examples} An example is shown in Figure~\ref{fig:natural_qa_mode=openbook_longans_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the text-davinci-003 model achieved the state-of-the-art on the NaturalQuestions (open-book) dataset \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{NewsQA}
+\paragraph{Description} NewsQA \citep{trischler2017newsqa} is a generation dataset that contains human-generated question-answer pairs sourced from more than 10,000 CNN news articles. We sample 1,000 test instances following HELM.
+
+\paragraph{Implementation Details}
+We followed the instructions in HELM to collect and process the NewsQA dataset. We generate up to 50 tokens. F1 score is used as the evaluation metric.
+
+\paragraph{Examples} Because of restrictive licensing, we cannot publish an example.
+
+\paragraph{Comparison Methods}
+The result of the SpanBERT model achieved the state-of-the-art \citep{joshi2020spanbert}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{OpenBookQA}
+\paragraph{Description} OpenBookQA \citep{Mihaylov2018CanAS} is a classification (multi-choice) dataset focused on commonsense knowledge utilization. It contains 500 test instances.
+
+\paragraph{Implementation Details}
+We follow the implementation of OpenbookQA in HELM, but use the joint adapter to mimic a standard multiple-choice question, rather than the separate adapter which scores each reference separately using the sentence probability normalized by the sentence length. We generate only a single token. During zero-shot and zero-shot CoT runs, we include the following instructions from HELM: ``The following are multiple choice questions (with answers) about common sense.'' The first letter from the response is parsed out and the exact match metric is used for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:commonsense_dataset=openbookqa_example}.
+
+\paragraph{Comparison Methods}
+The result of the fine-tuning method with the self-consistency prompting method on the PaLM-540B model achieved the state-of-the-art \citep{huang2022large}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{QuAC}
+\paragraph{Description} QuAC \citep{choi-etal-2018-quac} is a generation dataset that facilitates information-seeking dialogue modeling by presenting interactive conversations between a student asking open-ended questions and a teacher providing short text excerpts from a hidden Wikipedia passage. There are 1,000 test instances following HELM.
+
+\paragraph{Implementation Details}
+We use the default QuAC implementation in HELM. Responses are limited to 100 tokens, and F1 is used to measure accuracy.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:quac_example}.
+
+\paragraph{Comparison Methods}
+The result of the FLOWQA model achieved the state-of-the-art \citep{huang2019flowqa}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{RAFT}
+\paragraph{Description} RAFT \citep{alex2022raft} is a classification benchmark designed to assess language models' performance across diverse domains. Specifically, we focus on 11 subsets, containing 40 test instances each.
+
+\paragraph{Implementation Details}
+We use the default implementation of RAFT in HELM. Responses are limited to 30 tokens. For zero-shot and zero-shot CoT runs, we prepend subset-specific task instructions provided in HELM. We report the average score across the 11 subsets using quasi-exact match as the evaluation metric.
+
+\paragraph{Examples} Examples are shown in Figures \ref{fig:raft_subset=ade_corpus_v2_example}, \ref{fig:raft_subset=banking_77_example}, \ref{fig:raft_subset=neurips_impact_statement_risks_example}, \ref{fig:raft_subset=one_stop_english_example}, \ref{fig:raft_subset=overruling_example}, \ref{fig:raft_subset=semiconductor_org_types_example}, \ref{fig:raft_subset=systematic_review_inclusion_example}, \ref{fig:raft_subset=tai_safety_research_example}, \ref{fig:raft_subset=terms_of_service_example}, \ref{fig:raft_subset=tweet_eval_hate_example}, \ref{fig:raft_subset=twitter_complaints_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-3.5 Turbo model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{Shuffled Objects}
+
+\paragraph{Description} Shuffled Objects \citep{srivastava2023imitation,suzgun2022challenging} is a classification (multi-choice) dataset of the BIG-bench benchmark. In this dataset, objects initially owned by different people are swapped through pairwise trades, and the model's goal is to accurately determine which person ends up with a particular object. There are 3 subtasks (three objects, five objects, and seven objects) in this dataset. The five and seven objects subtasks each contain 1000 instances, and the three object subtask contains 750 test instances.
+
+\paragraph{Implementation Details}
+We use the Shuffled Objects instances from \citet{suzgun2022challenging}. We generate up to 60 tokens, though in practice, the generation ends much quicker when it hits a stop token: either "\textbackslash n" or ")". Unlike \citet{kojima2023large}, we report results on the three, five, and seven object cases, instead of only the three object case. As with other classification (multi-choice) datasets, we parse out the first letter in the response. Quasi-exact match is used as the evaluation metric.
+
+\paragraph{Examples} Examples are shown in Figures \ref{fig:shuffled_objects=five_objects_example}, \ref{fig:shuffled_objects=seven_objects_example}, \ref{fig:shuffled_objects=three_objects_example}.
+
+\paragraph{Comparison Methods}
+The few-shot CoT results on the PaLM 2 model achieved the state-of-the-art \citep{anil2023palm}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{SingleEq}
+\paragraph{Description} SingleEq \citep{koncel-kedziorski-etal-2016-mawps} is a generation dataset containing math word problems requiring the use of single mathematical equations. Because the dataset is included in \citet{kojima2023large}, we consider it a reasoning task in addition to generation. The dataset contains 508 test instances.
+
+\paragraph{Implementation Details}
+We followed the instructions in \citet{kojima2023large} to collect the SingleEQ dataset. We limit generated responses to 10 tokens. Like other math generation datasets, we parse out the first number from the response, and then use quasi-exact match to measure accuracy.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:singleeq_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-4 model achieved the state-of-the-art \citep{zhao2023automatic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{StrategyQA}
+\paragraph{Description} StrategyQA \citep{geva2021did} is a yes/no classification dataset, though we follow the BIG-bench implementation which treats instances as multiple-choice questions with two options (A. Yes, B. No). Because it is in \citet{kojima2023large}, we consider it a reasoning dataset. The dataset contains 458 test instances.
+
+\paragraph{Implementation Details}
+We use the StragetyQA implementation through BIG-bench. As a result, our implementation varies from that in \citet{kojima2023large} in that the instances are formulated as a classification (multi-choice) task, rather than an open-ended classification task. We prompt for no more than 64 new tokens. We extract the first letter from the response, and use exact match to measure accuracy.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:big_bench:task=strategyqa}.
+
+\paragraph{Comparison Methods}
+The few-shot CoT results with self-consistency on the PaLM 2 model achieved the state-of-the-art \citep{anil2023palm}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{SVAMP}
+\paragraph{Description} SVAMP \citep{patel2021nlp} is a generation dataset focused on mathematical reasoning containing 1,000 test instances. Because it is in \citet{kojima2023large}, we also consider it a reasoning dataset.
+
+\paragraph{Implementation Details}
+ We prompt for at most 10 tokens. Like other math generation datasets, we parse the first number out of the response, and use quasi-exact match for evaluation. 
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:svamp_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the GPT-4 model achieved the state-of-the-art \citep{zhao2023automatic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{TruthfulQA}
+\paragraph{Description} TruthfulQA \citep{lin-etal-2022-truthfulqa} is a classification (multi-choice) task designed to test LLMs' propensity to dispense harmful information. The dataset contains 654 test instances.
+
+\paragraph{Implementation Details}
+We use the implementation of TruthfulQA in HELM, which prompts for only a single token. We extract the first letter and use exact match for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:truthful_qa_task=mc_single_example}.
+
+\paragraph{Comparison Methods}
+The few-shot results on the Palmyra X (43B) model achieved the state-of-the-art \citep{liang2022holistic}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.
+
+\subsubsection{XSUM} 
+\paragraph{Description} XSUM \citep{narayan2018dont} is a generation dataset focused on summarization. The dataset contains 518 test instances.
+
+\paragraph{Implementation Details}
+XSUM is a core scenario in HELM. We generate a summary of no more than 128 tokens and use a temperature of 0.3. The ROUGE-2 metric is used for evaluation.
+
+\paragraph{Examples} An example is shown in Figure \ref{fig:summarization_xsum_example}.
+
+\paragraph{Comparison Methods}
+The result of the PEGASUS\textsubscript{LARGE} (HugeNews) model achieved the state-of-the-art \citep{zhang2020pegasus}.
+
+\paragraph{Results} The results are shown in Table \ref{table:results-numerical-table}.

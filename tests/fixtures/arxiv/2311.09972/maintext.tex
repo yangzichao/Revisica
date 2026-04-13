@@ -1,0 +1,694 @@
+
+
+
+\section{Asymptotic framework with many bidders}\label{sec:setup}
+
+We consider inference in sealed-bid auctions for a single object, where the data consist of transaction prices from $n \geq 3$ independent auction realizations, denoted as $\{P_j:j=1,\dots,n\}$. Importantly, our framework does not require $n$ to diverge to infinity.
+
+For each auction $j=1,\dots,n$, the setup is as follows. There is a single object for sale, and $K_j$ potential buyers are bidding for it. These bidders have independent private values (IPV) $\{V_{i,j}:i=1,\dots,K_j\}$ distributed according to a common cumulative distribution function (CDF) $F_V$ with support on $[v_L,v_H]$, with $0\leq v_L<v_H$, where $v_H=\infty$ is allowed.
+% In other words, the auction $j$ has $K_j$ symmetric bidders. 
+We assume that $F_V$ strictly increases on its support and admits a continuous probability density function (PDF) $f_V=F_V'$. Bidders are assumed to be risk-neutral and maximize expected profits without facing any liquidity or budget constraints. $F_V$ and $K_j$ are common knowledge to all bidders, but unknown to the researcher. Our inference methods rely on the asymptotics with diverging numbers of bidders $K_j$ and a finite number of auctions $n$. To this end, we assume that $K \equiv \min\{K_1,\dots,K_n\} \to \infty$ and $K_i/K \to 1$ for each $i=1,\dots,n$.
+% \footnote{If $K_j$ varies across auctions, then these are not identically distributed.} 
+%Finally, we assume that $K_j \to \infty$ and $K_j/\bar{K} {\to} 1$ as $K_j \to \infty$, where $\bar{K} = \sum_{j=1}^{n} K_j/n$. 
+That is, we assume all $n$ auctions have approximately the same large number of bidders.\footnote{Allowing for an unknown number of bidders and $K_j/K \not\to 1$ for some $j=1,\dots,n$ significantly complicates our inference problem. In particular, this would require observing more than the transaction price in each auction, contradicting the core premise of this paper.}
+
+\begin{runningexample}
+Throughout this paper, we illustrate our methodology with a particular example of the Hong Kong license place auctions. Specifically, we focus on auctions for the luxurious plates with a single letter and no numbers. Table \ref{tab:plate} presents all historical records of such auctions.  
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{ccccc}
+\hline\hline
+Plate &  & Auction date &  & Price (million HKD) \\ \hline
+\texttt{D} &  & Feb.\ 25, 2024 &  & $20.2$ \\ 
+\texttt{R} &  & Feb.\ 12, 2023 &  & $25.5$ \\ 
+\texttt{W} &  & Mar.\ 7, 2021 &  & $26.0$ \\ 
+\texttt{V} &  & Feb.\ 24, 2019 &  & $13.0$ \\ 
+\hline\hline
+\end{tabular}
+\caption{All recorded auctions with a single letter and no numbers in Hong Kong. The transaction prices are expressed in millions of Hong Kong dollars (approximately equal to \$128,000 USD).}
+\label{tab:plate}
+\end{table}
+
+\noindent The exceptionally high transaction prices
+% (around \$2.6 million for the plate with the single letter \texttt{D}) 
+have sparked considerable media attention.\footnote{For example, see https://hobbylistings.com/hong-kong-license-plate and https://www.cnn.com/style/article/\linebreak hong-kong-auctioned-vanity-car-plates-intl-hnk/index.html.} The methods developed in this paper allow us to conduct inference on features of these auctions.
+%, such as the expected revenue and the winner's expected utility for these exclusive plates.
+\end{runningexample}
+
+% \medskip
+% \noindent \textsc{Running Example:} Throughout this paper, we will use auctions for the extremely luxurious plates featuring only one letter as a running example. Table \ref{tab:plate} presents all four historical records of such auctions. 
+% \begin{table}[ht]
+% \centering
+% \renewcommand{\arraystretch}{1.6}
+% \begin{tabular}{ccccc}
+% \hline\hline
+% Plate &  & Auction Date &  & Price (1,000 HKD) \\ \hline
+% \texttt{D} &  & Feb. 25 2024 &  & $20,200$ \\ 
+% \texttt{R} &  & Feb. 12 2023 &  & $25,500$ \\ 
+% \texttt{W} &  & Mar. 07 2021 &  & $26,000$ \\ 
+% \texttt{V} &  & Feb. 24 2019 &  & $13,000$ \\ 
+% \hline\hline
+% \end{tabular}
+% \caption{Records of all four auctions of the luxurious plates with a single letter in Hong Kong. The prices are in 1,000 Hong Kong dollars (HKD) (approximately equal to \$128 USD).}
+% \label{tab:plate}
+% \end{table} 
+% The exceptionally high transaction prices
+% % (around \$2.6 million for the plate with the single letter \texttt{D}) 
+% have sparked considerable media attention\footnote{For example, see https://hobbylistings.com/hong-kong-license-plate and https://www.cnn.com/style/article/\linebreak hong-kong-auctioned-vanity-car-plates-intl-hnk/index.html.}. The methods developed in this paper allow us to conduct inference on features of these auctions, such as the expected revenue and the winner's expected utility for these exclusive plates. $\square$
+% \medskip
+
+
+
+We make an additional assumption about the valuation distribution $F_V$. We assume that it is in the domain of attraction of the EV distribution $G_\xi$, where $\xi$ denotes the tail index. Formally, this means that there is a sequence of normalizing constants $\{(a_{K},b_{K}) \in \mathbb{R}_{++} \times \mathbb{R} :K \in \mathbb{N}\}$ such that, for all $x$ that is a continuity point of $G_\xi$,
+\begin{equation}
+\lim_{K \to \infty} ~(F_V(a_{K} x + b_{K}))^{K} ~~=~~ G_\xi(x) .
+%frac{V_{(1),j} -b_{K}}{a_{K}}~~\overset{d}{\to}~~\frac{E^{-\xi} -1 }{\xi} ~~~\text{ as }K \to \infty,
+\label{eq:DomainOfAttraction}
+\end{equation}
+%For each auction $j=1,\dots,n$, let $\{V_{(1),j}:i=1,\dots,K_j\}$ denote the order statistics of the valuations $\{V_{i,j}:i=1,\dots,K_j\}$ expressed in decreasing order, i.e., $V_{(1),j} \geq V_{(2),j}\geq \dots \geq V_{(K_j),j}$. 
+%Sufficient conditions for \eqref{eq:DomainOfAttraction} are the so-called von Mises conditions, first derived by \cite{vonmises:1936}. 
+%\footnote{There conditions impose restrictions regarding the rate at which $(f_V,1-F_V)$ approach zero in the extremes of the distribution.} 
+See \citet[Chapter 1]{dehaan2006book} or \citet[Chapter 10]{david2004book} for recent expositions on this topic, including sufficient conditions for \eqref{eq:DomainOfAttraction}.
+% In particular, \citet[Theorem 10.5.2]{david2004book} provides sufficient conditions for \eqref{eq:DomainOfAttraction} when $F_V$ is absolutely continuous, which is the relevant case for this paper.
+Under the condition in \eqref{eq:DomainOfAttraction}, standard asymptotic results imply that $G_\xi$ belongs to one of three types: Weibull (if $\xi < 0$), Gumbel (if $\xi = 0$), or Fr\'echet (if $\xi > 0$). We can unify these distributions into the generalized EV distribution, with the following CDF:
+\begin{equation}
+\label{eq:G}    
+G_\xi(x) ~=~\left\{
+\begin{array}{ll}
+\exp( - (1 + \xi x)^{-1/\xi} ) I(1 + \xi x > 0)&\text{ if }\xi >0,\\
+\exp(-\exp(-x)) &\text{ if }\xi =0,\\
+\exp( - (1 + \xi x)^{-1/\xi} ) I(1 + \xi x > 0) +  I(1 + \xi x \leq 0) &\text{ if }\xi <0,
+\end{array} 
+\right.
+\end{equation}
+% See \citet[Theorem 1.1.3]{dehaan2006book} or \citet[Theorem 10.5.1]{david2004book}. 
+%These three distributions characterize the right tail properties of $F_V$: heavy, light, or no right tail, respectively.
+Condition \eqref{eq:DomainOfAttraction} is an arguably mild restriction, as is satisfied by most commonly used valuation distributions $F_V$. The case with $\xi >0$ covers distributions with unbounded support (i.e., $v_H=\infty$) and polynomial decaying (i.e., ``heavy'') right tail. In this case, moments of order less than $1/\xi$ exist, and moments of order greater than $1/\xi$ do not (see \citet[page 176]{dehaan2006book}). Then, the restriction to $\xi \leq 1/2$ implies that $F_V$ has finite second moments. Examples include Pareto, Student-t, and F distributions. 
+% (see, \citet[Exercise 1.16]{dehaan2006book}).
+Second, the case with $\xi =0$ encompasses distributions with unbounded support (i.e., $v_H=\infty$) but with exponential decaying (i.e., ``light'') right tail and bounded moments of any order. Examples include normal and log-normal distributions. Finally, the case $\xi<0 $ covers distributions with bounded support (i.e., $v_H <\infty$), such as Beta, Uniform, and triangular distributions. In turn, condition \eqref{eq:DomainOfAttraction} fails for any distribution that has a probability mass point at the highest value of its support, such as geometric or Poisson distributions; see \citet[Exercise 1.13]{dehaan2006book}.
+
+The significance of \eqref{eq:DomainOfAttraction} in our paper is that it allows us to characterize the joint distribution of the ordered valuations for all auctions as the number of bidders diverges. We now introduce the relevant notation to this end. For each auction $j=1,\dots,n$, let $\{V_{(i),j}:i=1,\dots,K_j\}$ denote the order statistics of $\{V_{i,j}:i=1,\dots,K_j\}$ in decreasing order, i.e., $V_{(1),j} \geq V_{(2),j}\geq \dots \geq V_{(K_j),j}$. Lemma \ref{lem:joint} provides the joint distribution of the extreme order statistics for all auctions.
+
+\begin{lemma}\label{lem:joint}
+Assume \eqref{eq:DomainOfAttraction} holds. For any $n \in \mathbb{N}$ and any $d \in \mathbb{N}$, and as $K\to \infty$,
+\begin{align}
+&\Big\{\Big( \frac{V_{(1),j} -b_{K}}{a_{K}}, ~\frac{V_{(2),j} -b_{K}}{a_{K}},~\dots~,~ \frac{V_{(d),j} -b_{K}}{a_{K}}\Big):j=1,\dots,n\Big\}~\overset{d}{\to}~\notag\\
+&\Big\{\Big( H_{\xi}(E_{1,j}),~H_{\xi}(E_{1,j}+E_{2,j}),~\dots~,~H_{\xi}\big(\sum\nolimits_{s=1}^{d}E_{s,j}\big)\Big):j=1,\dots,n\Big\}, \label{eq:EVT}
+\end{align}
+where $\{(a_{K},b_{K}) \in \mathbb{R}_{++} \times \mathbb{R} :K \in \mathbb{N}\}$ are the normalizing constants in \eqref{eq:DomainOfAttraction},  $\{E_{s,j}:s=1,\dots,d,~j=1,\dots,n\}$ are i.i.d.\ standard exponential random variables, and
+\begin{equation}
+    H_{\xi}(x) ~\equiv~  \bigg\{ 
+    \begin{array}{cc}
+         ({x}^{-\xi} -1)/{\xi}&  \text{ if }\xi\neq 0,\\
+         - \ln(x) &  \text{ if }\xi= 0.
+    \end{array} 
+    \label{eq:H_function}
+\end{equation}
+\end{lemma}
+
+%For any fixed $d \in \mathbb{N}$, \eqref{eq:DomainOfAttraction} implies that
+%\begin{equation*}
+%\left( \frac{V_{(1),j} -b_{K}}{a_{K}}, ~\frac{V_{(2),j} -b_{K}}{a_{K}},~\dots,~ \frac{V_{(d),j} -b_{K}}{a_{K}}\right)
+%~\overset{d}{\to}~
+% %\left( \frac{E_1^{-\xi} -1 }{\xi},\frac{{(E_1+E_2)}^{-\xi} -1 }{\xi},\dots,\frac{{(\sum_{s=1}^{d}E_s)}^{-\xi} -1 }{\xi}\right),  \label{eq:EVT}
+%\end{equation*}
+%is asymptotically jointly EV distributed, i.e., has a limiting distribution with PDF given by
+%\begin{equation*}
+%G_\xi(x_1) ~\prod_{s=1}^{d} \frac{g_\xi(x_s)}{G_\xi(x_s)} ~\times~ 1[x_1>x_2>\dots>x_d],
+%\end{equation*}
+%where $g_\xi$ is the PDF of $G_\xi$. See \citet[Section 10.6]{david/nagaraja:2003} or \citet[Theorem 2.1.1]{dehaan/ferreira:2007}.
+% and $\iota _{k}$ denotes the $k\times 1$ vector of ones.
+
+% For each $j=1,\dots,n$, we assume that the common distribution is in the domain of attraction of one of the three limit laws.
+
+%Assuming the distribution of $V$ is in the domain of attraction of one of
+%the three limit laws, Extreme Value (EV) theory implies that for any fixed $k
+%$, 
+%\begin{equation}
+%\tfrac{(V_{i\left( 1\right) },...,V_{i\left( k\right) })^{\intercal
+%}-b_{K}\iota _{k}}{a_{K}}\Rightarrow \left( E_{1},...,E_{k}\right)
+%^{\intercal }  \label{EVT}
+%\end{equation}%
+%as $K\rightarrow \infty $ where $\left( E_{1},...,E_{k}\right) $ are jointly EV distributed and $\iota _{k}$ denotes the $k\times 1$ vector of ones.
+
+Lemma \ref{lem:joint} characterizes the asymptotic distribution of the largest order statistics. In this paper, we consider first-price and second-price auction formats, which involve only $V_{(1),j}$ and $V_{(2),j}$, respectively. We assume symmetric equilibrium bidding, enabling us to establish a relationship between private valuations, equilibrium bids, and transaction prices ${\bf P}\equiv\{P_{j}:j =1,\dots,n\}$. As a corollary, we can completely describe the asymptotic distribution of transaction prices in terms of the tail index $\xi$. This, in turn, allows us to perform inference of several objects of economic interest solely based on the transaction prices.
+
+\begin{runningexamplecont}
+Recall our dataset of $n=4$ license plates auctions with a single letter. According to Table \ref{tab:plate}, the transaction prices expressed in million HKD are $\mathbf{P} = \{P_1,P_2,P_3,P_4\} = \{20.2,~ 25.5,~ 26.0,~ 13.0\}$. The number of bidders $K_j$ is unobserved but anecdotally known to be large for all auctions $j=1,2,3,4$. This empirical setup aligns well with our asymptotic framework, which considers a diverging $K = \min\{K_1,K_2,K_3,K_4\}$ but a fixed and small $n$. Beyond the IPV assumption, we only assume that the underlying value distribution $F_V$ satisfies \eqref{eq:DomainOfAttraction}, which encompasses a broad class of valuation distributions.
+\end{runningexamplecont}
+% \medskip
+% \noindent \textsc{Running Example continued:} We use the auctions of license plates with a single letter as the running example. As depicted in Table \ref{tab:plate}, there are $n=4$ such auctions with the transaction prices being $\mathbf{P} = \{P_1,P_2,P_3,P_4\} = \{20200, 25500, 26000, 13000\}$ in 1000 HKD. The number of bidders $K_j$ is unobserved but large for all $j\in \{1,2,3,4\}$. Featuring this empirical scenario, our asymptotic framework considers a diverging $K$ but a fixed and small $n$. Beyond the IPV assumption, we only assume that the underlying value distribution $F_V$ satisfies \eqref{eq:DomainOfAttraction}, encompassing a broad class of nonparametric distributions. $\square$
+% \medskip
+
+\section{Second-price auctions}\label{sec:sp}
+
+We begin our analysis with second-price sealed-bid auctions, in which the highest bidder wins the object and pays the second-highest bid. Since we consider a private value framework, second-price auctions are equivalent in a weak sense to open ascending price (or English) auctions (see \citet[page 4]{krishna2009book}). By standard arguments (e.g., \citet[Proposition 2.1]{krishna2009book}), the weakly dominant strategy 
+%for any bidder is to bid their own valuation, i.e., the equilibrium strategy 
+for a bidder with valuation $v$ in auction $j=1,\dots,n$ is
+\begin{equation}
+\beta_j(v)~=~v.  \label{eq:bidSecond}
+\end{equation}
+Thus, the observed transaction price in auction $j$ equals the second-highest bid, i.e., 
+\begin{equation}
+P_{j}~=~V_{( 2) ,j}.  \label{eq:secondprice}
+\end{equation}
+By Lemma \ref{lem:joint} and \eqref{eq:secondprice}, we conclude that as $ K\to \infty $, 
+\begin{equation}
+\Big\{ \frac{P_{j}-b_{K}}{a_{K}}:j=1,\dots,n\Big\} ~\overset{d}{ \to }~ \{ Z_{j}:j=1,\dots,n\} , 
+\label{eq:EVT2}
+\end{equation}
+where $\{ Z_{j}:j=1,\dots,n\}$ is i.i.d.\ with $Z_{j}\equiv H_{\xi }(E_{1,j}+E_{2,j})$ for each $j=1,\dots,n$, and $ \{(a_{K},b_{K})\in \mathbb{R}_{++}\times \mathbb{R}:K\in \mathbb{N}\}$, $\{(E_{1,j},E_{2,j}):~j=1,\dots,n\}$, and $H_{\xi }$ are as in Lemma \ref{lem:joint}.
+
+If the constants $\{(a_{K},b_{K})\in \mathbb{R}_{++}\times \mathbb{R}:K \in \mathbb{N}\}$ were known, we could use \eqref{eq:EVT2} to perform inference on functions of the EV index $\xi$. Unfortunately, these constants are unknown and depend implicitly on the underlying distribution of valuations. Specifically, $a_K$ characterizes the scale of the largest valuations, i.e., how fast it approaches $v_H$ as $K\to\infty$, and $b_K$ characterizes the location, i.e., a constant shift. When $\xi>0$, $v_H$ is infinite, and $P_j$ diverges almost surely. The scale $a_K$ is typically proportional to $K^{\xi}\to\infty$ as $K\to\infty$, and $b_K$ can be zero. When $\xi<0$, $v_H$ is finite, and $v_H - P_j$ converges to zeros almost surely. The scale $a_K$ is again proportional to $K^{\xi}$, which now shrinks to zero as $K\to\infty$. The location $b_K$ is then the constant $v_H$. 
+
+\begin{runningexamplecont}
+The extraordinary transaction prices in Table \ref{tab:plate} suggest that $v_H$ may not be finite in this application. This implies that $\xi > 0$ and rules out the uniform distribution. Consequently, the winner's expected utility and the seller's expected revenue are both substantial and better modeled to be diverging as $K \to \infty$. In contrast, existing nonparametric methods typically assume a bounded support with $v_H < \infty$, where $P_j$ approaches the upper bound $v_H$ for all $j$. Under this assumption, the winner's expected utility shrinks to zero, and the seller's expected revenue converges to $v_H$ as $K \to \infty$. We introduce a formal test to distinguish between these scenarios in Section \ref{sec:sp-index}. 
+\end{runningexamplecont}
+% \medskip
+% \noindent \textsc{Running Example continued:}
+% In our running example, the extraordinary transaction prices suggest that $v_H$ is best modeled as $\infty$, implying $\xi > 0$ and ruling out the uniform distribution. Consequently, the winner's expected utility and the seller's expected revenue diverge as $K \to \infty$. In contrast, existing nonparametric methods typically assume a bounded support with $v_H < \infty$, where $P_j$ approaches the upper bound $v_H$ for all $j$. Under this assumption, the winner's expected utility shrinks to zero, and the seller's expected revenue converges to $v_H$ as $K \to \infty$. We introduce a formal test to distinguish between these scenarios in Section \ref{sec:sp-index}.  $\square$
+% \medskip
+
+
+To sidestep the unknown $a_K$ and $b_K$, we sort the transaction prices across auctions (i.e., $P_{(1)}\leq P_{(2)}\leq \dots \leq P_{(n)}$), and consider the sorted and self-normalized prices: for $j=1,\dots, N \equiv n-2 \geq 1$, 
+\begin{equation}
+\tilde{P}_{j}~\equiv ~\Bigg\{
+\begin{array}{cc}
+     \frac{P_{(j+1)}-P_{(1)}}{P_{(n)}-P_{(1)}}&\text{ if }P_{(n)} > P_{(1)}  \\
+    0&\text{ if }P_{(n)} = P_{(1)} , 
+\end{array}
+    \label{eq:P*}
+\end{equation}
+and let $\mathbf{\tilde{P}}=\{ \tilde{P}_{j}:j=1,\dots,N\} \in \Sigma \equiv \{h \in [0,1]^N : 0\leq h_1 \leq \dots \leq h_N \leq 1\}$. The following result characterizes the asymptotic distribution of $\mathbf{\tilde{P}}$ as $K\to \infty$. 
+%The proof follows from Lemma \ref{lem:joint}, the independence of the $n$ auctions, and the continuous mapping theorem.
+\begin{lemma}\label{lem:densitySecond}
+Assume \eqref{eq:DomainOfAttraction} holds. For any $N\in \mathbb{N}$, and as $K \to \infty$,
+\begin{equation}
+\mathbf{\tilde{P}}=\{ \tilde{P}_{j}:j=1,\dots,N\} ~\overset{d}{\to }~\mathbf{\tilde{Z}}=\{ \tilde{Z}_{j}:j=1,\dots,N\} ,
+\label{eq:P*joint}
+\end{equation}
+where the joint density of $\mathbf{\tilde{Z}}$ is
+\begin{align}
+&f_{\mathbf{\tilde{Z}}|\xi}( z_{1},\dots,z_{N} ) ~\equiv~ 1[ 0\leq z_{1}\leq \dots \leq z_{N}\leq 1] ~ (N+2)!~\Gamma ( 2( N+2) ) \times \notag \\
+&~\left\{ 
+\begin{array}{cc}
+\int_{0}^{-1/\xi }s^{N}\exp \bigg(
+\begin{array}{c}
+-2( N+2) \ln ( \sum_{j=1}^{N}( 1+z_{j}\xi s) ^{-1/\xi }+(1+\xi s)^{-1/\xi }) \\
+-( 1+2/\xi ) ( \sum_{j=1}^{N}\ln ( 1+z_{j}\xi s) +\ln (1+\xi s))
+\end{array}
+\bigg) ds & \text{if }\xi <0, \\
+\int_{0}^{\infty }s^{N}\exp \bigg(
+\begin{array}{c}
+-2( N+2) \ln ( \sum_{j=1}^{N}\exp ( -z_{j}s) +\exp ( -s) ) \\
+-2s( \sum_{j=1}^{N}z_{j}+1)
+\end{array}
+\bigg) ds & \text{if }\xi =0,\\
+\int_{0}^{\infty }s^{N}\exp \bigg(
+\begin{array}{c}
+-2( N+2) \ln ( \sum_{j=1}^{N}( 1+z_{j}\xi s) ^{-1/\xi }+(1+\xi s)^{-1/\xi }) \\
+-( 1+2/\xi ) ( \sum_{j=1}^{N}\ln ( 1+z_{j}\xi s) +\ln (1+\xi s))
+\end{array}
+\bigg) ds & \text{if }\xi >0,
+\end{array}
+\right. \label{eq:densitySecond}
+\end{align}
+and $\Gamma $ is the standard Gamma function.
+\end{lemma}
+
+%In practice, one can compute the density numerically by approximating the integral via Gaussian Quadrature. 
+Lemma \ref{lem:densitySecond} reveals that the asymptotic distribution of $\mathbf{\tilde{P}}$ is informative about the tail index $\xi $. In the next subsections, we show how to use this information to conduct asymptotically valid inference on the tail index $\xi $ and several other important features of these auctions, such as the winner's expected utility and the seller's expected revenue. Other tail features, such as the extreme quantile $F_{V}^{-1}(\tau)$ for some $\tau \approx 1$, can be similarly analyzed.  
+
+\begin{runningexamplecont}
+Provided that the valuation distribution $F_V$ satisfies Assumption \eqref{eq:DomainOfAttraction} and as the number of bidders grows, the observed transaction prices satisfy
+\begin{equation*}
+    \frac{\mathbf{P}-b_K}{a_K}~=~ \left\{\frac{P_1-b_K}{a_K},\frac{P_2-b_K}{a_K},\frac{P_3-b_K}{a_K},\frac{P_4-b_K}{a_K}\right\} ~\overset{d}{\to }~ \left\{Z_1,Z_2,Z_3,Z_4 \right\},
+\end{equation*}
+where $\{Z_1,Z_2,Z_3,Z_4 \}$ are i.i.d.\ with distribution $H_{\xi}(E_{1,j}+E_{2,j})$ as in Lemma \ref{lem:joint}. If we sort $\{P_1,P_2,P_3,P_4\}$ in ascending order, we get $\{P_{(1)}\leq P_{(2)}\leq P_{(3)} \leq P_{(4)}\}= \{13.0,~ 20.2,~ 25.5,~ 26.0\}$.\footnote{We adjust these prices by inflation in Section \ref{sec:application}, but we ignore the inflation here for a simple illustration.}
+The self-normalized vector $\tilde{\mathbf{P}}$ satisfy
+\begin{equation*}
+\tilde{\mathbf{P}} ~=~ \left\{\frac{P_{(2)}-P_{(1)}}{P_{(4)}-P_{(1)}},\frac{P_{(3)}-P_{(1)}}{P_{(4)}-P_{(1)}}\right\}~\overset{d}{\to }~\left\{\frac{Z_{(2)}-Z_{(1)}}{Z_{(4)}-Z_{(1)}},\frac{Z_{(3)}-Z_{(1)}}{Z_{(4)}-Z_{(1)}}\right\} ~=~ \tilde{\mathbf{Z}},
+\end{equation*}
+where the distribution of $\tilde{\mathbf{Z}}$ is uniquely characterized by the tail index $\xi$ as in Lemma \ref{lem:densitySecond} with $N=n-2=2$. 
+Plugging in the observed transaction prices, we get
+\begin{equation*}
+\tilde{\mathbf{P}} ~=~ \left\{\frac{20.2~-~13.0}{26.0-~13.0},\frac{25.5~-~13.0}{26.0-~13.0}\right\}.
+\end{equation*}
+We treat these as random draws from $\tilde{\mathbf{Z}}$ and construct inference for $\xi$ and other auction fundamentals as functionals of $\xi$. Self-normalization allows us to bypass the unknown constants $a_K$ and $b_K$.
+\end{runningexamplecont}
+
+% \medskip
+% \noindent \textsc{Running Example continued:} As long as the value distribution $F_V$ satisfies Assumption \eqref{eq:DomainOfAttraction}, we can approximate the distribution of the observed transaction prices as 
+% \begin{equation*}
+%     \frac{\mathbf{P}-b_K}{a_K} = \left\{\frac{P_1-b_K}{a_K},\frac{P_2-b_K}{a_K},\frac{P_3-b_K}{a_K},\frac{P_4-b_K}{a_K}\right\} ~\overset{d}{\to }~ \left\{Z_1,Z_2,Z_3,Z_4 \right\},
+% \end{equation*}
+% where $\{Z_1,Z_2,Z_3,Z_4 \}$ are i.i.d. with distribution $H_{\xi}(E_{1,j}+E_{2,j})$ as in Lemma \ref{lem:joint}. 
+% Sort $\{P_1,P_2,P_3,P_4\}$ descendingly as $\{P_{(1)}\leq P_{(2)}\leq P_{(3)} \leq P_{(4)}\}= \{13000, 20200, 25500, 26000\}$.\footnote{We adjust these prices by inflation in Section \ref{sec:application}, but we ignore the inflation here for a simple illustration.}
+% The self-normalized vector $\tilde{\mathbf{P}}$ is then given by
+% \begin{equation*}
+% \tilde{\mathbf{P}} = \left\{\frac{P_{(2)}-P_{(1)}}{P_{(4)}-P_{(1)}},\frac{P_{(3)}-P_{(1)}}{P_{(4)}-P_{(1)}}\right\}~\overset{d}{\to }~\left\{\frac{Z_{(2)}-Z_{(1)}}{Z_{(4)}-Z_{(1)}},\frac{Z_{(3)}-Z_{(1)}}{Z_{(4)}-Z_{(1)}}\right\} = \tilde{\mathbf{Z}},
+% \end{equation*}
+% where the distribution of $\tilde{\mathbf{Z}}$ is uniquely characterized by the tail index $\xi$ as in Lemma \ref{lem:densitySecond} with $N=n-2=2$. 
+% Plugging in the observed transaction prices, we then treat 
+% \begin{equation*}
+% \tilde{\mathbf{P}} = \left\{\frac{20200-13000}{26000-13000},\frac{25500-13000}{26000-13000}\right\}
+% \end{equation*}
+% as a random draw from $\tilde{\mathbf{Z}}$ and construct inference for $\xi$ and other auction fundamentals as functionals of $\xi$. 
+% The self-normalization allows us to bypass the unknown constants $a_K$ and $b_K$. $\square$
+% \medskip
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Inference about the winner's expected utility}
+\label{sec:sp-supplus}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Our objective is to conduct inference on the average of the winner's expected utility based on the transaction prices. Since each bidder bids their own valuation, the auction is won by the highest bidder, and the transaction price is equal to the second-highest bid, we conclude that the winner's expected utility in auction $j=1,\dots,n$ is $E[V_{(1),j}-P_{j}]=E[V_{(1),j}-V_{(2),j}] $, whose average is
+\begin{equation}
+\mu _{K}~=~ \frac{1}{n}\sum_{j=1}^{n}E[V_{(1),j}-V_{(2),j}].
+\label{eq:winner1}
+\end{equation}
+%If all auctions were homogeneous and we observed their highest bid and the transaction price, one could conduct inference on $\mu _{K}$ based on the observed difference of the two highest bids. Unfortunately, the researcher only gets to observe the transaction prices for each auction. 
+% We aim to conduct inference on $\mu _{K}$ based only on the transaction prices for each auction.
+
+\begin{runningexamplecont}
+When the number of auctions is large, we can consistently estimate $E[V_{(1),j}-V_{(2),j}]$ using existing methods in the auction literature. However, this approach is not applicable in our current setting, where we only have four observations of single-letter license plates. On the other hand, this setup can be well represented by our asymptotic framework, which considers a diverging $K = \min\{K_1,K_2,K_3,K_4\}$ and fixed number $n$ of homogeneous auctions.
+% When the number of participants is large and approximately the same across our four auctions, $E[V_{(1),j}-V_{(2),j}]$ is approximately the same across $j$ and likely very large. This corresponds to our running example, in which the winner of the single-letter license plate has a very large expected utility.
+\end{runningexamplecont}
+% \medskip
+% \noindent \textsc{Running Example continued:}
+% When $n$ is large, we can consistently estimate $E[V_{(1),j}-V_{(2),j}]$ as the existing literature proposes. 
+% However, we have only had $n=4$ auctions of single-letter plates in history, invalidating all existing methods that require $n\to\infty$. 
+% Note that when $K_j$ is large and approximately equivalent for all $j\in \{1,\dots,n\}$, $E[V_{(1),j}-V_{(2),j}]$ is approximately the same across $j$ and likely very large. 
+% This corresponds to our running example, in which the winner of the single-letter license plate has a very large expected utility. $\square$
+% \medskip
+
+
+Given transaction prices $\mathbf{P}$, we consider a confidence interval (CI) for $\mu _{K}$ given by
+\begin{equation}
+U(\mathbf{P})~= ~( P_{(n)}-P_{(1)}) \times \tilde{U}(\mathbf{\tilde{P }}), \label{eq:CI_muK_defn}
+\end{equation}
+where $\mathbf{\tilde{P}}\in \Sigma $ are the sorted and self-normalized transaction prices in \eqref{eq:P*}, and $\tilde{U}:\Sigma\to \mathcal{P}(\mathbb{R})$ is a CI defined on $\mathbf{\tilde{P}}$. By \eqref{eq:CI_muK_defn}, the CI $U(\mathbf{P})$ is invariant to the sorting and translation of $\mathbf{P}$, and equivariant to their scale.
+
+The remainder of the section denotes $ Z_{1,j}=H_{\xi }(E_{1,j})$, $Z_{2,j}=H_{\xi }(E_{1,j}+E_{2,j})$, $ \{(E_{1,j},E_{2,j}):j=1,\dots ,n\}$ are i.i.d.\ standard exponential random variables and $H_{\xi }$ is as in \eqref{eq:H_function}. We also use $ \mathbf{Z}=\{Z_{2,j}:j=1,\dots ,n\}$, $Z_{(n)}=\max \{Z_{2,j}:j=1,\dots ,n\}$, $Z_{(1)}=\min \{Z_{2,j}:j=1,\dots ,n\}$, for $j=1,\ldots ,N=n-2$,
+\begin{equation}
+\tilde{Z}_{j}~=~\bigg\{
+\begin{tabular}{ll}
+$\frac{Z_{( j+1) }-Z_{(1)}}{Z_{(n)}-Z_{(1)}}$ & if $ Z_{(n)}>Z_{(1)},$ \\
+$0$ & if $Z_{(n)}=Z_{(1)},$
+\end{tabular}
+\label{eq:ZsortedScaled}
+\end{equation}
+and $\mathbf{\tilde{Z}}=\{\tilde{Z}_{j}:j=1,\dots ,N\} \in \Sigma$. Finally, let $Y_{\mu }\equiv E[Z_{1,1}-Z_{2,1}]/(Z_{(n)}-Z_{(1)})$ and $\kappa _{\xi }(\mathbf{\tilde{Z}} )=E[Z_{(n)}-Z_{(1)}|\mathbf{\tilde{Z}}]$. The distributions of these random variables are fully characterized by the tail index $\xi $. 
+% Specifically,  \citet[Proposition 2]{gabaix/laibson/li/li/resnick/deVries:2016} shows that $ E[Z_{1,1}-Z_{2,1}] = \Gamma(1-\xi)$, where $\Gamma$ is the standard Gamma function. 
+In particular, Lemma \ref{lem:sp-surplus} shows $ E[Z_{1,1}-Z_{2,1}] = \Gamma(1-\xi)$, where $\Gamma$ is the standard Gamma function. 
+For the remainder of this section, we will use $P_{\xi}$ and $E_{\xi}$ to refer to the probability and expectation associated with this distribution.
+%{\color{red}{Note that $ E[Z_{1,1}-Z_{2,1}] = \Gamma(1-\xi)$, where $\Gamma(\cdot)$ is the standard Gamma function. See Lemma \ref{lem:finite_muK1} in the Appendix and Proposition 2 in \cite{gabaix/laibson/li/li/resnick/deVries:2016}}.}
+The following result describes the asymptotic properties of the CI in \eqref{eq:CI_muK_defn} as $K\to \infty$. 
+
+\begin{theorem} \label{thm:CI_K} 
+Assume \eqref{eq:DomainOfAttraction} holds, and that for some $\varepsilon >0$ with $(1+\varepsilon)\xi<1$, $E[|V_{i,j}|^{1+\varepsilon}]<\infty $ for all $i=1\dots,K_j$ in auction $j=1,\dots,N$. Finally, assume that the CI for $\mu _{K}$, $U(\mathbf{P})$, is as in \eqref{eq:CI_muK_defn} with $\tilde{U}:\Sigma\to \mathcal{P}(\mathbb{R}) $ that satisfies the following conditions:
+\begin{enumerate}[(a)]
+\item $P_{\xi}(\{Y_{\mu },\mathbf{\tilde{Z}}\}\in \partial \{(y,h)\in \mathbb{R} \times \Sigma:y\in \tilde{U}(h)\})=0$, where $\partial A$ denotes the boundary of $A$.%, i.e., $\partial A=cl( A) \cap int( A) $.
+\item $\lg (\tilde{U}(h))<\infty $ for any $h\in \Sigma$, where $ \lg (A)$ denotes the length of $A$ (i.e., $\lg (A)\equiv \int \mathbf{1} [y\in A]dy$).
+\item For any sequence $\{h_{\ell}\in \Sigma\}_{\ell\in \mathbb{N}}$ with $ h_{\ell}\to h\in \Sigma$, $\lg (\tilde{U}(h_{\ell}))\to \lg (\tilde{U}(h))$.
+\end{enumerate}
+Then, as $K\to \infty $,
+\begin{enumerate}
+\item $P(\mu _{K}\in U(\mathbf{P}))~\to ~P_{\xi }(Y_{\mu }\in \tilde{ U}(\mathbf{\tilde{Z}}))$,
+\item $E[\lg (U(\mathbf{P}))]/a_{K}~\to ~E_{\xi }[\kappa _{\xi }( \mathbf{\tilde{Z}})\lg (\tilde{U}(\mathbf{\tilde{Z}}))]$.
+\end{enumerate}
+\end{theorem}
+
+Suppose that we consider the class of CIs for $\mu_K$ given by \eqref{eq:CI_muK_defn} and conditions (a)-(c) in Theorem \ref{thm:CI_K}. The finite sample properties of these CIs are unknown. If the number of bidders is large, it is natural to rely on the asymptotic behavior derived in Theorem \ref{thm:CI_K} to choose our CI. First, we can guarantee asymptotic validity by imposing
+\begin{equation}
+P_{\xi }( Y_{\mu }\in \tilde{ U}(\mathbf{\tilde{Z}})) ~\geq~ 1-\alpha ~~~\text{ for all }\xi \in \Xi .  \label{eq:asy_cov}
+\end{equation}
+Second, we can seek improvements in statistical power by choosing a CI that has a small asymptotic expected length (scaled by $a_{K}>0$). Since the tail index $\xi$ is unknown, we focus on the CI's asymptotic weighted length, given by
+\begin{equation}
+\int_{\xi \in \Xi} E_{\xi }[ \kappa _{\xi }(\tilde{\mathbf{{Z}}})\lg (\tilde U(\tilde{\mathbf{{Z}}})))] dW(\xi ),  \label{eq:asy_length}
+\end{equation}
+where $W$ is a user-defined weight function. We can combine both objectives by choosing the CI for $\mu_K$ that minimizes the asymptotic weighted length in \eqref{eq:asy_length} subject to asymptotic validity condition in \eqref{eq:asy_cov}. 
+
+Formally, let $\mathbb{U}$ denote the collection of CIs that satisfy conditions (a)-(c) in Theorem \ref{thm:CI_K}. Then, we propose choosing $\tilde{U}$ in \eqref{eq:CI_muK_defn} as the solution to the following problem:
+\begin{equation}
+\underset{\tilde{U} \in \mathbb{U}}{\arg\min} \int_{\xi \in \Xi} E_{\xi }[ \kappa _{\xi }(\tilde{\mathbf{{Z}}})\lg (\tilde{U}(\tilde{\mathbf{{Z}}})))] dW(\xi )~~\text{ s.t.}~~
+P_{\xi }( Y_{\mu }\in \tilde{ U}(\mathbf{\tilde{Z}})) ~\geq~ 1-\alpha~~\text{ for all }\xi \in \Xi .
+\label{eq:program}
+\end{equation}
+Following \citet{mullerwang2017}, we write down \eqref{eq:program} in its Lagrangian form:
+\begin{equation}
+\min_{\tilde{U} \in \mathbb{U}}\int_{\xi \in \Xi} E_{\xi }[ \kappa _{\xi }(\tilde{\mathbf{{Z}}})\lg (\tilde{U}(\tilde{\mathbf{{Z}}})))] dW(\xi )+\int_{\xi \in \Xi}P_{\xi }( Y_{\mu }\in \tilde{ U}(\mathbf{\tilde{Z}})) d\Lambda (\xi ),
+\label{eq:program2}
+\end{equation}
+where the non-negative measure $\Lambda$ denotes the Lagrangian weights chosen to guarantee the asymptotic size constraint in \eqref{eq:program}.\footnote{\citet{mullerwang2017} proposes the inference method for extreme quantile and tail conditional expectation. Despite its similar structure, our problem here is fundamentally different from that in \citet{mullerwang2017}. Firstly, our asymptotic distribution is built upon $n$ independent draws from $Z_{2,j}$, while that in \citet{mullerwang2017} is built upon a vector of order statistics, which are dependent and jointly EV distributed. Secondly, the objects of interest in the limit experiment are substantially different. Thirdly, our Theorem \ref{thm:CI_K} formally establishes asymptotic optimality, while \citet{mullerwang2017} does not.}
+%These weights can be considered as the least favorable approximation in the inference problem with a nuisance parameter under the null hypothesis \citep[e.g.,][Chapter 3]{lehmann2005book}.
+If we ignore the constraints in $\mathbb{U}$, the solution to \eqref{eq:program2} is given by the following set: for every $h \in \Sigma$,
+\begin{equation}
+\tilde{U}(h) ~=~ \bigg\{ y \in \mathbb{R} : \int_{\xi \in \Xi} \kappa_{\xi}(h)f_{\tilde{\mathbf{Z}}|\xi}(h) dW(\xi) \leq \int_{\xi \in \Xi} f_{(Y_{\mu},\tilde{\mathbf{Z}})|\xi}(y,h) d\Lambda(\xi) \bigg\}, \label{eq:sol_program2}
+\end{equation}
+where for every $(y,h) \in \mathbb{R} \times \Sigma$, $\kappa_{\xi}(h)f_{\tilde{\mathbf{Z}}|\xi}(h)$ and $f_{(Y_{\mu},\tilde{\mathbf{Z}})|\xi}(y,h)$ are given in Section \ref{sec:appendix-computation}, and the integrals in \eqref{eq:sol_program2} can be numerically calculated by Gaussian quadrature. We can verify numerically that $\tilde{U}(h) $ in \eqref{eq:sol_program2} takes the form of an interval whose length varies continuously with $h \in \Sigma$. %\footnote{Given the intricate nature of the densities, we were unable to prove this result analytically.} 
+Under these conditions, Lemma \ref{lem:interval1} shows that $\tilde{U}(h)$ in \eqref{eq:sol_program2} belongs to $\mathbb{U}$ and, therefore, $\tilde{U}(h)$ in \eqref{eq:sol_program2} solves \eqref{eq:program2}.
+
+By combining \eqref{eq:CI_muK_defn}, \eqref{eq:sol_program2}, and the arguments in the previous paragraph, we propose:
+\begin{equation}
+U(\mathbf{P}) ~=~ ( P_{(n)}-P_{(1)}) \times \bigg\{ y \in \mathbb{R} : \int_{\xi \in \Xi} \kappa_{\xi}(\mathbf{\tilde{P}}) f_{\tilde{\mathbf{Z}}|\xi}(\mathbf{\tilde{P}}) dW(\xi) \leq \int_{\xi \in \Xi} f_{(Y_{\mu},\tilde{\mathbf{Z}})|\xi}(y,\mathbf{\tilde{P}}) d\Lambda(\xi) \bigg\}. \label{eq:CI_muK_defn2}
+\end{equation}
+%where, for every $(y,h) \in \mathbb{R} \times \Sigma$, $\kappa_{\xi}(h)f_{\tilde{\mathbf{Z}}|\xi}(h)$ and $f_{(Y_{\mu},\tilde{\mathbf{Z}})|\xi}(y,h)$ are given in Section \ref{sec:appendix-computation}. 
+Under the conditions in the previous paragraph, Theorem \ref{thm:CI_K} implies that \eqref{eq:CI_muK_defn2} belongs to the class of asymptotically valid CIs and minimizes the asymptotic expected length (scaled by $a_K>0$) within this class.
+
+To calculate \eqref{eq:CI_muK_defn2}, the only remaining challenge is to find appropriate Lagrangian weights $\Lambda$ that ensure asymptotic validity in the limiting problem, as described in \eqref{eq:asy_cov}. We tackle this challenge using a numerical approach developed by \citet{elliott2015}. It is relevant to emphasize that these Lagrangian weights depend solely on the value of $n$ and, as a result, they only need to be computed once. 
+% For illustrative purposes, Figure \ref{fig:alfd} depicts the Lagrangian weights $\Lambda$ for $n=10$ and $20$. 
+% Tables of the Lagrange multipliers and the corresponding MATLAB code can be found at \hyperlink{https://sites.google.com/site/yulongwanghome/}{https://sites.google.com/site/yulongwanghome/}. 
+For more information on calculating these weights, please refer to Section \ref{sec:appendix-computation}.
+
+\begin{runningexamplecont}
+    The winner's expected utility $\mu_K$ is substantial in single-letter license plate auctions. Based on $\mathbf{P}=\{20.2, 25.5, 26.0, 13.0\}$, we find in Section \ref{sec:application} that $U(\mathbf{P})=[2.185,~58.885]$, expressed in million HKD. According to our theoretical results, this CI covers $\mu_K$ with a probability of 95\% and minimizes the weighted expected length defined in \eqref{eq:asy_length}.
+\end{runningexamplecont}
+% \medskip
+% \noindent \textsc{Running Example continued:} The winner's expected utility $\mu_K$ is substantial in single-letter license plate auctions. To learn $\mu_K$, our proposed CI in \eqref{eq:CI_muK_defn2}, using the input $\mathbf{P}=\{20200, 25500, 26000, 13000\}$, provides an optimal confidence interval $U(\mathbf{P})$. This interval guarantees correct coverage $\mathbb{P}(\mu_K\in U(\mathbf{P})) \geq 0.95$ (particularly with a large number of bidders) and minimizes length as defined in \eqref{eq:asy_length}. In Section \ref{sec:application}, we find $U(\mathbf{P})=[2185,58885]$ in 1,000 HKD.  $\square$
+% \medskip
+
+% %FB: TOOK THIS OUT TO MAKE SPACE
+% \begin{figure}[htb]
+% \centering
+% \includegraphics[width=0.8\textwidth]{figures/fig_alfd_n1020.pdf}
+% \caption{Lagrangian weights $\Lambda$ for $\Xi = [-1,0.5]$ and $n=10$ (top) and $20$ (bottom). Both figures were computed using our MATLAB code with $W(\xi)=1[\xi \in \Xi]$ and $\alpha = 5\%$. See Appendix \ref{sec:appendix-computation} for further details.}
+% \label{fig:alfd}
+% \end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Inference about the seller's expected revenue}
+\label{sec:sp-revenue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+We now conduct inference on the average of the seller's expected revenue based on transaction prices. Since bidders bid their valuation and the transaction price is the second-highest bid, we get that the seller's expected revenue in auction $j=1,\dots,n$ is $E[P_{j}]=E[V_{(2),j}]$, whose average is
+\begin{equation}
+\pi _{K}~= 
+%~\frac{1}{n}\sum_{j=1}^{n}E[P_{j}~{=}
+~\frac{1}{n}\sum_{j=1}^{n}E[V_{(2),j}].  \label{eq:seller1}
+\end{equation}
+% Our objective is to conduct inference on $\pi _{K}$ based only on the transaction price for each auction.
+
+Given transaction prices $\mathbf{P}$, we consider a CI for $\pi _{K}$ given by
+\begin{equation}
+U(\mathbf{P})~\equiv ~( P_{(n)}-P_{(1)}) \times \tilde{U}(\mathbf{\tilde{P }}) + P_{(1)}, \label{eq:CI_piK_defn}
+\end{equation}
+where $\mathbf{\tilde{P}}\in \Sigma $ are the sorted and self-normalized transaction prices in \eqref{eq:P*}, and $\tilde{U}:\Sigma\to \mathcal{P}(\mathbb{R})$ is a CI defined on $\mathbf{\tilde{P}}$. By \eqref{eq:CI_piK_defn}, the CI $U(\mathbf{P})$ is invariant to the sorting of $\mathbf{P}$, and equivariant to their location and scale.
+
+The remainder of this section denotes $ Z_{2,j}=H_{\xi }(E_{1,j}+E_{2,j})$, $ \{(E_{1,j},E_{2,j}):j=1,\dots ,n\}$ are i.i.d.\ standard exponential random variables and $H_{\xi }$ is as in \eqref{eq:H_function}. We also use $ \mathbf{Z}=\{Z_{2,j}:j=1,\dots ,n\}$, $Z_{(n)}=\max \{Z_{2,j}:j=1,\dots ,n\}$, $Z_{(1)}=\min \{Z_{2,j}:j=1,\dots ,n\}$, for $j=1,\ldots ,N=n-2$,
+\begin{equation*}
+\tilde{Z}_{j}=\bigg\{
+\begin{tabular}{ll}
+$\frac{Z_{( j+1) }-Z_{(1)}}{Z_{(n)}-Z_{(1)}}$ & if $ Z_{(n)}>Z_{(1)},$ \\
+$0$ & if $Z_{(n)}=Z_{(1)},$
+\end{tabular}
+\end{equation*}
+and $\mathbf{\tilde{Z}}=\{\tilde{Z}_{j}:j=1,\dots ,N\} \in \Sigma $. Finally, let $Y_{\pi }\equiv (E[Z_{2,1}] - Z_{(1)}) /(Z_{(n)}-Z_{(1)})$ and $\kappa _{\xi }(\mathbf{\tilde{Z}} )=E[Z_{(n)}-Z_{(1)}|\mathbf{\tilde{Z}}]$. As in the previous section, the distributions of these random variables are fully characterized by its tail index $\xi $. In particular, Lemma \ref{lem:sp-revenue} shows that $E[Z_{2,1}] = (\Gamma(2-\xi)-1)/\xi$ if $\xi \neq 0$, and $-1+\bar{\gamma}$ if $\xi =0$, where $\Gamma$ is the standard Gamma function and $\bar{\gamma}\approx 0.577$ is the Euler's constant. For the remainder of this section, we will use $P_{\xi}$ and $E_{\xi}$ to refer to the probability and expectation associated with this distribution.
+%{\color{red}{Note that $E[Z_{2,1}] = (\Gamma(2-\xi)-1)/\xi$ if $\xi \neq 0$, and $-1+\mathring{\gamma}$ otherwise, where $\mathring{\gamma}\approx 0.577$ is the Euler's constant. See Lemma \ref{lem:sp-revenue} in the Appendix. }}
+The next result provides the asymptotic properties of the CI in \eqref{eq:CI_piK_defn} as $K\to \infty$. 
+\begin{theorem}\label{thm:CI_pi_K} 
+Assume \eqref{eq:DomainOfAttraction} holds, and that for some $\varepsilon >0$ with $(1+\varepsilon)\xi<1$, $E[|V_{i,j}|^{1+\varepsilon}]<\infty $ for all $i=1\dots,K_j$ in auction $j=1,\dots,N$. Finally, assume that the CI for $\pi _{K}$, $U(\mathbf{P})$, is as in \eqref{eq:CI_piK_defn} with $\tilde{U}:\Sigma\to \mathcal{P}(\mathbb{R}) $ that satisfies the following conditions:
+\begin{enumerate}[(a)]
+\item $P_{\xi}(\{Y_{\pi},\mathbf{\tilde{Z}}\}\in \partial \{(y,h)\in \mathbb{R} \times \Sigma:y\in \tilde{U}(h)\})=0$, where $\partial A$ denotes the boundary of $A$.
+\item $\lg (\tilde{U}(h))<\infty $ for any $h\in \Sigma$, where $\lg (A)$ denotes the length of $A$.
+\item For any sequence $\{h_{\ell}\in \Sigma\}_{\ell\in \mathbb{N}}$ with $ h_{\ell}\to h\in \Sigma$, $\lg (\tilde{U} (h_{\ell}))\to \lg (\tilde{U}(h))$.
+\end{enumerate}
+Then, as $K\to \infty $,
+\begin{enumerate}
+\item $P(\pi _{K}\in U(\mathbf{P}))~\to ~P_{\xi }(Y_{\pi }\in \tilde{ U}(\mathbf{\tilde{Z}}))$,
+\item $E[\lg (U(\mathbf{P}))]/a_{K}~\to ~E_{\xi }[\kappa _{\xi }( \mathbf{\tilde{Z}})\lg (\tilde{U}(\mathbf{\tilde{Z}}))]$.
+\end{enumerate}
+\end{theorem}
+%Following the derivations in Section \ref{sec:sp-revenue}, we can use these to choose our CI. 
+% First, we can guarantee asymptotic validity by imposing the following condition:
+% \begin{equation}
+% P_{\xi }( Y_{\pi }\in \tilde{ U}(\mathbf{\tilde{Z}})) ~\geq~ 1-\alpha ~~~\text{ for all }\xi \in \Xi .  \label{eq:asy_cov2}
+% \end{equation}
+% Second, we can seek improvements in statistical power by choosing a CI that has a small asymptotic expected length (scaled by $a_{K}>0$), given by
+% \begin{equation}
+% \int_{\xi \in \Xi} E_{\xi }[ \kappa _{\xi }(\tilde{\mathbf{{Z}}})\lg (\tilde U(\tilde{\mathbf{{Z}}})))] dW(\xi ),  \label{eq:asy_length2}
+% \end{equation}
+% where $W$ is a user-defined weight function. We can combine both objectives by choosing the CI for $\mu_K$ that minimizes the asymptotic weighted length of the CI in \eqref{eq:asy_length2} subject to asymptotic validity condition in \eqref{eq:asy_cov2}. 
+% Formally, let $\mathbb{U}$ denote the collection of CIs that satisfy conditions (a)-(c) in Theorem \ref{thm:CI_pi_K}. 
+Following the ideas in Section \ref{sec:sp-revenue}, we choose our CI based on the asymptotic behavior in Theorem \ref{thm:CI_pi_K}. In particular, we propose to choose $\tilde{U}$ in \eqref{eq:CI_piK_defn} to minimize the asymptotic weighted length of the CI subject to asymptotic validity, given by
+\begin{equation}
+\underset{\tilde{U} \in \mathbb{U}}{\arg\min} \int_{\xi \in \Xi} E_{\xi }[ \kappa _{\xi }(\tilde{\mathbf{{Z}}})\lg (\tilde{U}(\tilde{\mathbf{{Z}}})))] dW(\xi )~~~\text{ s.t.}~~~
+P_{\xi }( Y_{\pi }\in \tilde{ U}(\mathbf{\tilde{Z}})) ~\geq~ 1-\alpha~~~\text{ for all }\xi \in \Xi ,
+\label{eq:program-rp}
+\end{equation}
+where $\mathbb{U}$ denotes the collection of CIs that satisfy the conditions in Theorem \ref{thm:CI_pi_K} and $W$ is a user-defined weight function. 
+The solution to \eqref{eq:program-rp} is as follows: for every $h \in \Sigma$,
+\begin{equation}
+\tilde{U}(h) ~=~ \bigg\{ y \in \mathbb{R} : \int_{\xi \in \Xi} \kappa_{\xi}(h)f_{\tilde{\mathbf{Z}}|\xi}(h) dW(\xi) \leq \int_{\xi \in \Xi} f_{(Y_{\pi},\tilde{\mathbf{Z}})|\xi}(y,h) d\Lambda(\xi) \bigg\}, \label{eq:Lambda-rp}
+\end{equation}
+where, for every $(y,h) \in \mathbb{R} \times \Sigma$, $\kappa_{\xi}(h)f_{\tilde{\mathbf{Z}}|\xi}(h)$ and $f_{(Y_{\pi},\tilde{\mathbf{Z}})|\xi}(y,h)$ are given in Section \ref{sec:appendix-computation}.
+
+By combining \eqref{eq:CI_muK_defn}, \eqref{eq:sol_program2}, and the arguments in the previous paragraph, we propose:
+\begin{align}
+U(\mathbf{P})~=~& P_{(1)}+( P_{(n)}-P_{(1)}) \notag \\ 
+\times& \bigg\{ y \in \mathbb{R} : \int_{\xi \in \Xi} \kappa_{\xi}(\mathbf{\tilde{P}}) f_{\tilde{\mathbf{Z}}|\xi}(\mathbf{\tilde{P}}) dW(\xi) \leq \int_{\xi \in \Xi} f_{(Y_{\pi},\tilde{\mathbf{Z}})|\xi}(y,\mathbf{\tilde{P}}) d\Lambda(\xi) \bigg\} , \label{eq:CI_piK_defn2}
+\end{align}
+Our derivations establish that \eqref{eq:CI_piK_defn2} belongs to the class of asymptotically valid CIs and minimizes the asymptotic expected length (scaled by $a_K>0$) within this class.
+
+\begin{runningexamplecont}
+    The government's expected revenue $\pi_K$ is also substantial in single-letter license plate auctions. Using $\mathbf{P}=\{20.2, 25.5, 26.0, 13.0\}$, we find in Section \ref{sec:application} that $U(\mathbf{P})=[8.696,~37.649]$, expressed in million HKD. As the number of participants diverges, this CI covers $\pi_K$ with a minimum probability of 95\% and minimizes the weighted expected length.
+\end{runningexamplecont}
+% \medskip
+% \noindent \textsc{Running Example continued:} The expected revenue $\pi_K$ for single-letter license plates is substantial. To learn $\pi_K$, our proposed CI in \eqref{eq:CI_piK_defn2}, using the input $\mathbf{P}=\{20200, 25500, 26000, 13000\}$, provides the optimal confidence interval $U(\mathbf{P})$. This interval ensures correct coverage $\mathbb{P}(\pi_K\in U(\mathbf{P})) \geq 0.95$ (especially with a large number of bidders) and minimizes length. In Section \ref{sec:application}, we find $U(\mathbf{P})=[8696,37649]$ in 1,000 HKD.  $\square$
+% \medskip
+
+\subsection{Inference about the tail index}\label{sec:sp-index}
+
+A key parameter in our asymptotic framework is the tail index $\xi \in \Xi$.
+%For example, Lemma \ref{lem:joint} shows that the limiting behavior of the order statistics of the valuations can be fully characterized by $\xi$. 
+The goal of this section is to conduct inference on this parameter. That is, we are interested in the following hypothesis test:
+\begin{equation}
+H_{0}:\xi \in \xi _{0}~~~\text{v.s.}~~~H_{1}:\xi \in \Xi _{1},
+\label{eq:HT0}
+\end{equation}
+where $\xi _{0}$ is a fixed parameter value in $\Xi $ and $\Xi _{1}=\Xi \backslash \{ \xi _{0}\}$.
+
+We divide this section into three subsections. Section \ref{sec:HypSimple} considers the situation where the alternative hypothesis in \eqref{eq:HT0} is simple, while Section \ref{sec:HypComp} explores the case where this alternative hypothesis is composite. Finally, Section \ref{sec:HypApplication} applies the methods in previous sections to test the standard regularity conditions in auction models. 
+
+\subsubsection{Simple alternative hypothesis}\label{sec:HypSimple}
+
+This section considers the following inference problem:
+\begin{equation}
+H_{0}:\xi =\xi _{0}~~~\text{v.s.}~~~H_{1}:\xi =\xi _{1},  \label{eq:HT1}
+\end{equation}
+where $\xi _{0}$ and $\xi _{1}$ are distinct parameter values. 
+
+By the Neyman-Pearson Lemma, a natural starting point is the likelihood ratio test for the sorted and self-normalized version of our data. While the likelihood ratio test is unknown in finite samples, its limiting distribution is provided in Lemma \ref{lem:densitySecond}. This idea yields the following testing procedure:
+\begin{equation}
+{\varphi}^{\ast }( \mathbf{{Z}}) 
+%~\equiv ~\tilde{\varphi}^{\ast }( \mathbf{\tilde{Z}}) 
+~\equiv ~1\big[ {f_{\mathbf{\tilde{Z}}|\xi _{1}}( \mathbf{\tilde{Z}}) }/{f_{\mathbf{\tilde{Z}}|\xi _{0}}( \mathbf{\tilde{Z}}) }>q( \xi_{0},\xi _{1},\alpha ) \big] ,  \label{eq:TailTest1}
+\end{equation}
+where the critical value is given by
+\begin{equation*}
+q( \xi _{0},\xi _{1},\alpha ) ~\equiv ~( 1-\alpha )\text{-quantile of }{f_{\mathbf{\tilde{Z}}|\xi _{1}}( \mathbf{\tilde{Z}}_{0}) }/{f_{\mathbf{\tilde{Z}}|\xi _{0}}( \mathbf{\tilde{Z}}_{0}) }
+\end{equation*}
+and $\mathbf{\tilde{Z}}_{0}$ is distributed according to $f_{\mathbf{\tilde{Z}}|\xi _{0}}$. The Neyman-Pearson Lemma implies that \eqref{eq:TailTest1} is the most powerful level-$\alpha $ test in the limiting problem. 
+
+Following the guidance of the asymptotic analysis, our candidate for optimal test follows from replacing in \eqref{eq:TailTest1} the limiting random variable $\mathbf{\tilde{Z}}$ with its data analog $\mathbf{\tilde{P}}$, i.e., 
+\begin{equation}
+\varphi _{K}^{\ast }( \mathbf{P}) ~\equiv
+%~\tilde{\varphi}^{\ast }( \mathbf{\tilde{P}}) ~\equiv
+~1\big[ {f_{\mathbf{\tilde{Z}}|\xi _{1}}( \mathbf{\tilde{P}}) }/{f_{\mathbf{\tilde{Z}}|\xi _{0}}( \mathbf{\tilde{P}}) }>q( \xi _{0},\xi_{1},\alpha ) \big] . \label{eq:simpleTest}
+\end{equation}
+By Lemma \ref{lem:densitySecond} and standard convergence arguments, \eqref{eq:simpleTest} is asymptotically valid, i.e.,
+\begin{equation}
+\lim_{K\to \infty }E_{\xi _{0}}[ \varphi _{K}^{\ast }( \mathbf{P}) ] ~\leq ~\alpha ,  \label{eq:sizeAlpha}
+\end{equation}
+where $E_{\xi } $ denotes the expectation with respect to distribution with tail index $\xi $. 
+% where $E_{\xi }[ \hat{\varphi}_{K}^{\ast }( \mathbf{P}) ] $ denotes the expectation with respect to distribution $\mathbf{P}$ that satisfies \eqref{eq:DomainOfAttraction} with tail index $\xi $. 
+In fact, \eqref{eq:simpleTest} is asymptotically level $\alpha $, i.e., \eqref{eq:sizeAlpha} holds with equality. More interestingly, we can leverage \citet[Theorem 1]{muller:2011} to establish that \eqref{eq:simpleTest} is efficient in the sense of being the asymptotically most powerful test in the class of asymptotically valid and equivariant tests. Formally, for any asymptotically valid test $\varphi _{K}( \mathbf{P}) $ (i.e., \eqref{eq:sizeAlpha} holds with $\varphi _{K}^{\ast }( \mathbf{P}) $ replaced by $\varphi _{K}( \mathbf{P}) $),
+$
+\underset{K\to \infty }{\lim \sup }~E_{\xi _{1}}[ \varphi _{K}( \mathbf{P}) ] ~\leq ~\underset{K\to \infty }{\lim \sup }~E_{\xi _{1}}[ \varphi _{K}^{\ast }( \mathbf{{{P}}}) ] .
+$
+We record these conclusions in the following result.
+
+\begin{theorem}\label{thm:simpleTest}
+%[Asymptotic properties of \eqref{eq:simpleTest}]
+Assume \eqref{eq:DomainOfAttraction} holds. In the hypothesis testing problem in \eqref{eq:HT1}, the test defined by \eqref{eq:simpleTest} satisfies the following properties:
+\begin{enumerate}
+\item It is asymptotically valid and level $\alpha$, i.e., \eqref{eq:sizeAlpha} holds with equality.
+\item It is asymptotically efficient.
+\end{enumerate}
+\end{theorem}
+
+\subsubsection{Composite alternative hypothesis}\label{sec:HypComp}
+
+We now turn our attention to the case in which the alternative hypothesis in \eqref{eq:HT0} is composite. Following the ideas used in Section \ref{sec:HypSimple}, we consider the feasible version of the efficient test in the limiting problem. Unfortunately, the limiting problem does not lend itself to the usual tools to develop uniformly most powerful tests.\footnote{In particular, the likelihood ratio statistic is not monotonic, rendering the results in \citet[Section 3.4]{Lehman/Romano:2005} inapplicable.} For this reason, we consider tests that maximize the weighted average power criterion (WAP), following the approach of \cite{wald:1943,andrews/ploberger:1994}. To this end, let $W$ denote a user-defined weight function on $\Xi _{1}$, which the researcher chooses to reflect the importance attached to the various alternative hypotheses. The weighting function $W$ effectively transforms the composite alternative into a simple one, allowing us to focus on the weighted average power:
+\begin{equation*}
+\mathrm{WAP}_{K}( \varphi _{K}) ~\equiv ~\int_{\Xi _{1}}E_{\xi } [ \varphi _{K}( \mathbf{\tilde{P}}) ] dW( \xi ) .
+\end{equation*}
+
+As in the previous section, we use the asymptotic behavior to guide the construction of our hypothesis test. The likelihood ratio test in the limiting problem applied to its data $\mathbf{\tilde{P}}$ is given by
+\begin{equation}
+\varphi _{K}^{\ast }( \mathbf{P}) 
+%~\equiv ~\tilde{\varphi}_{K}^{\ast }( \mathbf{\tilde{P}}) 
+~\equiv ~1\bigg[ {\int_{\Xi _{1}}f_{\mathbf{\tilde{Z}}|\xi }( \mathbf{\tilde{P}}) dW( \xi ) }/{f_{\mathbf{\tilde{Z}}|\xi _{0}}( \mathbf{\tilde{P}}) }>q( \xi _{0},W,\alpha ) \bigg] ,  \label{eq:compTest}
+\end{equation}
+where the critical value is
+\begin{equation*}
+q( \xi _{0},W,\alpha ) ~\equiv ~( 1-\alpha ) \text{-quantile of }{\int_{\Xi _{1}}f_{\mathbf{\tilde{Z}}|\xi _{0}}(  \mathbf{\tilde{Z}_0}) dW( \xi ) }/{f_{\mathbf{\tilde{Z}}|\xi _{0}}( \mathbf{\tilde{Z}_0}) },
+\end{equation*}
+and $\mathbf{\tilde{Z}}_{0}$ is distributed according to $f_{\mathbf{\tilde{Z}}|\xi _{0}}$. By standard asymptotic arguments, we can establish that \eqref{eq:compTest} is asymptotically valid and level $\alpha $, i.e.,
+\begin{equation}
+\lim_{K\to \infty }E_{\xi_0 }[ \varphi _{K}^{\ast }( \mathbf{P}) ] ~= ~\alpha .  \label{eq:sizeAlpha2}
+\end{equation}
+Moreover, \eqref{eq:compTest} is efficient in the sense of maximizing the asymptotic weighted average power criterion in the class of asymptotically valid and equivariant tests. Formally, for any test $\varphi _{K}( \mathbf{P}) $ that is asymptotically valid (i.e., \eqref{eq:sizeAlpha2} holds with $\varphi _{K}^{\ast }$ replaced by $\varphi _{K}$), then
+$
+\underset{K\to \infty }{\lim \sup }~\mathrm{WAP}_{K}( \varphi_{K}) ~\leq ~\underset{K\to \infty }{\lim \sup }~\mathrm{WAP}_{K}( \varphi _{K}^{\ast }) .
+$
+The next result records these conclusions.
+
+\begin{theorem}\label{thm:compTest}
+% [Asymptotic properties of \eqref{eq:compTest}]
+Assume \eqref{eq:DomainOfAttraction} holds. In the hypothesis testing problem in \eqref{eq:HT0}, the test defined by \eqref{eq:compTest} satisfies the following properties:
+\begin{enumerate}
+\item It is asymptotically valid and level $\alpha $, i.e., \eqref{eq:sizeAlpha2} holds.
+\item It is asymptotically efficient.
+\end{enumerate}
+\end{theorem}
+
+\subsubsection{Testing the regularity conditions in the auction literature}\label{sec:HypApplication}
+
+The auctions literature routinely assumes the regularity condition that $f_{V}$ is continuous, and that there is a finite maximum valuation (i.e., $v_H<\infty $) with $f_{V}(v_H)>0$. For examples of this, see \cite{MaskinRiley1984}, \cite{guerre2000}, and \cite{GuerreLuo2022}. Within our asymptotic framework, the next result shows that these regularity conditions imply that \eqref{eq:DomainOfAttraction} holds with $\xi =-1$.
+
+\begin{lemma}\label{lem:psiOne} 
+Assume that $f_{V}( v) \to f_{V}( v_H) >0 $ as $v\uparrow v_H<\infty $. Then, \eqref{eq:DomainOfAttraction} holds with $\xi =-1$.
+\end{lemma}
+
+In light of Lemma \ref{lem:psiOne}, we can test the regularity conditions used in the auction literature via the following hypothesis test:
+\begin{equation}
+H_{0}:\xi =-1~~\text{ v.s. }~~H_{1}:\xi \in \Xi_1,\label{eq:HT3}
+\end{equation}
+where $\Xi_1 = \Xi \backslash \{-1\}$. In the remainder of this section, we will argue that $\Xi =[-1,0.5]$ is a suitable choice for the parameters space for $\xi$. Since \eqref{eq:HT3} is a special case of \eqref{eq:HT0} with $\Xi _{1} =(-1,0.5]$, we can implement this test using the procedure in \eqref{eq:compTest}. For concreteness, we consider uniform weight $W( \xi ) =1[ \xi \in (-1,0.5]] $. By Theorem \ref{thm:compTest}, our proposed test is asymptotically valid, level-$\alpha$, and efficient.
+
+We now justify choosing $\Xi =[-1,0.5]$ as the parameter space for the test. We rely on the so-called von Mises' condition to interpret the different values of $\xi$. \citet[Theorem 1.1.8]{dehaan2006book} states this condition and shows that it is a sufficient condition for \eqref{eq:DomainOfAttraction}. Under the von Mises' condition and that $f_{V}'$ is bounded, we have three possible cases:
+\begin{enumerate}
+%\item $f_{V}( v) \to f_{V}( v_H) =\infty $ as $v\to v_H<\infty $ implies that $\xi <-1$.
+\item $f_{V}( v) \to f_{V}( v_H)>0$ as $v\to v_H<\infty $ implies that $\xi =-1$.
+\item $f_{V}(v)\to f_{V}( v_H) =0$ as $v\to v_H<\infty $ implies that $\xi \in (-1,0]$.
+\item $f_{V}(v)\to f_{V}( v_H) =0$ as $v\to v_H=\infty $ implies that $\xi >0$.
+\end{enumerate}
+A few remarks are in order. First, as expected, Case 1 aligns with the findings of Lemma \ref{lem:psiOne}. Second, we note that \citet[Theorem 2.1.2]{dehaan2006book} shows that $v_H<\infty $ if and only if $\xi \leq 0$. Cases 2 and 3 then follow from derivations in \citet[page 18]{dehaan2006book} and \citet[Theorem 2.1.2]{falk/husler/reiss:1994}. Since these three cases are exhaustive, we deduce that $\xi \geq -1$. Third, if we also impose that $V$ has second moments, \citet[page 176]{dehaan2006book} implies that $\xi \leq 1/2$. Combining these restrictions, we conclude that $\Xi= [-1,0.5]$ is a suitable parameter space for $\xi$. Finally, in first-price auctions, our test also serves as a specification test for the existence of a unique Bayesian Nash equilibrium. In particular, the first-price auction may not have a unique Bayesian Nash Equilibrium if the private density is not bounded away from zero on its compact support. We provide such a test in Appendix \ref{sec:appendix-fp}. 
+
+
+Figure \ref{fig:power} presents the asymptotic rejection probabilities of \eqref{eq:compTest} for the hypothesis testing problem in \eqref{eq:HT3}. The proposed test is asymptotically valid under $H_{0}:\xi =-1$ and has nontrivial power properties under $H_{1}$, with asymptotic rejection rates that increase when either $ \xi $ or $n$ increase. It is worth noting that Figure \ref{fig:power} only shows the asymptotic properties (as $K\to\infty$) of our test. We explore the finite sample properties of our methodology via simulations in Section \ref{sec:simulation}.
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.6\textwidth]{fig_asym_power.pdf}
+\caption{Asymptotic rejection probabilities of the hypothesis testing procedure in \eqref{eq:compTest} with $\alpha = 5\%$ for the hypothesis testing problem in \eqref{eq:HT3}.}
+\label{fig:power}
+\end{figure}
+
+% \medskip
+\begin{runningexamplecont}
+Using $\mathbf{P} = \{20.2, 25.5, 26.0, 13.0\}$, we implement a hypothesis test of \eqref{eq:HT3} in Section \ref{sec:application} and obtain a $p$-value of 0.64. Thus, the standard regularity conditions in the auction literature are not rejected in these data. Nonetheless, the methods in this literature require a diverging number of auctions, which is inapplicable with only four transaction prices.
+\end{runningexamplecont}
+% \noindent \textsc{Running Example continued:} Existing nonparametric methods often assume that each license plate's valuation is finite ($v_H<\infty$) and that the density of the valuation distribution is bounded. However, single-letter plates can have enormous values and sell for exceptionally high prices, challenging these assumptions. Our test in \eqref{eq:compTest} formally examines these regularity conditions and is proven to be optimal. In Section \ref{sec:application}, we report a $p$-value of 0.64 using the transaction prices $\mathbf{P}$. $\square$
+% \medskip
+
+
+
+%%%%%%%%%% Extension 
+\input{extension}
+%%%%%%%%%%%%%%%%
+
+\section{Monte Carlo simulations \label{sec:simulation}}
+
+This section investigates the finite sample performance of our proposed inference methods using Monte Carlo simulations. We also compare their performance with other inference methods that rely on the standard asymptotic framework with a divergent number of auctions. For brevity, we concentrate on simulations for second-price auctions. The corresponding results for first-price auctions are provided in the supplementary material.
+%Section \ref{sec:simulation-sp} considers simulations in second-price auctions, and Section \ref{sec:simulation-fp} considers simulations in first-price auctions.
+
+%\subsection{Second-price auctions}\label{sec:simulation-sp}
+
+We first consider the problem of inference about the winner's expected utility using only transaction prices. Each simulated dataset consists of $n$ independent second-price auctions where auction $j=1,\dots ,n$ has $K$ bidders with independent valuations distributed according to a distribution $F_V$. As explained in Section \ref{sec:sp-supplus}, our parameter of interest is the average winner's expected utility across auctions, given by $\mu _{K}= \frac{1}{n}\sum_{j=1}^{n}E[V_{(1),j}-V_{(2),j}]$. We conduct simulations with four distributions for $F_V$: (a) the standard uniform distribution over $[0,3]$, (b) the absolute value of standard Normal, (c) the absolute value of Student-t(20), and (d) the Pareto distribution with exponent 0.25. These distributions satisfy condition \eqref{eq:DomainOfAttraction} with $\xi = -1$, $0$, $0.05$, and $0.25$, respectively.
+
+In our simulations, we set the number of auctions to $n=10$ or $n=100$. For each one of these $n$ auctions, we set the number of bidders to either $K=10$, $K=100$, or to a random number to a uniformly distributed integer in $\{90,91,\dots,110\}$. This generates six possible designs for $(n,K)$, and includes combinations that are better approximated by our asymptotic framework with a growing number of bidders (e.g., $n=10$ and $K=100$ or $K \in\{90,91,\dots,110\}$), but also others that are better aligned to the traditional asymptotic framework with an increasing number of auctions (e.g., $n=100$ and $K=10$). Our results are based on $S=500$ independent datasets. Finally, we set the significance level equal to $\alpha =5\%$ throughout this section.
+
+We now describe the three CIs that we consider for $\mu _{K}$:
+\begin{enumerate}[(i)]
+    \item This is our proposed CI in Section \ref{sec:sp-supplus}. The method is implemented by constructing $U( \mathbf{P})$ in \eqref{eq:CI_muK_defn2} with $\Xi =[ -1,0.5] $ and $W$ equal to the uniform distribution over this interval. As already explained, the validity of this CI is based on asymptotics as $K\to\infty$.
+    \item A CI based on observing the two highest bidders in each auction. We note that this approach is infeasible in our data setting (we only observe transaction prices), but we take it as a benchmark for any method that relies on the traditional asymptotics with $n\to \infty$. 
+    %These data allow us to compute $D_{j}\equiv B_{(1),j}-B_{(2),j} =_{(1)} V_{(1),j}-V_{(2),j}$ for each auction $j=1,\dots,n$, where (1) holds by \eqref{eq:bidSecond}. In turn, this information enables us to test $H_0:\mu_{K} = b$ using the t-statistic $\sqrt{n}(\bar{D}_{n} - b)/s$, where $\bar{D}_{n}=\sum_{j=1}^n D_{j}/n$ and $s^2 = {\sum^{n}_{j=1} ( D_{j}-\bar{D}_{n}) ^{2}/(n-1)}$. Under $H_0$, standard asymptotic arguments imply that the t-statistic converges to a standard normal distribution as $n\to\infty$. One can then construct a CI by inverting the aforementioned hypothesis tests. The validity of this method relies on standard asymptotic arguments with $n\to\infty$.
+    These data allow us to compute $D_{j}\equiv B_{(1),j}-B_{(2),j}$ for each auction $j=1,\dots,n$. In turn, this enables us to test $H_0:\mu_{K} = b$ using the t-statistic $\sqrt{n}(\bar{D}_{n} - b)/s_n$ with $\bar{D}_{n}=\sum_{j=1}^n D_{j}/n$ and $s_n^2 = {\sum^{n}_{j=1} ( D_{j}-\bar{D}_{n}) ^{2}/(n-1)}$. One can then construct a CI by standard asymptotic approximations based on $n\to\infty$. 
+    %The validity of this method relies on standard asymptotic arguments with $n\to\infty$. standard asymptotic arguments imply that the t-statistic converges to a standard normal distribution as $n\to\infty$. One can then construct a CI by inverting the aforementioned hypothesis tests. The validity of this method relies on standard asymptotic arguments with $n\to\infty$.
+    \item A bootstrap-based CI. To implement this idea, we first need to express $\mu_K$ as a function of the distribution of transaction prices (further details are provided in Section \ref{sec:appendix-MC}). By replacing this distribution with a suitable estimator, one can consistently estimate $\mu_K$. In addition, one can repeat this process using bootstrap samples to construct a CI for $\mu _{K}$. The method is implemented with 500 bootstrap samples. The validity of this method relies on standard asymptotic arguments with $n\to\infty$. For references using this type of CI, see \cite{BajariHortacsu2003} and \cite{hailetamer2003}.
+    %See \cite{BajariHortacsu2003} for a study of eBay auction data imposing the normal assumption.
+    %The main difference is that the relationship in \eqref{eq:functional1} remains nonparametric. The validity of this bootstrap-based method relies on standard asymptotic arguments with $n\to\infty$. This CI is implemented with 500 bootstrap samples. See, for example, \cite{hailetamer2003}. %\textcolor{red}{REF} 
+%    \item This is a CI constructed by doing parametric inference on the distribution of transaction prices, assuming that valuations are distributed according to the absolute value of a standard Normal \textcolor{red}{IS THIS CORRECT? WHY THIS ONE?}.  In \eqref{eq:functional1}, we provide a functional that relates the distribution of valuations and the distribution of transaction prices. By inverting this relationship, one can express the valuation distribution parameters in terms of the distribution of transaction prices. This can be used to estimate $\mu _{K}$ by exploiting \eqref{eq:functional2}. By repeating this process with bootstrap samples, we can construct a CI for $\mu _{K}$. The validity of this bootstrap-based method relies on the parametric assumption and standard asymptotic arguments with $n\to\infty$. This CI is implemented with 100 bootstrap samples. See \cite{BajariHortacsu2003} for a study of eBay auction data imposing the normal assumption. 
+\end{enumerate}
+
+Table \ref{tbl:sp-CI} presents the average coverage and length of the three CIs. % over 500 simulations using a desired nominal coverage level of $95\%$. 
+We summarize the findings as follows. First, our proposed CI exhibits excellent coverage properties across all data configurations. As one would expect, in scenarios where $K$ is significantly larger than $n$, our empirical CI coverage closely approximates the desired level. On the other hand, when $n$ is considerably larger than $K$, our proposed CI exhibits slight overcoverage, especially when valuations are distributed according to $U(0,3)$. Second, the CI based on the two highest bids and $n\to \infty$ are relatively shorter and tend to suffer from slight undercoverage, especially when $n$ is small or valuations are Pareto distributed. Finally, the bootstrap-based CI tends to suffer significant undercoverage problems. We attribute this to the fact that $n \in \{10,100\}$ is insufficient to guarantee accuracy based on asymptotic arguments as $n\to\infty$.
+
+
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.4}%
+\begin{tabular}{lllllllllllll}
+\hline\hline
+\# Bidders & \multicolumn{4}{c}{$K=10$} & \multicolumn{4}{c}{$K=100$} & \multicolumn{4}{c}{$K \sim U\{90,91,\dots,110\}$} \\ 
+\# Auctions & \multicolumn{2}{c}{$n=10$} & \multicolumn{2}{c}{$n=100$} & \multicolumn{2}{c}{$n=10$} & \multicolumn{2}{c}{$n=100$} & \multicolumn{2}{c}{$n=10$} & \multicolumn{2}{c}{$n=100$} \\ \hline
+Dist.\ & Cov & Lgth & Cov & Lgth & Cov & Lgth & Cov & Lgth & Cov & Lgth & Cov & Lgth \\ \hline
+\multicolumn{13}{l}{~~~~~~~~~~~~~~~~~~~Method (i): Our proposed CI, asy.\ with $K\to\infty$} \\ 
+$U(0,3)$               & 0.98 & 0.72 & 0.96 & 0.09 & 0.98 & 0.30 & 0.99 & 0.13 & 0.97 & 0.30 & 0.98	& 0.13 \\
+{$\vert N(0,1) \vert$} & 0.95 & 1.54 & 0.97 & 0.29 & 0.94 & 1.20 & 0.98 & 0.23 & 0.92 & 1.21 & 0.97 & 0.23 \\ 
+{$\vert t(20) \vert$}  & 0.93 & 1.74 & 0.97 & 0.37 & 0.94 & 1.52 & 0.98 & 0.35 & 0.93 & 1.49 & 0.99 & 0.35 \\ 
+$Pa(0.25) $            & 0.96 & 1.45 & 0.99 & 0.62 & 0.95 & 2.62 & 0.98 & 1.11 & 0.95 & 2.62 & 0.98 & 1.10 \\ 
+ \hline
+\multicolumn{13}{l}{~~~~~~~~~~~~~~~~~~~Method (ii): CI based on two highest bids, asy.\ with $n\to\infty$} \\  
+$U(0,3)$               & 0.86 & 0.28 & 0.94 & 0.10 & 0.83 & 0.03 & 0.93 & 0.01 & 0.88 & 0.03 & 0.88 & 0.01 \\
+{$\vert N(0,1) \vert$} & 0.89 & 0.46 & 0.94 & 0.16 & 0.88 & 0.35 & 0.96 & 0.12 & 0.88 & 0.35 & 0.95 & 0.12 \\ 
+{$\vert t(20) \vert$}  & 0.89 & 0.55 & 0.92 & 0.19 & 0.86 & 0.48 & 0.92 & 0.17 & 0.87 & 0.47 & 0.93 & 0.17 \\ 
+$Pa(0.25) $            & 0.81 & 0.76 & 0.90 & 0.30 & 0.80 & 1.34 & 0.90 & 0.51 & 0.78 & 1.35 & 0.88 & 0.51 \\ 
+ \hline
+\multicolumn{13}{l}{~~~~~~~~~~~~~~~~~~~Method (iii): CI based on bootstrap, asy.\ with $n\to\infty$} \\  
+$U(0,3)$               & 0.66 & 0.22 & 0.93 & 0.08 & 0.67 & 0.03 & 0.95 & 0.01 & 0.68 & 0.03 & 0.94 & 0.01 \\
+{$\vert N(0,1) \vert$} & 0.04 & 0.22 & 0.23 & 0.11 & 0.05 & 0.15 & 0.20 & 0.08 & 0.05 & 0.15 & 0.18 & 0.08 \\ 
+{$\vert t(20) \vert$}  & 0.02 & 0.24 & 0.15 & 0.13 & 0.04 & 0.19 & 0.13 & 0.11 & 0.03 & 0.19 & 0.14 & 0.11 \\ 
+$Pa(0.25) $            & 0.00 & 0.17 & 0.06 & 0.15 & 0.01 & 0.31 & 0.05 & 0.25 & 0.00 & 0.30 & 0.05	& 0.25 \\ 
+\hline\hline
+\end{tabular}
+\caption{Empirical coverage frequency (Cov) and length (Lgth) of various CIs for the winner's expected utility $\mu_K$ in second-price auctions. The results are the average of 500 simulation draws and a nominal coverage level of 95\%.}\label{tbl:sp-CI}
+\end{table}
+
+Next, we consider the problem of hypothesis testing the value of the tail index based on transaction prices. Motivated by Section \ref{sec:HypApplication}, we focus on $H_0:\xi = -1$ vs.\ $H_1:\xi \in (-1,0.5]$, with $W$ equal to the uniform distribution over this interval. As explained, the validity of this method is based on asymptotics as $K\to\infty$. We consider the same four distributions for $F_V$: (a) the standard uniform distribution over $[0,3]$, (b) the absolute value of standard Normal, (c) the absolute value of Student-t(20), and (d) the Pareto distribution with exponent 0.25. The first distribution satisfies $H_0:\xi = -1$, while the other three belong to $H_1$ with $\xi = 0$, $0.05$, and $0.25$, respectively.
+
+Table \ref{tbl:sp-test} presents the empirical rejection rate of the test proposed in Section \ref{sec:HypApplication} over 500 simulations using a nominal size of $5\%$. Under $H_0$ (i.e., when valuations are $U(0,3)$), our proposed test controls size as long as the number of bidders is not too small relative to the sample size. Under $H_1$ (i.e., when valuations are not $U(0,3)$), our methodology provides reasonable power.
+
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lcccccccc}
+\hline\hline
+\# Bidders & \multicolumn{2}{c}{$K=10$}   & \multicolumn{2}{c}{$K=20$}   & \multicolumn{2}{c}{$K=100$} & \multicolumn{2}{c}{ $K\sim U\{90,91,\dots,110 \}$  } \\ 
+\# Auctions & $n=10$ & $n  = 100$   & $n=10$ & $n  = 100$   & $n=10$ & $n  = 100$  & $n=10$ & $n  = 100$\\ \hline
+%Val. dist. & \multicolumn{7}{c}{Rejection Prob.} \\ 
+$U(0,3)$               & 0.06 & 0.35 &   0.05 & 0.14 &  0.04 & 0.05 & 0.03 & 0.04 \\ 
+{$\vert N(0,1) \vert$} & 0.42 & 1.00 &   0.46 & 1.00 &  0.48 & 1.00 & 0.45 & 1.00 \\ 
+{$\vert t(20) \vert$}  & 0.46 & 1.00 &   0.48 & 1.00 &  0.54 & 1.00 & 0.51 & 1.00 \\ 
+$Pa(0.25) $            & 0.73 & 1.00 &   0.71 & 1.00 &  0.68 & 1.00 & 0.66 & 1.00 \\ 
+\hline\hline
+\end{tabular}
+\caption{Empirical rejection rate of the test proposed in Section \ref{sec:HypApplication} for $H_0:\xi = -1$ in second-price auctions. The results are the average of 500 simulation draws and a nominal size of 5\%.}\label{tbl:sp-test}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{empirical}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusions}\label{sec:conclusion}
+
+This paper considers statistical inference problems in auctions with many bidders with symmetric independent private values. In this context, we present a novel asymptotic framework where the number of bidders increases significantly while the number of auctions remains small and fixed. This approach differs from the more conventional approach with a divergent number of auctions, while the number of bidders remains fixed. We argue that our results provide an accurate approximation in auction settings where the number of bidders is large relative to the number of auctions. This framework is especially well-suited for applications with substantial heterogeneity across auctions, where only a few truly homogeneous auctions exist.
+
+Within our novel asymptotic framework, we introduce new inference methods for the expected utility of the auction winner, the expected revenue for the seller, and the tail behavior of the valuation distribution. We show that the latter can serve as a means to test the validity of the regularity conditions typically imposed in auction literature (e.g., bounded valuation support and nonzero density at the upper end of the support). Our data requirements are minimal; our tests only necessitate observing transaction prices from a fixed and finite number of auctions. That is, we do not require observing multiple bids from these auctions or the number of bidders.
+
+Our methodology relies on the fact that, as the number of bidders grows, the transaction prices reveal the tail properties of the valuation distribution. This information is sufficient to provide asymptotically valid inference for the above-mentioned objects of economic interest. %the winner's expected utility, the seller's expected revenue, and the tail properties of the valuation distribution. 
+Within our asymptotic framework, our inference methods are shown to control size and have desirable power properties. We demonstrate through Monte Carlo simulations that our methodology provides an accurate approximation in finite samples. 
+Finally, we apply our methods to Hong Kong license plate auction data.

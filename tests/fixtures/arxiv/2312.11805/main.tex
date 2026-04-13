@@ -1,0 +1,148 @@
+\pdfoutput=1
+\documentclass[11pt, letterpaper, logo, onecolumn, copyright, numbering]{googledeepmind}
+
+\usepackage[authoryear, sort&compress, round]{natbib}
+
+\usepackage[inkscapeformat=png]{svg}
+
+
+\usepackage[most, breakable, skins]{tcolorbox}
+\tcbuselibrary{skins}
+\usepackage{lipsum}
+\usepackage{tabularx}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{array}
+\usepackage{listings, listings-rust}
+\usepackage{fontawesome5}
+\usepackage{amssymb,graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{hyperref}
+
+\usepackage{CJKutf8}
+
+\makeatletter
+% Note: I (trandustin) updated the styling for \pragraph to
+% include italics on 2024-02-07 10:04PM. This way, the italicizing
+% is consistent with \subsubsection's italics.
+% \renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+%             {-2.5ex\@plus -1ex \@minus -.25ex}%
+%             {1.25ex \@plus .25ex}%
+%             {\normalfont\normalsize\bfseries}}
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+            {-2.5ex\@plus -1ex \@minus -.25ex}%
+            {1.25ex \@plus .25ex}%
+            {\itshape\normalsize\bfseries}}
+\makeatother
+\setcounter{secnumdepth}{4} % how many sectioning levels to assign numbers to
+\setcounter{tocdepth}{4}    % how many sectioning levels to show in ToC
+
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering}m{#1}}
+
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\definecolor{ao}{rgb}{0.0, 0.0, 1.0}
+
+\newcommand{\sota}[1]{\textcolor{ao}{$\textbf{#1}$}}
+\newcommand{\red}[1]{\textcolor{red}{{#1}}}
+\newcommand{\green}[1]{\textcolor{green}{{#1}}}
+\newcommand\rowincludegraphics[2][]{\raisebox{-0.55\height}{\includegraphics[#1]{#2}}}
+\newcommand\vcent[1]{\vcenter{\hbox{#1}}}
+\newcommand\loudspeaker[1][3]{\ensuremath{\vcent{\rule{.6ex}{.6ex}}\kern-.5ex%
+  \vcent{\scalebox{.6}[1]{\rotatebox[origin=center]{90}{$\blacktriangle$}}}%
+  \ifnum#1>0\relax\kern.05ex\vcent{\scalebox{.4}{\ttfamily)}}%
+  \ifnum#1>1\relax\kern-.4ex\vcent{\scalebox{.56}{\ttfamily)}}%
+  \ifnum#1>2\relax\kern-.55ex\vcent{\scalebox{.7}{\ttfamily)}}%
+  \fi\fi\fi}%
+}
+
+\bibliographystyle{plainnat}
+
+
+\let\cite\citep
+
+\title{Gemini: A Family of Highly Capable Multimodal Models}
+
+
+\reportnumber{} % Leave blank if n/a
+
+
+\renewcommand{\today}{}
+
+\author[*,1]{Gemini Team, Google\footnote{See Contributions and Acknowledgments section for full author list. Please send correspondence to gemini-1-report@google.com}}
+
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+\input{intro_v2}
+\section{Model Architecture}
+\label{sec:arch}
+\input{arch}
+\section{Training Infrastructure}
+\label{sec:infra}
+\input{infra}
+\section{Pre-Training Dataset}
+\label{sec:data}
+\input{dataset}
+
+
+\section{Evaluation}
+\label{sec:eval}
+\input{evals-intro}
+\input{evals-text}
+\input{evals-mm}
+
+\clearpage
+
+\section{Post-Training Models}
+\input{post-training-intro}
+\input{post-training-human-eval}
+\input{post-training-capabilities}
+
+
+\section{Responsible Deployment}
+\label{sec:responsible-deployment}
+\input{responsible-deployment}
+\section{Discussion and Conclusion}
+\label{discussion}
+\input{conclusions_v2}
+\newpage
+\bibliography{main}
+
+\section{Contributions and Acknowledgments}
+\label{sec:contributions}
+\input{contributions_and_acknowledgements}
+%\clearpage
+\pagebreak
+\section{Appendix}
+\subsection{Gemini Ultra Model Card}
+\label{app:model-card}
+\input{appendix-model-card.tex}
+
+\subsection{Chain-of-Thought Comparisons on MMLU benchmark}
+\label{app:mmlu}
+\input{cot-mmlu.tex}
+
+\pagebreak
+\subsection{Capabilities and Benchmarking Tasks}
+\label{app:tasks}
+\input{benchmarks-list}
+
+\pagebreak\subsection{Qualitative Examples}
+\label{app:demos}
+\input{demo-examples.tex}
+
+
+\end{document}

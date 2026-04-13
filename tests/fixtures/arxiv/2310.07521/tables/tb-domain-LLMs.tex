@@ -1,0 +1,312 @@
+% Please add the following required packages to your document preamble:
+% \usepackage[table,xcdraw]{xcolor}
+% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
+% \usepackage[normalem]{ulem}
+% \useunder{\uline}{\ul}{}
+\begin{table*}[]\small
+\centering
+\caption{LLMs Enhanced for Domain-Specific Factuality. In the `domain' column, we utilize the following abbreviations: healthcare/medicine (H), finance (F), law/legal (L), geoscience/environment (G), education (E), food testing (FT), and home renovation (HR).}
+\label{tab:domain_llms}
+\vspace{-2mm} \begin{adjustbox}{max width=0.95\textwidth}
+  \setlength{\tabcolsep}{1.mm}
+{
+\begin{tabular}{lllllcccc}
+\toprule
+Reference &
+  \begin{tabular}[c]{@{}l@{}}Do- \\main\end{tabular} &
+  Base-Model &
+  \begin{tabular}[c]{@{}l@{}}Eval\\Task\end{tabular}&
+  \begin{tabular}[c]{@{}l@{}}Eval\\Dataset\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}Continual \\ Pretrained?\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}Continual \\SFT?\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}Train From \\ Scratch?\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}External \\ Knowledge\end{tabular} \\
+
+  \midrule
+HuatuoGPT \citep{zhang2023huatuogpt} &
+  H &
+  \begin{tabular}[c]{@{}l@{}}Baichuan-7B,  \\Ziya-LLaMA-13B\end{tabular}&
+  QA &
+  \begin{tabular}[c]{@{}l@{}}cMedQA2,\\ WebMedQA,\\ Huatuo-26M\end{tabular} &
+  \checkmark &
+   &
+   &
+   \\
+Zhongjing \citep{yang2023zhongjing} &
+  H &
+  Ziya-LLaMA-13B &
+  QA &
+   \begin{tabular}[c]{@{}l@{}}CMtMedQA, \\huatuo-26M\end{tabular} &
+  \checkmark &
+  \checkmark &
+   &
+   \\
+\citet{wang2023augmenting} &
+  H &
+  \begin{tabular}[c]{@{}l@{}}GPT-3.5-Turbo, \\ LLaMA-2-13B\end{tabular} &
+  QA &
+  \begin{tabular}[c]{@{}l@{}}MedQAUSMLE,\\ MedQAMCMLE,\\ MedMCQA\end{tabular} &
+   &
+   &
+   &
+  \checkmark \\
+% \citet{mahjour2023designing} &
+%   H &
+%   ChatGPT &
+%   \begin{tabular}[c]{@{}l@{}}Designing \\ chemical \\ reaction；\\ arrays\end{tabular} &
+%    &
+%    &
+%    &
+%    &
+%    \\
+MOLFORMER \citep{ross2022large} &
+  H &
+  MOLFORMER &
+  \begin{tabular}[c]{@{}l@{}}Molecule\\ properties \\ prediction\end{tabular} &
+   &
+   &
+   &
+  \checkmark &
+   \\
+DISC-MedLLM \citep{bao2023disc} &
+  H &
+  Baichuan-13B &
+  QA &
+  \begin{tabular}[c]{@{}l@{}}CMB-Clin, \\ CMD, \\ CMID\end{tabular} &
+   &
+  \checkmark &
+   &
+   \\
+CohortGPT \citep{guan2023cohortgpt} &
+  H &
+  ChatGPT &
+  \begin{tabular}[c]{@{}l@{}}IU-RR, \\ MIMIC-CXR\end{tabular} &
+   &
+   &
+   &
+   &
+  \checkmark \\
+DeID-GPT \citep{liu2023deid} &
+  H &
+  GPT-4 &
+  \begin{tabular}[c]{@{}l@{}}Medical \\ Text \\ De-Identification\end{tabular} &
+   &
+   &
+   &
+   &
+  \checkmark \\
+
+ChatDoctor \citep{li2023chatdoctor} &
+  H &
+  LLaMA &
+  QA &
+   &
+   &
+  \checkmark
+   &
+   & \\
+BioMedLM \citep{venigalla2022biomedlm} &
+  H &
+  GPT (2.7b) &
+  QA &
+   &
+   &
+   &
+  \checkmark &
+   \\
+DoctorGLM \citep{xiong2023doctorglm} &
+  H &
+  ChatGLM-6B &
+  QA &
+   &
+   &
+  \checkmark &
+   &
+   \\
+MedChatZH \citep{tan2023medchatzh} &
+  H &
+  Baichuan-7B &
+  QA &
+  C-Eval, MMLU &
+   &
+  \checkmark &
+   &
+   \\
+BioGPT \citep{luo2022biogpt} &
+  H &
+  GPT-2 &
+  QA, DC, RE &
+   &
+   &
+   &
+  \checkmark &
+   \\
+GeneGPT \citep{jin2023genegpt} &
+  H &
+  Codex &
+  QA &
+  GeneTuring &
+   &
+   &
+   &
+  \checkmark \\
+Almanac \citep{hiesinger2023almanac} &
+  H &
+  text-davinci-003 &
+  QA &
+  ClinicalQA &
+   &
+   &
+   &
+  \checkmark \\
+MolXPT \citep{liu2023molxpt} &
+  H &
+  GPT-2medium &
+  \begin{tabular}[c]{@{}l@{}}Molecular \\ Property \\ Prediction,  \\ Molecule-text \\ translation\end{tabular} &
+   &
+   &
+  \checkmark &
+  \checkmark &
+   \\
+LawGPT \citep{nguyen2023brief} &
+  L &
+  GPT3 &
+   &
+   &
+   &
+  \checkmark &
+   &
+   \\
+\citet{savelka2023explaining} &
+  L &
+  GPT-4 &
+   &
+   &
+   &
+   &
+   & \checkmark
+   \\
+Lawyer LLaMA \citep{huang2023lawyer} &
+L &
+LLaMA &
+CN Legal Tasks &
+&
+\checkmark &
+\checkmark &
+& 
+\\
+ChatLaw \citep{cui2023chatlaw} &
+  L &
+  Ziya-LLaMA-13B &
+  QA &
+  \begin{tabular}[c]{@{}l@{}}national judicial \\ examination \\  question\end{tabular} &
+  \checkmark &
+   &
+   &
+  \checkmark \\
+EcomGPT \citep{li2023ecomgpt} &
+  F &
+  BLOOMZ &
+  \begin{tabular}[c]{@{}l@{}}4 major tasks\\  12 subtasks\end{tabular} &
+  EcomInstruct &
+   &
+  \checkmark &
+   &
+   \\
+BloombergGPT \citep{BloombergGPT} &
+  F &
+BLOOM &
+  \begin{tabular}[c]{@{}l@{}}Financial NLP \\ (SA, BC, \\NER, \\NER+NED, QA)\end{tabular} &
+ \begin{tabular}[c]{@{}l@{}} Financial\\Datasets \end{tabular}&
+   &
+   &
+  \checkmark &
+   \\
+% \citet{leippold2023sentiment} &
+%   F &
+%   GPT3 &
+%   SA &
+%   \begin{tabular}[c]{@{}l@{}}financial\\ phrasebank\end{tabular} &
+%    &
+%    &
+%    &
+%    \\
+% \citet{yang2023large} &
+%   F &
+%   ChatGPT &
+%    &
+%   \begin{tabular}[c]{@{}l@{}}Agreement\\ Tranco\end{tabular} &
+%    &
+%    &
+%    &
+%    \\
+% \citet{biswas2023potential} &
+%   G &
+%   ChatGPT &
+%    &
+%    &
+%    &
+%    &
+%    &
+%    \\
+K2 \citep{deng2023learning} &
+  G &
+  LLaMA-7B &
+   &
+  GeoBench &
+  \checkmark &
+   &
+   &
+   \\
+HouYi \citep{bai2023houyi} &
+  G &
+  ChatGLM-6B &
+   &
+   &
+  \checkmark &
+   &
+   &
+   \\
+OceanGPT \citep{bi2023oceangpt} &
+  G &
+  LLaMA-2-7B &
+   &
+  OceanBench &
+  \checkmark &
+   \checkmark&
+   &\checkmark
+   \\
+GrammarGPT \citep{fan2023grammargpt} &
+  E &
+  phoenix-inst-chat-7b &
+  \begin{tabular}[c]{@{}l@{}}Chinese \\ Grammatical Error\\ Correction\end{tabular} &
+  \begin{tabular}[c]{@{}l@{}}ChatGPT-\\generated,\\ Human-\\annotated\end{tabular} &
+   &
+  \checkmark &
+   &
+  \\
+FoodGPT  \citep{qi2023foodgpt} &
+  FT &
+  Chinese-LLaMA2-13B &
+  QA &
+   &
+  \checkmark &
+   &
+   &  \checkmark 
+   \\
+
+ChatHome  \citep{wen2023chathome} &
+  HR &
+  Baichuan-13B &
+   &
+   \begin{tabular}[c]{@{}l@{}}
+   C-Eval,\\ CMMLU, \\EvalHome \end{tabular}
+   &
+   &\checkmark
+   &
+   &  
+   \\
+  \bottomrule
+\end{tabular}}
+\end{adjustbox}
+\end{table*}

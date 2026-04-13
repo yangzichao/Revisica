@@ -1,0 +1,360 @@
+\clearpage
+\setcounter{page}{1}
+\setcounter{section}{0}
+\makearxivsupplementary
+
+\renewcommand\thesection{\Alph{section}}
+\section{Dataset Details}
+
+\paragraph{Training dataset.}
+Based on \secref{sec:data_pipeline} in the main paper,
+following a sequence of filtering steps,
+the number of images in our constructed dataset is about 112K.
+They are classified by about 13,000 ID names.
+Each image is accompanied by a mask for the corresponding ID and an annotated caption.
+
+
+\paragraph{Evaluation dataset.}
+The \textit{image dataset} used for evaluation comprises manually selected additional IDs and a portion of MyStyle~\cite{nitzan2022mystyle} data. 
+For each ID name, we have four images that serve as input data for comparative methods and for the final metric evaluation (\ie, DINO~\cite{caron2021emerging}, CLIP-I~\cite{gal2022image}, and Face Sim.~\cite{deng2019arcface}).
+For single-embedding methods (\ie, FastComposer~\cite{xiao2023fastcomposer} and IPAdapter~\cite{ye2023ip}), we randomly select one image from each ID group as input. 
+Note that the ID names exist in the training image set, utilized for the training of our method, and the test image set, do not exhibit any overlap.
+We list ID names for evaluation in ~\tabref{tab:evaluate_ids}.
+For \textit{text prompts} used for evaluation,  we consider six factors: clothing, accessories, actions, expressions, views, and background, which make up 40 prompts that are listed in the \tabref{tab:evaluate_prompts}.
+
+\begin{table}
+    \centering
+    \begin{tabular}{ll}
+    \toprule
+        \multicolumn{2}{c}{Evaluation IDs}\\
+    \midrule
+   \Circled{1} Alan Turing
+ &\Circled{14} Kamala Harris\\
+\Circled{2} Albert Einstein &\Circled{15} Marilyn Monroe\\
+      \Circled{3}  Anne Hathaway &\Circled{16} Mark Zuckerberg\\
+\Circled{4} Audrey Hepburn &\Circled{17} Michelle Obama\\
+        \Circled{5} Barack Obama&\Circled{18} Oprah Winfrey\\
+\Circled{6} Bill Gates&\Circled{19} Renée Zellweger\\
+\Circled{7} Donald Trump&\Circled{20} Scarlett Johansson\\
+        \Circled{8} Dwayne Johnson&\Circled{21} Taylor Swift\\
+\Circled{9} Elon Musk&\Circled{22} Thomas Edison\\
+\Circled{10} Fei-Fei Li&\Circled{23} Vladimir Putin\\
+\Circled{11} Geoffrey Hinton&\Circled{24} Woody Allen\\
+\Circled{12} Jeff Bezos&\Circled{25} Yann LeCun\\
+        \Circled{13} Joe Biden&\\
+    \bottomrule
+    \end{tabular}
+    \caption{\textbf{ID names used for evaluation.} For each name, we collect four images totally.}
+    \label{tab:evaluate_ids}
+\end{table}
+
+
+\begin{table*}
+    \centering
+    \tablestyle{5pt}{1.15}
+    \begin{subtable}[h]{0.48\linewidth}
+    \centering
+    \begin{tabular}{c|p{0.7\linewidth}}
+    \toprule
+    Category  & Prompt \\
+    \midrule
+    General  & a photo of a \texttt{<class word>} \\
+    \hline
+    \multirow{5}{*}{Clothing}   &  a \texttt{<class word>} wearing a Superman outfit \\
+         & a \texttt{<class word>} wearing a spacesuit \\
+         & a \texttt{<class word>} wearing a red sweater \\
+         & a \texttt{<class word>} wearing a purple wizard outfit \\
+         & a \texttt{<class word>} wearing a blue hoodie
+ \\
+\hline
+ \multirow{10}{*}{Accessory}&  a \texttt{<class word>} wearing headphones\\
+         &  a \texttt{<class word>} with red hair\\
+         &  a \texttt{<class word>} wearing headphones with red hair\\
+         &  a \texttt{<class word>} wearing a Christmas hat\\
+         &  a \texttt{<class word>} wearing sunglasses\\
+         &  a \texttt{<class word>} wearing sunglasses and necklace\\
+         &  a \texttt{<class word>} wearing a blue cap\\
+         &  a \texttt{<class word>} wearing a doctoral cap\\
+         &  a \texttt{<class word>} with white hair, wearing glasses\\
+\hline
+ \multirow{10}{*}{Action}&  a \texttt{<class word>} in a helmet and vest riding a motorcycle\\
+         &  a \texttt{<class word>} holding a bottle of red wine\\
+         & a \texttt{<class word>} driving a bus in the desert\\
+         &  a \texttt{<class word>} playing basketball\\
+         &  a \texttt{<class word>} playing the violin\\
+         &  a \texttt{<class word>} piloting a spaceship\\
+         &  a \texttt{<class word>} riding a horse\\
+         &  a \texttt{<class word>} coding in front of a computer\\
+         &  a \texttt{<class word>} playing the guitar\\
+    \bottomrule
+    \end{tabular}
+    \caption{}
+    \end{subtable}
+    \begin{subtable}[h]{0.48\linewidth}
+    \centering
+        \begin{tabular}{c|p{0.7\linewidth}}
+        \toprule
+            Category  & Prompt \\
+        \midrule
+         \multirow{6}{*}{Expression}& a \texttt{<class word>} laughing on the lawn\\
+         &  a \texttt{<class word>} frowning at the camera\\
+         &  a \texttt{<class word>} happily smiling, looking at the camera\\
+         &  a \texttt{<class word>} crying disappointedly, with tears flowing\\
+         &  a \texttt{<class word>} wearing sunglasses\\
+         \hline
+          \multirow{14}{*}{View}& a \texttt{<class word>} playing the guitar in the view of left side\\
+         &  a \texttt{<class word>} holding a bottle of red wine, upper body\\
+         &  a \texttt{<class word>} wearing sunglasses and necklace, close-up, in the view of right side\\
+         &  a \texttt{<class word>} riding a horse, in the view of the top\\
+         &  a \texttt{<class word>} wearing a doctoral cap, upper body, with the left side of the face facing the camera\\
+         &  a \texttt{<class word>} crying disappointedly, with tears flowing, with left side of the face facing the camera\\
+         \hline
+         \multirow{8}{*}{Background}& a \texttt{<class word>} sitting in front of the camera, with a beautiful purple sunset at the beach in the background\\
+         &  a \texttt{<class word>} swimming in the pool\\
+         &  a \texttt{<class word>} climbing a mountain\\
+         &  a \texttt{<class word>} skiing on the snowy mountain\\
+         &  a \texttt{<class word>} in the snow\\
+         &  a \texttt{<class word>} in space wearing a spacesuit\\
+        \bottomrule
+        \end{tabular}
+    \caption{}
+    \end{subtable}
+    \caption{\textbf{Evaluation text prompts categorized by (a) general setting, clothing, accessory, action, (b) expression, view, and background.} The \texttt{class word} will be replaced with \texttt{man}, \texttt{woman}, \texttt{boy}, etc. For each ID and each prompt, we randomly generated four images for evaluation.}
+    \label{tab:evaluate_prompts}
+\end{table*}
+
+
+\section{User Study}
+\label{sec:user_study}
+
+In this section, we conduct a user study to make a more comprehensive comparison.
+The comparative methods we have selected include DreamBooth~\cite{ruiz2022dreambooth}, FastComposer~\cite{xiao2023fastcomposer}, and IPAdapter~\cite{ye2023ip}.
+We use SDXL~\cite{podell2023sdxl} as the base model for both DreamBooth and IPAdapter because of their open-sourced implementations.
+We display 20 text-image pairs for each user.
+Each of them includes a reference image of the input ID and corresponding text prompt.
+We have four randomly generated images of each method for each text-image pair. 
+Each user is requested to answer four questions for these 20 sets of results:
+1) Which method is \textit{most similar} to the input person's \textit{identity}? 
+2) Which method produces the \textit{highest quality} generated images? 
+3) Which method generates \textit{the most diverse} facial area in the images?  
+4) Which method generates images that \textit{best match} the input \textit{text prompt}?
+We have anonymized the names of all methods and randomized the order of methods in each set of responses.
+We had a total of 40 candidates participating in our user study, and we received 3,200 valid votes.
+The results are shown in \figref{fig:user_study}.
+
+\begin{figure}
+  \centering  \includegraphics[width=0.48\textwidth]{figures/user_study.pdf}
+  \caption{\textbf{User preferences on ID fidelity, generation quality, face diversity, and text fidelity for different methods.}
+  For ease of illustration, we visualize the proportion of total votes that each method has received.
+  Our PhotoMaker occupies the most significant proportion in these four dimensions.}
+  \label{fig:user_study}
+  
+\end{figure}
+
+We find that our PhotoMaker has advantages in terms of ID fidelity, generation quality, diversity, and text fidelity, especially the latter three.
+In addition, we found that DreamBooth is the second-best algorithm in balancing these four evaluation dimensions, which may explain why it was more prevalent than the embedding-based methods
+in the past.
+At the same time, IPAdapter shows a significant disadvantage in terms of generated image quality and text consistency, as it focuses more on image embedding during the training phase.
+FastComposer has a clear shortcoming in the diversity of the facial region for their single-embedding training pipeline.
+The above results are generally consistent with \tabref{tab:comp_recontext} in the main paper, except for the discrepancy in the CLIP-T metric. 
+This could be due to a preference for selecting images that harmonize with the objects appearing in the text when manually choosing the most text-compatible images. 
+In contrast, the CLIP-T tends to focus on whether the object appears.
+This may demonstrate the limitations of the CLIP-T.
+We also provide more visual samples in \figref{fig:supp_comp_recontext_user_study}-\ref{fig:supp_comp_painting} for reference.
+
+
+\section{More Ablations}
+  
+
+  
+
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.98\textwidth]{figures/ablation_idmix.pdf}
+  \caption{\textbf{The impact of the proportion of images with different IDs in the input sample pool on the generation of new IDs.}
+The first row illustrates the transition from Barack Obama to Joe Biden. 
+The second row depicts the shift from Michelle Obama to Scarlett Johansson.
+To provide a clearer illustration, percentages are used in the figure to denote the proportion of each ID in the input image pool. 
+The total number of images contained in the input pool is 10.
+\textit{(Zoom-in for the best view)}}
+\label{fig:idmix_image}
+\end{figure*}
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.98\textwidth]{figures/ablation_promptweighting.pdf}
+  \caption{\textbf{The impact of prompt weighting on the generation of new IDs.}
+The first row illustrates a blend of Barack Obama and Joe Biden. 
+The first row from left to right represents the progressive increase in the weight of the ID image embedding corresponding to Barack Obama in the image.
+The second row illustrates a blend of Elsa (Disney) and Anne Hathaway. 
+The weight for Elsa is gradually increased.
+ \textit{(Zoom-in for the best view)}}
+  \label{fig:idmix_promptweight}
+\end{figure*}
+
+
+
+\paragraph{Adjusting the ratio during identity mixing.}
+For identity mixing, our method can adjust the merge ratio by either controlling the percentage of identity images within the input image pool or through the method of prompt weighting~\cite{hertz2022prompt, prompt_weighting}.
+In this way, we can control that the person generated with a new ID is either more closely with or far away from a specific input ID.
+\figref{fig:idmix_image} shows how our method customizes a new ID by controlling the proportion of different IDs in the input image pool. 
+For a better description, we use a total of 10 images as input in this experiment. 
+We can observe a smooth transition of images with the two IDs.
+This smooth transition encompasses changes in skin color and age.
+Next, we use four images per generated ID to conduct prompt weighting.
+The results are shown in \figref{fig:idmix_promptweight}.
+We multiply the embedding corresponding to the images related to a specific ID by a coefficient to control its proportion of integration into the new ID.
+Compared to the way to control the number of input images,
+prompt weighting requires fewer photos to adjust the merge ratio of different IDs, demonstrating its superior usability.
+Besides,
+the two ways of adjusting the mixing ratio of different IDs both demonstrate the flexibility of our method.
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.95\textwidth]{figures/stylization_arxiv.pdf}
+  \caption{\textbf{The stylization results of our PhotoMaker with different input IDs and different style prompts.}
+  Our method can be seamlessly transferred to a variety of styles, concurrently preventing the generation of realistic results.
+  The symbol \textbf{{\color{blue} \texttt{<class>}}} denotes it will be replaced by \texttt{man} or \texttt{woman} accordingly.
+ \textit{(Zoom-in for the best view)}}
+  \label{fig:stylization}
+  
+\end{figure*}
+
+\section{Stylization Results}
+Our method not only possesses the capability to generate realistic human photos, but it also allows for stylization while preserving ID attributes.
+This demonstrates the robust generalizability of the proposed method.
+We provide the stylization results in \figref{fig:stylization}.
+
+
+\section{More Visual Results}
+
+\paragraph{Recontextualization.}
+We first provide a more intuitive comparison in \figref{fig:supp_comp_recontext_user_study}.
+We compare our PhotoMaker with DreamBooth~\cite{ruiz2022dreambooth}, FastComposer~\cite{xiao2023fastcomposer}, and IPAdapater~\cite{ye2023ip}, for universal recontextualization cases.
+Compared to other methods, the results generated by our method can simultaneously satisfy high-quality, strong text controllability, and high ID fidelity.
+We then focus on the IDs that SDXL can not generate itself.
+We refer to this scenario as the ``non-celebrity" case.
+Compared \figref{fig:supp_comp_recontextual} with \figref{fig:sdxl_failed},
+our method can successfully generate the corresponding input IDs for this setting.
+
+\begin{figure}
+  \centering  \includegraphics[width=0.48\textwidth]{figures/sdxl_failed.pdf}
+  \caption{\textbf{Two examples that are unrecognizable by the SDXL.} We replaced two types of text prompts (\eg, name and position) but were unable to prompt the SDXL to generate Mira Murati and Ilya Sutskever.}
+  \label{fig:sdxl_failed}
+  
+\end{figure}
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.98\textwidth]{figures/supp_comp_recontext_user_study.pdf}
+  \caption{\textbf{More visual examples for recontextualization setting.}
+ Our method not only provides high ID fidelity but also retains text editing capabilities.
+ We randomly sample three images for each prompt. \textit{(Zoom-in for the best view)}
+ }
+  \label{fig:supp_comp_recontext_user_study}
+\end{figure*}
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.98\textwidth]{figures/supp_comp_recontextual.pdf}
+  \caption{\textbf{More visual examples for recontextualization setting.}
+ Our method not only provides high ID fidelity but also retains text editing capabilities.
+ We randomly sample three images for each prompt. \textit{(Zoom-in for the best view)
+ }
+ }
+  \label{fig:supp_comp_recontextual}
+\end{figure*}
+
+
+
+
+
+
+
+
+\paragraph{Bringing person in artwork/old photo into reality.}
+\figref{fig:supp_comp_oldphoto}-\ref{fig:supp_comp_painting} demonstrate the ability of our method to bring past celebrities back to reality.
+It is worth noticing that 
+our method can generate photo-realistic images from IDs in statues and oil paintings.
+Achieving this is quite challenging for the other methods we have compared.
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.98\textwidth]{figures/supp_comp_oldphoto.pdf}
+  \caption{\textbf{More visual examples for bringing person in old-photo back to life.}
+ Our method can generate high-quality images.
+  We randomly sample three images for each prompt. \textit{(Zoom-in for the best view)}
+ }
+  \label{fig:supp_comp_oldphoto}
+\end{figure*}
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.98\textwidth]{figures/supp_comp_painting.pdf}
+  \caption{\textbf{More visual examples for bringing person in artworks back to life.}
+ Our PhotoMaker can generate photo-realistic images while other methods are hard to achieve.
+We randomly sample three images for each prompt. \textit{(Zoom-in for the best view)}
+ }
+  \label{fig:supp_comp_painting}
+\end{figure*}
+
+
+
+
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.9\textwidth]{figures/supp_comp_agegender.pdf}
+  \caption{\textbf{More visual examples for changing age or gender for each ID.}
+ Our PhotoMaker, when modifying the gender and age of the input ID, effectively retains the characteristics of the face ID and allows for textual manipulation.
+   We randomly sample three images for each prompt. \textit{(Zoom-in for the best view)}
+ }
+  \label{fig:comp_agegender}
+\end{figure*}
+
+
+\begin{figure*}
+  \centering  \includegraphics[width=0.9\textwidth]{figures/supp_comp_idmix.pdf}
+  \caption{\textbf{More visual results for identity mixing applications.}
+  Our PhotoMaker can maintain the characteristics of both input IDs in the new generated ID image, while providing high-quality and text-compatible generation results.
+    We randomly sample three images for each prompt. \textit{(Zoom-in for the best view)}
+  }
+  \label{fig:comp_idmix}
+\end{figure*}
+
+
+
+\paragraph{Changing age or gender.}
+We provide more visual results for changing age or gender in \figref{fig:comp_agegender}.
+As mentioned in the main paper, 
+we only need to change the class word when we conduct such an application.
+In the generated ID images changed in terms of age or gender, our method can well preserve the characteristics in the original ID.
+
+
+\paragraph{Identity mixing.}
+We provide more visual results for identity mixing application in \figref{fig:comp_idmix}.
+Benefiting from our stacked ID embedding, our method can effectively blend the characteristics of different IDs to form a new ID. Subsequently, we can generate text controlled based on this new ID.
+Additionally, our method provides great flexibility during the identity mixing, as can be seen in \figref{fig:idmix_image}-\ref{fig:idmix_promptweight}.
+More importantly, we have explored in the main paper that existing methods struggle to achieve this application.
+Conversely, our PhotoMaker opens up a multitude of possibilities.
+
+
+
+
+
+\section{Limitations}
+
+First, our method only focuses on maintaining the ID information of a single generated person in the image, and cannot control multiple IDs of generated persons in one image simultaneously.
+Second, our method excels at generating half-length portraits, but is relatively not good at generating full-length portraits.
+Third, the age transformation ability of our method is not as precise as some GAN-based methods~\cite{alaluf2021matter}. 
+If the users need more precise control, modifications to the captions of the training dataset may be required.
+Finally, our method is based on the SDXL and the dataset we constructed, so it will also inherit their biases.
+
+\section{Broader Impact}
+In this paper, we introduce a novel method capable of generating high-quality human images while maintaining a high degree of similarity to the input identity. 
+At the same time, our method can also satisfy high efficiency, decent facial generation diversity, and good controllability.
+
+For the academic community, our method provides a strong baseline for personalized generation. 
+Our data creation pipeline enables more diverse datasets with varied poses, actions, and backgrounds, which can be instrumental in developing more robust and generalizable computer vision models.
+
+In the realm of practical applications, our technique has the potential to revolutionize industries such as entertainment, where it can be used to create realistic characters for movies or video games without the need for extensive CGI work.
+It can also be beneficial in virtual reality, providing more immersive and personalized experiences by allowing users to see themselves in different scenarios.
+It is worth noticing that everyone can rely on our PhotoMaker to quickly customize their own digital portraits.
+
+However, we acknowledge the ethical considerations that arise with the ability to generate human images with high fidelity.
+The proliferation of such technology may lead to a surge in the inappropriate use of generated portraits, malicious image tampering, and the spreading of false information.
+Therefore, we stress the importance of developing and adhering to ethical guidelines and using this technology responsibly. 
+We hope that our contribution will spur further discussion and research into the safe and ethical use of human generation in computer vision.

@@ -1,0 +1,317 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{table*}[]\small
+\caption{Factuality Evaluation of LLMs. This table lists the benchmarks that used in the enhancement work. The column `Human Eval' denotes if the evaluation incorporated human evaluation. The `Granularity' column specifies the level of evaluation, with token-level (T) and sentence-level (S) distinctions.}
+\centering
+\label{tab:eval-table2}
+\vspace{-2mm}
+\begin{adjustbox}{max width=\textwidth}
+  \setlength{\tabcolsep}{1.2mm}
+    \renewcommand{\arraystretch}{0.88}
+{
+
+\begin{tabular}{llllclc}
+\toprule
+Reference & Task & Dataset & Metrics & \makecell[l]{Human\\Eval} & Evaluated LLMs & Granularity \\
+\midrule 
+\begin{tabular}[c]{@{}l@{}}
+Retro\\
+\citep{borgeaud2022improving} 
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} QA, \\Language\\Modeling\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+MassiveText, \\
+Curation Corpus, \\
+Wikitext103, \\
+Lambada, \\
+C4,Pile, NQ
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+PPL, \\ACC, \\Exact Match
+\end{tabular} &
+   \checkmark&
+\begin{tabular}[c]{@{}l@{}} 
+Retro
+\end{tabular} &
+T 
+\\
+\hline
+\begin{tabular}[c]{@{}l@{}} 
+GenRead\\
+ \citep{yu2023generate} 
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} QA, \\ Dialogue, \\ Fact Checking \end{tabular} &
+%\makecell[l]{ NQ, TQ, WebQ, \\FEVER, \\FM2, WoW}&
+\begin{tabular}[c]{@{}l@{}} NQ, TQ, WebQ, \\FEVER, \\FM2, WoW  \end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+EM, ACC, \\F1, Rouge-L
+\end{tabular} &
+   &
+   \begin{tabular}[c]{@{}l@{}} 
+GPT3.5, Codex\\GPT-3, Gopher\\FLAN, GLaM\\PaLM\end{tabular} &
+S 
+\\
+\hline
+\begin{tabular}[c]{@{}l@{}}
+GopherCite\\ \citep{menick2022teaching}  
+\end{tabular}
+&
+\begin{tabular}[c]{@{}l@{}} Self-supported QA\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+NQ, ELI5, \\
+ TruthfulQA\\
+(Health\\Law, Fiction\\ Conspiracies)
+
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+Human Score
+\end{tabular} &
+   \checkmark&
+   \begin{tabular}[c]{@{}l@{}} 
+GopherCite
+\end{tabular} &
+S 
+\\
+\hline
+\citet{trivedi-etal-2023-interleaving} &
+\begin{tabular}[c]{@{}l@{}} 
+ QA
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+HotpotQA, IIRC\\2WikiMultihopQA, \\MuSiQue(music)
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+Retrieval recall, \\
+Answer F1
+\end{tabular} &
+ &
+ \begin{tabular}[c]{@{}l@{}} 
+ GPT-3\\
+FLAN-T5
+ \end{tabular} &
+  \begin{tabular}[c]{@{}l@{}} 
+ S/
+T
+ \end{tabular} 
+ \\
+\hline
+ \citet{peng2023check} &
+\begin{tabular}[c]{@{}l@{}} 
+QA, \\
+Dialogue
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+DSTC7 track2, \\
+DSTC11 track5, \\
+OTT-QA
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+ROUGE, chrF, \\
+BERTScore, \\
+Usefulness, \\
+Humanness...
+\end{tabular} &
+\checkmark &
+ChatGPT &
+  \begin{tabular}[c]{@{}l@{}} 
+ S/
+T
+ \end{tabular} 
+ \\
+\hline
+\begin{tabular}[c]{@{}l@{}}
+CRITIC\\
+\citep{gou2023critic}
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+QA,\\Toxicity Reduction
+ \end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+ AmbigNQ, \\TriviaQA, \\HotpotQA, 
+\\RealToxicityPrompts
+ \end{tabular}  &
+ \begin{tabular}[c]{@{}l@{}}
+Exact Match, \\
+maximum toxicity, \\
+perplexity, \\
+n-gram diversity, \\
+AUROC...,
+\end{tabular} &
+&
+\begin{tabular}[c]{@{}l@{}}
+GPT-3.5\\
+ChatGPT
+\end{tabular} &
+T 
+\\
+\hline
+\citet{khot2023decomposed} &
+\begin{tabular}[c]{@{}l@{}}
+QA, \\
+long-context\\ QA
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+CommaQA-E, \\
+2WikiMultihopQA, \\ MuSiQue, \\HotpotQA
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+Exact Match, \\
+Answer F1
+\end{tabular} &
+&
+\begin{tabular}[c]{@{}l@{}}
+GPT-3\\
+FLAN-T5
+\end{tabular} &
+T 
+\\
+\hline
+\begin{tabular}[c]{@{}l@{}} 
+ReAct\\
+\citep{yao2023react} 
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+QA,\\ Fact Verification 
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+HotpotQA, \\FEVER
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+Exact Match, \\
+ACC
+\end{tabular} &
+ &
+\begin{tabular}[c]{@{}l@{}}
+PaLM\\
+GPT-3
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+S/T
+\end{tabular}
+\\
+\hline
+\citet{jiang2023active} &
+\begin{tabular}[c]{@{}l@{}}
+QA, \\Commonsense\\Reasoning, \\
+long-form QA...
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+2WikiMultihopQA, \\StrategyQA, 
+\\ASQA, WikiAsp
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+Exact Match, \\
+Disambig-F1, \\ROUGE, \\
+entity F1...
+\end{tabular} &
+&
+GPT-3.5 &
+T 
+\\
+\hline
+\citet{lee2022factuality} &
+\begin{tabular}[c]{@{}l@{}}
+Open-ended\\Generation 
+\end{tabular}&
+FEVER &
+\begin{tabular}[c]{@{}l@{}} 
+Entity score, \\
+Entailment\\Ratio, ppl...
+\end{tabular}&
+ &
+ Megatron-LM &
+ T
+\\
+\hline
+\begin{tabular}[c]{@{}l@{}}
+SAIL\\
+\citep{luo2023sail} 
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+QA,\\
+Fact Checking 
+\end{tabular}&
+UniLC&
+\begin{tabular}[c]{@{}l@{}} 
+ACC\\ F1
+\end{tabular}&
+&
+\begin{tabular}[c]{@{}l@{}}
+LLaMA
+Vicuna\\
+SAIL
+\end{tabular}&
+T
+\\
+\hline
+\citet{he2022rethinking} &
+\begin{tabular}[c]{@{}l@{}} 
+Commonsense\\ Reasoning, \\Temporal\\ Reasoning, \\
+Tabular\\Reasoning
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+StrategyQA, \\ TempQuestions, \\ IN-FOTABS
+\end{tabular}&
+ACC&
+&
+GPT-3 &
+T
+\\
+\hline
+\citet{pan-etal-2023-fact} &
+Fact Checking&
+\begin{tabular}[c]{@{}l@{}}
+HOVER \\ FEVEROUS-S
+\end{tabular}&
+Macro-F1 &
+&
+\begin{tabular}[c]{@{}l@{}}
+Codex\\
+FLAN-T5
+\end{tabular}&
+S
+\\
+\hline
+\citet{multiagent_debate}&
+\begin{tabular}[c]{@{}l@{}} 
+Biography,\\
+MMLU
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+Unnamed\\Biography\\Dataset, \\
+MMLU
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+ChatGPT\\Evaluator, \\ACC
+\end{tabular}&
+&
+\begin{tabular}[c]{@{}l@{}} 
+Bard\\ChatGPT
+\end{tabular}&
+S
+\\
+\hline 
+\citet{asai2023selfrag} &
+\begin{tabular}[c]{@{}l@{}} 
+QA,\\
+CItation 
+Generation
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+PopQA,\\Pubhealth,\\ASQA,\\ARC,\\Unamed\\Biography
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+ACC,\\Factscore,\\Exact Match,\\
+ROUGE,\\MAUVE...
+\end{tabular}&
+&
+\begin{tabular}[c]{@{}l@{}} 
+LLaMA2\\ChatGPT\\Perplexity.ai\\Alpaca\\SAIL
+\end{tabular}&
+S/T
+\\
+    
+\bottomrule
+\end{tabular}}
+\end{adjustbox}
+\end{table*}

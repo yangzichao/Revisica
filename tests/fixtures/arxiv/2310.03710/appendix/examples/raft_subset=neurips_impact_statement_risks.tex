@@ -1,0 +1,48 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Read the impact statement and the title of the paper carefully. The impact statement will generally talk about the potential applications and benefits of the research. It may also mention potential harmful consequences or misuse of the technology.
+
+2. Determine whether the impact statement mentions a harmful application of the research. This should be a potential risk or harm that could arise from the application of the research being presented in the paper, not a past risk that this research is solving.
+
+3. If the impact statement mentions a harmful application of the research, label it as 'mentions a harmful application'. If it does not, label it as 'doesn't mention a harmful application'.
+
+4. Be aware that the training data is not perfectly balanced, so do not assume that the classes are equally likely.
+
+5. Be careful not to be influenced by the title of the paper. The label should be based solely on the content of the impact statement.
+
+6. Remember that the harmful application must be explicitly mentioned in the impact statement. Do not infer or speculate about potential harms that are not directly stated.
+
+7. Make sure to label the unlabeled test data based on the same criteria.
+
+Impact statement: LLP has been discussed as a model for summarizing a fully labeled dataset for public dissemination. The idea is that individual labels are not disclosed, so some degree of privacy is retained. As we show, consistent classification is still possible in this setting. If the two class-conditional distributions are nonoverlapping, labels of training instances can be recovered with no uncertainty by an optimal classifier. If the class-conditional distributions have some overlap, training instances in the nonoverlapping region can still be labeled with no uncertainty, while training instances in the overlapping regions can have their labels guessed with some uncertainty, depending on the degree of overlap.
+
+Paper title: Learning from Label Proportions: A Mutual Contamination Framework
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The impact statement discusses the potential application of the research presented in the paper, which is a model for summarizing a fully labeled dataset for public dissemination. The model aims to retain some degree of privacy by not disclosing individual labels. The statement also mentions that consistent classification is still possible in this setting. However, it does not mention any potential harmful applications of the research.
+
+Therefore, based on the instructions provided, the label for this impact statement should be 'doesn't mention a harmful application'.
+
+Answer: Doesn't mention a harmful application.
+
+Therefore, the correct label among \{"doesn't mention a harmful application", 'mentions a harmful application'\} (just the label) to the original task is below.
+
+Label: Doesn't mention a harmful application.
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Neurips Impact Statement).}
+\label{fig:raft_subset=neurips_impact_statement_risks_example}
+\end{figure*}

@@ -1,0 +1,27 @@
+\begin{table*}[t]
+    \centering
+    \caption{\textbf{Multi-token prediction improves performance and unlocks efficient byte level training.} We compare models with 7B parameters trained from scratch on 200B and on 314B bytes of code on the MBPP \citep{austin2021program}, HumanEval \citep{chen2021evaluating} and APPS \citep{hendrycks2021measuring} benchmarks. Multi-token prediction largely outperforms next token prediction on these settings. All numbers were calculated using the estimator from \citet{chen2021evaluating} based on 200 samples per problem. The temperatures were chosen optimally (based on test scores; i.e. these are oracle temperatures) for each model, dataset and pass@k and are reported in Table~\ref{tab:optimal_temps}.}
+    \label{tab:future_tokens_results}
+\begin{tabular}{cccccccccccc}
+\toprule
+ \multirow[c]{2}{*}{Training data} & \multirow[c]{2}{*}{Vocabulary} & \multirow[c]{2}{*}{n} & \multicolumn{3}{c}{MBPP} & \multicolumn{3}{c}{HumanEval} & \multicolumn{3}{c}{APPS/Intro} \\
+ \cmidrule(l){4-6}\cmidrule(l){7-9} \cmidrule(l){10-12}
+ &  &  & @1 & @10 & @100 & @1 & @10 & @100 & @1 & @10 & @100 \\
+\midrule
+\multirow[c]{4}{*}{\shortstack{313B bytes\\(0.5 epochs)}} & \multirow[c]{4}{*}{bytes} & 1 & 19.3 & 42.4 & 64.7 & 18.1 & 28.2 & 47.8 & 0.1 & 0.5 & 2.4 \\
+ &  & 8 & \bfseries 32.3 & \bfseries 50.0 & \bfseries 69.6 & \bfseries 21.8 & \bfseries 34.1 & \bfseries 57.9 & \bfseries 1.2 & \bfseries 5.7 & \bfseries 14.0 \\
+ &  & 16 & 28.6 & 47.1 & 68.0 & 20.4 & 32.7 & 54.3 & 1.0 & 5.0 & 12.9 \\
+ &  & 32 & 23.0 & 40.7 & 60.3 & 17.2 & 30.2 & 49.7 & 0.6 & 2.8 & 8.8 \\
+ \midrule
+\multirow[c]{5}{*}{\shortstack{200B tokens\\(0.8 epochs)}} & \multirow[c]{5}{*}{32k tokens} & 1 & 30.0 & 53.8 & 73.7 & 22.8 & 36.4 & 62.0 & 2.8 & 7.8 & 17.4 \\
+ &  & 2 & 30.3 & 55.1 & 76.2 & 22.2 & 38.5 & 62.6 & 2.1 & 9.0 & 21.7 \\
+ &  & 4 & \bfseries 33.8 & \bfseries 55.9 & \bfseries 76.9 & \bfseries 24.0 & \bfseries 40.1 & \bfseries 66.1 & 1.6 & 7.1 & 19.9 \\
+ &  & 6 & 31.9 & 53.9 & 73.1 & 20.6 & 38.4 & 63.9 & \bfseries 3.5 & \bfseries 10.8 & \bfseries 22.7 \\
+ &  & 8 & 30.7 & 52.2 & 73.4 & 20.0 & 36.6 & 59.6 & 3.5 & 10.4 & 22.1 \\
+ \midrule
+\multirow[c]{2}{*}{\shortstack{1T tokens\\(4 epochs)}} & \multirow[c]{2}{*}{32k tokens} & 1 & 40.7 & 65.4 & 83.4 & 31.7 &  57.6 & 83.0 & \bfseries 5.4 & \bfseries 17.8 & \bfseries 34.1 \\
+ &  & 4 & \bfseries 43.1 & 65.9 &  83.7 & 31.6 & 57.3 & \bfseries 86.2 & 4.3 & 15.6 & 33.7 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+

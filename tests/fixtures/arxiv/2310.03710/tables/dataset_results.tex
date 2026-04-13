@@ -1,0 +1,343 @@
+\begin{table}[h!]
+    \caption[table]{Results of zero-shot, zero-shot CoT, and \zeroshotmid\ \method\ on Vicuna-13b, Llama-2-7b-chat, Llama-2-13b-chat, Llama-2-70b-chat, and GPT-3.5 Turbo across \NumDatasets\ datasets and \NumSubsets\ subsets.}
+\end{table}
+\vskip -0.45in
+~\\
+\begingroup
+\setlength\tabcolsep{9.25pt}
+\fontsize{5.53pt}{7.8pt}\selectfont
+
+
+\setlength\LTleft{0pt}            %
+\setlength\LTright{0pt}           %
+
+\begin{longtable} {@{}ccclccc@{}}
+\label{table:results-numerical-table}
+% \vskip 0.1in 
+\\
+\toprule
+\multirow{2}{*}{Dataset} & \multirow{2}{*}{Subset} & \multirow{2}{*}{Task-Specific Model} & \multicolumn{1}{c}{\multirow{2}{*}{Model}} & \multicolumn{3}{c}{Results}      \\ \cmidrule(l){5-7} 
+                         &                         & & \multicolumn{1}{c}{}                       & Zero-Shot(\%) & Zero-Shot CoT(\%) & \zeroshotcap\ \method(\%) \\ \midrule
+\endfirsthead
+
+\toprule
+\multirow{2}{*}{Dataset} & \multirow{2}{*}{Subset} & \multirow{2}{*}{Task-Specific Model} & \multicolumn{1}{c}{\multirow{2}{*}{Model}} & \multicolumn{3}{c}{Results}      \\ \cmidrule(l){5-7} 
+                         &                        & & \multicolumn{1}{c}{}                       & Zero-Shot(\%) & Zero-Shot CoT(\%) & \zeroshotcap\ \method(\%) \\ \midrule
+\endhead
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}AddSub\\ \citep{koncel-kedziorski-etal-2016-mawps}\end{tabular}}   & \multirow{5}{*}{-}  & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}95.7\\ \citep{zhao2023automatic}\end{tabular}}    & Vicuna-13b  & 10.9 & 29.1 & 60.8\\
+                         &                         &                         & Llama-2-7b-chat & 50.4 & 56.7 & 63.8\\
+                         &                         &                         & Llama-2-13b-chat & 52.7 & 52.4 & 65.1\\
+                         &                         &                         & Llama-2-70b-chat & 36.2 & 73.2 & 79.5\\
+                         &                         &                         & GPT-3.5 Turbo & 78.7 & 79.0 & 88.1\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}AQuA\\ \citep{ling2017program}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}79.9\\ \citep{zheng2023progressivehint}\end{tabular}} & Vicuna-13b & 25.6 & 16.5 & 24.0\\
+&                         &                         &Llama-2-7b-chat & 20.9 & 1.2 & 22.0\\
+&                         &                         &Llama-2-13b-chat & 18.9 & 24.0 & 25.2\\
+&                         &                         &Llama-2-70b-chat & 19.7 & 35.8 & 37.8\\
+&                         &                         &GPT-3.5 Turbo & 16.5 & 60.2 & 57.9\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}BoolQ\\ \citep{clark2019boolq}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}92.4\\ \citep{zoph2022stmoe}\end{tabular}} & Vicuna-13b & 77.2 & 71.0 & 74.2\\
+&                         &                         &Llama-2-7b-chat & 77.5 & 76.4 & 72.8\\
+&                         &                         &Llama-2-13b-chat & 79.9 & 76.1 & 76.1\\
+&                         &                         &Llama-2-70b-chat & 78.5 & 83.2 & 84.6\\
+&                         &                         &GPT-3.5 Turbo & 74.0 & 82.1 & 83.6\\ \midrule
+
+& \multirow{5}{*}{Average across all 9 subsets}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}68.4\\ \citep{liang2022holistic}\end{tabular}} & Vicuna-13b & 56.1 & 51.2 & 60.6\\
+&                         &                         &Llama-2-7b-chat & 57.7 & 54.3 & 58.1\\
+&                         &                         &Llama-2-13b-chat & 66.1 & 52.0 & 64.7\\
+&                         &                         &Llama-2-70b-chat & 66.9 & 57.4 & 65.5\\
+&                         &                         &GPT-3.5 Turbo & 45.0 & 64.4 & 67.5\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{All}      & \multirow{5}{*}{-} & Vicuna-13b & 60.3 & 51.6 & 63.6\\
+&                         &                         &Llama-2-7b-chat & 65.3 & 58.8 & 59.6\\
+&                         &                         &Llama-2-13b-chat & 63.9 & 59.1 & 59.0\\
+&                         &                         &Llama-2-70b-chat & 64.8 & 61.4 & 70.2\\
+&                         &                         &GPT-3.5 Turbo & 52.1 & 67.7 & 68.8\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Black}      & \multirow{5}{*}{-} & Vicuna-13b & 55.0 & 51.4 & 61.1\\
+&                         &                         &Llama-2-7b-chat & 54.7 & 51.1 & 64.3\\
+&                         &                         &Llama-2-13b-chat & 71.1 & 52.7 & 68.1\\
+&                         &                         &Llama-2-70b-chat & 71.9 & 58.6 & 68.2\\
+&                         &                         &GPT-3.5 Turbo & 44.5 & 66.7 & 63.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Christian}      & \multirow{5}{*}{-} & Vicuna-13b & 59.5 & 54.4 & 61.4\\
+&                         &                         &Llama-2-7b-chat & 62.0 & 58.7 & 66.6\\
+&                         &                         &Llama-2-13b-chat & 66.4 & 48.4 & 62.8\\
+&                         &                         &Llama-2-70b-chat & 65.1 & 56.2 & 72.7\\
+&                         &                         &GPT-3.5 Turbo & 53.2 & 67.5 & 74.7\\ \cmidrule(l){2-7}
+\multirow{10}{*}{\begin{tabular}[c]{@{}c@{}}CivilComments\\ \citep{wilds2021, borkan2019nuanced}\end{tabular}}   & \multirow{5}{*}{Female}      & \multirow{5}{*}{-} & Vicuna-13b & 55.1 & 48.3 & 65.1\\
+&                         &                         &Llama-2-7b-chat & 56.3 & 54.6 & 57.1\\
+&                         &                         &Llama-2-13b-chat & 68.6 & 52.6 & 71.0\\
+&                         &                         &Llama-2-70b-chat & 72.2 & 55.8 & 55.1\\
+&                         &                         &GPT-3.5 Turbo & 47.1 & 67.0 & 71.2\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{LGBTQ}      & \multirow{5}{*}{-} & Vicuna-13b & 55.1 & 49.0 & 57.3\\
+&                         &                         &Llama-2-7b-chat & 53.8 & 56.6 & 56.1\\
+&                         &                         &Llama-2-13b-chat & 63.4 & 49.5 & 64.0\\
+&                         &                         &Llama-2-70b-chat & 68.9 & 56.7 & 64.7\\
+&                         &                         &GPT-3.5 Turbo & 41.6 & 62.3 & 65.6\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Male}      & \multirow{5}{*}{-} & Vicuna-13b & 57.5 & 51.0 & 54.4\\
+&                         &                         &Llama-2-7b-chat & 59.4 & 54.9 & 55.6\\
+&                         &                         &Llama-2-13b-chat & 67.1 & 55.7 & 60.8\\
+&                         &                         &Llama-2-70b-chat & 66.8 & 56.3 & 66.7\\
+&                         &                         &GPT-3.5 Turbo & 49.2 & 66.0 & 67.7\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Muslim}      & \multirow{5}{*}{-} & Vicuna-13b & 52.6 & 51.8 & 60.0\\
+&                         &                         &Llama-2-7b-chat & 55.3 & 52.7 & 53.2\\
+&                         &                         &Llama-2-13b-chat & 63.5 & 52.3 & 67.0\\
+&                         &                         &Llama-2-70b-chat & 64.3 & 55.7 & 65.4\\
+&                         &                         &GPT-3.5 Turbo & 40.4 & 61.0 & 68.2\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Other Religions}      & \multirow{5}{*}{-} & Vicuna-13b & 57.9 & 52.1 & 63.6\\
+&                         &                         &Llama-2-7b-chat & 60.6 & 51.7 & 58.9\\
+&                         &                         &Llama-2-13b-chat & 69.0 & 46.5 & 68.1\\
+&                         &                         &Llama-2-70b-chat & 67.3 & 56.3 & 67.0\\
+&                         &                         &GPT-3.5 Turbo & 41.2 & 60.9 & 68.4\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{White}      & \multirow{5}{*}{-} & Vicuna-13b & 51.7 & 51.8 & 58.6\\
+&                         &                         &Llama-2-7b-chat & 52.0 & 49.9 & 51.0\\
+&                         &                         &Llama-2-13b-chat & 61.8 & 51.6 & 61.7\\
+&                         &                         &Llama-2-70b-chat & 60.9 & 59.4 & 59.2\\
+&                         &                         &GPT-3.5 Turbo & 36.1 & 60.3 & 60.2\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}CNN/Daily Mail\\ \citep{see2017point}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}21.5\\ \citep{zhang2020pegasus}\end{tabular}} & Vicuna-13b & 15.0 & 12.3 & 12.6\\
+&                         &                         &Llama-2-7b-chat & 14.1 & 13.8 & 13.4\\
+&                         &                         &Llama-2-13b-chat & 14.2 & 12.5 & 13.0\\
+&                         &                         &Llama-2-70b-chat & 14.4 & 13.4 & 13.4\\
+&                         &                         &GPT-3.5 Turbo & 17.4 & 15.8 & 15.0\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}Coin Flip\\ \citep{wei2023chainofthought}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}99.9\\ \citep{zhang2022automatic}\end{tabular}} & Vicuna-13b & 49.0 & 27.0 & 52.4\\
+&                         &                         &Llama-2-7b-chat & 0.0 & 15.8 & 62.2\\
+&                         &                         &Llama-2-13b-chat & 0.0 & 18.8 & 65.0\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 5.6 & 99.4\\
+&                         &                         &GPT-3.5 Turbo & 32.6 & 61.8 & 95.2\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}CommonsenseQA\\ \citep{talmor2019commonsenseqa}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}91.2\\ \citep{xu2022human}\end{tabular}} & Vicuna-13b & 60.4 & 48.0 & 61.8\\
+&                         &                         &Llama-2-7b-chat & 60.5 & 16.4 & 54.3\\
+&                         &                         &Llama-2-13b-chat & 63.1 & 60.0 & 62.6\\
+&                         &                         &Llama-2-70b-chat & 71.6 & 62.4 & 72.8\\
+&                         &                         &GPT-3.5 Turbo & 77.2 & 72.1 & 74.1\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}Date Understanding\\ \citep{srivastava2023imitation}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}91.2\\ \citep{anil2023palm}\end{tabular}} & Vicuna-13b & 63.2 & 50.8 & 60.8\\
+&                         &                         &Llama-2-7b-chat & 38.8 & 46.4 & 46.4\\
+&                         &                         &Llama-2-13b-chat & 45.2 & 57.2 & 56.4\\
+&                         &                         &Llama-2-70b-chat & 56.8 & 68.4 & 70.8\\
+&                         &                         &GPT-3.5 Turbo & 35.6 & 70.8 & 71.6\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}GSM8K\\ \citep{cobbe2021training}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}97.0\\ \citep{zhou2023solving}\end{tabular}} & Vicuna-13b & 2.3 & 14.7 & 19.8\\
+&                         &                         &Llama-2-7b-chat & 3.1 & 30.0 & 26.7\\
+&                         &                         &Llama-2-13b-chat & 5.2 & 32.6 & 32.5\\
+&                         &                         &Llama-2-70b-chat & 2.2 & 54.6 & 54.6\\
+&                         &                         &GPT-3.5 Turbo & 8.4 & 77.8 & 76.8\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}HellaSwag\\ \citep{zellers2019hellaswag}\end{tabular}}  & \multirow{5}{*}{-}       & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}95.3\\ \citep{openai2023gpt4}\end{tabular}} & Vicuna-13b & 45.5 & 39.9 & 49.9\\
+&                         &                         &Llama-2-7b-chat & 41.5 & 42.8 & 33.5\\
+&                         &                         &Llama-2-13b-chat & 59.7 & 43.0 & 46.8\\
+&                         &                         &Llama-2-70b-chat & 65.0 & 61.9 & 60.6\\
+&                         &                         &GPT-3.5 Turbo & 75.8 & 57.1 & 73.5\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}IMDB\\ \citep{maas-etal-2011-learning}\end{tabular}}  & \multirow{5}{*}{-}       & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}97.1\\ \citep{ding2021erniedoc}\end{tabular}} & Vicuna-13b & 5.5 & 69.5 & 94.2\\
+&                         &                         &Llama-2-7b-chat & 29.9 & 77.7 & 90.1\\
+&                         &                         &Llama-2-13b-chat & 41.2 & 78.4 & 90.6\\
+&                         &                         &Llama-2-70b-chat & 43.5 & 89.0 & 94.0\\
+&                         &                         &GPT-3.5 Turbo & 84.2 & 88.9 & 93.9\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}Last Letter Concatenation\\ \citep{wei2023chainofthought}\end{tabular}}  & \multirow{5}{*}{-}       & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}99.4\\ \citep{wei2023chainofthought}\end{tabular}} & Vicuna-13b & 2.4 & 8.4 & 25.0\\
+&                         &                         &Llama-2-7b-chat & 0.4 & 17.2 & 46.6\\
+&                         &                         &Llama-2-13b-chat & 2.4 & 62.2 & 68.2\\
+&                         &                         &Llama-2-70b-chat & 4.0 & 96.0 & 87.8\\
+&                         &                         &GPT-3.5 Turbo & 38.0 & 54.6 & 99.8\\ \midrule
+
+& \multirow{5}{*}{Average across all 5 subsets}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}60.9\\ \citep{liang2022holistic}\end{tabular}}  & Vicuna-13b & 44.1 & 44.2 & 44.5\\
+&                         &                         &Llama-2-7b-chat & 41.5 & 37.8 & 35.1\\
+&                         &                         &Llama-2-13b-chat & 46.8 & 45.8 & 46.6\\
+&                         &                         &Llama-2-70b-chat & 53.3 & 52.2 & 50.3\\
+&                         &                         &GPT-3.5 Turbo & 58.6 & 62.3 & 58.9\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Abstract Algebra}      & \multirow{5}{*}{-}  & Vicuna-13b & 31.0 & 30.0 & 29.0\\
+&                         &                         &Llama-2-7b-chat & 25.0 & 24.0 & 18.0\\
+&                         &                         &Llama-2-13b-chat & 30.0 & 30.0 & 33.0\\
+&                         &                         &Llama-2-70b-chat & 37.0 & 28.0 & 35.0\\
+&                         &                         &GPT-3.5 Turbo & 38.0 & 50.0 & 36.0\\ \cmidrule(l){2-7}
+\multirow{10}{*}{\begin{tabular}[c]{@{}c@{}}MMLU\\ \citep{hendrycks2021measuring}\end{tabular}}  & \multirow{5}{*}{College Chemistry}     & \multirow{5}{*}{-}   & Vicuna-13b & 37.0 & 37.0 & 29.0\\
+&                         &                         &Llama-2-7b-chat & 26.0 & 30.0 & 26.0\\
+&                         &                         &Llama-2-13b-chat & 31.0 & 35.0 & 29.0\\
+&                         &                         &Llama-2-70b-chat & 39.0 & 41.0 & 32.0\\
+&                         &                         &GPT-3.5 Turbo & 43.0 & 50.0 & 55.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Computer Security}     & \multirow{5}{*}{-}   & Vicuna-13b & 60.0 & 60.0 & 63.0\\
+&                         &                         &Llama-2-7b-chat & 57.0 & 56.0 & 48.0\\
+&                         &                         &Llama-2-13b-chat & 66.0 & 64.0 & 68.0\\
+&                         &                         &Llama-2-70b-chat & 64.0 & 73.0 & 72.0\\
+&                         &                         &GPT-3.5 Turbo & 75.0 & 80.0 & 78.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Econometrics}     & \multirow{5}{*}{-}   & Vicuna-13b & 23.7 & 29.8 & 31.6\\
+&                         &                         &Llama-2-7b-chat & 30.7 & 22.8 & 25.4\\
+&                         &                         &Llama-2-13b-chat & 27.2 & 28.1 & 27.2\\
+&                         &                         &Llama-2-70b-chat & 39.5 & 43.0 & 40.4\\
+&                         &                         &GPT-3.5 Turbo & 53.0 & 44.7 & 44.7\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{US Foreign Policy}     & \multirow{5}{*}{-}   & Vicuna-13b & 69.0 & 64.0 & 70.0\\
+&                         &                         &Llama-2-7b-chat & 69.0 & 56.0 & 58.0\\
+&                         &                         &Llama-2-13b-chat & 80.0 & 72.0 & 76.0\\
+&                         &                         &Llama-2-70b-chat & 87.0 & 76.0 & 72.0\\
+&                         &                         &GPT-3.5 Turbo & 84.0 & 87.0 & 81.0\\ \midrule
+
+\multirow{10}{*}{\begin{tabular}[c]{@{}c@{}}MS MARCO\\ \citep{bajaj2018ms}\end{tabular}}  & \multirow{5}{*}{Regular}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}47.2\\ \citep{liang2022holistic}\end{tabular}}   & Vicuna-13b &  11.7&  14.0& 19.0\\
+&                         &                         &Llama-2-7b-chat & 17.5 & 10.6 & 19.2\\
+&                         &                         &Llama-2-13b-chat & 7.7 & 12.4 & 18.8\\
+&                         &                         &Llama-2-70b-chat & 15.6 & 13.2 & 20.4\\
+&                         &                         &GPT-3.5 Turbo & 26.0 & 20.5 & 30.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{TREC}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}76.2\\ \citep{liang2022holistic}\end{tabular}}   & Vicuna-13b &  27.9 & 31.0 & 34.6\\
+&                         &                         &Llama-2-7b-chat & 32.8 & 26.3 & 33.3\\
+&                         &                         &Llama-2-13b-chat & 20.9 & 31.1 & 38.9\\
+&                         &                         &Llama-2-70b-chat & 37.8 & 28.7 & 33.5\\
+&                         &                         &GPT-3.5 Turbo & 47.7 & 38.1 & 54.1\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}MultiArith\\ \citep{roy2016solving}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}100.0\\ \citep{wang2023selfconsistency}\end{tabular}}  & Vicuna-13b & 3.8 & 33.7 & 56.3\\
+&                         &                         &Llama-2-7b-chat & 4.8 & 60.5 & 65.2\\
+&                         &                         &Llama-2-13b-chat & 7.3 & 73.0 & 76.2\\
+&                         &                         &Llama-2-70b-chat & 5.8 & 88.3 & 88.2\\
+&                         &                         &GPT-3.5 Turbo & 50.3 & 96.7 & 96.5\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}NarrativeQA\\ \citep{kocisky-etal-2018-narrativeqa}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}77.0\\ \citep{liang2022holistic}\end{tabular}}  & Vicuna-13b & 40.3 & 45.9 & 41.4\\
+&                         &                         &Llama-2-7b-chat & 38.8 & 55.6 & 61.1\\
+&                         &                         &Llama-2-13b-chat & 50.0 & 61.4 & 64.1\\
+&                         &                         &Llama-2-70b-chat & 45.9 & 62.3 & 65.0\\
+&                         &                         &GPT-3.5 Turbo & 49.1 & 67.7 & 65.2\\ \midrule
+
+\multirow{10}{*}{\begin{tabular}[c]{@{}c@{}}NaturalQuestions\\ \citep{kwiatkowski-etal-2019-natural}\end{tabular}}  & \multirow{5}{*}{NaturalQuestions (closed-book)}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}45.8\\ \citep{liang2022holistic}\end{tabular}}  & Vicuna-13b & 14.6 & 18.3 & 27.5\\
+&                         &                         &Llama-2-7b-chat & 15.3 & 21.2 & 27.3\\
+&                         &                         &Llama-2-13b-chat & 18.7 & 26.7 & 33.2\\
+&                         &                         &Llama-2-70b-chat & 17.0 & 33.1 & 35.0\\
+&                         &                         &GPT-3.5 Turbo & 23.5 & 40.6 & 39.7\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{NaturalQuestions (open-book)}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}77.0\\ \citep{liang2022holistic}\end{tabular}}   & Vicuna-13b & 39.3 & 47.2 & 54.5\\
+&                         &                         &Llama-2-7b-chat & 43.9 & 56.3 & 56.5\\
+&                         &                         &Llama-2-13b-chat & 43.3 & 61.7 & 64.5\\
+&                         &                         &Llama-2-70b-chat & 38.4 & 57.7 & 67.4\\
+&                         &                         &GPT-3.5 Turbo & 41.5 & 63.9 & 50.5\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}NewsQA\\ \citep{trischler2017newsqa}\end{tabular}}  & \multirow{5}{*}{-}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}73.6\\ \citep{joshi2020spanbert}\end{tabular}}   & Vicuna-13b & 37.2 & 27.2 & 33.7\\
+&                         &                         &Llama-2-7b-chat & 44.0 & 40.7 & 49.0\\
+&                         &                         &Llama-2-13b-chat & 40.9 & 45.5 & 51.5\\
+&                         &                         &Llama-2-70b-chat & 39.5 & 47.1 & 50.7\\
+&                         &                         &GPT-3.5 Turbo & 30.9 & 52.0 & 50.2\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}OpenBookQA\\ \citep{Mihaylov2018CanAS}\end{tabular}}  & \multirow{5}{*}{-}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}94.4\\ \citep{huang2022large}\end{tabular}}   & Vicuna-13b & 61.6 & 54.8 & 57.6\\
+&                         &                         &Llama-2-7b-chat & 56.8 & 57.0 & 56.2\\
+&                         &                         &Llama-2-13b-chat & 61.6 & 63.8 & 62.0\\
+&                         &                         &Llama-2-70b-chat & 73.8 & 75.0 & 70.4\\
+&                         &                         &GPT-3.5 Turbo & 81.6 & 78.6 & 79.2\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}QuAC\\ \citep{choi-etal-2018-quac}\end{tabular}}  & \multirow{5}{*}{-}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}64.1\\ \citep{huang2019flowqa}\end{tabular}}   & Vicuna-13b & 37.5 & 17.9 & 16.8\\
+&                         &                         &Llama-2-7b-chat & 40.8 & 18.0 & 13.4\\
+&                         &                         &Llama-2-13b-chat & 42.5 & 19.3 & 14.0\\
+&                         &                         &Llama-2-70b-chat & 46.8 & 15.6 & 16.6\\
+&                         &                         &GPT-3.5 Turbo & 38.6 & 33.1 & 34.7\\ \midrule
+
+& \multirow{5}{*}{Average across all 11 subsets}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}76.8\\ \citep{liang2022holistic}\end{tabular}}   & Vicuna-13b & 19.1 & 54.5 & 51.4\\
+&                         &                         &Llama-2-7b-chat & 21.8 & 39.1 & 47.3\\
+&                         &                         &Llama-2-13b-chat & 17.3 & 43.0 & 56.6\\
+&                         &                         &Llama-2-70b-chat & 6.8 & 19.8 & 57.0\\
+&                         &                         &GPT-3.5 Turbo & 68.2 & 78.0 & 68.9\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{ADE Corpus v2}      & \multirow{5}{*}{-}  & Vicuna-13b & 5.0 & 77.5 & 75.0\\
+&                         &                         &Llama-2-7b-chat & 0.0 & 60.0 & 45.0\\
+&                         &                         &Llama-2-13b-chat & 62.5 & 75.0 & 57.5\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 30.0 & 37.5\\
+&                         &                         &GPT-3.5 Turbo & 82.5 & 82.5 & 80.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Banking 77}     & \multirow{5}{*}{-}   & Vicuna-13b & 15.0 & 12.5 & 12.5\\
+&                         &                         &Llama-2-7b-chat & 20.0 & 15.0 & 2.0\\
+&                         &                         &Llama-2-13b-chat & 2.5 & 10.0 & 2.5\\
+&                         &                         &Llama-2-70b-chat & 7.5 & 17.5 & 12.5\\
+&                         &                         &GPT-3.5 Turbo & 45.0 & 65.0 & 45.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Neurips Impact Statement}      & \multirow{5}{*}{-}  & Vicuna-13b & 0.0 & 75.0 & 70.0\\
+&                         &                         &Llama-2-7b-chat & 7.5 & 7.5 & 45.0\\
+&                         &                         &Llama-2-13b-chat & 0.0 & 47.5 & 72.5\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 0.0 & 90.0\\
+&                         &                         &GPT-3.5 Turbo & 20.0 & 87.5 & 90.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{One Stop English}      & \multirow{5}{*}{-}  & Vicuna-13b & 17.5 & 25.0 & 22.5\\
+&                         &                         &Llama-2-7b-chat & 27.5 & 32.5 & 25.0\\
+&                         &                         &Llama-2-13b-chat & 17.5 & 27.5 & 37.5\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 32.5 & 37.5\\
+&                         &                         &GPT-3.5 Turbo & 35.0 & 35.0 & 25.0\\ \cmidrule(l){2-7}
+\multirow{10}{*}{\begin{tabular}[c]{@{}c@{}}RAFT\\ \citep{alex2022raft}\end{tabular}}  & \multirow{5}{*}{Overruling}      & \multirow{5}{*}{-}  & Vicuna-13b & 20.0 & 75.0 & 87.5\\
+&                         &                         &Llama-2-7b-chat & 2.5 & 55.0 & 77.5\\
+&                         &                         &Llama-2-13b-chat & 0.0 & 37.5 & 80.0\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 0.0 & 85.0\\
+&                         &                         &GPT-3.5 Turbo & 95.0 & 97.5 & 95.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Semiconductor Org Types}     & \multirow{5}{*}{-}   & Vicuna-13b & 30.0 & 25.0 & 40.0\\
+&                         &                         &Llama-2-7b-chat & 42.5 & 57.5 & 67.5\\
+&                         &                         &Llama-2-13b-chat & 0.0 & 52.5 & 90.0\\
+&                         &                         &Llama-2-70b-chat & 32.5 & 30.0 & 92.5\\
+&                         &                         &GPT-3.5 Turbo & 92.5 & 95.0 & 95.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Systematic Review Inclusion}     & \multirow{5}{*}{-}   & Vicuna-13b & 22.5 & 42.5 & 2.5\\
+&                         &                         &Llama-2-7b-chat & 65.0 & 40.0 & 15.0\\
+&                         &                         &Llama-2-13b-chat & 25.0 & 57.5 & 12.5\\
+&                         &                         &Llama-2-70b-chat & 15.0 & 2.5 & 7.5\\
+&                         &                         &GPT-3.5 Turbo & 85.0 & 95.0 & 12.5\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Tai Safety Research}      & \multirow{5}{*}{-}  & Vicuna-13b & 55.0 & 57.5 & 55.0\\
+&                         &                         &Llama-2-7b-chat & 57.5 & 60.0 & 45.0\\
+&                         &                         &Llama-2-13b-chat & 77.5 & 57.5 & 57.5\\
+&                         &                         &Llama-2-70b-chat & 20.0 & 80.0 & 60.0\\
+&                         &                         &GPT-3.5 Turbo & 77.5 & 72.5 & 65.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Terms of Service}      & \multirow{5}{*}{-}  & Vicuna-13b & 45.0 & 72.5 & 47.5\\
+&                         &                         &Llama-2-7b-chat & 17.5 & 40.0 & 55.0\\
+&                         &                         &Llama-2-13b-chat & 0.0 & 20.0 & 50.0\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 15.0 & 35.0\\
+&                         &                         &GPT-3.5 Turbo & 85.0 & 90.0 & 85.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Tweet Eval Hate}     & \multirow{5}{*}{-}   & Vicuna-13b & 0.0 & 70.0 & 70.0\\
+&                         &                         &Llama-2-7b-chat & 0.0 & 32.5 & 67.5\\
+&                         &                         &Llama-2-13b-chat & 0.0 & 40.0 & 80.0\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 0.0 & 85.0\\
+&                         &                         &GPT-3.5 Turbo & 47.5 & 50.0 & 80.0\\ \cmidrule(l){2-7}
+                         & \multirow{5}{*}{Twitter Complaints}      & \multirow{5}{*}{-}  & Vicuna-13b & 0.0 & 67.5 & 82.5\\
+&                         &                         &Llama-2-7b-chat & 0.0 & 30.0 & 57.5\\
+&                         &                         &Llama-2-13b-chat & 5.0 & 47.5 & 82.5\\
+&                         &                         &Llama-2-70b-chat & 0.0 & 10.0 & 85.0\\
+&                         &                         &GPT-3.5 Turbo & 85.0 & 87.5 & 85.0\\ \midrule
+
+& \multirow{5}{*}{Average across all 3 subsets}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}79.3\\ \citep{anil2023palm}\end{tabular}}   & Vicuna-13b & 20.0 & 20.1 & 18.0\\
+&                         &                         &Llama-2-7b-chat & 13.5 & 21.5 & 23.5\\
+&                         &                         &Llama-2-13b-chat & 7.6 & 22.7 & 23.9\\
+&                         &                         &Llama-2-70b-chat & 8.0 & 38.7 & 28.9\\
+&                         &                         &GPT-3.5 Turbo & 25.1 & 39.1 & 44.3\\ \cmidrule(l){2-7}
+\multirow{10}{*}{\begin{tabular}[c]{@{}c@{}}Shuffled Objects\\ \citep{srivastava2023imitation}\end{tabular}}  & \multirow{5}{*}{Five Objects}      & \multirow{5}{*}{-} & Vicuna-13b & 13.6 & 18.0 & 16.8\\
+&                         &                         &Llama-2-7b-chat & 17.6 & 17.2 & 22.0\\
+&                         &                         &Llama-2-13b-chat & 4.0 & 18.8 & 21.6\\
+&                         &                         &Llama-2-70b-chat & 6.4 & 40.0 & 28.0\\
+&                         &                         &GPT-3.5 Turbo & 18.8 & 35.6 & 34.8\\ \cmidrule(l){2-7}
+& \multirow{5}{*}{Seven Objects}      & \multirow{5}{*}{-} & Vicuna-13b & 15.2 & 15.6 & 10.8\\
+&                         &                         &Llama-2-7b-chat & 10.8 & 14.4 & 12.8\\
+&                         &                         &Llama-2-13b-chat & 6.8 & 16.8 & 16.8\\
+&                         &                         &Llama-2-70b-chat & 2.8 & 24.4 & 17.2\\
+&                         &                         &GPT-3.5 Turbo & 16.4 & 20.8 & 41.2\\ \cmidrule(l){2-7}
+& \multirow{5}{*}{Three Objects}      & \multirow{5}{*}{-} & Vicuna-13b & 31.2 & 26.8 & 26.4\\
+&                         &                         &Llama-2-7b-chat & 12.0 & 32.8 & 35.6\\
+&                         &                         &Llama-2-13b-chat & 12.0 & 32.4 & 33.2\\
+&                         &                         &Llama-2-70b-chat & 14.8 & 51.6 & 41.6\\
+&                         &                         &GPT-3.5 Turbo & 40.0 & 60.8 & 56.8\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}SingleEq\\ \citep{koncel-kedziorski-etal-2016-mawps}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}98.8\\ \citep{zhao2023automatic}\end{tabular}}  & Vicuna-13b & 11.0 & 29.1 & 63.4\\
+&                         &                         &Llama-2-7b-chat & 44.3 & 66.1 & 63.6\\
+&                         &                         &Llama-2-13b-chat & 46.9 & 51.0 & 65.0\\
+&                         &                         &Llama-2-70b-chat & 31.9 & 78.1 & 78.5\\
+&                         &                         &GPT-3.5 Turbo & 77.4 & 90.4 & 90.6\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}StrategyQA\\ \citep{geva2021did}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}90.4\\ \citep{anil2023palm}\end{tabular}}  & Vicuna-13b & 57.0 & 49.1 & 55.0\\
+&                         &                         &Llama-2-7b-chat & 53.5 & 55.2 & 52.4\\
+&                         &                         &Llama-2-13b-chat & 56.3 & 63.1 & 61.1\\
+&                         &                         &Llama-2-70b-chat & 60.9 & 68.6 & 67.2\\
+&                         &                         &GPT-3.5 Turbo & 59.2 & 67.7 & 69.0\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}SVAMP\\ \citep{patel2021nlp}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}93.7\\ \citep{zhao2023automatic}\end{tabular}}  & Vicuna-13b & 7.2 & 22.5 & 44.5\\
+&                         &                         &Llama-2-7b-chat & 27.2 & 44.3 & 49.3\\
+&                         &                         &Llama-2-13b-chat & 36.6 & 45.6 & 56.1\\
+&                         &                         &Llama-2-70b-chat & 22.2 & 75.1 & 68.8\\
+&                         &                         &GPT-3.5 Turbo & 63.5 & 81.1 & 80.8\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}TruthfulQA\\ \citep{lin-etal-2022-truthfulqa}\end{tabular}}  & \multirow{5}{*}{-}     & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}61.6\\ \citep{liang2022holistic}\end{tabular}}   & Vicuna-13b & 35.8 & 42.2 & 52.3\\
+&                         &                         &Llama-2-7b-chat & 32.7 & 45.4 & 43.6\\
+&                         &                         &Llama-2-13b-chat & 34.6 & 46.5 & 48.8\\
+&                         &                         &Llama-2-70b-chat & 46.0 & 57.2 & 62.4\\
+&                         &                         &GPT-3.5 Turbo & 57.0 & 60.1 & 68.3\\ \midrule
+
+\multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}XSUM\\ \citep{narayan2018dont}\end{tabular}}  & \multirow{5}{*}{-}      & \multirow{5}{*}{\begin{tabular}[c]{@{}c@{}}24.6\\ \citep{zhang2020pegasus}\end{tabular}}  & Vicuna-13b & 7.5 & 6.7 & 6.9\\
+&                         &                         &Llama-2-7b-chat & 7.0 & 6.3 & 6.5\\
+&                         &                         &Llama-2-13b-chat & 8.2 & 6.9 & 8.3\\
+&                         &                         &Llama-2-70b-chat & 9.0 & 8.5 & 8.6\\
+&                         &                         &GPT-3.5 Turbo & 13.2 & 9.5 & 8.8\\ \bottomrule
+
+\end{longtable}
+\endgroup
+
+\clearpage

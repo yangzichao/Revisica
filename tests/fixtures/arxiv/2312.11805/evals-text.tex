@@ -1,0 +1,181 @@
+ww\subsection{Text}
+\defcitealias{mgsm}{MGSM}
+\defcitealias{mmlu}{MMLU}
+\defcitealias{zellers2019hellaswag}{HellaSwag}
+\defcitealias{cobbe2021training}{GSM8K}
+\defcitealias{hendrycks2021measuring}{MATH}
+\defcitealias{bigbench}{BigBench}
+\defcitealias{chen2021evaluating}{HumanEval}
+\defcitealias{Dua2019DROP}{DROP}
+
+
+\subsubsection{Academic Benchmarks}
+\label{sec:benchmarks}
+We compare pre- and post-trained Gemini Pro and Ultra models to a suite of external LLMs and our previous best model PaLM 2 across a series of text-based academic benchmarks covering reasoning, reading comprehension, STEM, and coding. We report these results in Table \ref{tab:text-results}. Broadly, we find that the performance of Gemini Pro outperforms inference-optimized models such as GPT-3.5 and performs comparably with several of the most capable models available, and Gemini Ultra outperforms all current models. In this section, we examine some of these findings.
+
+On MMLU~\cite{mmlu}, Gemini Ultra can outperform all existing models, achieving an accuracy of 90.04\%. MMLU is a holistic exam benchmark, which measures knowledge across a set of 57 subjects. Human expert performance is gauged at 89.8\% by the benchmark authors, and Gemini Ultra is the first model to exceed this threshold, with the prior state-of-the-art result at 86.4\%. Achieving high performance requires specialist knowledge across many domains (e.g. law, biology, history, etc.), alongside reading comprehension and reasoning. We find Gemini Ultra achieves highest accuracy when used in combination with a chain-of-thought prompting approach \cite{wei2022chain} that accounts for model uncertainty. The model produces a chain of thought with k samples, for example 8 or 32. If there is a consensus above a preset threshold (selected based on the validation split), it selects this answer, otherwise it reverts to a greedy sample based on maximum likelihood choice without chain of thought. We refer the reader to appendix for a detailed breakdown of how this approach compares with only chain-of-thought prompting or only greedy sampling. 
+
+In mathematics, a field commonly used to benchmark the analytical capabilities of models, Gemini Ultra shows strong performance on both elementary exams and competition-grade problem sets. For the grade-school math benchmark, GSM8K \cite{cobbe2021training}, we find Gemini Ultra reaches 94.4\% accuracy with chain-of-thought prompting and self-consistency \cite{selfconsistency} compared to the previous best accuracy of 92\% with the same prompting technique. Similar positive trends are observed in increased difficulty math problems drawn from middle- and high-school math competitions (MATH benchmark), with the Gemini Ultra model outperforming all competitor models, reaching 53.2\% using 4-shot prompting. The model also outperforms the state of the art on even harder tasks derived from American Mathematical Competitions (150 questions from 2022 and 2023). Smaller models perform poorly on this challenging task scoring close to random, but Gemini Ultra can solve 32\% of the questions, compared to the 30\% solve rate for GPT-4.
+
+Gemini Ultra also excels in coding, a popular use case of current LLMs. We evaluate the model on many conventional and internal benchmarks and also measure its performance as part of more complex reasoning systems such as AlphaCode 2 (see Section~\ref{sec:complex-reasoning} on complex reasoning systems). For example, on HumanEval, a standard code-completion benchmark~\cite{chen2021evaluating} mapping function descriptions to Python implementations, instruction-tuned Gemini Ultra correctly implements 74.4\% of problems. On a new held-out evaluation benchmark for python code generation tasks, Natural2Code, where we ensure no web leakage, Gemini Ultra achieves the highest score of 74.9\%.
+
+\input{new_table_v4}
+
+Evaluation on these benchmarks is challenging and may be affected by data contamination. We performed an extensive leaked data analysis after training to ensure the results we report here are as scientifically sound as possible, but still found some minor issues and decided not to report results on e.g. LAMBADA~\citep{paperno2016lambada}. As part of the evaluation process, on a popular benchmark, HellaSwag~\cite{zellers2019hellaswag}, we find that an additional hundred fine-tuning steps on specific website extracts corresponding to the HellaSwag training set (which were not included in the Gemini model pretraining set) improve the validation accuracy of Gemini Pro to 89.6\% and Gemini Ultra to 96.0\%, when measured with 1-shot prompting (we measured GPT-4 obtained 92.3\% when evaluated 1-shot via the API). This suggests that the benchmark results are susceptible to the pretraining dataset composition. We choose to report HellaSwag decontaminated results only in a 10-shot evaluation setting. We believe there is a need for more robust and nuanced standardized evaluation benchmarks with no leaked data. So, we evaluate Gemini models on several new held-out evaluation datasets that were recently released, such as WMT23 and Math-AMC 2022-2023 problems, or internally generated from non-web sources, such as Natural2Code. We refer the reader to Appendix \ref{app:tasks} for a comprehensive list of our evaluation benchmarks.
+
+Even so, model performance on these benchmarks gives us an indication of the model capabilities and where they may provide impact on real-world tasks. For example, Gemini Ultra's impressive reasoning and STEM competencies pave the way for advancements in LLMs within the educational domain\footnote{See demos on website \url{https://deepmind.google/gemini}.}. The ability to tackle complex mathematical and scientific concepts opens up exciting possibilities for personalized learning and intelligent tutoring systems.
+
+\subsubsection{Trends in Capabilities}
+\label{sec:capabilities}
+We investigate the trends in capabilities across the Gemini model family by evaluating them on a holistic harness of more than 50 benchmarks in six different capabilities, noting that some of the most notable benchmarks were discussed in the last section. These capabilities are: ``Factuality'' covering open/closed-book retrieval and question answering tasks; ``Long-Context'' covering long-form summarization, retrieval and question answering tasks; ``Math/Science'' including tasks for mathematical problem solving, theorem proving, and scientific exams; ``Reasoning'' tasks that require arithmetic, scientific, and commonsense reasoning; ``Multilingual'' tasks for translation, summarization, and reasoning in multiple languages. Several of these capabilities are targeted by post-training (Section~\ref{sec:post-training}). Please see Appendix \ref{app:tasks} for a detailed list of tasks included for each capability.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/capabilities_v2.pdf}
+\caption{Language understanding and generation performance of Gemini model family across different capabilities (normalized by the Gemini Pro model).}
+\label{fig:text-results}
+\end{figure}
+
+We observe consistent quality gains with increased model size in Figure \ref{fig:text-results}, especially in reasoning, math/science, summarization and long-context. Gemini Ultra is the best model across the board for all six capabilities. Gemini Pro, the second-largest model in the Gemini family of models, is also quite competitive while being a lot more efficient to serve.
+
+
+\subsubsection{Nano}
+\label{sec:nano}
+Bringing AI closer to the user, we discuss the Gemini Nano 1 and Nano 2 models engineered for on-device deployments. These models excel in summarization and reading comprehension tasks with per-task fine-tuning. Figure \ref{fig:text-results} shows the performance of these pre-trained models in comparison to the much larger Gemini Pro model, while Table \ref{tab:nano-results} dives deeper into specific factuality, coding, Math/Science, and reasoning tasks. Nano-1 and Nano-2 model sizes are only 1.8B and 3.25B parameters respectively. Despite their size, they show exceptionally strong performance on factuality, i.e. retrieval-related tasks, and significant performance on reasoning, STEM, coding, multimodal and multilingual tasks. With new capabilities accessible to a broader set of platforms and devices, the Gemini models expand accessibility to everyone.
+
+
+\begin{table}[!h]
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.25}
+\centering
+\scriptsize
+\begin{tabular}{L{3.5cm}p{1.1cm}p{1.1cm}p{1.1cm}p{1.1cm}}
+\toprule
+ & \multicolumn{2}{c}{Gemini Nano 1} & \multicolumn{2}{c}{Gemini Nano 2}\\
+
+  &  \tiny{accuracy}  &  \tiny{normalized by Pro} & \tiny{accuracy} &  \tiny{normalized by Pro}\\
+\midrule
+BoolQ  & 71.6 & 0.81 & 79.3  & 0.90 \\
+TydiQA \hspace{0.25em}\tiny{(GoldP)}  & 68.9 & 0.85 & 74.2 & 0.91 \\
+NaturalQuestions \hspace{0.25em}\tiny{(Retrieved)}   & 38.6 & 0.69 & 46.5 & 0.83 \\
+NaturalQuestions \hspace{0.25em}\tiny{(Closed-book)}  & 18.8 & 0.43 & 24.8  & 0.56\\
+BIG-Bench-Hard \tiny{(3-shot)} & 34.8 & 0.47 & 42.4  & 0.58 \\
+MBPP & 20.0 & 0.33 & 27.2   & 0.45 \\
+MATH \tiny{(4-shot)}  & 13.5 & 0.41 &  22.8  & 0.70 \\
+MMLU \tiny{(5-shot)} & 45.9 & 0.64  & 55.8  & 0.78 \\
+\bottomrule
+\end{tabular}
+\caption{Performance of Gemini Nano series on factuality, summarization, reasoning, coding and STEM tasks compared to significantly larger Gemini Pro model.}
+\label{tab:nano-results}
+\end{table}
+
+
+\subsubsection{Multilinguality}
+\label{sec:multilingual}
+The multilingual capabilities of the Gemini models are evaluated using a diverse set of tasks requiring multilingual understanding, cross-lingual generalization, and the generation of text in multiple languages. These tasks include machine translation benchmarks (WMT 23 for high-medium-low resource translation; Flores, NTREX for low and very low resource languages), summarization benchmarks (XLSum, Wikilingua), and translated versions of common benchmarks (MGSM: professionally translated into 11 languages).
+
+\paragraph{Machine Translation}
+\label{sec:mt}
+Translation is a canonical benchmark in machine learning with a rich history. We evaluated a post-trained Gemini API Ultra model (see Section~\ref{sec:post-training-ml}) on the entire set of language pairs in the WMT 23 translation benchmark in a few-shot setting. Overall, we found that Gemini Ultra (and other Gemini models) performed remarkably well at translating from English to any other language, and surpassed the LLM-based translation methods when translating out-of-English, on high-resource, mid-resource and low-resource languages. In the WMT 23 out-of-English translation tasks, Gemini Ultra achieved the highest LLM-based translation quality, with an average BLEURT \citep{sellam-etal-2020-bleurt} score of 74.8, compared to GPT-4’s score of 73.6, and PaLM 2’s score of 72.2. When averaged across all language pairs and directions for WMT 23, we see a similar trend with Gemini Ultra 74.4, GPT-4 73.8 and PaLM 2-L 72.7 average BLEURT scores on this benchmark. 
+
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{2.6cm}llll|ll}
+    \toprule
+    WMT 23 \newline (Avg BLEURT) & Gemini Ultra & Gemini Pro & Gemini Nano 2 & Gemini Nano 1 & GPT-4 & PaLM 2-L \\
+    \midrule
+    High Resource  & \sota{74.2} & 71.7 & 67.7 & 64.1 & 74.0 & 72.6 \\
+    Mid Resource   & \sota{74.7} & 71.8 & 67.0 & 64.8 & 73.6 & 72.7 \\
+    Out-of-English & \sota{74.8} & 71.5 & 66.2 & 65.2 & 73.6 & 72.2 \\
+    Into-English   & 73.9 & 72.0 & 69.0 & 63.5 & \sota{74.1} & 73.4 \\
+    \hline
+    All languages  & \sota{74.4} & 71.7 & 67.4 & 64.8 & 73.8 & 72.7 \\
+    \bottomrule
+    \end{tabular}
+    \caption{Performance of Gemini models on WMT 23 translation benchmark. All numbers with 1-shot.}
+\end{table}
+
+In addition to the languages and translation tasks above, we also evaluate Gemini Ultra on very low-resource languages. These languages were sampled from the tail of the following language sets: Flores-200 (Tamazight and Kanure), NTREX (North Ndebele), and an internal benchmark (Quechua). For these languages, both from and into English, Gemini Ultra achieved an average chrF score of 27.0 in 1-shot setup, while the next-best model, PaLM 2-L, achieved a score of 25.3.
+
+
+\paragraph{Multilingual Math and Summarization}
+\label{sec:multilingualmath}
+Beyond translation, we evaluated how well Gemini models perform in challenging tasks across a range of languages. We specifically investigated the math benchmark MGSM~\cite{mgsm}, which is a translated variant of the math benchmark GSM8K~\citep{cobbe2021training}. We find Gemini Ultra achieves an accuracy of 79.0\%, an advance over PaLM 2-L which scores 74.7\%, when averaged across all languages in an 8-shot setup. We also benchmark Gemini models on the multilingual summarization benchmarks – XLSum \cite{hasan-etal-2021-xl} and WikiLingua \cite{ladhak2020wikilingua}. In XLSum, Gemini Ultra reached an average of 17.6 rougeL score compared to 15.4 for PaLM 2. For Wikilingua, Gemini Ultra (5-shot) trails behind PaLM 2 (3-shot) measured in BLEURT score. See Table~\ref{tab:mgsm-results} for the full results.  Overall the diverse set of multilingual benchmarks show that Gemini family models have a broad language coverage, enabling them to also reach locales and regions with low-resource languages.
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{2.5cm}ll|cc}
+    \toprule
+    & Gemini Ultra & Gemini Pro & GPT-4 & PaLM 2-L \\
+    \midrule
+    MGSM \hspace{0.5em} \tiny{(8-shot) } & \sota{79.0} & 63.5 & 74.5 & 74.7 \\
+    XLsum \hspace{0.5em}
+    \tiny{(3-shot)}  & \sota{17.6} & 16.2 & --- & 15.4 \\
+    Wikilingua  & 48.9 & 47.8 & --- & \sota{50.4} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Performance of Gemini models on multilingual math and summarization.}
+    \label{tab:mgsm-results}
+\end{table}
+
+\subsubsection{Long Context}
+\label{sec:longcontext}
+Gemini models are trained with a sequence length of 32,768 tokens and we find that they make use of their context length effectively. We first verify this by running a synthetic retrieval test: we place key-value pairs at the beginning of the context, then add long filler text, and ask for value associated with a particular key. We find that the Ultra model retrieves the correct value with 98\% accuracy when queried across the full context length. We further investigate this by plotting the negative log likelihood (NLL) versus the token index across a held-out set of long documents in Figure~\ref{fig:long-context}. We find that the NLL decreases with sequence position up to the full 32K context length. The longer context length of Gemini models enable new use cases such as retrieval over documents and video understanding discussed in Section~\ref{sec:video}.
+%
+\begin{figure}[h!]
+\centering
+ \includegraphics[width=0.6\textwidth]{figs/long_context_v2.pdf}
+ \caption{Negative log likelihood as a function of token index across 32K context length on a held-out set of long documents.}
+ \label{fig:long-context}
+\end{figure}
+
+\subsubsection{Factuality}
+%
+Factuality \citep{maynez2020faithfulness} is a key focus of our model’s training and deployment. We evaluate three  aspects of factuality for our Gemini API models:
+
+\begin{enumerate}
+    \item \textbf{Closed-Book Factuality}: If provided with a fact-seeking prompt without any given source, Gemini API models should not hallucinate incorrect information~(see Section 2 of~\citet{roberts-etal-2020-much} for a definition). These prompts can range from information-seeking prompts (e.g. ``Who is the prime minister of India?'') to semi-creative prompts that may request factual information (e.g. ``Write a 500-word speech in favor of the adoption of renewable energy'').
+    \item \textbf{Attribution}: If instructed to generate a response grounded to a given context, we aim to ensure that Gemini API models produce a response with the highest degree of faithfulness to the context~\citep{maynez2020faithfulness, rashkin2023measuring}. This may include the summarization of a user-provided source, generating fine-grained citations given a question and provided snippets akin to~\citet{peng2023check,gophercite}, answering questions from a long-form source such as a book~\citep{mihaylov-etal-2018-suit}, and transforming a given source to a desired output (e.g. an email from a portion of a meeting transcript).
+    \item \textbf{Hedging}: If prompted with an input that is “unanswerable”, Gemini API models must acknowledge that it cannot provide a response by hedging to avoid hallucination.  These include scenarios where the input prompt contains false-premise questions [see examples in~\citet{hu2023won}], the input prompt instructs the model to perform open book QA, but the answer is not derivable from the given context, and so forth.
+\end{enumerate}
+
+Factuality is evaluated via human annotators who fact-check each response manually; we report the percentage of factually inaccurate responses as judged by annotators. Attribution is evaluated via human annotators who check for attribution to sources in the prompt for each response manually; the reported metric is AIS~\citep{rashkin2023measuring}. For hedging, we use an automatic evaluation setup where we measure whether models hedge accurately.
+
+We compare Gemini API Pro with a version without any factuality-focused adaptation in Table~\ref{table:factuality}. We see that the rate of inaccuracy is halved in the factuality set,
+the accuracy of attribution is increased by 50\% from the attribution set, and the model successfully
+hedges 70\% (up from 0\%) in the provided hedging set task.
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{4.0cm}p{3.0cm}p{3.0cm}p{3.0cm}}
+    \toprule
+& Factuality \newline
+\tiny{(Inaccurate Rate)} & Attribution \newline
+\tiny{(AIS)} & Hedging \newline
+\tiny{(Accuracy)} \\
+\midrule
+Gemini API Pro \newline
+No factuality-focused adaptation & 6.7\% \newline \tiny{[5.8\%, 7.8\%]} & 40.2\% \newline
+\tiny{[37.9\%, 42.5\%]} & 0\% \\
+\addlinespace[2ex]
+Gemini API Pro \newline
+Final stage of post-training & 3.8\% \newline \tiny{[3.1\%, 4.8\%]} & 60.0\% \newline
+\tiny{[57.6\%, 62.1\%]} & 69.3\% \\
+\bottomrule
+\end{tabular}
+\caption{Factuality mitigations: Impact of post-training on the rate of inaccuracy, presence of attribution and the rate of accurate hedging on Gemini API Pro (with corresponding 95\% confidence intervals).}
+\label{table:factuality}
+\end{table}
+
+ \subsubsection{Complex Reasoning Systems}
+\label{sec:complex-reasoning}
+Gemini models can also be combined with additional techniques such as search and tool-use to create powerful reasoning systems that can tackle more complex multi-step problems. 
+One example of such a system is AlphaCode 2, a new state-of-the-art agent that excels at solving competitive programming problems~\citep{gdm2023alphacode2}. 
+AlphaCode 2 uses a specialized version of Gemini Pro – tuned on competitive programming data similar to the data used in \citet{alphacode} – to conduct a massive search over the space of possible programs. This is followed by a tailored filtering, clustering and reranking mechanism. Gemini Pro is fine-tuned both to be a coding model to generate proposal solution candidates, and to be a reward model that is leveraged to recognize and extract the most promising code candidates.
+
+AlphaCode 2 is evaluated on Codeforces,\footnote{\url{http://codeforces.com/}} the same platform as AlphaCode, on 12 contests from division 1 and 2, for a total of 77 problems. AlphaCode 2 solved 43\% of these competition problems, a 1.7x improvement over the prior record-setting AlphaCode system which solved 25\%. Mapping this to competition rankings, AlphaCode 2 built on top of Gemini Pro sits at an estimated 85th percentile on average – i.e. it performs better than 85\% of entrants. This is a significant advance over AlphaCode, which only outperformed 50\% of competitors.
+
+The composition of powerful pre-trained models with search and reasoning mechanisms is an exciting direction towards more general agents; another key ingredient is deep understanding across a range of modalities which we discuss in the next section. 

@@ -1,0 +1,15 @@
+
+
+\section*{Conclusion}
+\label{sec:conclusion}
+
+In this manuscript, we introduce \dolma, a three trillion token English corpus for language model pretraining. 
+The \dolma corpus is comprised of a diverse set of content, including web documents, scientific papers, code, public-domain books, social media, and encyclopedic materials.
+Building off a list of explicit desiderata, we document our data curation pipelines, providing experimental results that support our decisions. 
+We freely release \dolma and open-source all tools we used to curate this dataset as part of the OLMo project~\citep{olmo20247b}. 
+Since the time of writing, we have made improvements to \dolma and have continued to make releases; for example, our follow-on release of \textbf{\dolma~\texttt{v.1.7}} yields significant performance improvement on downstream tasks, holding the model constant.\footnote{
+\href{https://blog.allenai.org/olmo-1-7-7b-a-24-point-improvement-on-mmlu-92b43f7d269d}{\path{medium.com/p/92b43f7d269d}}}
+We hope this line of work can promote transparency, reproducibility, and further research in the field of language modeling, 
+as well as address the current gap in the availability of pretraining data of commercial and open language models.
+We release \dolma under ODC-By
+and our toolkit under Apache 2.0.

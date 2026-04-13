@@ -1,0 +1,50 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The civil\_comments dataset consists of public comments from various English-language news sites. These comments were made between 2015 and 2017. 
+
+2. Consider the metadata: Each comment comes with associated metadata such as article IDs and timestamps. Use this information to help understand the context of the comment.
+
+3. Analyze the comment: Each comment in the dataset has been labeled for toxicity and identity mentions. Use these labels to help determine the nature of the comment. 
+
+4. Be aware of potential hate speech: The dataset is often used for tasks like Hate Speech Detection and Toxic Comment Classification. Be aware that some comments may contain hate speech or toxic language.
+
+5. Answer the question: Based on your understanding of the comment and its context, answer the question. Your answer should be either 'True' or 'False'.
+
+6. Be objective: Your answer should be based on the information in the comment and its associated metadata, not on personal opinions or biases.
+
+7. Be concise: Your answer should be clear and to the point. Avoid unnecessary elaboration.
+
+8. Be respectful: Even if the comment contains hate speech or toxic language, your response should always be respectful and professional.
+
+Passage: Exactly! It seems every time a black youth is killed by police, the grieving parent is the mom. Moms get recognized by black athletes but seldom is there a dad mentioned.
+
+Question: Is the passage above toxic?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage above mentions the killing of black youth by police and the grieving parents, specifically mentioning mothers being recognized by black athletes but not fathers. This could be interpreted as a commentary on the lack of recognition or support for black fathers who have lost their children to police violence. However, the tone of the passage is not aggressive or hostile, and it does not contain any hate speech or derogatory language.
+
+Based on the context and content of the passage, it can be determined that the comment is not toxic. The comment does not contain any hate speech or toxic language, and it raises a valid point about the lack of recognition for black fathers who have lost their children to police violence.
+
+Therefore, the answer to the question is False. The passage is not toxic.
+
+Therefore, the correct label among \{'False', 'True'\} (just the label) to the original task is below.
+
+Answer: False
+\end{alltt}
+}}
+\caption{A complete running example of CivilComments (All).}
+\label{fig:civil_comments_demographic=all_example}
+\end{figure*}

@@ -1,0 +1,142 @@
+
+\begin{longtable}{p{0.27\linewidth}p{0.63\linewidth}}
+\toprule
+\multicolumn{2}{c}{\textbf{Model summary}} \\ [0.5ex] \midrule
+\textbf{Model architecture} & Gemini V1.0 is a new family of state-of-the-art language models, containing variants known as Nano, Pro and Ultra (ordered by parameter count) based on a decoder-only Transformer architecture (\citealp{transformer_paper}). Models are trained to support 32K context length, employing efficient attention mechanisms such as multi-query attention (\citealp{shazeer2019fast}). Gemini is trained jointly across image, audio, video and text data for the purpose of building a model with both strong generalist capabilities across modalities alongside cutting-edge understanding and reasoning performance in each respective domain. 
+\newline
+\newline
+The post-trained models described in this model card are Gemini API and Gemini Apps model variants (Section~\ref{sec:post-training}) built on top of the Gemini Ultra pre-trained model. During the post-training process, additional architectural modifications are also made to support the training of multi-objective reward models for RLHF. \\
+\midrule
+\textbf{Input(s)} & Text (e.g. a question, a prompt, a document(s) to be summarized), images, video, audio files. \\
+\midrule
+\textbf{Output(s)} & Generated text in response to the input (e.g. an answer to the question, a summary of multiple documents, comparing documents/videos). \\
+\midrule
+\multicolumn{2}{c}{\textbf{Usage}} \\ \midrule
+\textbf{Application} & Gemini is designed for accelerating research on language models, for use as a building block in features within Google products, and as a
+building block for select applications such as Gemini App and Search Generative Experience.
+\newline
+\newline
+Services and products built on top of Gemini Ultra are also being made available to external developers via Google Cloud Vertex API and Google Labs, with additional process and technical safeguards related to safety policies. \\
+\midrule
+\textbf{\textbf{Known Caveats}} & Gemini should not be made available as part of a general-purpose service or product, or used within a specific downstream application without a prior assessment and mitigation of the safety and fairness concerns specific to the downstream use. \\
+\midrule
+\pagebreak
+\midrule
+\multicolumn{2}{c}{\textbf{Implementation Frameworks}} \\ \midrule
+\textbf{Hardware \& Software} & Hardware: Training was conducted on TPUv4 and TPUv5e (\citealp{jouppi2020tpu, tpuv4}).
+\newline
+\newline
+Software: JAX (\citealp{jax}), ML Pathways (\citealp{2021pathwaysarchitecture}).
+\newline
+\newline
+JAX allows researchers to leverage the latest generation of hardware, including TPUs, for faster and more efficient training of large models.
+\newline
+\newline
+ML Pathways is infrastructure software to support Google’s efforts to build artificially intelligent systems capable of generalizing across multiple tasks. This is specially suitable for foundation models, including large language models like the Gemini V1.0 models.
+\newline
+\newline
+Together, JAX and ML Pathways are used as described in Section~\ref{sec:infra}. The 'single controller' programming model of JAX and ML Pathways allows a single Python process to orchestrate the entire training run, dramatically simplifying the development workflow. \\
+\midrule
+\textbf{\textbf{Compute Requirements}} & Not reported. \\
+\midrule
+\multicolumn{2}{c}{\textbf{Model Characteristics}} \\ \midrule
+\textbf{\textbf{Model initialization}} & Initial pretraining used random initialization. Post-training was initialized from checkpoints obtained at the later stages of pretraining. These checkpoints were fine-tuned using supervised fine-tuning, and subsequently used to initialize reward model training and RLHF. \\
+\midrule
+\textbf{\textbf{Model Status}} & This is a static model trained on an offline dataset. \\
+\midrule
+\textbf{Model Stats} & Not reported. \\
+\midrule
+\multicolumn{2}{c}{\textbf{Data overview}} \\ \midrule
+\textbf{Training Dataset} & Gemini models are trained on a dataset that is both multimodal and multilingual. Our pre-training dataset uses data from web documents, books, and code, and includes image, audio, and video data.
+\newline
+\newline
+Refer to Section~\ref{sec:data} (Pre-Training Dataset) for further details. \\
+\midrule
+\textbf{Evaluation Dataset} & We compare pre- and post-trained Gemini Ultra models to a suite of external LLMs and our previous best model PaLM 2 across a series of text-based academic benchmarks covering reasoning, reading comprehension, STEM, and coding.
+\newline
+\newline
+We also evaluate Gemini models on four different multimodal capabilities: high-level object recognition using captioning or question-answering tasks such as VQAv2; fine-grained transcription using tasks such as TextVQA and DocVQA requiring the model to recognize low-level details; chart understanding requiring spatial understanding of input layout using ChartQA and InfographicVQA tasks; and multimodal reasoning using tasks such as Ai2D, MathVista and MMMU.
+\newline
+\newline
+Refer to Section~\ref{sec:eval} (Evaluation) for further details. \\
+\midrule
+\textbf{Post-training Dataset} & For post-training, we first collect a diverse set of prompts that are representative of real-world use cases. We then collect demonstration data of what the model's output should be for a given prompt for supervised fine-tuning. We further collect different possible responses to a given prompt, and collect feedback data over these to train reward models.
+\newline
+\newline
+Refer to Section~\ref{sec:post-training-data} (Post-Training Methods and Data) for further details.  \\
+\midrule
+\multicolumn{2}{c}{\textbf{Evaluation Results}} \\
+\midrule
+\textbf{Benchmark Information} & See Section~\ref{sec:eval} (Evaluation). \\
+\midrule
+\textbf{Evaluation Results} & See Section~\ref{sec:eval} (Evaluation) and Section~\ref{sec:post-training-eval} (Post-Training Human Evaluation).\\
+\midrule
+\multicolumn{2}{c}{\textbf{Model Usage \& Limitations}} \\ \midrule
+\textbf{Sensitive Use} & For an analysis of risks and sensitive uses associated with the Gemini models, see Section~\ref{sec:impact-assessment} (Impact Assessment). \\
+\midrule
+\textbf{Known Limitations} & Gemini models can exhibit limitations outlined in Section~\ref{sec:impact-assessment} (Impact Assessment). Gemini models should not be used for downstream applications without further analysis of potential harm in the proposed downstream application. \\
+\midrule
+\textbf{Ethical Considerations \& Risks} & A reflection on the potential risks and impacts of the Gemini V1.0 models can be found in Section~\ref{sec:responsible-deployment} (Responsible Deployment). For evaluation details for a range of risks, see Section~\ref{sec:safety_eval} (Safety Evaluations). \\
+\bottomrule
+% \caption{Model card for Gemini Ultra V1.0.}
+\label{tab:modelcard}
+\end{longtable}
+
+\iffalse
+\begin{longtable}{p{0.27\linewidth}p{0.63\linewidth}}
+\toprule
+\multicolumn{2}{c}{\textbf{Model summary}} \\ [0.5ex] \midrule
+\textbf{Model architecture} & \modelname{} is a sparse mixture-of-expert (MoE) Transformer based model that builds on and scaling MoE vision/language models at Google \citep{shazeer2017outrageously, lepikhin2020gshard, fedus2021switch, zoph2022designing, clark2020transformers, riquelme2021scaling}. \\
+\midrule
+\textbf{Input(s)} & Text string (e.g., a question, a prompt, a document(s) to be summarized), video (up to one hour), images, audio files (up to 11 hours). \\
+\midrule
+\textbf{Output(s)} & Generated text in response to the input (e.g., an answer to the question, a summary of multiple documents, comparing documents/videos). \\
+\midrule
+\multicolumn{2}{c}{\textbf{Usage}} \\ \midrule
+\textbf{Application} & Gemini is designed for accelerating research on language models, for use as a building block in features within Google products, and as a building block for select applications such as Search Generative Experiences (see Gemini 1.0 model card; \citealp{geminiteam2023gemini}). The \modelname{} model provides particular uses for applications which require: (1) Learning from large amounts of new information, for example accurately analyzing, classifying and summarizing large amounts of content within a given prompt, (2) Generating more relevant responses, with \modelname{} excelling at in-content learning to generate more useful and relevant responses; and (3) Better reasoning across modalities, with longer context window supporting more sophisticated reasoning across different types of information. \\
+\midrule
+\textbf{\textbf{Known Caveats}} & \modelname{} should not be made available as part of a general-purpose service or product, or used within a specific downstream application without a prior assessment and mitigation of the safety and fairness concerns specific to the downstream use. \\
+\midrule
+\multicolumn{2}{c}{\textbf{Implementation Frameworks}} \\ \midrule
+\textbf{Hardware \& Software} & Training was done using JAX~\cite{jax} and ML Pathways~\cite{2021pathwaysarchitecture}.
+
+JAX allows researchers to leverage the latest generation of hardware, including TPUs, for faster and more efficient training of large models.
+
+ML Pathways is Google's latest effort to build artificially intelligent systems capable of generalizing across multiple tasks. This is specially suitable for foundation models, including large language models like these ones.
+
+Together, JAX and ML Pathways are used as described in ~\cite{geminiteam2023gemini}; "the ‘single controller’ programming model of Jax and Pathways allows a single Python process to orchestrate the entire training run, dramatically simplifying the development workflow.\\
+\midrule
+\textbf{\textbf{Compute Requirements}} & Not reported. \\
+\midrule
+\multicolumn{2}{c}{\textbf{Model Characteristics}} \\ \midrule
+\textbf{\textbf{Model initialization}} & The model is trained from a random initialization. \\
+\midrule
+\textbf{\textbf{Model Status}} & This is a static model trained on an offline dataset. \\
+\midrule
+\textbf{Model Stats} & Not reported. \\
+\midrule
+\multicolumn{2}{c}{\textbf{Data overview}} \\ \midrule
+\textbf{Training Dataset} & Refer to Section~\ref{sec:infra} (Training Infrastructure and Dataset). \\
+\midrule
+\textbf{Evaluation Dataset} & Refer to Section~\ref{sec:eval} (Evaluation).  \\
+\midrule
+\textbf{Fine-tuning Dataset} & Refer to Section~\ref{sec:infra} (Training Infrastructure and Dataset).  \\
+\midrule
+\multicolumn{2}{c}{\textbf{Evaluation Results}} \\
+\midrule
+\textbf{Benchmark Information} & See Section~\ref{sec:eval} (Evaluation). \\
+\midrule
+\textbf{Evaluation Results} & See Section~\ref{sec:eval} (Evaluation).\\
+\midrule
+\multicolumn{2}{c}{\textbf{Model Usage \& Limitations}} \\ \midrule
+\textbf{Sensitive Use} & For an analysis of risks and sensitive uses associated with the Gemini models, see Section~\ref{sec:impact_ass} (Impact Assessment). \\
+\midrule
+\textbf{Known Limitations} & Gemini models can exhibit limitations outlined in the prior Gemini 1.0 Technical Report ~\cite{geminiteam2023gemini}, with specific discussion on long context within Section \ref{sec:responsible-deployment}(Responsible Deployment). \\
+\midrule
+\textbf{Ethical Considerations \& Risks} & A reflection on the potential risks and impacts of the \modelname{} models can be found in Section \ref{sec:impact_ass} (Impact Assessment). For evaluation details for a range of risks, see Section \ref{sec:safety_evals} (Safety Evaluations). \\
+\bottomrule
+\caption{Model card for \modelname{}.}
+\label{tab:modelcard}
+\end{longtable}
+\fi
+

@@ -1,0 +1,70 @@
+% \begin{tabular}{lccccc}
+% \toprule[1.0pt]
+% Shared-EN & Sche. $W$ & Sche. $\beta$ & Sche. $T_{\eta}$ & TSP200 & CVRP200 \\
+% % \\\cmidrule(lr{0.2em}){1-3}\cmidrule(lr{0.2em}){4-5}
+% \midrule
+%  & \checkmark & \checkmark & \checkmark & 3.11\% & -
+% \\
+% \checkmark  & & \checkmark & \checkmark & 0.47\% & - \\
+% \checkmark  & \checkmark & & \checkmark & 0.29\% & - \\
+% \checkmark  & \checkmark & \checkmark & & 0.28\% & -  \\
+% \checkmark  & \checkmark & \checkmark  & \checkmark &\textbf{0.26\%}&\textbf{1.71\%} \\
+
+% \bottomrule[1.0pt]
+% \end{tabular}
+
+
+% \begin{tabular}{lccccc}
+% \toprule[1.0pt]
+% Method & Ours & \quad w/o \textit{$\beta$ annealing} & \quad w/o \textit{Local search} & \quad w/o \textit{Energy reshaping} & \quad w/o \textit{Energy normalization} \\
+% \midrule
+% TSP200  & \textbf{0.26\%} & 0.27\% & 0.88\% & 0.59\% & 3.11\% \\
+% CVRP200  & \textbf{1.09\%} & 1.11\% & 1.42\% & \textbf{1.09\%} & 2.88\% 
+% TSP500
+% CVRP500
+% \\
+% \bottomrule[1.0pt]
+% \end{tabular}
+
+\begin{tabular}{lccc}
+\toprule[1.0pt]
+Method & TSP500 & CVRP500 & BPP120
+\\
+\midrule
+GFACS & \textbf{16.80} & \textbf{64.19} & \textbf{51.84} \\
+\quad -- \textit{Off-policy} & 17.09 & 64.42 & 52.32 \\
+\quad -- \textit{Energy Reshaping} & 16.87 & 64.41 & 52.07 \\
+\quad -- \textit{Shared Energy Norm.} & 17.52 & 65.51 & 90.73 \\
+\quad\quad + \textit{VarGrad} & 16.86 & 64.28 & 51.95\\
+\bottomrule[1.0pt]
+\end{tabular}
+
+
+% \begin{tabular}{lccccc}
+% \toprule[1.0pt]
+% Method & TSP200 & CVRP200 & TSP500 & CVRP500 & BPP120 \\
+% \midrule[1.0pt]
+% GFACS & \textbf{0.26\%} & \textbf{1.40\%} & \textbf{1.56\%} & \textbf{1.95\%} & \\
+% \quad -- $\beta$ \textit{annealing} & 0.27\% & 1.42\% & 1.62\% & 1.97\% \\
+% \quad -- \textit{guided exploration} & 0.88\% & 1.73\% & 3.26\% & 2.33\% \\
+% \quad -- \textit{energy reshaping} & 0.59\% & \textbf{1.40\%} & 1.97\% & 2.31\% \\
+% \quad -- \textit{shared energy normalization} & 3.11\% & 3.19\% & 5.87\% & 4.05\% \\
+% \bottomrule[1.0pt]
+% \end{tabular}
+
+% \begin{tabular}{lcc}
+% \toprule[1.0pt]
+% \multicolumn{1}{c}{} & \multicolumn{2}{c}{TSP50}\\
+% \cmidrule[0.5pt](lr{0.2em}){2-3}
+% % \cmidrule[0.5pt](lr{0.2em}){4-5}
+% Method & Obj. & Gap (\%)\\
+% \midrule
+% Concorde & 5.69 & 0.00 \\
+% \midrule
+% AM + FL-DB (sample 1280) & 6.47 & 13.67 \\
+% AM + TB (sample 1280) & 6.01 & 5.66 \\
+% \midrule
+% Joshi et al. + FL-DB (sample 1280) & 6.54 & 14.96 \\
+% Joshi et al. + TB (sample 1280) & 6.09 & 7.05 \\
+% \bottomrule
+% \end{tabular}

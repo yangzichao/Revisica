@@ -1,0 +1,57 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the Scenario: The dataset presents a scenario involving three individuals with specific occupations. At the start of an event, each individual has a specific position or partner. The individuals perform certain actions during the event, which result in changes in their positions or partners.
+
+2. Track Changes: Pay close attention to the sequence of actions performed by the individuals. These actions lead to changes in their positions or partners. You need to accurately track these changes.
+
+3. Answer the Question: Based on the final state of the scenario, you will be asked about the position or partner of one of the individuals. Use your understanding of the scenario and the changes you've tracked to answer the question.
+
+4. Topics to Know: Familiarize yourself with common occupations and events. You should also understand basic concepts of sequence and change.
+
+5. Steps to Answer: Read the prompt carefully. Understand the initial state of each individual. Track the changes in positions or partners as the individuals perform actions. Use this information to answer the question about the final state of one of the individuals.
+
+Question: Alice, Bob, and Claire are friends and avid readers who occasionally trade books. At the start of the semester, they each buy one new book: Alice gets Ulysses, Bob gets Frankenstein, and Claire gets Lolita.
+
+As the semester proceeds, they start trading around the new books. First, Claire and Bob swap books. Then, Bob and Alice swap books. Finally, Claire and Bob swap books. At the end of the semester, Bob has
+
+Options:
+
+(A) Ulysses
+
+(B) Frankenstein
+
+(C) Lolita
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The scenario describes three friends, Alice, Bob, and Claire, who initially have different books: Ulysses, Frankenstein, and Lolita, respectively. The friends then trade books among themselves in a specific sequence.
+
+First, Claire and Bob swap books, which means Claire gives her book Lolita to Bob, and Bob gives his book Frankenstein to Claire. After this trade, Claire has Frankenstein, and Bob has Lolita.
+
+Next, Bob and Alice swap books. Bob gives his book Lolita to Alice, and Alice gives her book Ulysses to Bob. After this trade, Bob has Ulysses, and Alice has Lolita.
+
+Finally, Claire and Bob swap books again. Claire gives her book Frankenstein to Bob, and Bob gives his book Ulysses to Claire. After this trade, Claire has Ulysses, and Bob has Frankenstein.
+
+Therefore, at the end of the semester, Bob has Frankenstein, which is option (B).
+
+Answer: (B) Frankenstein
+
+Therefore, the correct multiple choice label (just the letter) to the task is below.
+
+Answer: B
+\end{alltt}
+}}
+\caption{A complete running example of Shuffled Objects (Three Objects).}
+\label{fig:shuffled_objects=three_objects_example}
+\end{figure*}

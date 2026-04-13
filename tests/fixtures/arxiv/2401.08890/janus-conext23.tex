@@ -1,0 +1,34 @@
+\section{{Improving TCP's Performance for Low-Priority Flows}}
+\label{sec:future}
+Our evaluation points out that for certain use-cases, TCP can experience severe performance degradation for low-priority flows. We discuss that this is primarily because of the transient starvation of low-priority queue. We now discuss (and do a preliminary evaluation) of two simple strategies for addressing these issues. 
+
+\paragraph{\textbf{Weighted Fair Queuing instead of Priority Queues:}}
+One approach to address this issue is to replace strict priority queuing (SPQ) with weighted fair queuing (WFQ). WFQ allows for differential service while avoiding starvation in low-priority queues. Recent work~\cite{aequitas} has highlighted the performance benefits of WFQ over SPQ, particularly in achieving service-level objectives (SLO) for remote procedural calls (RPC). By assigning a small weight to the lower priority class, WFQ ensures that low-priority flows receive a minimal fraction of the link share, thereby preventing stalls in their feedback loop while maintaining desired isolation across priority queues. 
+
+To assess the advantages of using WFQ for low-priority flows and examine the impact on the high priority workload, we repeat workload co-location experiment from section~\S\ref{sec:eval-wl-col}. We choose the gradient update size of 12MB -- the case where TCP observed maximum performance degradation -- and replace SPQ with WFQ at the switches. We choose a weight distribution of 99:1 for high and low-priority classes respectively. 
+Figure~\ref{fig:eval-future} shows that WFQ significantly improves TCP's performance. Specifically, at p99.9, we observe up to 9$\times$ and 5.4$\times$ reduction in the FCTs of small and medium flows respectively. However, our analysis revealed that WFQ resulted in an increase of 6\% in FCTs for high priority flows at p99.9.
+
+While weighted fair queuing (WFQ) shows promise in enhancing TCP's performance for low-priority flows, its use presents a challenge in selecting the appropriate weight value for lower priority classes -- using a small value may render WFQ ineffective, while a large value can potentially interfere with the performance of high priority traffic. Moreover, when dealing with multiple lower priority classes~\cite{auto,pias}, additional caution is necessary in assigning minimum weights, warranting further investigation.
+
+\begin{figure*}[t]
+    \centering
+     \subfloat[Small Flows ]{\includegraphics[width=0.33\textwidth]{res/future/CoNEXT23-Future-Small.pdf}\label{fig:future-small}}
+     \subfloat[Medium Flows]{\includegraphics[width=0.33\textwidth]{res/future/CoNEXT23-Future-Med.pdf}\label{fig:future-med}}
+    \subfloat[Long Flows]{\includegraphics[width=0.33\textwidth]{res/future/CoNEXT23-Future-Long.pdf}\label{fig:future-long}}
+    \caption{Shows that efficacy of weighted fair queuing (WFQ) and TCP+. Both these approaches have the potential to limit the performance implications of network prioritization. }
+\label{fig:eval-future}
+\vspace{-0.1in}
+\end{figure*}
+
+\paragraph{\textbf{Cross-Queue Congestion Notification (CQCN)}}
+For certain systems that necessitate strict isolation across priority classes (e.g., DAS~\cite{das}) or in scenarios where changing the switch scheduling algorithm may not be an option, we discuss an end-host based approach that we term as \emph{Cross-Queue Congestion Notification}. Drawing inspiration from DCTCP~\cite{dctcp}, we make a simple yet an important observation: employing Explicit Congestion Notification (ECN) in a \emph{cross-queue} manner enables TCP to discern \emph{priority-induced} congestion at the end-host. Such a cross-queue signal can enable TCP to make an informed decision to stop packet transmission and halt congestion control for low-priority flows upon experiencing \emph{priority-induced} congestion.
+Consequently, CQCN can avoid overwhelming low-priority queues, effectively limiting packet losses and spurious congestion backoffs for low-priority flows.
+
+To enable CQCN, low-priority flows can leverage \emph{low-overhead} yet \emph{high-priority} probe packets that act to create a secondary, \emph{non-blocking}, feedback loop between end-hosts. Similar to DCTCP, probe packets get marked if the length of the high priority queue exceeds a certain threshold -- indicating \emph{priority-induced} congestion.
+However, unlike DCTCP -- which may encounter feedback stalls when employed for low-priority flows -- the secondary feedback loop continues to provide a low-priority TCP sender with updates about the state of high priority traffic. Cross-queue can leverage existing ECN support in network switches without requiring any modification inside the network.
+
+To evaluate the potential benefits of such an approach we repeat the workload co-location experiment from section~\S\ref{sec:eval-wl-col} with gradient update size of 12MB. Figure~\ref{fig:eval-future} shows that such an approach, shown as TCP+, can enhance TCP's performance. Specifically, we observe up to 6$\times$ decrease in FCTs for medium flows at p99. 
+
+While our preliminary evaluation indicates the promise of this approach, it also present several challenges. For instance, despite the probe packets being \emph{low-overhead}, per-flow probing can interfere with high priority traffic, thereby violating the isolation constraint. While probing overhead is inevitable with this approach, its impact can be minimized by multiplexing probing feedback across all flows between a pair of end-hosts.
+Similarly, another challenge lies in selecting the appropriate probe marking threshold. A low threshold may inaccurately indicate excessive congestion in the high priority queue, while a high threshold may render the probing feedback ineffective, causing TCP to fail in responding to congestion in the high priority queue. 
+Overall, these challenges present intriguing avenues for future research on this problem.

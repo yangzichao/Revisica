@@ -1,0 +1,40 @@
+\begin{table*}[t]\small
+\centering
+\caption{Evaluation Metrics for the Factuality of LLMs.}
+\vspace{-2mm}
+\label{tab:eval-metrics}
+\begin{adjustbox}{max width=\textwidth}
+  \setlength{\tabcolsep}{.4mm}
+{
+\begin{tabular}{l|l|l}
+\toprule
+\textbf{Evaluation Type} & \textbf{Metric} & \textbf{Description, Purpose/Usage, and Reference/Findings} \\ 
+\midrule
+\multirow{10}{*}{Rule-based} & Exact Match & Correct matches between generated and input/reference text. \\ \\
+& \begin{tabular}[c]{@{}l@{}}Common Metrics \\ (Accuracy, Precision,\\
+Recall,  F-Measure,\\ Calibration, Brier)\end{tabular} & \begin{tabular}[c]{@{}l@{}}\textbf{Accuracy}: Measures overall correctness of model prediction.\\ \textbf{Precision}: Ability of model to classify instances positively.\\ \textbf{Recall}: Ability of model to identify all positive instances.\\ \textbf{F-Measure}: Combines both precision and recall into a single score.\\ \textbf{Calibration}: Agreement between predicted probabilities and observed frequencies.\\ \textbf{Brier}: Measures accuracy of probabilistic predictions.\end{tabular} \\ \\
+& MC1 and MC2 \citep{TruthfulQA} & Used to identify the correct answer from multi-choice questions. \\ 
+& BLEU \citep{papineni2002bleu} & Determines frequency of phrase co-occurrence in two sentences. \\ 
+& ROUGE \citep{lin2004rouge}& Calculates similarity between reference and generated text. \\ 
+& METEOR\citep{lowe2017towards} & Comprehensive measure based on harmonic mean of unigram precision and recall. \\  \\
+& QUIP-Score \citep{weller2023according}& Calculates how much of generated text consists of exact spans found in a text corpus. \\ 
+\midrule
+\multirow{5}{*}{Neural} & ADEM \citep{lowe2017towards} & \begin{tabular}[c]{@{}l@{}}Uses a Hierarchical RNN to evaluate the quality of responses in language models.\end{tabular}  \\
+& BERTScore \citep{zhang2020bertscore}& \begin{tabular}[c]{@{}l@{}}Pre-trained embeddings from BERT used to evaluate sentence similarity.\end{tabular} \\ 
+& BLEURT \citep{sellam2020bleurt}& \begin{tabular}[c]{@{}l@{}}Trains BERT on larger dataset and rate similarity of sentences .\end{tabular} \\ 
+& BARTScore  \citep{yuan2021bartscore}& \begin{tabular}[c]{@{}l@{}}Evaluates quality using pre-trained sequence-to-sequence models.\end{tabular} \\ 
+\midrule
+%\hline
+\multirow{2}{*}{Human} & \begin{tabular}[c]{@{}l@{}}AIS \citep{rashkin2023measuring}, \\Auto-AIS\citep{ gao2023rarr}\end{tabular} & \begin{tabular}[c]{@{}l@{}}Evaluates if output is backed by evidence.\end{tabular} \\ \\
+& FActScore \citep{Min2023-FActScore}& \begin{tabular}[c]{@{}l@{}}Measures factual accuracy of LLMs breakpointing generated content into atomic facts.\end{tabular} \\ \midrule
+\multirow{7}{*}{LLM-based} & GPTScore \citep{fu2023gptscore} & \begin{tabular}[c]{@{}l@{}}Evaluates quality of AI output. It is efficient and avoids the annotation requirement.\end{tabular} \\ \\
+& GPT-judge  \citep{TruthfulQA}& \begin{tabular}[c]{@{}l@{}}Evaluates truthfulness of LLM answers.  It is used in evaluating truthfulness\\ and informativeness.\end{tabular} \\ \\
+& \begin{tabular}[c]{@{}l@{}}Truthfulness and\\ Informativeness \\\citep{TruthfulQA}\end{tabular} & \begin{tabular}[c]{@{}l@{}}Truthfulness Measures the honesty of LLM information. \\ It is used to evaluate the factuality of information.\\
+Informativeness Evaluates the relevance and value of  LLM responses 
+\end{tabular}\\ \\
+& LLM-Eval \citep{lin2023llm} & \begin{tabular}[c]{@{}l@{}}Evaluates the quality of a conversation. It is adaptable in various scenarios.\end{tabular} \\ \bottomrule
+%\hline
+\end{tabular}
+}
+\end{adjustbox}
+\end{table*}

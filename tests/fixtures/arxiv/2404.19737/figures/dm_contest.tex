@@ -1,0 +1,10 @@
+\begin{figure}[ht!]
+
+        \centering
+        \includegraphics[width=0.8\linewidth]{img/codecontests.pdf}
+    
+    \caption{\textbf{Comparison of finetuning performance on CodeContests.}
+    We finetune a $4$-token prediction model on CodeContests \citep{li2022competition} (train split) using $n'$-token prediction as training loss with $n' = 4$ or $n' = 1$, and compare to a finetuning of the next-token prediction baseline model ($n = n' = 1$). For evaluation, we generate 1000 samples per test problem for each temperature $T \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$, and compute pass@k for each value of $k$ and $T$. Shown is $k \mapsto \max_T \mathrm{pass\_at}(k, T)$, i.e. we grant access to a temperature oracle. We observe that both ways of finetuning the 4-token prediction model outperform the next-token prediction baseline. Intriguingly, using next-token prediction finetuning on top of the 4-token prediction model appears to be the best method overall.
+}
+    \label{fig:dm_contests}
+\end{figure}

@@ -1,0 +1,84 @@
+\label{sect:results}
+\input{tables/all_res}
+We demonstrate the efficacy of multi-token prediction losses by seven large-scale experiments.
+Section~\ref{sect:model-scaling} shows how multi-token prediction is increasingly useful when growing the model size.
+Section~\ref{sect:decoding} shows how the additional prediction heads can speed up inference by a factor of \textbf{$3\times$} using speculative decoding. 
+Section~\ref{sect:byte-level} demonstrates how multi-token prediction promotes learning longer-term patterns, a fact most apparent in the extreme case of byte-level tokenization.
+Section~\ref{sect:optimal-future} shows that $4$-token predictor leads to strong gains with a tokenizer of size $32$k.
+Section~\ref{sect:multi-epoch} illustrates that the benefits of multi-token prediction remain for training runs with multiple epochs. 
+Section~\ref{sect:finetuning} showcases the rich representations promoted by pretraining with multi-token prediction losses by finetuning on the CodeContests dataset~\citep{li2022competition}.
+Section~\ref{sect:nlp} shows that the benefits of multi-token prediction carry to natural language models, improving \emph{generative} evaluations such as summarization, while not regressing significantly on standard benchmarks based on multiple choice questions and negative log-likelihoods. 
+
+To allow fair comparisons between next-token predictors and $n$-token predictors, the experiments that follow always compare models with an equal amount of parameters.
+That is, when we add $n-1$ layers in future prediction heads, we remove $n-1$ layers from the shared model trunk.
+Please refer to Table~\ref{tab:models} for the model architectures and to Table~\ref{tab:hyperparams} for an overview of the hyperparameters we use in our experiments.
+
+\input{figures/scaling_model}
+
+
+\subsection{Benefits scale with model size}
+\label{sect:model-scaling}
+To study this phenomenon, we train models of six sizes in the range 300M to 13B parameters from scratch on at least 91B tokens of code.
+The evaluation results in Figure~\ref{fig:scaling_model} for MBPP \citep{austin2021program} and HumanEval \citep{chen2021evaluating} show that it is possible, with the exact same computational budget, to squeeze much more performance out of large language models given a fixed dataset using multi-token prediction. 
+
+We believe this \emph{usefulness only at scale} to be a likely reason why multi-token prediction has so far been largely overlooked as a promising training loss for large language model training. 
+
+\subsection{Faster inference}
+\label{sect:decoding}
+
+We implement greedy \emph{self-speculative decoding} \cite{stern2018blockwise} with heterogeneous batch sizes using xFormers \citep{xFormers2022} and measure decoding speeds of our best 4-token prediction model with 7B parameters on completing prompts taken from a test dataset of code and natural language (Table~\ref{tab:decoding}) not seen during training. We observe a speedup of $\mathbf{3.0\times}$ on code with an average of 2.5 accepted tokens out of 3 suggestions on code, and of $2.7\times$ on text. On an 8-byte prediction model, the inference speedup is $6.4\times$ (Table~\ref{tab:decoding_bytes}). Pretraining with multi-token prediction allows the additional heads to be much more accurate than a simple finetuning of a next-token prediction model, thus allowing our models to unlock self-speculative decoding's full potential. %
+
+\subsection{Learning global patterns with multi-byte prediction}
+\label{sect:byte-level}
+To show that the next-token prediction task latches to local patterns, we went to the extreme case of byte-level tokenization by training a 7B parameter byte-level transformer  on 314B bytes, which is equivalent to around 116B tokens. The 8-byte prediction model achieves astounding improvements compared to next-byte prediction, solving 67\% more problems on MBPP pass@1 and 20\% more problems on HumanEval pass@1. 
+
+Multi-byte prediction is therefore a very promising avenue to unlock efficient training of byte-level models. Self-speculative decoding can achieve speedups of 6 times for the 8-byte prediction model, which would allow to fully compensate the cost of longer byte-level sequences at inference time and even be faster than a next-token prediction model by nearly two times. The 8-byte prediction model is a strong byte-based model, approaching the performance of token-based models despite having been trained on $1.7\times$ less data.
+
+\subsection{Searching for the optimal $n$}
+\label{sect:optimal-future}
+
+To better understand the effect of the number of predicted tokens, we did comprehensive ablations on models of scale 7B trained on 200B tokens of code. We try $n=1,2,4,6$ and $8$ in this setting. Results in table \ref{tab:future_tokens_results} show that training with 4-future tokens outperforms all the other models consistently throughout HumanEval and MBPP for pass at 1, 10 and 100 metrics: +3.8\%, +2.1\% and +3.2\% for MBPP and +1.2\%, +3.7\% and +4.1\% for HumanEval. Interestingly, for APPS/Intro, $n=6$ takes the lead with +0.7\%, +3.0\% and +5.3\%. It is very likely that the optimal window size depends on input data distribution. As for the byte level models the optimal window size is more consistent (8 bytes) across these benchmarks. 
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Training for multiple epochs}
+\label{sect:multi-epoch}
+Multi-token training still maintains an edge on next-token prediction when trained on multiple epochs of the same data. The improvements diminish but we still have a +2.4\% increase on pass@1 on MBPP and +3.2\% increase on pass@100 on HumanEval, while having similar performance for the rest. As for APPS/Intro, a window size of 4 was already not optimal with 200B tokens of training. 
+
+
+\subsection{Finetuning multi-token predictors}
+\label{sect:finetuning}
+Pretrained models with multi-token prediction loss also outperform next-token models for use in finetunings. We evaluate this by finetuning 7B parameter models from Section~\ref{sect:byte-level} on the CodeContests dataset \citep{li2022competition}. We compare the 4-token prediction model with the next-token prediction baseline, and include a setting where the 4-token prediction model is stripped off its additional prediction heads and finetuned using the classical next-token prediction target. According to the results in Figure~\ref{fig:dm_contests}, both ways of finetuning the 4-token prediction model outperform the next-token prediction model on pass@k across $k$. This means the models are both better at understanding and solving the task and at generating diverse answers. Note that CodeContests is the most challenging coding benchmark we evaluate in this study. Next-token prediction finetuning on top of 4-token prediction pretraining appears to be the best method overall, in line with the classical paradigm of pretraining with auxiliary tasks followed by task-specific finetuning. Please refer to Appendix~\ref{app:finetuning} for details.
+\input{figures/dm_contest}
+
+\vspace{-1em}
+\subsection{Multi-token prediction on natural language}
+\label{sect:nlp}
+
+To evaluate multi-token prediction training on natural language, we train models of size 7B parameters on 200B tokens of natural language with a 4-token, 2-token and next-token prediction loss, respectively. In Figure ~\ref{fig:nlp_evol}, we evaluate the resulting checkpoints on 6 standard NLP benchmarks. On these benchmarks, the 2-future token prediction model performs on par with the next-token prediction baseline throughout training. The 4-future token prediction model suffers a performance degradation. Detailed numbers are reported in Appendix~\ref{app:choice_nlp}.
+
+\input{figures/nlp}
+
+However, we do not believe that multiple-choice and likelihood-based benchmarks are suited to effectively discern \emph{generative capabilities} of language models. In order to avoid the need for human annotations of generation quality or language model judges---which comes with its own pitfalls, as pointed out by \citet{koo2023benchmarking}---we conduct evaluations on summarization and natural language mathematics benchmarks and compare pretrained models with training sets sizes of 200B and 500B tokens and with next-token and multi-token prediction losses, respectively.
+
+For summarization, we use eight benchmarks where ROUGE metrics \citep{lin-2004-rouge} with respect to a ground-truth summary allow automatic evaluation of generated texts. We finetune each pretrained model on each benchmark's training dataset for three epochs and select the checkpoint with the highest ROUGE-L $F_1$ score on the validation dataset.
+Figure~\ref{fig:summarization_scale} shows that multi-token prediction models  with both $n=2$ and $n=4$ improve over the next-token baseline in ROUGE-L $F_1$ scores for both training dataset sizes,
+with the performance gap shrinking with larger dataset size. All metrics can be found in Appendix~\ref{app:summarzation_all}.
+\input{figures/summarize_scale}
+
+For natural language mathematics, we evaluate the pretrained models in 8-shot mode on the GSM8K benchmark \citep{cobbe2021training} and measure accuracy of the final answer produced after a chain-of-thought elicited by the fewshot examples. We evaluate pass@k metrics to quantify diversity and correctness of answers like in code evaluations and use sampling temperatures between 0.2 and 1.4. The results are depicted in Figure~\ref{fig:gsm8k} in Appendix~\ref{app:gsm8k}. For 200B training tokens, the $n=2$ model clearly outperforms the next-token prediction baseline, while the pattern reverses after 500B tokens and $n=4$ is worse throughout.
+
+
+
+
+
+

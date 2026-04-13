@@ -1,0 +1,54 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand that you are dealing with a multiple-choice question answering task. The goal is to predict the correct answer among the given options.
+
+2. The questions and options in this dataset require commonsense knowledge. Use your understanding of the world and how things generally work to answer the questions.
+
+3. Each question is associated with a concept from ConceptNet. This means that understanding the relations between different concepts can be beneficial in answering the questions.
+
+4. The options include one correct answer and four distractors. Carefully consider all the options before making a prediction. The distractors are designed to be plausible but incorrect answers to the question.
+
+5. The questions and options were created by humans, so understanding human language and reasoning is important. Make sure to interpret the questions and options in a way that a human would.
+
+6. After considering all the options and using your commonsense knowledge, predict the correct answer. Make sure to provide your answer in the format specified in the prompt.
+
+Question: From where does a snowflake form?
+
+A. cloud
+
+B. snow storm
+
+C. billow
+
+D. air
+
+E. snowstorm
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+A snowflake forms from water vapor in the air. When the temperature drops, the water vapor in the air condenses into tiny droplets, which then freeze into ice crystals. These ice crystals then stick together to form a snowflake.
+
+Therefore, the correct answer is (A) cloud. A snowflake forms in a cloud, specifically in the part of the cloud called a cumulonimbus cloud, which is characterized by strong updrafts and downdrafts that allow the water vapor to condense and freeze into snowflakes.
+
+Answer: A. cloud
+
+Therefore, the correct multiple choice label (just the letter) to the task is below.
+
+Answer: A
+\end{alltt}
+}}
+\caption{A complete running example of CommonsenseQA.}
+\label{fig:commonsense_qa_example}
+\end{figure*}

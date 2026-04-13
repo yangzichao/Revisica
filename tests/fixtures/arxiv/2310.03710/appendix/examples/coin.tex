@@ -1,0 +1,52 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the concept of a coin flip: A coin flip refers to the act of tossing a coin into the air and guessing which side will land face up. In this context, a flip means to reverse the side of the coin that is facing up.
+
+2. Interpret the prompt: The prompt describes a series of actions performed by a person named [Name]. These actions involve either flipping or not flipping a coin. The coin starts as heads up.
+
+3. Count the flips: For each instance of [Name] flipping the coin, count the number of flips. If [Name] does not flip the coin, do not count it.
+
+4. Determine the final state of the coin: If the number of flips is even, the coin will still be heads up. If the number of flips is odd, the coin will be tails up. This is because each flip changes the side of the coin that is facing up.
+
+5. Answer the question: Based on the final state of the coin, answer the question "Is the coin still heads up?" with either "yes" or "no". If the coin is heads up, the answer is "yes". If the coin is tails up, the answer is "no".
+
+Remember, the model's task is to apply these instructions to create an explanation that guides it towards the correct answer.
+
+Question: A coin is heads up. Doris does not flip the coin. Eva flips the coin. Larry does not flip the coin. Tad flips the coin. Is the coin still heads up? Note that "flip" here means "reverse".
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+1. The coin starts heads up.
+
+2. Doris does not flip the coin, so the coin remains heads up.
+
+3. Eva flips the coin, which reverses the side facing up, so the coin is now tails up.
+
+4. Larry does not flip the coin, so the coin remains tails up.
+
+5. Tad flips the coin, which reverses the side facing up again, so the coin is now heads up again.
+
+Therefore, the final state of the coin is heads up.
+
+Answer: Yes, the coin is still heads up.
+
+Therefore, the correct label among ['no', 'yes'] (just the label) to the original task is below.
+
+Answer (yes or no): yes
+\end{alltt}
+}}
+\caption{A complete running example of Coin Flip.}
+\label{fig:coin_example}
+\end{figure*}

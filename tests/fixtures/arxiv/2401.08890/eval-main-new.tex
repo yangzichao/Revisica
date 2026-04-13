@@ -1,0 +1,202 @@
+\section{A Closer Look at TCP's Performance for Low-Priority Flows}
+\label{sec:eval-main}
+
+We now study TCP's performance for low-priority flows under a broad spectrum of use-cases~(\S\ref{sec:fairtrans-priosched}), load distribution across priority classes, choice of transport protocol for high priority traffic, and workloads.
+Table~\ref{tab:eval-summary} synthesizes various settings across high and low-priority classes (e.g., load, flow size distribution) and highlights our key insights. 
+
+We conduct experiments on both a small scale testbed and the NS3 simulator. The testbed experiments establish the credibility of the key insights of our evaluation, under realistic settings, with a real end-host stack and a network switch with prioritization support. It also helps us cross validate the simulator setup, which we use to explore a wider range of network and transport parameters. We present the testbed results in \S\ref{subsec:testbed-eval}; all others results are from our NS3 evaluation. 
+
+
+\input{tables/eval-summary}
+
+\paragraph{\textbf{Experimental Setup:}}
+For the NS3~\cite{ns3} evaluation, we use the following settings as default unless specified otherwise. We assume a single cluster setup where 40 nodes are interconnected via 10Gbps link to a single switch. We provision strict priority queues within both the end hosts and the network, comprising a high priority queue and a low-priority queue. 
+The switch buffer is statically shared among ports. According to the settings discussed in an earlier work~\cite{one-more-config}, each switch port is allocated a 192KB buffer size, which is further partitioned in a 2:1 ratio between high and low-priority queues, respectively. In the absence of any traffic between servers, the average round trip time (RTT) is estimated to be 100us. 
+
+We configure TCP-Cubic as the default congestion control algorithm and enable the selective acknowledgment (SACK) option. The initial congestion window is set to 2 packets, and the minimum retransmission timeout value (RTO\textsubscript{min}) is configured to 1ms. Additionally, we allocate 1MB for the send and receive buffers for TCP. To prevent priority-inversion within the driver queue, we limit the driver queue to 100 packets. We observed maximum throughput for TCP (when used for low-priority flows) under these settings. 
+Finally, to generate traffic between servers, we use the publicly available DAS setup~\cite{das-setup} and tailored it for our use-cases.
+We consider three load settings in our evaluation, \emph{low}, \emph{medium}, and \emph{high} which refer to network loads of $<20\%$, $20-40\%$ and $>40\%$ respectively. Similarly, we classify flows as \emph{small}, \emph{medium} and \emph{long} which refer to flow sizes of $<50KB$, $50KB-1MB$, and $>1MB$ respectively. 
+
+\paragraph{\textbf{Baseline and Evaluation Criteria:}}
+To quantify the impact of network prioritization and to uncover the room for improvement for low-priority flows using TCP, we consider an RCP~\cite{rcp} style near-optimal fair transport scheme (\nearopt{}) for low-priority traffic as our baseline.
+\nearopt{} relies on two important pieces of information to provide a strong baseline: \emph{Loss Information (LI)} and \emph{Rate Information (RI)}\footnote{Note that \nearopt{} is \emph{only} used for comparison and may not be practically realizable.}.
+\begin{figure*}[ht]
+    \centering
+      \subfloat[DAS - Medium Load]{
+        \includegraphics[width=0.32\textwidth]{res/sched/das/conext23-netsched-das.pdf}
+        \label{fig:eval-netsched-das}}
+    \subfloat[SJF - \emph{Web-Search}]{
+        \includegraphics[width=0.32\textwidth]{res/sched/sjf/conext23-netSched-sjf-dctcp.pdf}
+        \label{fig:eval-netsched-sjf-web}}
+    \subfloat[SJF - \emph{Data-Mining} ]{
+        \includegraphics[width=0.32\textwidth]{res/sched/sjf/conext23-netsched-sjf-dm.pdf}\label{fig:eval-netsched-sjf-fb}}
+    \caption{TCP's performance for low-priority flows under network scheduling scenario. (a) Shows that for DAS~\cite{das} workload, TCP's performance for flows is insensitive to the flow sizes. (b) and (c) shows TCP's performance for long flows under shortest job first policy (SJF) for the \emph{web-search} and \emph{data-mining} workloads. Under SJF, we assign low-priority to long flows (size greater than 1 MB).}
+\label{fig:eval-netsched}
+\vspace{-0.1in}
+\end{figure*}
+\begin{itemize}
+    \item \textbf{Loss Information:} Knowing whether a packet was lost in the network allows \nearopt{} to avoid spurious retransmissions. \nearopt{} makes use of a global data structure that records packet losses. When a timeout event occur, \nearopt{} looks up the global data structure to validate the loss allowing it to isolate spurious timeouts from true losses. The \nearopt{} can access this information in \textit{O(1)} time.
+    
+    \item \textbf{Rate Information:} By knowing the fair-share rate of a low-priority flow, \nearopt{} can avoid \emph{undershoot} and \emph{overshoot} issues~(\S\ref{sec:fairtrans-priosched}).
+    \nearopt{} estimates the fair-share rate for each flow for the next RTT using the updated load and queue length information on a per link basis. 
+    Specifically, it first calculates the high priority load by dividing the high priority bytes received in previous round (\emph{t-1}) --- sum of total bytes sent (\emph{B}) and the current queue length Q(\emph{t}) ---  by the round trip time (\emph{T}). 
+    It then discounts the high priority load from the total link rate (\emph{L}) to estimate the available capacity for low-priority traffic and divides the result by the low-priority flow count on that link (\emph{F}) to keep track of the available flow rate\footnote{The rate estimation is done on the basis of load in the last round. The actual load in the next round can differ from the estimated load hence, \nearopt{} carries a small error. We choose \emph{T} as the link delay instead of RTT to minimize this error} on per link basis as shown in the equation below. Finally, it picks the minimum flow rate on all the links in the flow's path.
+    \begin{eqnarray*}
+        r_i(t) &=& \left(R - \sum_{c=0}^{i-1} B_c(t-1)/T - \sum_{c=0}^i Q_c(t)/T\right) \div |F|
+    \end{eqnarray*}
+    
+\end{itemize}
+Note that both the \emph{loss information} and parameters needed to compute a flow's rate are available to \nearopt{} in \emph{O(1)} time.
+
+We use performance gap between TCP and \nearopt{} as our primary evaluation criteria. For this, we run each experiment using TCP and \nearopt{} for low-priority flows.
+To highlight the performance gap, we normalize TCP's FCTs by the FCTs achieved using \nearopt{}. A lower (resp. higher) value of normalized FCT indicates superior (resp. poor) performance of TCP.
+Since our focus is on the performance of low-priority flows, we only look at the FCTs of low-priority flows unless noted otherwise. 
+
+We now evaluate TCP for three distinct use-cases (discussed in~\S\ref{sec:motive}) under a broad range of settings. 
+
+\subsection{\textbf{Network Scheduling}}
+\label{sec:eval-netsched}
+We first look at how TCP performs for low-priority flows under two different network scheduling schemes:
+
+\paragraph{\textbf{Duplicate Aware Scheduling (DAS)}}
+DAS is a request duplication scheme which strives to minimize the tail latency of a cloud applications~\cite{das}.
+DAS creates a duplicate copy of each incoming request at a lower priority and attempts to fetch both the responses (the primary and the duplicate) from two different servers. Upon retriving one copy, DAS purges the other one, a feature which we disable to simplify our experiment. 
+A distinguishing property of this scenario is that both the workload and load across high and low-priority queues is the same.
+
+\paragraph{Setup:} We consider a uniform flow size distribution with different mean values: 128KB, 1MB and 5MB.
+We generate requests in a poisson process at medium load (30\%) which translates to a high aggregate load (60\% -- 30\% in each priority class) on the bottleneck link.
+
+
+\paragraph{Observation:}
+Figure~\ref{fig:eval-netsched-das} shows that under the DAS workload, TCP's performance is within 2$\times$ of \nearopt{}, across different flow sizes. 
+This is because a relatively low load in the high priority queue provides ample bandwidth for low-priority flows to make progress. As a result, TCP is largely unaffected by the challenges posed by network prioritization.
+
+\paragraph{\textbf{Shortest Job First (SJF)}}
+Shortest job first (SJF) is well known to be optimal in minimizing the flow completion times~\cite{2D}.
+Many popular schemes such as PIAS~\cite{pias}, PASE~\cite{pase}, pFabric~\cite{pfabric}, and PDQ~\cite{pdq} approximate this policy which makes it a good candidate in our evaluation~\footnote{Note that our goal here is not to argue about the efficacy of a scheduling policy, rather to investigate its performance implications on TCP for low-priority flows.}.
+The key difference between our last experiment and this one lies in the variation of flow sizes and the distribution of load across priority queues.
+\begin{figure*}[ht]
+    \centering
+    \subfloat[Across Load]{
+        \includegraphics[width=0.32\textwidth]{res/wlcoloc/conext23-wlcol-ml4mb-acrossload.pdf}
+        \label{fig:eval-wl-ml-load}}    
+    \subfloat[Across flow sizes]{
+        \includegraphics[width=0.32\textwidth]{res/wlcoloc/conext23-wlcol-ml4mb-acrossfs.pdf}
+        \label{fig:eval-wl-ml-fs}}
+    \subfloat[Across Update Size]{
+        \includegraphics[width=0.32\textwidth]{res/wlcoloc/conext-wlcol-acrossmodelsizes.pdf}
+        \label{fig:eval-wl-ml-ms}} 
+    \caption{TCP's performance under workload co-location scenario across different loads, flow sizes and ML-model gradient update sizes in the high priority queue: 
+    (a) shows the performance of TCP for low-priority flows when high priority traffic exhibit an \emph{on-off} behavior caused by the gradient update of size 4MB across different loads.
+    (b) evaluates TCP across different flow size for the same workload at high load.
+    (c) compares TCP's performance across different gradient update sizes.}
+\label{fig:eval-wl-col}
+\vspace{-0.1in}
+\end{figure*}
+
+\paragraph{Setup:}
+For this experiment, we consider the \emph{web-search}~\cite{dctcp} and \emph{data-mining}~\cite{vl2} workloads. Following the guidelines in~\cite{dctcp}, we classify all flows of size greater or equal to 1MB as long flows.
+We assign low-priority to the long flows and high priority to the rest of the flows (flow size less than 1MB). Flows are generated at \emph{low}, \emph{medium} and \emph{high} loads in a poisson process. 
+
+\paragraph{Observation:} For the \emph{web-search} workload, the high priority flows are relatively large compared to the \emph{data mining} workload hence, for a given load setting, the flow arrivals in the high priority queue tend to be less bursty.
+Contrarily, the \emph{data-mining} workload exhibits extreme skewness, with over 80\% of the flows being less than 10KB in size (hence, the arrival process tends to be bursty). Approx. 3\% of the flows are larger than 35MB and contribute to about 95\% to the overall load~\cite{pfabric}. 
+
+Figure~\ref{fig:eval-netsched-sjf-web} shows that TCP's performance is within 2$\times$ to the \nearopt{} for web-search workload whereas, for the data-mining workload this difference can be up to 3$\times$. For instance, under high load, at 99.9\textsuperscript{th} percentile, the performance gap between TCP and \nearopt{} is 44\% larger for the data-mining workload compared to the \emph{web-search} workload. 
+
+Overall, under both web-search and data-mining workloads, the low-priority queues experience the bulk of the total load (low load in the high priority queue).
+Consequently, similar to the DAS experiment, this yields enough bandwidth for low-priority flows, shielding TCP from the challenges of network prioritization.
+
+
+\subsection{\textbf{Workload Co-Location}}
+\label{sec:eval-wl-col}
+
+We now consider the scenario where two different applications are co-located to share cloud resources.
+We broadly focus on the storage harvesting case -- a common scenario to utilize the spare storage capacity in compute intensive clusters~\cite{wl-col-ms-harvest}. 
+
+\paragraph{Experiment Setup:}
+We consider a storage workload from Alibaba's cluster~\cite{alibaba_storage} to generate low-priority flows. Since storage applications are often bottlenecked by the storage media, they tend to have a smaller network footprint; thus, we consider low load in the low-priority queue for this workload.
+For high priority traffic, we consider a distributed machine learning (ML) training workload.
+Distributed ML training typically involves utilizing a parameter server~\cite{psarch-osdi14} to periodically aggregate (disseminate) gradient updates from (to) multiple workers -- a process that takes place after each training iteration~\cite{tiresias} and often leads to an incast on the parameter server link, when updates from multiple workers converge. The combination of incast and the periodicity in the arrival process of these updates gives rise to an \emph{on-off} network behavior.
+The specific properties of the \emph{on-off} behavior (e.g., the aggregate load, the size and frequency of \emph{on} periods) is a function of various factors such as the machine learning models and the underlying hardware and the software stack~\cite{tiresias,byteps,theory-distributed-dnn}. 
+By default, we consider a gradient update size of 500KB from each worker (also referred as flow size), resulting in an aggregate update of 4MB (8:1 incast) on the parameter server's link. By adjusting the frequency of these gradient updates, we can control the load (low, medium, and high) on the bottleneck link. Additionally, we will assess the impact of different gradient update sizes in subsequent evaluations.
+
+\paragraph{Observation:} 
+Figure~\ref{fig:eval-wl-ml-load} exhibits TCP's performance across different load settings. Notably, TCP experience more than 4$\times$ performance difference compared to the \nearopt{} under high load while this gap is within 2$\times$ at low and medium loads. This outcome is expected because of the continued availability of link capacity for low-priority flows at low and medium loads which keeps the feedback loop of low-priority flows active.
+
+Zooming in on the high load scenario, in figure~\ref{fig:eval-wl-ml-fs} we examine the performance implications across different flow sizes. We observe that TCP experience performance degradation regardless the flow size. The medium flows suffers the most, up-to $4.9\times$.
+To further investigate this phenomenon, we repeat the experiment across different update sizes. 
+Figure~\ref{fig:eval-wl-ml-ms} shows that as the size of gradient updates increases, the performance gap between TCP and \nearopt{} continues to widen. Specifically, when the update size reaches 12MB, the performance gap surpasses $10\times$. For updates of larger sizes, the long duration of \emph{on} period in the high priority queue results in the starvation of the low-priority flows. Consequently, the duration of \emph{on} period becomes a dominant factor in determining the flow completion times which masks the protocol's inefficiencies and makes the choice of protocol irrelevant resulting in a significant reduction in the performance gap between TCP and \nearopt{}.
+
+
+\subsection{\textbf{Hybrid Services}}\label{subsubsec:eval-hybservice}
+\label{sec:eval-hybserv}
+We now consider the use-case of hybrid services.
+Recall that a key aspect of this use-case is the co-existence of a high performance transport protocol (e.g., HPCC~\cite{hpcc}) for the high-priority traffic and TCP for low-priority traffic.
+Unlike TCP -- which requires multiple round-trip times to fully utilize the link -- a high performance transport protocol can quickly saturate the link hence, the presence of a long flow in the high priority queue can completely halt the feedback loop of a low-priority flow.
+
+\paragraph{Setup:}
+For the high priority traffic, we use \nearopt{} as our high performance transport due to its ability to quickly saturate link bandwidth.
+We use one node as a storage client while other nodes in the cluster act as storage servers.
+The client fetches storage objects using two independent poisson processes (one for each priority class).
+We use fixed flow sizes of 32KB, 64KB,128KB, and 1MB and keep the aggregate load (high priority+low-priority) at 80\% while changing its distribution across the two priority classes.
+
+\paragraph{Observation:}
+Fig~\ref{fig:eval-hybservice-30P} shows TCP's performance across different flow sizes at medium load in the low-priority queue (50\% load in high priority queue - 30\% load in the low-priority).
+In this particular use-case, we observe that TCP exhibits superior performance for short flows compared to the long flows. This can be attributed to the high efficiency of \nearopt{} in the high priority queue, which can rapidly saturate the link, consequently having a greater impact on the feedback loop of low-priority flows. As long flows remain in the network for an extended duration, they become more susceptible to repeated stalls, leading to performance issues.
+Fig~\ref{fig:eval-hybservice-128KB} shows TCP's performance across different loads in the low-priority queue. We notice that the load settings matter less and TCP experience similar performance across different load configurations.
+\begin{figure}
+  \centering
+    \subfloat[Impact of Flow Size]{\includegraphics[width=0.48\columnwidth]{res/hybservice/conext23-hyb-acrossfs.pdf}
+    \label{fig:eval-hybservice-30P}}
+    \subfloat[Impact of Load]{\includegraphics[width=0.48\columnwidth]{res/hybservice/conext23-hyb-acrossload.pdf}
+    \label{fig:eval-hybservice-128KB}}    
+	\caption{Shows TCP's performance for \textit{Hybrid Services} use-case at 80\% total load (High + low-priority). (a)  Shows TCP's performance at 30\% load in the low-priority queue across different flow sizes. In this case, TCP's performance improves as the flow size decreases. (b) Shows TCP's performance for 128KB flow sizes across different load settings for low-priority queue. With increased load in the low-priority queue the performance gap between TCP and \nearopt{} increases.}
+    \label{fig:eval-hybservice}
+\end{figure}
+In conclusion, for this use-case, we find that the flow size (workload) is the dominant factor in determining the performance implications for TCP.
+
+\begin{figure}[!ht]
+    \begin{minipage}{\linewidth}
+        \begin{subfigure}{.32\linewidth}
+            \includegraphics[width=\linewidth]{res/testbed/wlcol/testbedvsns3-wlcol-65_10-small.pdf}
+            \caption{\emph{On-Off} - Small}
+            \label{fig:TBVSSim-WLCOL-Small}
+        \end{subfigure}%
+        \begin{subfigure}{.32\linewidth}
+            \includegraphics[width=\linewidth]{res/testbed/wlcol/testbedvsns3-wlcol-65_10-med.pdf}
+            \caption{\emph{On-Off} - Med}
+            \label{fig:TBVSSim-WLCOL-Med}
+        \end{subfigure}%
+        \begin{subfigure}{.32\linewidth}
+            \includegraphics[width=\linewidth]{res/testbed/wlcol/testbedvsns3-wlcol-65_10-long.pdf}
+            \caption{\emph{On-Off} - Long}
+            \label{fig:TBVSSim-WLCOL-Long}
+        \end{subfigure}%
+    \end{minipage}%
+    
+    \begin{minipage}{\linewidth}
+        \centering
+        \begin{subfigure}{.32\linewidth}
+            \includegraphics[width=\linewidth]{res/testbed/netsched/testbedvsns3-das-128KB-30.pdf}
+            \caption{DAS - 128KB}
+            \label{fig:TBVSSim-DAS-128KB}
+        \end{subfigure}%
+        \begin{subfigure}{.32\linewidth}
+            \includegraphics[width=\linewidth]{res/testbed/netsched/testbedvsns3-das-1MB-30.pdf}
+            \caption{DAS - 1MB}
+            \label{fig:TBVSSim-DAS-1MB}
+        \end{subfigure}%
+    \end{minipage}
+    \caption{Compares performance of low-priority flows from testbed results and NS3 based simulation results under network scheduling~\S\ref{sec:eval-netsched} (a-c) and workload co-location~\S\ref{sec:eval-wl-col} (d-e) use-cases to establish the fidelity of our simulations.} 
+    \label{fig:eval-TBVSSim}    
+\end{figure}
+\subsection{Testbed Evaluation}
+\label{subsec:testbed-eval}
+To establish the fidelity of our simulation results, we now repeat a set of experiment on a real testbed and compare the results with the simulation results.
+
+\paragraph{Testbed Setup:}
+For our testbed evaluations we provisioned 9 Dell servers on CloudLab~\cite{cloudlab} that are connected with a Mellanox SN2410 switch via 10Gbps links. Each server is powered by 10$\times$core Intel E5-2640v4 processor and 64GB RAM and runs on a linux based operating system. To enable network prioritization, we leverage linux queuing discipline at the end hosts -- a common practice employed in cloud systems -- whereas, inside the network, we enable strict priority queuing at the switch.
+We focus on two use-cases of workload co-location~\S\ref{sec:eval-wl-col} and network scheduling~\S\ref{sec:eval-netsched} to draw the comparison between simulation and testbed results. Note that our testbed experiments lacks coverage of \emph{hybrid services} use-case because of practical constraints in realizing \nearopt{} in a real testbed. 
+We configure the network switch and linux stack at the end-host using the same settings as used in our simulation with the exception of adjusting the \emph{RTO\textsubscript{min}} to 5ms -- the smallest value we could configure in our setup without using \emph{hrtimers}~\cite{hrtimer-sigcomm09}. We also repeat the NS3 experiments with the updated value of \emph{RTO\textsubscript{min}} for a fair comparison. We thoroughly examine the impact of this modification in~\S\ref{sec:micro}. 
+
+Figure~\ref{fig:eval-TBVSSim} shows a general alignment between our testbed results and NS3 simulation results. However, a closer look reveals noticeable differences (e.g., at the tail for long flows in figure~\ref{fig:TBVSSim-WLCOL-Long}). We attribute these differences to fundamental disparities between NS3 and the Linux stack, particularly highlighting NS3's superior capability in enforcing strict prioritization at the end hosts. 

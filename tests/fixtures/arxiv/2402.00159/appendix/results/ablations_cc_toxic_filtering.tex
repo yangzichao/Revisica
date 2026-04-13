@@ -1,0 +1,115 @@
+\subsection{Toxicity Filtering in Web Pipeline}
+\label{sec:ablations_cc_toxic_filtering}
+
+\label{sec:ablations_cc_toxic_filtering:ppl}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/4chan.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/pile.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/c4_100_domains.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets 4chan~\citep{papasavva2020raiders}, Pile~\citep{Gao2020ThePA} (Val), and C4 100 dom~\citep{chronopoulou-etal-2022-efficient}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/c4.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/manosphere.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets C4~\citep{raffel2020exploring,dodge-etal-2021-documenting} and Manosphere~\citep{ribeiroevolution2021}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/gab.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/ice.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/m2d2_wiki.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Gab~\citep{zannettou2018gab}, ICE~\citep{greenbaum1991ice}, and M2D2~\citep{reid-etal-2022-m2d2} (Wiki)}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/twitteraee.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/mc4_english.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/ppl/m2d2_s2orc.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Twitter AAE~\citep{blodgett-etal-2016-demographic}, mC4~\citep{mc4} (English), and M2D2~\citep{reid-etal-2022-m2d2} (S2ORC)}
+\end{figure}
+
+
+
+\label{sec:ablations_cc_toxic_filtering:downstream}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/openbookqa.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/arc_easy.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/winogrande.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks OpenBookQA~\citep{openbookQA}, ARC-E~\citep{arc}, and WinoGrande~\citep{winogrande}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/sciq.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/hellaswag.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/piqa.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks SciQ~\citep{sciq}, HellaSwag~\citep{zellers2019hellaswag}, and PIQA~\citep{piqa}}
+\end{figure}
+
+
+
+\label{sec:ablations_cc_toxic_filtering:train}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/train/train_cross_entropy.pdf}
+	\end{subfigure}
+	\caption{Training Cross Entropy}
+\end{figure}
+
+
+\FloatBarrier

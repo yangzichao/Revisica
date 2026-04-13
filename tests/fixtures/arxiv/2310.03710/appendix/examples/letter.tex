@@ -1,0 +1,56 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Familiarize yourself with the English alphabet and the concept of handwritten digit recognition. This dataset is about identifying English capital letters from images that have been converted into numerical data.
+2. Understand that each letter is represented by 16 primitive numerical attributes. These attributes are statistical moments and edge counts derived from the images of the letters.
+
+3. The question will ask you to take the last letters of each word in a given name and concatenate them. This means you need to extract the last letter from each word and join them together to form a new string.
+
+4. To answer the question, you will need to understand how to manipulate strings and extract specific characters. This involves knowing how to index strings and concatenate them.
+
+5. Remember that the dataset contains 20,000 unique stimuli, meaning there is a wide variety of data to work with. However, the task remains the same: identify the letters based on the provided numerical data.
+
+6. Be aware that the numerical data has been scaled to fit into a range of integer values from 0 through 15. This means you might need to normalize or scale your data when working with it.
+
+7. Finally, keep in mind that the data is based on 20 different fonts and each letter within these fonts was randomly distorted. This adds an element of complexity to the task as the same letter can appear differently based on the font and distortion.
+
+8. Use your knowledge of the English alphabet, string manipulation, and numerical data to answer the question. Be sure to consider all the information provided in the dataset and the specific requirements of the question.
+Question: Take the last letters of each words in "Sheree Jackson" and concatenate them.
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+To solve this task, we need to follow the instructions provided. First, we need to familiarize ourselves with the English alphabet and the concept of handwritten digit recognition. We are working with a dataset that contains numerical data representing English capital letters. Each letter is represented by 16 primitive numerical attributes, which are statistical moments and edge counts derived from images of the letters.
+
+Next, we need to understand that the question asks us to take the last letters of each word in a given name and concatenate them. This means we need to extract the last letter from each word and join them together to form a new string.
+
+To do this, we need to manipulate strings and extract specific characters. We can index into the strings to extract the last letter of each word. For example, the first word "Sheree" ends with the letter "e", and the second word "Jackson" ends with the letter "n".
+
+We can then concatenate these letters to form a new string. In this case, the new string would be "e n".
+
+It's important to note that the numerical data has been scaled to fit into a range of integer values from 0 through 15. Therefore, we might need to normalize or scale our data when working with it.
+
+Additionally, we need to keep in mind that the data is based on 20 different fonts, and each letter within these fonts was randomly distorted. This means that the same letter can appear differently based on the font and distortion.
+
+Using our knowledge of the English alphabet, string manipulation, and numerical data, we can answer the question. The last letters of each word in "Sheree Jackson" are "e" and "n", which concatenated form the string "en".
+
+Answer: en
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+
+Answer: en
+\end{alltt}
+}}
+\caption{A complete running example of Last Letter Concatenation.}
+\label{fig:letter_example}
+\end{figure*}

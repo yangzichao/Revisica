@@ -1,0 +1,16 @@
+\begin{figure*}[h]
+\centering
+\begin{minipage}{0.98\textwidth}
+\setlength{\fboxsep}{1em} %
+\setlength{\fboxrule}{1pt} %
+\fcolorbox{black}{white}{ %
+\parbox{.90\textwidth}{
+\begin{alltt}
+\textcolor{cyan}{\{Reasoning Extraction Prompt\}}\textcolor{cyan}{\{Reasoning Extraction Prompt Output\}} \newline \newline Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+\end{alltt}
+}
+}
+\caption{Answer extraction prompt for the CoT reasoning of \zeroshotmid\ \method\ on a generation dataset. Generation datasets that also belong to the reasoning category use the same prompt.}
+\label{table:reasoning-prompts-generation}
+\end{minipage}
+\end{figure*}

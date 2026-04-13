@@ -1,0 +1,58 @@
+\begin{figure*}[htbp]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The dataset involves mathematical operations like addition and subtraction in a contextual setting. The operations are performed on 'objects' in different 'locations'. 
+
+2. Identify the operation: The operation could be addition or subtraction. This can be identified from the 'verb' in the prompt. For example, if the verb is 'add', the operation is addition. If the verb is 'remove', the operation is subtraction.
+
+3. Perform the operation: Once the operation is identified, perform it on the 'number' of 'objects'. For example, if the operation is addition and the number of objects is 2 and 3, the result is 5. If the operation is subtraction and the number of objects is 5 and 3, the result is 2.
+
+4. Answer the question: The question at the end of the prompt asks 'how many [object] [verb] [subject] [preposition] [location]?'. Use the result from the operation to answer this question.
+
+5. Topics to know: Basic understanding of addition and subtraction, understanding of prepositions and their use in sentences, ability to understand context from a sentence.
+
+6. Steps to answer the question: 
+
+   a. Understand the context from the prompt.
+
+   b. Identify the operation from the verb.
+
+   c. Perform the operation on the number of objects.
+
+   d. Use the result to answer the question at the end of the prompt.
+
+Remember, the key is to understand the context, identify the operation, perform it, and use the result to answer the question.
+
+Question: Joan found 70 seashells on the beach . she gave Sam some of her seashells . She has 27 seashell . How many seashells did she give to Sam ?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+1. Understand the context: The context of the problem is that Joan found 70 seashells on the beach and gave some of them to Sam. The problem is asking for the number of seashells that Joan gave to Sam.
+
+2. Identify the operation: The operation in this problem is subtraction. The verb "gave" implies that Joan gave some of her seashells to Sam, which means that the number of seashells she has now is less than the number of seashells she found.
+
+3. Perform the operation: To perform the operation, we need to find out how many seashells Joan has now and then subtract that number from the number of seashells she found. The problem states that Joan has 27 seashells now. If we subtract 27 from 70, we get 43.
+
+4. Answer the question: The question asks, "How many seashells did she give to Sam?" The answer to this question is 43 seashells.
+
+Therefore, the correct answer is 43 seashells.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+
+Answer: 43
+\end{alltt}
+}}
+\caption{A complete running example of AddSub.}
+\label{fig:addsub_example}
+\end{figure*}

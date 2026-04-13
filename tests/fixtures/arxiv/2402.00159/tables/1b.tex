@@ -1,0 +1,66 @@
+
+
+\begin{table}[h!]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.1}
+    \begin{tabular}{c@{}c@{}c@{}c@{}c}
+    \toprule
+        {
+            \renewcommand{\arraystretch}{1}
+            \begin{tabular}[c]{@{}c@{}}
+            \textbf{Task} 
+            \vspace{0em}
+            \end{tabular}
+        }  & 
+        {
+            \renewcommand{\arraystretch}{1}
+            \rotatebox{70}{\begin{tabular}[c]{@{}c@{}}
+            {\footnotesize \hyperlink{cite.stablelm}{StableLM$_\mathbf{2}$}} \\
+            {\footnotesize (1.6B) }
+            \vspace{0em}
+            \end{tabular}}
+        }  & 
+        {
+            \renewcommand{\arraystretch}{1}
+            \rotatebox{70}{\begin{tabular}[c]{@{}c@{}}
+            {\footnotesize \hyperlink{cite.Biderman2023PythiaAS}{Pythia}} \\
+            {\footnotesize (1.1B) }
+            \vspace{0em}
+            \end{tabular}}
+        }  & 
+        {
+            \renewcommand{\arraystretch}{1}
+            \rotatebox{70}{\begin{tabular}[c]{@{}c@{}}
+            {\footnotesize \hyperlink{cite.tinyllama}{TinyLlama}} \\
+            {\footnotesize (1.1B) }
+            \vspace{0em}
+            \end{tabular}}
+        }  & 
+        {
+            \renewcommand{\arraystretch}{1}
+            \rotatebox{70}{\begin{tabular}[c]{@{}c@{}}
+            {\footnotesize \textbf{\color{VarnishBravoThree}\OlmoTiny} } \\
+            {\footnotesize \color{VarnishBravoThree} (1.2B) }
+            \vspace{0em}
+            \end{tabular}}
+        }   \\
+    \midrule
+    {\textit{\hyperlink{cite.arc}{ARC-E}}} & 63.7 & 50.2 & 53.2 & {\color{VarnishBravoThree}58.1} \\
+    {\textit{\hyperlink{cite.arc}{ARC-C}}} & 43.8 & 33.1 & 34.8 & {\color{VarnishBravoThree}34.5} \\
+    {\textit{\hyperlink{cite.clark2019boolq}{BoolQ}}} & 76.6 & 61.8 & 64.6 & {\color{VarnishBravoThree}60.7} \\
+    {\textit{\hyperlink{cite.zellers2019hellaswag}{HellaSwag}}} & 68.2 & 44.7 & 58.7 & {\color{VarnishBravoThree}62.5} \\
+    {\textit{\hyperlink{cite.openbookqa}{OpenBookQA}}} & 45.8 & 37.8 & 43.6 & {\color{VarnishBravoThree}46.4} \\
+    {\textit{\hyperlink{cite.piqa}{PIQA}}} & 74.0 & 69.1 & 71.1 & {\color{VarnishBravoThree}73.7} \\
+    {\textit{\hyperlink{cite.sciq}{SciQ}}} & 94.7 & 86.0 & 90.5 & {\color{VarnishBravoThree}88.1} \\
+    {\textit{\hyperlink{cite.winogrande}{WinoGrande}}} & 64.9 & 53.3 & 58.9 & {\color{VarnishBravoThree}58.9} \\
+    \midrule
+    \textbf{Average} & \textbf{\textit{66.5}} & \textbf{54.5} & \textbf{59.4} & {\color{VarnishBravoThree}\textbf{60.3}} \\
+    \bottomrule
+    \end{tabular}
+    \vspace{1em}
+    \caption{
+        Comparison of \OlmoTiny and other similarly-sized language models on our evaluation suite. 
+    }
+    \label{table:1b-eval}
+\end{table}

@@ -1,0 +1,38 @@
+
+
+
+\section{Introduction}
+
+Language models are now central to tackling myriad natural language processing tasks, including few-shot learning, summarization, question answering, and more.
+Increasingly, the most powerful language models are built by a few organizations who withhold most model development details~\citep{claude-announce,OpenAI2023GPT4TR,Anil2023PaLM2T,Gemini-Team2023-gn}. 
+In particular, the composition of language model pretraining data is often vaguely described, even in cases where the model itself is released for public use, such as Llama~2~\citep{Touvron2023Llama2O}.  
+This hinders understanding of the effects of pretraining corpus composition on model capabilities and limitations, with impacts on scientific progress as well as on the public who interfaces with these models. 
+Our aim is to increase participation in scientific research of language models through open corpora:
+\begin{itemize}[leftmargin=1em]
+    \item  Data transparency helps developers and users of \textbf{applications} that rely on language models to make more informed decisions~\citep{gebru2021datasheets}.  
+    For example, models have shown to perform better on tasks that are more similar to their pretraining data~\citep{razeghi-etal-2022-impact,pmlr-v202-kandpal23a},
+    or social biases in models' pretraining data may necessitate additional consideration when using them~\citep{feng-etal-2023-pretraining,Navigli2023Biases,seshadri2023bias}.
+    \item Open pretraining data is necessary to \textbf{analyze} 
+    how its composition influences model behavior, allowing those training models to interrogate and improve current data practices~\citep{Longpre2023APG,Gao2021EmpircalEQ,wimbd}. 
+    Examples of this research include memorization~\citep{Carlini2022-mj,Chang2023SpeakMA}, deduplication~\citep{lee-etal-2022-deduplicating}, adversarial attacks~\citep{wallace-etal-2021-concealed}, benchmark contamination~\citep{magar-schwartz-2022-data}, and training data attribution~\citep{Hammoudeh2022TrainingDI,Grosse2023StudyingLL}.
+\end{itemize}
+
+
+To support broader participation and inquiry in these lines of research, we present \textbf{D}ata for \textbf{O}pen \textbf{L}anguage \textbf{M}odels' \textbf{A}ppetite (\dolma), an open corpus of three trillion tokens designed to support language model pretraining research. 
+We source much of our data from sources similar to those present in past work, including a mix of web text from Common Crawl, scientific research from Semantic Scholar, code from GitHub, public domain books, social media posts from Reddit, and encyclopedic materials from Wikipedia.
+Compared to other publicly-available pretraining corpora, \dolma offers a larger pool of tokens at comparable quality while maintaining diverse data composition. 
+In summary, our contributions are two-fold:
+
+\begin{itemize}[leftmargin=1em,topsep=1mm,itemsep=1mm]
+    \item We release the \textbf{\dolma Corpus}, a diverse, \textbf{multi-source} collection of 3T tokens\footnote{We follow the definition of ``token'' as a subword obtained using a tokenizer (such as LLaMA’s or GPT-NeoX’s), which is distinct from ``word'', as in a unit of text as defined by the \href{https://unicode.org/reports/tr29/}{Unicode text segmentation standard}.} across over 4B documents acquired from 6 different data sources that are (\textit{i}) commonly seen in large-scale language model pretraining and (\textit{ii}) made accessible to the general public.  
+    Table~\ref{tab:statistics} provides a high-level overview of the amount of data from each source.
+    \item We open source the \textbf{\dolma Toolkit}, a high-performance, portable tool designed to efficiently curate large datasets for language model pretraining. 
+    Through this toolkit, practitioners can not only reproduce our dataset, but also study and improve data curation practices. 
+\end{itemize}
+
+
+
+
+
+
+

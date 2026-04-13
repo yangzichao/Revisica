@@ -1,0 +1,116 @@
+\section{(Lack of) details about pretraining data curation for both open and closed language models}
+\label{sec:pretrain-data-llms}
+
+We provide a high-level overview of the pretraining data curation practices (or lack of reporting therof) of the largest, most performant language models (in no particular order) to illustrate the need for clear documentation and transparency around dataset curation.
+
+
+\subsection{PaLM 2~\citep{Anil2023PaLM2T}}\label{appendix:llm:palm2} 
+
+\citet{Anil2023PaLM2T} provides limited information on pretraining data used for PaLM 2; we summarize what we could from gather from their manuscript's Sections 3 and D1:
+
+\begin{enumerate}
+    \item \textbf{Corpus size}. Unreported other than it's larger than what was used to train PaLM~\citep{Chowdhery2022PaLMSL}
+    \item \textbf{Data provenance}. Unreported other than they use web documents, books, code, mathematics, and conversational data. 
+    \item \textbf{PII}. Reported as performed filtering, but without further details.
+    \item \textbf{Toxicity}. Toxic text identified using \href{https://perspectiveapi.com/}{Perspective API} but lacking details needed for reproduction (i.e., text unit, threshold). No details on removal. They did report tackling toxicity through the use of control tokens, but do not provide enough details on this method.
+    \item \textbf{Language ID}. Reports the most frequent languages included as well as their frequencies. Lacking details needed for reproduction (i.e., text unit, tools used, threshold).
+    \item \textbf{Quality}.  Reported as performed filtering, but without further details.
+    \item \textbf{Deduplication}. Reported as performed filtering, but without further details.
+    \item \textbf{Decontamination}. N/A.
+    \item \textbf{Other}. \citet{Anil2023PaLM2T} report aggregated statistics of how often certain demographic identities are represented (or not) in the data. Such statistics include identities (e.g., American) or English pronouns. These were identified using tools such as \href{https://knowyourdata.withgoogle.com/}{KnowYourData} or those available on \href{https://cloud.google.com/natural-language/docs/classifying-text}{GoogleCloud}, but the manuscript lacks specifics necessary for reproduction.
+\end{enumerate}
+
+
+
+
+\subsection{GPT-4~\citep{OpenAI2023GPT4TR}}\label{appendix:llm:gpt4} 
+
+\citet{OpenAI2023GPT4TR} provides limited information on pretraining data used for GPT-4; we summarize what we could from gather from their manuscript's Section 2, Appendix C and D, footnotes 5, 6, 10 and 27, and Sections 1.1 and 3.1 in the System Card:
+
+
+\begin{enumerate}
+    \item \textbf{Corpus size}. N/A
+    \item \textbf{Data provenance}. N/A aside from reporting that (1) data was sourced from both the Internet as well as third-party providers, (2) data was sourced mainly before September 2021 with trace amounts of more recent data, and (3) they included GSM-8K~\citep{Cobbe2021TrainingVT} as a tiny fraction of the total pretraining mix.
+    \item \textbf{PII}. N/A.
+    \item \textbf{Toxicity}. Removed documents that violate their usage policies from pretraining, including ``erotic content,'' using a combination of lexicon-based heuristics and bespoke classifiers following \citet{markov-2023-holistic-approach-undesired-content-detection}.
+    \item \textbf{Language ID}. N/A aside from reporting that the majority of pretraining data is in English.
+    \item \textbf{Quality}. N/A.
+    \item \textbf{Deduplication}. N/A.
+    \item \textbf{Decontamination}. No discussion of decontamination procedures, but instead reported post-hoc statistics measuring extent of contamination on professional and academic exams, as well as several academic benchmarks. Method for identifying contamination based on exact substring match (after removing whitespaces) of a test example against a pretraining data example. They reported some contamination with BIG-Bench~\citep{srivastava2023beyond}.
+    \item \textbf{Other}. There are myraid works performing ``data archeology'' on GPT-4 that is, attempting to glean information about the pretraining data used in GPT-4 through probes for memorization. For example, \citet{Chang2023SpeakMA} show GPT-4 can generate sequences from copyrighted books. We do not attempt to survey all of these investigative works.
+\end{enumerate}
+
+
+\subsection{Claude~\citep{claude-announce}}\label{appendix:llm:claude} 
+
+Unfortunately, we know next to nothing about the pretraining data used for Claude. 
+
+
+\subsection{Llama 2~\citep{Touvron2023Llama2O}}\label{appendix:llm:llama2} 
+
+\citet{Touvron2023Llama2O} provides limited information on pretraining data used for Llama 2; we summarize what we could from gather from their manuscript's Sections 2.1, 4.1, and A.6:
+
+
+\begin{enumerate}
+    \item \textbf{Corpus size}. 2T tokens.
+    \item \textbf{Data provenance}. N/A aside from they avoided using Meta user data.
+    \item \textbf{PII}. Reported as excluded data from certain websites known to contain high volumes of PII, though what these sites are was not disclosed.
+    \item \textbf{Toxicity}. Not explicitly discussed, but appears to not have performed toxicity filtering, opting instead to handle toxic text generation in a later training stage. They do report results from a post hoc analysis in which they used a HateBERT~\citep{caselli-etal-2021-hatebert} classifier finetuned on ToxiGen~\citep{hartvigsen-etal-2022-toxigen} to score each document line (and averaged to produce a document-level score).
+    \item \textbf{Language ID}. Not stated as used in pretraining data curation, but they provide a post hoc analysis of the pretraining dataset using FastText Language ID with a 0.5 threshold for detected language. We assume this is likely the same protocol they used for pretraining data curation as it is also seen in the CCNet library~\citep{wenzek-etal-2020-ccnet}, which was used for Llama~\citep{Touvron2023LLaMAOA}.
+    \item \textbf{Quality}. N/A.
+    \item \textbf{Deduplication}. N/A.
+    \item \textbf{Decontamination}. They provide extensive reporting on their deduplication method, which relies on a modified version of the ngram deduplication tool from \citet{lee-etal-2022-deduplicating}.
+    \item \textbf{Other}. Reported upsampling certain sources, but without further details. They also report a similar analysis as in PaLM 2~\citep{Anil2023PaLM2T} on aggregate statistics about demographic identities and English pronouns.
+\end{enumerate}
+
+
+
+
+\subsection{LLaMA~\citep{Touvron2023LLaMAOA}}\label{appendix:llm:llama} 
+
+\citet{Touvron2023LLaMAOA} provides some information on pretraining data used for training LLaMA; we summarize what we could gather from their manuscript's Section 2.1.
+
+\begin{enumerate}
+    \item \textbf{Corpus size}. 1.4T tokens. 
+    \item \textbf{Data provenance}. LLaMA used data with known provenance, including five shards of CommonCrawl between 2017 and 2020, C4~\citep{raffel2020exploring}, GitHub code from \href{https://cloud.google.com/bigquery/public-data/}{Google BigQuery public datasets} (restricted to Apache, BSD and MIT licenses), Wikipedia dumps from June to August 2022, Project Gutenberg books, Books3 from The Pile~\citep{Gao2020ThePA}, LaTeX files from arXiv, and StackExchange pages. 
+    \item \textbf{PII}. N/A.
+    \item \textbf{Toxicity}. N/A. Reports evaluation on the RealToxicityPrompts~\citep{gehman-etal-2020-realtoxicityprompts} benchmark.
+    \item \textbf{Language ID}. Reports use of the CCNet library~\citep{wenzek-etal-2020-ccnet}, which employs FastText~\citep{joulin2016fasttext} classifiers to remove non-English text (below a 0.5 threshold). No additional language ID reported for C4, GitHub, Books, arXiv, and StackExchange sets. For Wikipedia, reported restriction of pages to those using Latin or Cyrillic scripts: bg, ca, cs, da, de, en, es, fr, hr, hu, it, nl, pl, pt, ro, ru, sl, sr, sv, uk.
+    \item \textbf{Quality}. Reports use of the CCNet library~\citep{wenzek-etal-2020-ccnet} to remove low-quality content from CommonCrawl; CCNet uses KenLM~\citep{heafield-2011-kenlm}, an $n$-gram language model to score perplexity of text as a measure of similarity to Wikipedia text. They do not report their chosen threshold for filtering. They also report use of a linear model trained to classify pages as Wikipedia Reference-like or not. They also report light heuristic filtering of boilerplate content for GitHub and Wikipedia subsets.
+    \item \textbf{Deduplication}. Reports use of the CCNet library~\citep{wenzek-etal-2020-ccnet} to identify duplicated lines for Common Crawl texts, file-level exact match deduplication for GitHub code, and deduplicating books with over 90\% for Gutenberg and Books3 subsets. 
+    \item \textbf{Decontamination}. N/A.
+    \item \textbf{Mixture}. The manuscript reports a mixture of 67\% CommonCrawl, 15\% C4, 4.5\% GitHub, 4.5\% Wikipedia, 4.5\% Books, 2.5\% arXiv, and 2.0\% StackExchange. Model training was a single epoch over this mixture except for an upsampling of Wikipedia and Books (2 epochs).
+\end{enumerate}
+
+
+\subsection{OPT~\citep{zhang-2022-language}}\label{appendix:llm:opt} 
+
+From \citet{zhang-2022-language}'s manuscript and provided datasheet~\citep{gebru2021datasheets}, we summarize the following:
+
+The OPT model was trained on \textbf{180B tokens} from data sources with known \textbf{provenance}: the datasets used for RoBERTa~\citep{Liu2019RoBERTaAR}, a subset of the Pile~\citep{Gao2020ThePA}, and the Pushshift Reddit Dataset~\citep{pushshift} as processed by \citep{roller-etal-2021-recipes}. They made several notable changes to these sources:
+
+\begin{enumerate}
+    \item \emph{RoBERTa}.  Reports updated the CC-News collection up to September 2021.
+    \item \emph{Pile}. Reports restricted to the following collections: CommonCrawl, DM Mathematics, Project Gutenberg, HackerNews, OpenSubtitles, OpenWebText2, USPTO and Wikipedia. \citep{zhang-2022-language} report omission of other Pile subsets due to gradient norm spikes at the 1B model scale.
+    \item \emph{Pushshift Reddit}. 
+    Reports restricted to only the longest chain of comments in each thread; an operation that reportedly reduced the dataset by 66\%.
+\end{enumerate}
+
+
+Also describes: (1) \textbf{deduplication} using MinHashLSH~\citep{rajaraman-ullman-minhash-lsh} with a Jaccard similarity threshold of 0.95, and (2) \textbf{language ID} filtering to English-only text, though they do not describe the method used. 
+
+They do not discuss whether they do (or do not) perform any processing for \textbf{PII}, \textbf{toxicity}, \textbf{quality}, or \textbf{decontamination}. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

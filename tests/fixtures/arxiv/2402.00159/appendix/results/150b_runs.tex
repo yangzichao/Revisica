@@ -1,0 +1,127 @@
+\subsection{Comparing \dolma With Other Corpora}
+\label{sec:150b_runs}
+
+\label{sec:150b_runs:ppl}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/4chan.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/wikitext_103.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/pile.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets 4chan~\citep{papasavva2020raiders}, WikiText 103~\citep{merity2016pointer}, and Pile~\citep{Gao2020ThePA} (Val)}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/c4_100_domains.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/penn_treebank.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/gab.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets C4 100 dom~\citep{chronopoulou-etal-2022-efficient}, Penn Tree Bank~\citep{marcus-etal-1994-penn}, and Gab~\citep{zannettou2018gab}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/ice.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/m2d2_wiki.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/twitteraee.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets ICE~\citep{greenbaum1991ice}, M2D2~\citep{reid-etal-2022-m2d2} (Wiki), and Twitter AAE~\citep{blodgett-etal-2016-demographic}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/manosphere.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Manosphere~\citep{ribeiroevolution2021}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/mc4_english.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/m2d2_s2orc.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/ppl/c4.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets mC4~\citep{mc4} (English), M2D2~\citep{reid-etal-2022-m2d2} (S2ORC), and C4~\citep{raffel2020exploring,dodge-etal-2021-documenting}}
+\end{figure}
+
+
+
+\label{sec:150b_runs:downstream}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/downstream/openbookqa.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/downstream/arc_easy.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/downstream/winogrande.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks OpenBookQA~\citep{openbookQA}, ARC-E~\citep{arc}, and WinoGrande~\citep{winogrande}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/downstream/sciq.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/downstream/hellaswag.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/downstream/piqa.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks SciQ~\citep{sciq}, HellaSwag~\citep{zellers2019hellaswag}, and PIQA~\citep{piqa}}
+\end{figure}
+
+
+
+\label{sec:150b_runs:train}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/150b_runs/train/train_cross_entropy.pdf}
+	\end{subfigure}
+	\caption{Training Cross Entropy}
+\end{figure}
+
+
+\clearpage

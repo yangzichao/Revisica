@@ -1,0 +1,10 @@
+\label{appendix:cot}
+We contrast several chain-of-thought approaches on MMLU and discuss their results in this section. We proposed a new approach where model produces k chain-of-thought samples, selects the majority vote if the model is confident above a threshold, and otherwise defers to the greedy sample choice. The thresholds are optimized for each model based on their validation split performance. The proposed approach is referred to as {\it{uncertainty-routed chain-of-thought}}. The intuition behind this approach is that chain-of-thought samples might degrade performance compared to the maximum-likelihood decision when the model is demonstrably inconsistent.
+We compare the gains from the proposed approach on both Gemini Ultra and GPT-4 in Figure~\ref{fig:cot-mmlu}. We find that Gemini Ultra benefits more from this approach compared to using only chain-of-thought samples. GPT-4's performance improves from 84.2\% with greedy sampling to 87.3\% with uncertainty-routed chain-of-thought approach with 32 samples, but it already achieves these gains from using 32 chain-of-thought samples. In contrast, Gemini Ultra improves its performance significantly from 84.0\% with greedy sampling to 90.0\% with uncertainty-routed chain-of-thought approach with 32 samples while it marginally improves to 85.0\% with the use of 32 chain-of-thought samples only. 
+
+\begin{figure}[h!]
+\centering
+ \includegraphics[width=.75\textwidth,keepaspectratio]{figs/MMLU_final_v4.pdf}
+ \caption{Chain-of-Thought with uncertainty routing on MMLU.}
+ \label{fig:cot-mmlu}
+\end{figure}

@@ -1,0 +1,52 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the dataset: The svamp dataset contains elementary-level Math Word Problems (MWP) in English. The problems are designed to test a model's ability to be question sensitive, have robust reasoning ability, and be invariant to structural alterations.
+
+2. Analyze the question: Each question in the dataset is a short natural language narrative that describes a state of the world and poses a question about some unknown quantities. Make sure to carefully read and understand the problem before attempting to solve it.
+
+3. Solve the problem: Use your mathematical knowledge to solve the problem. This may involve basic arithmetic, fractions, percentages, or simple algebra. 
+
+4. Check your answer: Always double-check your calculations to ensure accuracy.
+
+5. Answer in complete sentences: Since the dataset is in English and the modality is text, make sure to answer in complete, grammatically correct sentences.
+
+6. Be sensitive to the question: The dataset tests if the model is question sensitive. This means that the model should be able to understand and respond to the specific question being asked, rather than giving a generic or unrelated answer.
+
+7. Show robust reasoning ability: The dataset also tests the model's reasoning ability. This means that the model should be able to logically work through the problem and come up with a correct and reasonable answer.
+
+8. Be invariant to structural alterations: The dataset tests if the model is invariant to structural alterations. This means that the model should be able to solve the problem even if the structure of the problem is altered slightly.
+
+Remember, the goal is not just to get the correct answer, but to demonstrate a clear understanding of the problem and a logical approach to solving it.
+
+Question: Each pack of dvds costs 76 dollars. If there is a discount of 25 dollars on each pack How much do you have to pay to buy each pack?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+To solve this problem, we need to find the new price of each pack of DVDs after the discount is applied. The discount is 25 dollars, so we need to subtract 25 dollars from the original price of 76 dollars.
+
+76 dollars - 25 dollars = 51 dollars
+
+Therefore, the new price of each pack of DVDs is 51 dollars.
+
+Answer: 51 dollars.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+
+Answer: 51 dollars.
+\end{alltt}
+}}
+\caption{A complete running example of SVAMP.}
+\label{fig:svamp_example}
+\end{figure*}

@@ -1,0 +1,43 @@
+\section{Introduction}
+\label{sec:intro}
+
+In this measurement paper, we investigate the interplay of two important aspects of today's cloud systems: (1) the widespread adoption of network prioritization and (2) the prevalent use of TCP as the primary transport protocol.
+Our specific focus is on understanding the suitability of TCP for low-priority flows, and we frame our inquiry as: \textit{Is TCP good enough for low-priority flows under a cloud setting?}
+
+Modern cloud systems host a multitude of applications with varying performance objectives.
+To support these needs, there has been a widespread move towards adopting network prioritization (i.e., using priority queues inside switches). 
+Network prioritization guarantees isolation across different types of applications, enabling various use-cases such as network flow scheduling (e.g., DAS~\cite{das}, pFabric~\cite{pfabric}, Homa~\cite{homa}, Baraat~\cite{baraat}) and workload co-location (e.g., perfIso~\cite{perfIso}, Heracles~\cite{heracles}, SmartHarvest~\cite{smart-harvest}).
+For example, EBB~\cite{ebb}, Meta's backbone network, services several traffic classes in a strictly prioritized manner.
+A new use-case of prioritization is in the context of RDMA-based stacks where network operators can use the TCP/IP traffic as a reliable and robust low-priority backup, with RDMA-based traffic as the higher priority traffic in the system~\cite{pangu}.
+For many of the above use-cases, the performance of low-priority flows -- albeit less important than the high priority traffic -- is still important. 
+For example, in systems like DAS~\cite{das} which uses duplication to reduce tail latency, a lower priority flow may determine the application performance if the corresponding high priority flow becomes a straggler. 
+
+On the other hand, despite a large body of work highlighting the performance implications of using TCP for latency-critical applications~\cite{pdq,p3,pfabric,d2tcp,dctcp}, it remains the defacto protocol in today's cloud systems for important reasons such as backward compatibility and stability~\cite{morgan-stanley-nsdi15,accelnet,pangu,luna}. 
+For instance, a recent work from Alibaba~\cite{luna} emphasized that their preference for TCP stems from the lack of specialized in-network support and the presence of a fleet of servers lacking support for emerging technologies (e.g., DPDK).
+
+This motivates an investigation into potential issues that may arise when TCP is used for low-priority flows under network prioritization.
+To the best of our knowledge, there has been no prior research dedicated to investigating this specific inquiry.
+Intuitively, the use of TCP for low-priority flows can introduce a range of issues. This is primarily because low-priority flows are susceptible to extended queuing delays, which, in the worst-case scenario, can be unbounded~\cite{conquest}. These delays impact TCP's feedback loop, potentially resulting in unnecessary backoffs, and spurious retransmissions, where packets are mistakenly assumed to be lost while they are stuck within network switches.
+
+Building on this intuition, our study evaluates the performance of TCP for low-priority flows across various important use-cases, encompassing a wide range of settings, including characteristics of high and low-priority traffic, the load and workload profiles, and specific TCP and switch configurations (e.g., RTO\textsubscript{min}, buffer size, etc.). 
+Our study has two primary objectives: First, to shed light on the cases where TCP is a suitable choice for low-priority flows and identify scenarios where it is not.
+Second, to explore minor adjustments that can help address any limitations observed in TCP's use for low-priority flows. Our methodology involves conducting experiments on a small-scale testbed and NS3 simulations~\cite{ns3}. We use a subset of experiments to cross-validate the results on both these platforms and then use simulations to explore a wide range of scenarios.
+
+To quantify the impact of network prioritization and to uncover the room for improving performance of low-priority flows beyond what TCP offers, we consider a \emph{near-optimal} (\nearopt{}) fair transport protocol as a baseline. The \nearopt{} protocol has the advantage of instantaneous access to network state information, including available bandwidth, queue lengths, and packet loss details. 
+
+Consequently, it represents an upper-bound that an efficient \emph{fair} transport protocol can achieve for low-priority flows. 
+Our key measurement insights are as follows:
+\begin{itemize}
+    \item For several use-cases (e.g., network scheduling), TCP's performance for low-priority flows is within $2\times{}$ of \nearopt{}. This is because, for such use-cases, low-priority flows frequently get some fraction of network share allowing TCP to continually adapt to the network conditions.
+
+    \item Low-priority TCP flows suffer the most --- more than $12\times{}$ compared to \nearopt{} --- when they coexist with high priority traffic that exhibits an \emph{on-off} behavior (typical of distributed ML model training workloads~\cite{p3,tiresias}). The \emph{on} period can completely starve the low-priority queue, causing TCP's feedback loop to stall and experience severe performance degradation. During the \emph{off} period, unnecessary congestion backoffs limit TCP from efficiently utilizing the link bandwidth. 
+
+    \item Emerging technology trends such as increased link speeds and relatively smaller switch buffer sizes~\cite{one-more-config} significantly affect TCP's performance. Specifically when available buffer is equally divided between all the queues, TCP's performance is degraded by up to $5\times{}$ compared to when the entire buffer is available for the low-priority queue. 
+
+    \item Two simple strategies -- weighted fair queuing (WFQ), and \emph{cross-queue} congestion notification -- effectively alleviate stalls in TCP's feedback loop, resulting in up to 9$\times$ reduction in completion times for low-priority flows.
+        
+\end{itemize}
+
+The paper is organized as follows: We first present popular and emerging use-cases of network prioritization and highlight their performance implications for TCP when used for low-priority flows (\S\ref{sec:motive}). In~\S\ref{sec:eval-main}, we measure TCP's performance for low-priority flows across popular use-cases.
+In~\S\ref{sec:micro}, we investigate the role of several configurations crucial to the performance of TCP such as emerging technology trends (e.g., smaller buffer sizes) and important network and transport parameters (e.g., RTO\textsubscript{min}).
+Finally, in \S\ref{sec:future}, we discuss two simple strategies (and do the preliminary evaluation) to show substantial improvement in TCP's performance for low-priority flows.

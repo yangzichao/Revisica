@@ -1,0 +1,52 @@
+
+\label{sec:discussion}
+
+Why does multi-token prediction afford superior performance on coding evaluation benchmarks, and on small algorithmic reasoning tasks?
+Our intuition, developed in this section, is that multi-token prediction mitigates the distributional discrepancy between training-time teacher forcing and inference-time autoregressive generation.
+We support this view with an illustrative argument on the \emph{implicit weights} multi-token prediction assigns to tokens depending on their relevance for the continuation of the text, as well as with an information-theoretic decomposition of multi-token prediction loss.
+
+
+\subsection{Lookahead reinforces choice points}
+\label{sect:derailing}
+\input{figures/weights}
+Not all token decisions are equally important for generating useful texts from language models \citep{bachmann2024pitfalls,lin2024rho1}.
+While some tokens allow stylistic variations that do not constrain the remainder of the text, others represent \emph{choice points} that are linked with higher-level semantic properties of the text and may decide whether an answer is perceived as useful or \emph{derailing}.
+
+Multi-token prediction implicitly assigns weights to training tokens depending on how closely they are correlated with their successors.
+As an illustrative example, consider the sequence depicted in Figure~\ref{fig:weights} where one transition is a hard-to-predict choice point while the other transitions are considered ``inconsequential''. Inconsequential transitions following a choice point are likewise hard to predict in advance. By marking and counting loss terms, we find that $n$-token prediction associates a weight of $\frac{n(n+1)}{2}$ to choice points via their correlates, and a smaller weight of $n$ to inconsequential points.
+Please refer to Appendix~\ref{app:choice} for more details.
+Generally, we believe that the quality of text generations depends on picking the right decisions at choice points, and that $n$-token prediction losses promote those.
+
+
+
+
+
+\subsection{Information-theoretic argument}
+\label{sect:mismatch}
+
+Language models are typically trained by teacher-forcing, where the model receives the ground truth for each future token during training. 
+However, during test time generation is unguided and autoregressive, whereby errors accumulate.
+Teacher-forcing, we argue, encourages models to focus on predicting well in the very short term, at the potential expense of ignoring longer-term dependencies in the overall structure of the generated sequence.
+
+
+To illustrate the impact of multi-token prediction, consider the following information-theoretic argument.
+Here, $X$ denotes the next future token, and $Y$ the second-next future token.
+The production of both of these tokens is conditioned on some observed, input context $C$, that we omit from our equations for simplicity.
+When placed before token $X$, vanilla next-token prediction concerns the quantity $H(X)$, while multi-token prediction with $n=2$ aims at $H(X) + H(Y)$.
+We decompose these two quantities as:
+\begin{align*}
+  H(X)        &= H(X \mid Y) +   I(X; Y),\\
+  H(X) + H(Y) &= H(X \mid Y) + 2 I(X; Y) + H(Y \mid X).
+\end{align*}
+By discarding the term $H(Y \mid X)$---which appears again when predicting at the following position---we observe that 2-token prediction increases the importance of $I(X; Y)$ by a factor of $2$.
+So, multi-token predictors are more accurate at predicting tokens $X$ that are of relevance for the remainder of the text to come. In Appendix~\ref{app:loss-dec}, we give a relative version of the above equations that shows the increased weight of \emph{relative mutual information} in a loss decomposition of 2-token prediction loss.
+
+
+
+
+
+
+
+
+
+

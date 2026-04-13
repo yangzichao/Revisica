@@ -1,0 +1,44 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+You will be provided instructions for completing a task followed by a task to complete. Instructions: 
+
+1. Read the passage carefully. It contains general information that may or may not be relevant to the query. 
+
+2. Analyze the specific query. It is derived from real anonymized Bing user queries. 
+
+3. Determine whether the passage answers the query. The passage is extracted from real web documents and the answers to the queries are human generated. 
+
+4. Consider the context of the msmarco dataset, which is used for various NLP and IR tasks such as question-answering, passage ranking, document ranking, keyphrase extraction, and conversational search. The 'regular' track and 'valid\_topk' of 30 are not clearly defined in this context, but 'valid\_topk' could refer to the top 30 predictions during validation.
+
+5. If the passage answers the query, answer 'Yes'. If it does not, answer 'No'. 
+
+6. Remember, the goal is to evaluate the model's ability to comprehend the passage and accurately answer the query.\\
+Passage: How long is the spinal cord and how much does it weigh? The average spinal cord is 45 cm long in men and 43 cm long in women. The spinal cord weighs approx. 35 grams. How much does the brain weigh? The human brain weighs on average three pounds, or 1.5 kg. What size is an adult humans brain? The human brain is about the size of a cantaloupe. Average brain width = 140 mm; Average brain length = 167 mm; Average brain height = 93 mm; How much oxygen does the brain need to stay conscious? 
+
+Query: how much does a spectacled bear weigh 
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+ The query asks about the weight of a spectacled bear. The passage does not directly mention the weight of a spectacled bear. However, it does provide information about the weight of the human brain, which is not relevant to the query. 
+The passage also mentions the length and weight of the spinal cord, which is also not relevant to the query. 
+
+Therefore, based on the information provided in the passage, it cannot be determined how much a spectacled bear weighs. 
+
+Answer: No. 
+
+Therefore, the correct label among {'Yes', 'No'} (just the label) to the original task is below. 
+
+Does the passage answer the query? 
+
+Answer: No
+\end{alltt}
+}}
+\caption{A complete running example of MS MARCO (Regular).}
+\label{fig:msmarco=regular_example}
+\end{figure*}

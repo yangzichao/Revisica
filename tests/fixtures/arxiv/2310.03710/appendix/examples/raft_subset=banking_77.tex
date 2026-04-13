@@ -1,0 +1,45 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the banking domain: The dataset contains customer service queries related to banking. Familiarize yourself with common banking terms and operations to better understand the queries and classify them correctly.
+2. Understand the intent of the query: Each query is labeled with a specific intent. Your task is to understand the intent behind each query and classify it into one of the 77 categories. The intent could be related to a wide range of topics, from card activation to refund issues.
+
+3. Use the labels as a guide: The labels provided in the prompt are the possible categories that each query can be classified into. Use these labels as a guide to understand the possible intents of the queries.
+
+4. Consider the context: Some queries may be vague or ambiguous. In such cases, consider the context and use your best judgment to classify the query.
+
+5. Be precise: Each query can only be classified into one category. Make sure your classification is precise and accurately reflects the intent of the query.
+
+6. Use your language skills: The queries are in English and may contain colloquialisms, abbreviations, or slang. Use your language skills to understand the meaning of the queries.
+
+7. Keep learning: The dataset was created by experts and is original in nature. Use this opportunity to learn more about the banking domain and improve your classification skills.
+
+Query: Why am I getting declines when trying to make a purchase online?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The query "Why am I getting declines when trying to make a purchase online?" can be classified into the category of "Transaction Issues" as it relates to problems encountered during online purchases. Specifically, it falls under the subcategory of "Declined Transactions" as it mentions the issue of declined transactions while trying to make a purchase online.
+
+The intent behind this query is to seek assistance with resolving the issue of declined transactions, which could be due to various reasons such as insufficient funds, incorrect card details, or security concerns. The customer is seeking help to understand the cause of the problem and find a solution to successfully complete the online purchase.
+
+Therefore, the correct answer for this query is "Transaction Issues" > "Declined Transactions".
+
+Therefore, the correct label among \{'refund\_not\_showing\_up', 'activate\_my\_card', 'age\_limit', 'apple\_pay\_or\_google\_pay', 'atm\_support', 'automatic\_top\_up', 'balance\_not\_updated\_after\_bank\_transfer', 'balance\_not\_updated\_after\_cheque\_or\_cash\_deposit', 'beneficiary\_not\_allowed', 'cancel\_transfer', 'card\_about\_to\_expire', 'card\_acceptance', 'card\_arrival', 'card\_delivery\_estimate', 'card\_linking', 'card\_not\_working', 'card\_payment\_fee\_charged', 'card\_payment\_not\_recognised', 'card\_payment\_wrong\_exchange\_rate', 'card\_swallowed', 'cash\_withdrawal\_charge', 'cash\_withdrawal\_not\_recognised', 'change\_pin', 'compromised\_card', 'contactless\_not\_working', 'country\_support', 'declined\_card\_payment', 'declined\_cash\_withdrawal', 'declined\_transfer', 'direct\_debit\_payment\_not\_recognised', 'disposable\_card\_limits', 'edit\_personal\_details', 'exchange\_charge', 'exchange\_rate', 'exchange\_via\_app', 'extra\_charge\_on\_statement', 'failed\_transfer', 'fiat\_currency\_support', 'get\_disposable\_virtual\_card', 'get\_physical\_card', 'getting\_spare\_card', 'getting\_virtual\_card', 'lost\_or\_stolen\_card', 'lost\_or\_stolen\_phone', 'order\_physical\_card', 'passcode\_forgotten', 'pending\_card\_payment', 'pending\_cash\_withdrawal', 'pending\_top\_up', 'pending\_transfer', 'pin\_blocked', 'receiving\_money', 'request\_refund', 'reverted\_card\_payment?', 'supported\_cards\_and\_currencies', 'terminate\_account', 'top\_up\_by\_bank\_transfer\_charge', 'top\_up\_by\_card\_charge', 'top\_up\_by\_cash\_or\_cheque', 'top\_up\_failed', 'top\_up\_limits', 'top\_up\_reverted', 'topping\_up\_by\_card', 'transaction\_charged\_twice', 'transfer\_fee\_charged', 'transfer\_into\_account', 'transfer\_not\_received\_by\_recipient', 'transfer\_timing', 'unable\_to\_verify\_identity', 'verify\_my\_identity', 'verify\_source\_of\_funds', 'verify\_top\_up', 'virtual\_card\_not\_working', 'visa\_or\_mastercard', 'why\_verify\_identity', 'wrong\_amount\_of\_cash\_received', 'wrong\_exchange\_rate\_for\_cash\_withdrawal'\} (just the label) to the original task is below.
+
+Label: Transaction Issues > Declined Transactions.
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Banking 77).}
+\label{fig:raft_subset=banking_77_example}
+\end{figure*}

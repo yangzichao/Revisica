@@ -1,0 +1,111 @@
+\subsection{Filtering of Personal Identifiable Information}
+\label{sec:ablations_cc_pii_filtering}
+
+\label{sec:ablations_cc_pii_filtering:ppl}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/4chan.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/c4_100_domains.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/gab.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets 4chan~\citep{papasavva2020raiders}, C4 100 dom~\citep{chronopoulou-etal-2022-efficient}, and Gab~\citep{zannettou2018gab}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/ice.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/m2d2_wiki.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/twitteraee.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets ICE~\citep{greenbaum1991ice}, M2D2~\citep{reid-etal-2022-m2d2} (Wiki), and Twitter AAE~\citep{blodgett-etal-2016-demographic}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/manosphere.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Manosphere~\citep{ribeiroevolution2021}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/mc4_english.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/m2d2_s2orc.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/ppl/c4.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets mC4~\citep{mc4} (English), M2D2~\citep{reid-etal-2022-m2d2} (S2ORC), and C4~\citep{raffel2020exploring,dodge-etal-2021-documenting}}
+\end{figure}
+
+
+
+\label{sec:ablations_cc_pii_filtering:downstream}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/downstream/openbookqa.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/downstream/arc_easy.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/downstream/winogrande.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks OpenBookQA~\citep{openbookQA}, ARC-E~\citep{arc}, and WinoGrande~\citep{winogrande}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/downstream/sciq.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/downstream/hellaswag.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/downstream/piqa.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks SciQ~\citep{sciq}, HellaSwag~\citep{zellers2019hellaswag}, and PIQA~\citep{piqa}}
+\end{figure}
+
+
+
+\label{sec:ablations_cc_pii_filtering:train}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/ablations_cc_pii_filtering/train/train_cross_entropy.pdf}
+	\end{subfigure}
+	\caption{Training Cross Entropy}
+\end{figure}
+
+
+\FloatBarrier

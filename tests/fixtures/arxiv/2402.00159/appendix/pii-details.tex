@@ -1,0 +1,19 @@
+\section{Details on PII Filters}
+\label{app:pii-filter-details}
+
+\paragraph{Filter implementation.} The Common Crawl, C4, Reddit, and GitHub subsets used the same regular expressions for identifying PII.
+We refer the reader to our \href{https://anonymous.4open.science/r/dolma-55C2/}{GitHub} for exact implementations of our regular expressions for each of the PII types --- email address, phone number, and IP address.
+Once spans are tagged, we employ different processing strategies based on the their density on each document:
+\begin{itemize}[leftmargin=1em,itemsep=1mm,topsep=1mm]
+    \item \textit{5 or fewer PII spans detected}: 
+    we replace all spans on a page with special tokens \texttt{|\negthickspace|\negthickspace|EMAIL\_ADDRESS|\negthickspace|\negthickspace|}, \texttt{|\negthickspace|\negthickspace|PHONE\_NUMBER|\negthickspace|\negthickspace|}, and \texttt{|\negthickspace|\negthickspace|IP\_ADDRESS|\negthickspace|\negthickspace|} for email addresses, phone numbers, and IP addresses respectively.\footnote{When training models on \dolma, we add these special tokens to the tokenizer vocabulary.}
+    In total, we find that 0.02\% of documents in the 25 Common Crawl snapshots match this filter. 
+    \item \textit{6 or more PII spans detected}: 
+    we remove any document that contains 6 or more matching PII spans. 
+    We use this approach because pages containing abundant phone numbers and email addresses are likely to pose a greater risk of disclosing other PII classes. 
+    0.001\% of documents in the 25 Common Crawl snapshots match this filter.
+\end{itemize}
+
+
+
+

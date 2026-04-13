@@ -1,0 +1,31 @@
+\begin{table*}[]\small
+\caption{Comparison between the factuality issue and the hallucination issue.}
+\centering
+\label{tab:comp-hallu}
+\vspace{-2mm}
+\begin{adjustbox}{max width=\textwidth}
+    
+  \setlength{\tabcolsep}{0.9mm}
+{
+
+\begin{tabular}{ll}
+\toprule
+Factual and Non-Hallucinated & Factually correct outputs. \\ \midrule
+Non-Factual and Hallucinated & Entirely fabricated outputs.  \\  \midrule
+Hallucinated but Factual  & 
+\begin{tabular}[c]{@{}l@{}} 
+1. Outputs that are unfaithful to the prompt but remain factually correct \citep{cao-etal-2022-hallucinated}.  \\
+2. Outputs that deviate from the prompt's specifics but don't touch on factuality, e.g.,\\ a prompt asking for a story about a rabbit and wolf becoming friends, but the LLM\\ produces a tale about a rabbit and a dog befriending each other.\\
+3. Outputs that provide additional factual details not specified in the prompt, e.g.,\\ a prompt asking about the capital of France, and the LLM responds with "Paris, which\\ is known for the Eiffel Tower."
+\end{tabular}\\ \midrule
+Non-Factual but Non-Hallucinated &  
+\begin{tabular}[c]{@{}l@{}} 
+1. Outputs where the LLM states``I don't know" or avoids a direct answer.  \\
+2. Outputs that are partially correct, e.g., for the question, "Who landed on the moon\\ with Apollo 11?" If the LLM responds with just "Neil Armstrong," the answer is\\ incomplete but not hallucinated.  \\
+3. Outputs that provide a generalized or vague response without specific details, e.g.,\\ for a question about the causes of World War II, the LLM might respond with ``It was\\ due to various political and economic factors."
+\end{tabular}
+ \\
+\bottomrule
+\end{tabular}}
+\end{adjustbox}
+\end{table*}

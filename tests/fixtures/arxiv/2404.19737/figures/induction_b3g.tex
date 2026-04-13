@@ -1,0 +1,8 @@
+\begin{figure}[h!]
+    \centering
+    \includegraphics{img/induction_b3g.pdf}
+    \caption{\textbf{Induction capability of $n$-token prediction models trained on higher-quality data.}
+    Shown is accuracy on the second token of two token names that have already been mentioned previously. Training on a 9:1 mix of a books dataset and the children storiy dataset, we observe that induction capability forms significantly earlier in training (not shown here) and to a higher degree. We believe that this is explained both because our evaluation dataset no longer contains out-of-distribution tokens (Section~\ref{sect:induction}) and because the higher-quality data contained in the books dataset makes induction necessary earlier on (especially for small models, cf. \citet{singh2023transient}). In particular, by enforcing the formation of induction capability in the model by means of the dataset -- instead of the loss -- the advantage of 2-token prediction models on this task disappears except for the smallest models: feature learning converts the task into a pure next-token prediction task.
+    }
+    \label{fig:induction_b3g}
+\end{figure}

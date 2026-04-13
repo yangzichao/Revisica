@@ -1,0 +1,276 @@
+
+\input{figures/enhance_fig}
+
+
+This section discusses methods to enhance factuality in LLMs across different phases, including LLM generation, retrieval-augmented generation, inference-phase enhancements, and domain-specific factuality improvements, outlined in Figure~\ref{fig:enhancement}. 
+
+
+\input{tables/tb-enhancement}
+
+Table~\ref{tab:enhance-table} provides a summary of enhancement methods and their respective improvements over baseline LLMs. It's essential to recognize that various research papers may employ distinct experimental settings, such as zero-shot, few-shot, or full settings. Consequently, when examining this table, it's important to note that performance metrics for different methods, even when evaluating the same metric on the same dataset, may not be directly comparable.
+
+
+
+\subsection{On Standalone LLM Generation}
+\label{sec:enhace_pure}
+
+When focusing on standalone LLM generation, enhancement strategies can be broadly grouped into three main categories:
+
+\emph{(1)
+Improving Factual Knowledge from Unsupervised Corpora} (Sec \ref{sec:enhace_pure_pre}):
+This involves refining the training data during pretraining, such as through deduplication and emphasizing informative words \citep{lee-etal-2022-deduplicating}. Techniques like TOPICPREFIX~\citep{lee2022factuality} and sentence completion loss are also explored to enhance this approach.
+
+\emph{(2)
+Enhancing Factual Knowledge from Supervised Data} (Sec \ref{sec:enhace_pure_sft}):
+Examples in this category include supervised fine-tuning strategies~\citep{chung2022scaling,LIMA} focus on finetuning with labelled data or integrating structured knowledge such as knowledge graphs (KGs) or making precise adjustments to model parameters \citep{li2023inferencetime}.
+
+\emph{(3)
+Optimally Eliciting Factual Knowledge from the Model} (Sec \ref{sec:enhace_pure_multi}, \ref{sec:enhace_pure_prompt}, \ref{sec:enhace_pure_decoding}):
+This category encompasses methods like Multi-agent collaboration~\citep{multiagent_debate} and innovative prompts~\citep{yu2023generate}. Additionally, novel decoding methodologies, such as factual-nucleus sampling, are introduced to further improve factuality \citep{lee2022factuality, chuang2023dola}.
+
+% \subsubsection{Data Engineering}
+% A deep dive into methodologies centered around refining, curating, or expanding training datasets to improve the factual accuracy of LLM outputs.
+
+Some work \citep{liu2023mitigating,sun2023aligning} aim for improve the factuality of large multi-modal models, we choose to not emphasize them.
+
+\subsubsection{Pretraining-based}
+\label{sec:enhace_pure_pre}
+Pretraining plays a pivotal role in equipping the model with the factual knowledge derived from the corpus. By emphasizing strategies during this phase, the model's inherent factuality can be significantly enhanced. This approach is particularly crucial for addressing challenges like immemorization and forgetting.
+
+
+\paragraph{\textbf{Initial Pretraining}}
+Methods employed during the foundational pretraining of the model.
+
+\citet{lee-etal-2022-deduplicating} develop two distinct tools for deduplicating training data, addressing the issue of redundant texts and long repeated substrings present in the training sets of current LLMs. These tools effectively reduce the recall of memorized texts in model outputs. Remarkably, they achieve similar or even superior accuracy with fewer training steps.
+
+\citet{sadeq-etal-2023-unsupervised} introduce a modification to the Masked Language Model (MLM) training objective used in the pretraining of LLMs. They discover that high-frequency words do not consistently contribute to the model's ability to learn factual knowledge. To address this, they devise a strategy that encourages the language model to prioritize informative words during unsupervised training. This is achieved by masking tokens more frequently based on their informative relevance. To quantify this relevance, they utilize Pointwise Mutual Information (PMI) \citep{PMI}, positing that words with elevated PMI values, in relation to their adjacent words, are likely to be more informatively pertinent. Experimental results indicate that this innovative approach significantly bolsters the efficacy of pretrained language models across various tasks, including factual recall, question answering, sentiment analysis, and natural language inference, in a closed-book setting.
+
+\paragraph{\textbf{Continual Pretraining}}
+Iterative pretraining processes that allow the model to progressively refine and update its knowledge base.
+
+\citet{lee2022factuality} introduce TOPICPREFIX as a pre-processing method and the sentence completion loss as training objective. Some factual sentences may be unclear when the LM training corpus is chunked, especially when these sentences contain pronouns (e.g., she, he, it). So they prepend TOPICPREFIX (e.g., Wikipedia document name) to sentences in the factual documents to transform each sentence into an independent factual statement. They also introduce the sentence completion loss, with the aim of enabling the model to capture facts from entire sentences rather than just focusing on the associations between subwords. For implementation, they establish a pivot $t$ for each sentence and require zero-masking for all token prediction losses before $t$. This pivot is only necessary during the training phase. Experiments show that such methods can further reduce the factual errors than standard factual-domain adaptive training.
+
+
+\subsubsection{Supervised Finetuning}
+\label{sec:enhace_pure_sft}
+
+Supervised fine-tuning leverages labeled datasets to refine the model's performance. This approach serves a dual purpose: it imparts specific task or knowledge base-oriented information to the model and addresses challenges like immemorization and forgetting. Several studies, such as \citet{chung2022scaling,LIMA}, emphasize the pivotal role of supervised fine-tuning in eliciting the inherent knowledge of the base model, subsequently enhancing its reasoning capabilities.
+
+\paragraph{\textbf{Continual SFT}}
+A cyclic fine-tuning approach, where the model undergoes consistent refinement using sequential sets of labeled data.
+
+\citet{moiseev-etal-2022-skill} investigate how to inject structured knowledge from a knowledge graph into LLMs. The approach involves directly training T5 using triplets containing relationship knowledge. Previous methods often describe the triplets using prompts and then train LLMs with masked language model task, but some triplets are not easy to describe. They compare three knowledge-enhancement fine-tuning methods, which are MLM training on the C4 corpus \citep{C4}, masking the subject or object in KG triplets, and masking the subject or object in the KELM corpus \citep{KELM}. Experiments show that effectiveness of the latter two methods achieved better exact match scores in closed-book QA tasks \citep{jiang-etal-2019-freebaseqa, wikihop, TQ, NQ}. This demonstrates that training directly based on KG triplets is an effective way to inject knowledge into the model
+
+\citet{sun2023contrastive} introduce negative samples and contrastive learning to supervised finetuning process with MLE loss. The sources of these negative samples are either from the Knowledge Graph or are generated by large language models. While traditional contrastive learning can only function at the token or sentence level, the intrinsic value of span information cannot be overlooked, they employ Named Entity Recognition to extract this critical span data. The training process incorporates a blend of MLE loss, standard contrastive learning loss, and span-based contrastive learning loss, with the parameters finely tuned to optimize results. Experiments indicate that the method delivers performance comparable with SOTA KB-based methods but offers significant benefits in efficiency and scalability.
+
+\citet{yang2023chatgpt} presents a development framework for Knowledge Graph-enhanced Large Language Models (KGLLMs), drawing from established technologies. They detail various enhancement strategies, including a before-training enhancement that refines input quality by integrating factual data; a during-training enhancement that synergizes textual and structural knowledge, utilizing tools like graph neural networks and attention mechanisms; multi-task learning which focuses on knowledge-guided pre-training tasks to bolster the factual knowledge acquisition of LLMs; and a post-training enhancement that fine-tunes LLMs for domain-specific tasks using knowledge-rich data. Additionally, the significance of prompt learning in LLMs is highlighted, emphasizing the importance of choosing appropriate prompt templates. They also suggest knowledge graphs as a valuable resource for crafting these templates to harness domain-specific knowledge.
+
+FactTune \citep{ovadia2023finetuning} aims to use Reinforcement Learning to improve the factuality of LLM, so scoring the factuality of the content generated by the model is needed. However, human labels are too costly, so authors use two methods to check the factuality of the content generated by LLM, namely 1) Reference-based, which uses external knowledge base retrieval and Factscore \citep{Min2023-FActScore} method to score; 2) Reference-free, which uses Another LLM's confidence to score. Then, they utilized the Directly Preference Optimization \citep{rafailov2023direct} algorithm to optimize the model. 50\% and 20+\% error rate reductions were observed in Llama's bio generation tasks and medical QA respectively.
+
+\paragraph{\textbf{Model Editing}}
+Instead of directly finetuning the model, model edit is a more precise approach to enhance the model's factuality. By editing specific areas that are related to the fact, the model can correctly express that fact without compromising other unrelated knowledge. Current editing methods~\citep{yao2023editing} can be categorized into weight-preserved and weight-modified paradigms. 
+When modifying the model's weight, KN~\citep{dai-etal-2022-knowledge} and ROME~\citep{meng2022locating} first analyze representations to locate those underlying factual errors and then directly update the relevant weights. Meanwhile, KE~\citep{de-cao-etal-2021-editing} and MEND~\citep{mitchell2022fast} employ a hypernetwork to learn the necessary weight changes. While effective, the robustness and generalization of directly updating weights remains an open question.
+
+\citet{li2023inferencetime} present a technique known as Inference-Time Intervention (ITI) designed to boost the factual accuracy of large language models.  ITI adjusts model activations during inference to enhance the truthfulness of responses. This method, categorized under activation editing, is both adjustable and less intrusive, setting it apart from weight editing techniques. Drawing inspiration from prior research, they utilize steering vectors, which are proven effective for style transfer, to guide model activations. They detail a multi-step model selection process involving the calibration of intervention strength hyperparameters, pinpointing truth-telling related heads, and determining their truth-telling directions. The TruthfulQA dataset serves as the foundation for training and validation, with a rigorous 2-fold cross-validation employed to prevent data leakage. Experiments on the TruthfulQA benchmark demonstrate that ITI improves Alpaca's \citep{alpaca} truthfulness from 32.5\% to 65.1\%.
+
+% \subsubsection{Prompt Engineering}
+
+% Crafting or optimizing input prompts to steer the model towards producing factually consistent and contextually apt content.
+
+% \subsubsection{Mixture-of-Experts}
+
+% Employing a consortium of specialized models, amalgamating their outputs to achieve superior factual precision.
+
+\subsubsection{Multi-Agent}
+\label{sec:enhace_pure_multi}
+
+Engaging multiple models in a collaborative or competitive manner, enhancing factuality through their collective prowess, helps in the immemorization and reasoning failure problems.
+
+\citet{multiagent_debate} propose an approach to enhance the performance of language models by treating different LLMs as intelligent agents engaged in multi-agent debates. In this method, multiple instances of language models present and debate their respective answers and reasoning processes, ultimately reaching a consensus on the final answer after multiple rounds of debate. If the debate's answers fail to converge, prompts are modified to reduce the stubbornness of the two agents. This approach has been demonstrated to significantly improve mathematical and reasoning abilities across various tasks while enhancing the factual accuracy of generated content. Moreover, this method can be directly applied to existing black-box models, making it applicable to all research tasks using the same prompts.
+
+\citet{cohen2023lm} develop a fact-checking mechanism. Drawing parallels to a scenario where a witness is interrogated for the veracity of their claims, they utilize a LLM to gather statements from a QA dataset, which are either factually correct or incorrect. During the statement generation, the model is provided with a golden answer, prompting it to produce both accurate and inaccurate statements, inherently labeling each statement. For every QA pair, another LLM, acting as an interrogator, generates a series of questions. A separate LLM, playing the role of the respondent, answers these queries. This iterative questioning and answering continues until the interrogator is satisfied, culminating in a conclusion. The authors conduct experiments on datasets like LAMA \citep{LAMA}, PopQA \citep{PopQA}, NaturalQA \citep{NQ}, and TriviaQA \citep{TQ}. The precision is the portion of incorrect claims, out of the claims rejected by the examiner and the recall is the portion of incorrect claims rejected by the examiner, out of all the incorrect claims. Measured by the F1 score, the LM vs LM method consistently outperforms the baseline by a significant margin, ranging from ten to over twenty points across all datasets.
+
+\subsubsection{Novel Prompt}
+\label{sec:enhace_pure_prompt}
+
+Introducing innovative or tailored prompts to extract more factual and precise responses from the LLM, can better assist the model elicit the knowledge in its parameters and improve the reasoning ability.
+
+\citet{yu2023generate} introduce a novel approach called Generate-then-Read (GENREAD). Document retrievers are replaced by LLM generators. In this article, the LLM is prompted to generate multiple  contextual documents on a given question. The authors clustered these document embeddings, and sampled documents from different clusters to ensure diversity of contextual documents. With these generated in-context demonstrations, LLMs achieved better results on knowledge-intensive tasks than retrieving from external corpus such as Wikipedia.
+
+\citet{weller2023according} introduce a metric called QUIP-Score to measure the dependency on pre-trained data. They index Wikipedia to swiftly determine the dependency of an LLM's response. By using specific prompts, like "Based on evidence from Wikipedia:" they aim to evoke the LLM's recall of content from its training dataset. In addition to grounding prompts, they also introduce anti-grounding prompts to encourage the LLM to respond without referencing its training data, for instance, "Respond without using any information from Wikipedia." The motivation behind this approach is the belief that guiding the LLM to reference more of the knowledge it acquires during pre-training can reduce the generation of incorrect information. To quantify this grounding, they propose the QUIP-Score metric to gauge the similarity between the model's generated content and the most relevant content in Wikipedia. In their experiments conducted on datasets like TQ, NQ, HotpotQA, and ELI5, the results show that while adding the said prompt doesn't significantly improve traditional QA metrics, it notably boosts the scores on the QUIP metric.
+
+\citet{khot2023decomposed} present Decomposed Prompting. Complex tasks are broken down into multiple simpler tasks via prompting and then it can be addressed by task-specific LLMs. For instance, for tasks involving extremely long input sequences, this technique systematically decomposes the input into shorter sequences for individual processing. Notably, the authors observed that when combined with a retrieval module, this approach significantly enhances performance on open domain multi-hop QA tasks.
+
+\citet{dhuliawala2023chain} present Chain-of-Verification (CoVe) to reduce factual errors.The CoVe strategy involves the model initially crafting a response, subsequently formulating verification queries to assess its initial draft, independently responding to these queries to maintain unbiased answers, and ultimately producing a validated reply. The CoVe method encompasses four pivotal stages: 1) Drafting an initial reply based on a query using the LLM, 2) Generating verification questions from the query and initial answer to pinpoint potential errors, 3) Responding to each verification question and comparing these answers with the initial response to detect discrepancies, and 4) If discrepancies are found, producing a revised answer that integrates the verification outcomes. The entire procedure is executed by prompting the same LLM differently to achieve the intended results. Experiments show that Chain-of-Verification can reduce errors in diverse tasks, including list-based questions from Wikidata \citep{wikidata}, closed book MultiSpanQA \citep{multispanqa} and longform text generation \citep{Min2023-FActScore}.
+
+
+\subsubsection{Decoding}
+\label{sec:enhace_pure_decoding}
+
+Decoding methodologies, such as beam search and nucleus sampling, play a crucial role in directing the model to produce outputs that are both factual and coherent. By refining the decoding process, challenges like snowballing errors or erroneous decoding, as detailed in Sec \ref{sec:inference-causes}, can be effectively addressed.
+
+\citet{lee2022factuality} propose a new decoding sampling algorithm called factual-nucleus sampling that achieves a better trade-off between generation quality and factuality when compared to prevailing decoding algorithms. They postulate that the randomness of sampling is more harmful to factuality when applied to the generation of the latter portion of a sentence as opposed to its initial segment. So the factual-nucleus sampling algorithm, an adaptation of nucleus sampling, can dynamically adjust the 'nucleus' probability throughout the generation of each sentence, progressively reducing randomness with each successive generation step. The $\omega$-bound parameter is provided to prevent the p-value from becoming too small and hurting diversity. Experimental results show that a factual-nucleus sampling algorithm can improve the factuality of generation while maintaining generation quality, e.g.,  diversity and repetition.
+
+\citet{chuang2023dola}  propose ``Decoding by Contrasting Layers" to mitigate these hallucinations. This approach leverages the differences in logits obtained from projecting the later layers versus earlier layers to the vocabulary space, taking advantage of the known localization of factual knowledge in LLMs. The results of this study demonstrate that DoLa consistently enhances the truthfulness of LLM-generated content across various tasks, such as multiple-choice and open-ended generation tasks, showcasing its potential to significantly improve the reliability of LLMs in generating accurate and truthful facts.
+
+\subsection{On Retrieval-Augmented Generation}
+\label{sec:enhace_rag}
+
+Retrieval-Augmented Generation (RAG) has emerged as a widely adopted approach to address certain limitations inherent to standalone LLMs, such as outdated information and the inability to memorize \citep{LlamaIndex,LangChain}. These challenges are elaborated upon in Sec \ref{sec:model-causes}. Yet, while RAG offers solutions to some issues, it introduces its own set of challenges, including the potential for insufficient information and the misinterpretation of related data, as detailed in Sec \ref{sec:retrieval-causes}. This subsection delves into various strategies devised to mitigate these challenges. Within the realm of retrieval-augmented generation, enhancement techniques can be broadly categorized into several pivotal areas:
+
+\emph{(1)
+The Normal Setting of Utilizing Retrieved Text for Generations} (Sec \ref{sec:enhace_rag_normal}):
+
+\emph{(2)
+Interactive Retrieval and Generation} (Sec \ref{sec:enhace_rag_inter}):
+Examples here include the integration of Chain-of-Thoughts steps into query retrieval \citep{he2022rethinking} and the use of an LLM-based agent framework that taps into external knowledge APIs \citep{yao2023react}.
+
+\emph{(3)
+Adapting LLMs to the RAG Setting} (Sec \ref{sec:enhace_rag_adapt}):
+This involves methods like the one proposed by \citet{peng2023check}, which combines a fixed LLM with a plug-and-play retrieval module. Another notable approach is REPLUG \citep{REPLUG}, a retrieval-augmented framework that treats the LLM as a black box and fine-tunes retrieval models using language modeling scores.
+
+\emph{(4)
+Retrieving from Additional Knowledge Bases} (Sec \ref{sec:enhace_rag_kg} and Sec \ref{sec:enhace_rag_mem}):
+This category includes methods that retrieve from external parametric memories \citep{chen2023purr} or knowledge graphs \citep{zhang2023mitigating} to enhance the model's knowledge base.
+
+\subsubsection{Normal RAG Setting}
+\label{sec:enhace_rag_normal}
+
+% The conventional framework where LLMs harness external data sources to supplement content generation.
+
+
+\paragraph{Workflow of Normal RAG Setting}
+A normal RAG setting works by retrieving external data and passing it to a LLM during the generation phase. We follow the framework proposed by LlamaIndex~\citep{LlamaIndex} and LangChain~\citep{LangChain} to decouple the process into the following modules and steps:
+
+
+\emph{(1) Document loaders} are used to load documents from various sources. These loaders can fetch different types of documents (HTML, PDF, code) from various locations (private s3 buckets, public websites).
+    
+\emph{(2) Document transformers} are employed to extract relevant parts of the documents. This may involve splitting or chunking large documents into smaller chunks. Different algorithms for this task are employed, optimized for specific document types like code or markdown.
+
+\emph{(3) Text embedding models} are employed to capture the semantic meaning of the text. 
+
+\emph{(4) Vector stores} are employed to efficiently store and search the embeddings. 
+
+\emph{(5) Retrievers}, such as the Parent Document Retriever, Self Query Retriever, and Ensemble Retriever, are used to retrieve the data from the database. 
+
+Here, the Parent Document Retriever allows for the creation of multiple embeddings per parent document to retrieve smaller chunks while maintaining a larger context. The Self Query Retriever separates the semantic part of a query from other metadata filters, allowing for more accurate retrieval. The Ensemble Retriever enables the retrieval of documents from multiple sources or using different algorithms.
+
+\citet{borgeaud2022improving} suggest scaling the size of the text database for retrieval as a complementary path to scaling language models. There is a pre-collected text database with a total of over 5 trillion tokens. These chunks are stored in the form of key-value pairs, with each chunk as a unit, and similarity retrieval is performed on  $k$-nearest neighbours from key-value database using the $L_2$ distance on Bert embeddings. The input sequence is splited into chunks, Retrieval Transformer (Retro) model retrieves text similar to the previous chunk to improve the predictions in the current chunk. The model calculate cross-attention between the input text and the retrieved text chunks to generate better answers. With only 25× fewer parameters of GPT-3, its performance on Pile is quite comparable. 
+
+\citet{lazaridou2022internetaugmented} present a method that capitalizes on the few-shot capabilities of large-scale language models to enhance their grounding in factual and current information. Drawing from semi-parametric language models, the approach conditions LMs using few-shot prompts based on data sourced from Google Search. For any given query, the method retrieves pertinent documents from the web, extracts the top 20 URLs, and processes them to obtain clear text. These documents are segmented into paragraphs, and the most relevant ones are chosen using TF-IDF based on their similarity to the query. The LMs are then conditioned using few-shot prompts that incorporate the retrieved paragraphs. This k-shot prompting technique is augmented with an evidence paragraph, creating a prompt structure that encompasses evidence, query, and response. The method also involves generating multiple answers from the model and reranking them using different probabilistic factorizations. The experimental results indicate that by conditioning on retrieved evidence, the 7B Gopher LM \citep{Gopher} surpassed the performance of the 280B Gopher LM, with relative improvements reaching up to 30\% on the NQ \citep{NQ} dataset.
+
+% \subsubsection{Post-editing}
+% \label{sec:enhace_rag_editing}
+
+% Refining the initially generated content by cross-referencing and editing based on externally retrieved data.
+
+
+
+\subsubsection{Interactive Retrieval}
+\label{sec:enhace_rag_inter}
+
+While retrieval systems are designed to source relevant information, they may occasionally fail to retrieve accurate or comprehensive data. Additionally, LLMs might struggle to recognize, or even be misled by, the retrieved content, as detailed in Sec \ref{sec:retrieval-causes}. Implementing an interactive retrieval mechanism can address these challenges, aiding in sourcing more appropriate information and guiding the LLM towards improved content generation.
+In this subsubsection, we explore methods that employ the Chain-of-Thoughts and Agents mechanisms to achieve effective interactive retrieval.
+
+\paragraph{\textbf{CoT-based Retrieval}}
+In recent studies, there is a growing interest in integrating Chain-of-Thoughts \citep{CoT} steps into query retrieval. \citet{he2022rethinking} introduce a method that generates multiple reasoning paths and their corresponding predictions for each query. This process involves retrieving relevant knowledge from external sources like Wikidata \citep{wikidata}, WordNet \citep{wordnet}, and ConceptNet \citep{conceptnet}. The faithfulness of each reasoning path determines based on entailment scores, contradiction scores, and MPNet similarities \citep{mpnet} with the retrieved knowledge. The prediction with the highest faithfulness score is chosen as the final result. This method demonstrates superior performance in tasks such as commonsense reasoning \citep{geva2021did}, temporal reasoning \citep{TempQuestions}, and tabular reasoning \citep{gupta2020infotabs}, outperforming the baseline CoT reasoning and self-consistency methods \citep{wang2023selfconsistency}. On a related note, \citet{trivedi-etal-2023-interleaving} propose IRCoT, an innovative retrieval technique that interweaves the CoT process. In this approach, each generated sentence during the CoT combines with the question to form a retrieval query. The subsequent reasoning step then produces by the Language Model using both the retrieval results and the prior reasoning. This interleaving method finds to enhance the performance of both retrieval and CoT in Open-domain QA. Experiments proves that this is beneficial for models of different sizes, including GPT-3(175B) \citep{GPT-3} and Flan-T5 \citep{chung2022scaling} families.
+
+FLARE \citep{jiang2023active} is a dynamic solution to address the limitations of previous RAG works which either retrieve only once at the onset of generation or do so based on fixed intervals. Single retrievals are insufficient for long-form generation due to the evolving information needs during the process, and fixed intervals for previous token queries can be inappropriate, FLARE determines "when and what to retrieve" dynamically. The decision of "when" is based on whether the current sentence contains a token with a generation probability below a set threshold. If it doesn't, the sentence is accepted and moves to the next generation step; otherwise, retrieval augmented generation occurs. For the "what", the current sentence is used as a query. To address the challenge of low-probability tokens affecting retrieval accuracy, two solutions are proposed: masking low-probability tokens, and using LLM for generation of these tokens as queries. Testing on tasks like Multihop QA \citep{2WikiMultihopQA}, Commonsense Reasoning \citep{StrategyQA}, Long-form QA \citep{ASQA}, and Open-domain Summarization \citep{wikiasp} using GPT3.5, results show FLARE outperforms baselines, with both query generation methods showing comparable performance.
+
+\paragraph{\textbf{Agent-based Retrieval}} 
+Using an LLM-based agent framework that leverages external knowledge APIs as tools or requesting such APIs as actions.
+
+\citet{yao2023react} present a new framework named ReAct that integrates Chain-of-Thoughts reasoning with action. Through in-context learning, the LLM's CoT output is transformed into descriptions of reasoning processes and action behaviors. Subsequently, these action descriptions are standardized and executed, with the results being incorporated into the next prompt. In terms of results, for tasks like Fact checking and QA, while CoT has 14\% of its correct answers containing incorrect reasoning steps or facts, ReAct only has 6\%. In the incorrect answers, 56\% of CoT's errors were due to errors in reasoning steps or facts, whereas ReAct has no factual errors. However, ReAct have 23\% of its errors resulting from search errors.
+
+\citet{shinn2023reflexion} propose a prompt engineering framework named Reflextion to enable LLMs to reflect on and correct previous errors. They use linguistic feedback to strengthen an agent's actions instead of adjusting model weights. Specifically, the Reflextion Agent, an LLM, first interacts with its environment by generating an "Action" via ReAct \citep{yao2023react} or Chain-og-Thoughts \citep{CoT} in few-shot scenarios, which results in an "Observation". This "Observation", whether a reward, error message, or natural language feedback, provides insights on the Agent's current "Action". When the Agent receives a failure signal, it triggers a self-reflextion mechanism, utilizing the LLM, to summarize the reasons for the failure into its Memory module, creating a "long-term memory". On subsequent generations, the Agent can review all past reflextion memories to prevent mistakes. Experimental findings indicate that Reflextion achieves a 10-20\% performance increase over the baseline methods ReACT and CoT on datasets like AlfWorld \citep{alfworld}, HotPotQA \citep{hotpotqa}, and HumanEval \citep{chen2021evaluating}.
+
+\citet{varshney2023stitch} introduce a comprehensive framework aimed at reducing factual inaccuracies. They use models to recognize entities and generate questions, we recognize these models as tools for the LLM-based agent. During the generation process, pivotal concepts encompassing names, geographical locales, and temporal references are ascertained within the contextual sentence employing entity extraction, keyword distillation, or directives to the LLM. The logit output values corresponding to these discerned concepts act as surrogates for confidence estimates. Should these values fall beneath a predetermined threshold, the mechanism then fetches a pertinent document to corroborate the generated information. The query methodology employed for such a retrieval hinges on posing a binary (Yes/No) query to the LLM. In scenarios where the validation is unsuccessful, the framework directs the model to rectify the erroneous output, either by omission or by substitution, drawing upon the knowledge from the consulted document. Empirical evaluations, specifically in the domain of article generation, underscore the efficacy of the delineated approach. Notably, factual error rates exhibited by GPT-3 witnessed a substantial decline, from 47.5\% to a mere 14.5\%, when subjected to this methodology. The diagnostic facet of their approach manifests an 80\% recall, and the rectification mechanism adeptly rectifies 57.6\% of the factually incorrect outputs that were accurately pinpointed.
+
+Self-RAG \citep{asai2023selfrag} builds upon the Retrieval-Augmented Generation (RAG) framework by incorporating a self-reflective approach. This includes on-demand retrieval, prompting the LLM to consider whether the retrieved documents are relevant and supportive of the argument, thereby enhancing the factuality of the LLM's output. Self-RAG achieves this by having the model produce special tokens (i.e., reflection tokens) during the output process. The authors employ an end-to-end training method that enables the model to generate these special tokens. At the inference level, Self-RAG decodes a retrieval token for each input and each segment of the previously generated content. If the token is 'no,' the model proceeds with the normal output; if 'yes,' it performs a retrieval. The input, previous output, and each retrieved document are then fed into another session of the model, which assesses the relevance of each document. If a document is relevant, the model further evaluates whether it is supportive and should be used in generation. Based on this document, the model produces a segment and applies soft and hard constraints using the generated reflection token to select the most appropriate document. Self-RAG then incorporates the most suitable document into the continued generation of content, providing citations as needed. This process repeats until the entire content is generated. Self-RAG requires training data, which is annotated by GPT-4. Experiments based on the Llama-2 model on Short-form QA (PopQA \citep{PopQA}, TQA \citep{TQ}), Closed-set QA (Pub \citep{zhang2023interpretable}, ARC \citep{clark2018think}), and Long-form NLG with Citations (Bio Generation \citep{Min2023-FActScore}, ALCE-ASQA \citep{gao2023enabling}) have demonstrated its effectiveness.
+
+\subsubsection{Retrieval Adaptation}
+\label{sec:enhace_rag_adapt}
+
+Recent research \citep{wang2023evaluating,ren2023investigating} has highlighted that merely using the retrieved information in LLMs doesn't always enhance their ability to answer factual questions. This underscores the importance of enabling LLMs to better adapt to the retrieved data to produce more accurate content. In this section, we delve into various strategies that facilitate this adaptation. Specifically, we explore three methodological approaches: prompt-based methods, SFT-based methods, and RLHF-based methods.
+
+\paragraph{\textbf{Prompt-based}}
+Leveraging prompts to navigate the retrieval process, ensuring the extraction of pertinent and factual data.
+
+\citet{peng2023check} introduce the LLM-Augmenter system, a system using a fixed LLM combined with a plug-and-play retrieval module to help the LLM perform better in tasks that are particularly sensitive to factual errors. This system enhances its performance by enabling the LLM to use a series of modules (e.g. allowing the LLM to interact with external knowledge) to assist the LLM in generating results grounded in evidence. And they use automated feedback generated by utility functions (e.g., the factuality score of a LLM-generated response) to modify LLM's candidate response options. The author evaluates the system's performance on information-seeking dialog \citep{galley2019grounded} and Wiki QA \citep{OTT-QA} and experiments show that the system can significantly reduce ChatGPT's errors without sacrificing the fluency and informativeness of the generated content.
+
+\paragraph{\textbf{SFT-based}}
+Optimizing the LLM or retrieval system through training to enhance the alignment between generation tasks and the retrieved content.
+
+\citet{Atlas} introduce a comprehensive architecture named ATLAS which is composed of the Contriever \citep{contriever} retriever of the dual-encoder architecture and the T5 \citep{t5} language model with Fusion-in-Decoder \citep{Fusion-in-Decoder}. The training objectives for the retriever consist of four components: Attention Distillation \citep{izacard_attention_dist}, where the retriever is trained on the average attention scores from the language model for each article; End-to-end training of Multi-Document Reader and Retriever (EMDR2) \citep{EMDR2}, which involves using the query and the top-K retrieved articles from the current retriever as input and loss computation against the standard answers to train the retriever; Perplexity Distillation (PDist), where the retriever is trained to predict how much the perplexity of standard answers would improve for each document; Leave-one-out Perplexity Distillation (LOOP), which trains the retriever to predict how much worse the prediction of the language model gets when removing a document from the top-K results. The LM's training objectives consist of three parts: prefix language modeling, masked language modeling, and title to section generation. Besides, they optimize and accelerate retriever training using techniques such as full index update, Re-ranking, and Query-side fine-tuning. Atlas achieves notable accuracy on Natural Questions using only 64 examples, outperforming a 540B model with 50x fewer parameters.
+
+\citet{REPLUG} introduce REPLUG, a retrieval-augmented framework that considers the LLM as a black box, freezes its parameters and tunes retrieval models with supervision signals using language modeling scores. In this framework, the input context and the document are encoded through the dual encoder architecture,  cosine similarity is then calculated to retrieve related documents. The likelihood for each retrieved document and the language model scores are computed. Then they can update the retrieval model parameters by minimizing the KL divergence between retrieved document likelihood and the language model"s score distribution.  Ablation experiments demonstrate that this method significantly improves the performance of the original language models and the improvements are not coming from ensembling random documents.
+
+\citet{luo2023sail} focus on utilizing instruction-tuning to denoise the retrieval results. They gather retrieval outcomes from various search APIs and domains, leading to the creation of a new search-grounded dataset. This dataset encompasses instructions, grounding information, and responses. Notably, it includes both pertinent results and those that are unrelated or disputed. The model needs to learn to ground on useful search results. After fine-tuning the LLaMa-7B model on this dataset, the resulting model, named SAIL-7B, exhibits superior performance in transparency-sensitive tasks such as open-ended QA and fact-checking.
+
+
+\paragraph{\textbf{RLHF-based}}
+\citet{GopherCite} use reinforcement learning from human preferences (RLHP) to train a 280 billion parameter model named GopherCite that generate answers along with high quality supporting evidence. They firstly collect data from existing models and have it rated by humans. The data is used for fine-tuning and reward model training. A supervised fine-tuning model is trained to produce accurate quotes with proper syntax. A reward model is created to rank model outputs based on overall quality. Finally, a reinforcement learning policy is optimized to align model behavior with human preferences, improving quoting performance. The model may decline to answer when the reward model score is too low. According to human evaluation, the model achieves better supported and plausible rating on the subset of Natural Questions dataset~\citep{NQ} than the previous SOTA (FiD-DPR) \citep{Fusion-in-Decoder}.
+
+% \subsubsection{Handling Multi-information}
+% RESOLVING KNOWLEDGE CONFLICTS IN LARGE LANGUAGE MODELS 
+
+
+\subsubsection{Retrieval on External Memory}
+\label{sec:enhace_rag_mem}
+
+Currently, most LLMs enhance their factuality by retrieving knowledge in the form of text snippets from external storage and incorporating them into the context. Some researchers are exploring the storage of knowledge in non-textual forms and integrating this knowledge into models through specialized methods.
+
+\citet{li2022decoupled} store knowledge in the form of key-value pairs in memory. The key is obtained by encoding knowledge using a Doc Retrieval Embedder, while the value is encoded using a Transformer encoder. Similar to traditional retrieval-based LLMs, the model encodes the input using a Query retrieval embedder and retrieves knowledge from memory. The retrieved value is then integrated into the model's multi-head attention layer through cross-attention to enhance factuality.
+
+G-MAP \citep{wan2022gmap} does not explicitly store knowledge in storage but uses a general domain PLM as external memory. To mitigate catastrophic forgetting during adaptive pretraining, G-MAP introduces a frozen-parameter general domain PLM (PLM-G) during the fine-tuning of the domain-specific PLM (PLM-D). During fine-tuning, the input is provided to both PLM-G and PLM-D. The hidden states from each layer of PLM-G are stored in a cache, and a Memory-Augmented Strategy is used to extract hidden states from certain layers, which are then concatenated and integrated into PLM-D's Memory-Augmented Layer. The study also compared four Memory-Augmented Strategies, with Chunk-based Gated Memory Transfer performing the best.
+
+Fine-tuning methods and some model editing methods store new knowledge in new model parameters through continual pretraining. The difference is that fine-tuning methods store many pieces of knowledge in a matrix parameter, while model editing establishes a new neuron for each piece of knowledge.
+
+\citet{houlsby2019parameterefficient} propose to add Adapter modules to fine-tune pre-trained deep learning models on a new task with minimal changes to the original model by inserting small, trainable modules between existing layers. During fine-tuning, the main body of the pre-trained model is frozen, and the Adapter module learns knowledge specific to downstream tasks. The Adapter method reduces the computational requirements for model fine-tuning while enhancing the model's factuality for specific domains. However, the addition of the Adapter module also increases the overall parameter count of the model, somewhat reducing the model's inference performance.
+
+To enhance the model's understanding of entities and thereby improve factuality, KALA \citep{KALA}, EaE \citep{EaE}, and Mention Memory \citep{jong2022mention} store encoded entities in external memory. During generation, the retrieved entity embeddings are integrated into the model layers.
+
+\citet{KALA} introduced KALA to reduce overhead and catastrophic forgetting during Adaptive Training. KALA not only establishes a memory for entities and their encodings but also uses a KG to store relationships between these entities. For a given mention in the input, the corresponding entity is first determined. Based on the KG, the encoding of this entity and its neighboring entities is retrieved from memory. Through GNN weighted aggregation, the encoding for this mention's corresponding entity is obtained. Finally, the Knowledge-conditioned Feature Modulation (KFM) is introduced in the model layer, integrating the encoding result into the representation of all tokens involved in the mention.
+
+\citet{EaE} introduce mention detection, entity linking, and MLM during model training. The model queries the top 100 entity embeddings from the entity storage that is closest to the current mention and integrates them using attention.
+
+\citet{jong2022mention}'s TOME model is an improvement over the EaE model. Instead of storing entity embeddings in memory, TOME stores the embeddings of entity mentions. For marked entity mentions in the input, TOME retrieves all related entity mention embeddings from memory and integrates them into the model through a memory attention layer.
+
+Similar to the three methods mentioned above, knowledge plugin \citep{zhang-etal-2023-plug} also introduce entity-related knowledge. However, instead of integrating the knowledge directly into the model layers, they utilize a pre-trained mapping network. This network maps the entity embeddings to the token embedding space of the Pre-trained Language Model (PLM). Ultimately, the mapped entity embeddings are injected at the input embedding level, facilitating the knowledge insertion process.
+
+\citet{xue2023improving} address the challenge of improving factual consistency in knowledge-grounded dialogue systems by introducing extended feed-forward networks (FFNs) and leveraging reinforcement learning, resulting in more accurate and reliable responses, as demonstrated on the WoW \citep{WoW} and CMU\_DoG \citep{cmu_dog_emnlp18} datasets.
+
+% \citet{thorne2021evidence} introduce a novel task, namely factual error correction. Unlike traditional fact verification tasks that focus solely on determining the accuracy of claims, this task delves into the correction of claims based on available evidence.
+% In solving this task, the authors propose EFEC to leverage the T5 transformer model and retrieval-based evidence to achieve better results compared to existing methods that use pointer copy networks and gold evidence. This approach results in more accurate factual error corrections, as evidenced by human evaluation.
+
+To further tackle the factual correction task \citep{thorne2021evidence}, \citet{gao2023rarr} explore the integration of LLMs, such as GPT-3, with search engines to improve their precision and memory. The goal is to use search engines to search for evidence and correct sentences generated by LLMs. The proposed method RARR is that, for each input sentence, a set of questions is generated, and web pages are searched to verify the consistency of information with the input sentence. The paper evaluates the modifications based on attribution and preservation criteria, with both manual and automatic verification methods. The primary evaluation metric is F1, considering both attribution and preservation aspects to assess the effectiveness of the approach in enhancing LLM-generated sentences.
+
+\citet{chen2023purr} is a follow-up work to \citep{gao2023rarr} and \citep{thorne2021evidence}. Similar to EFEC, this paper fine-tunes a T5 model to serve as an editor, but it introduces negative samples during fine-tuning. The model PURR is trained to take user questions, perform Google searches to retrieve the top 5 web page summaries (used as positive samples), and generate noise by replacing some content in these positive samples using the language model. A sequence-to-sequence model is then trained to correct the noisy sentences back to their correct versions. This approach differs from EFEC, which used a mask-and-fill approach. PURR represents an improvement over EFEC, focusing on directly training a language model to edit incorrect sentences into correct ones using Google search for generating positive samples, ultimately leading to increased F1 scores.
+
+\subsubsection{Retrieval on Structured Knowledge Source}
+\label{sec:enhace_rag_kg}
+
+
+We discuss studies that retrieves on structured repositories, such as knowledge graphs and databse, to source factual data during generation in this subsubsection.
+
+\citet{zhang2023mitigating} utilize knowledge graphs (KG) for retrieval to tackle factual errors. They observe that there can be inconsistencies between a user's request and the content in the KG. For instance, when a user mentions a full name, the KG might only have its abbreviation, leading to imperfect retrieval results. To rectify this, they propose a method to rephrase the user's request. Their approach involves generating an SQL query based on the user's input and the database metadata using a LLM. And then they query the database and ask the LLM to identify which entity in the sentence corresponds to an entity in the database, thereby creating a mapping. Using the entity names from the database, the LLM is prompted to reformulate the question. If a database query results in multiple rows for a selected column and item, a new question is generated using a greedy approach, prompting the user for more specific details until a conclusive answer is reached. Experiments show that this method exhibits notable enhancements in comparison to contemporary state-of-the-art techniques in mitigating language model inaccuracies.
+
+StructGPT \citep{StructGPT} is a general prompt framework to support LLMs reasoning on structured data (e.g., KG, Table, and Database).
+In general, the core of this framework is that they construct the specialized interfaces to collect relevant evidence from structured data (i.e., reading), and let LLMs concentrate on the reasoning task based on the collected information (i.e., reasoning). 
+Specially, they propose an invoking-linearization-generation procedure to support LLMs in reasoning on the structured data with the help of the interfaces.
+By iterating this procedure with provided interfaces, our approach can gradually approach the target answers to a given query.
+Experiments conducted on three types of structured data, including KGQA, TableQA, and Text-to-SQL, show that StructGPT greatly improves the performance of LLMs, under the few-shot or zero-shot settings.
+
+
+\citet{baek2023knowledgeaugmented} propose to inject the factual knowledge from knowledge graphs into (large) language models (up to GPT-3.5), by retrieving the relevant facts from knowledge graphs based on their textual similarities with the input question and then injecting them as the prompt of language models. This approach improves the performance of language models on knowledge graph question answering tasks \citep{Mintaka} by up to 48\% on average, compared to baselines without knowledge graphs.
+
+\include{sections/Domain-LLMs}
+% NOTE: Merged into Standalone LLMs
+% \subsection{On Inference}
+
+% This subsection zeroes in on techniques that amplify factuality during the LLM's inference stage.
+
+% \subsection{Domain Factuality Enhanced LLMs}
+
+% In previous subsections, we address the critical issue of Domain Knowledge Deficit, a factor that significantly restricts the application of Large Language Models (LLMs) in specialized fields. This topic is of considerable interest to both academic and industrial circles. We specifically focus on the strategies employed by Domain-Specific LLMs to improve their domain factuality, thereby enhancing their effectiveness and applicability in specialized areas. For a detailed exploration of these strategies, refer to the Appendix~\ref{sec:domain_llms} where we delve deeper into the methodologies and case studies that illustrate this advancement.
+

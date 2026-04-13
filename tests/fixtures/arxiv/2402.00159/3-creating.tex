@@ -1,0 +1,476 @@
+\section{Data Curation Methodology}
+\label{sec:creation}
+
+
+
+
+
+
+
+\subsection{The \dolma Toolkit}
+\label{sec:toolkit}
+Pretraining data curation requires defining complex pipelines that transform raw data from multiple sources into a single collection of cleaned, plain text documents~\citep{wenzek-etal-2020-ccnet,falcon40b}.
+To curate \dolma, we create and open-source a high-performance toolkit to facilitate efficient processing on hundreds of terabytes of text content.
+Our toolkit unifies common dataset curation steps into ``filtering'' and ``mixing'' operations: 
+
+\paragraph{\toolkitFilterText} We unify common data transformations like language, quality or content filters into a single implementation. 
+Given a configuration---a text unit (e.g., document, paragraph,\footnote{
+    We define a paragraph to be a span of text ending in a newline \utf character \texttt{``\textbackslash{}n''}.
+} sentence, etc.), a scoring method (e.g., linear classifier, language model perplexity, regular expression matches), and a removal policy (e.g., delete, replace with string)---our toolkit parallelizes filtering operations by identifying and removing undesirable text at massive scale.
+For \dolma, we use these to filter non-English, ``low quality'' or unnatural,\footnote{
+    The term ``quality filter,'' while widely used in literature, does not appropriately describe the outcome of filtering a dataset. Quality might be perceived as a comment on the informativeness, comprehensiveness, or other characteristics valued by humans. However, the filters used in \dolma and other language models efforts select text according to criteria that are inherently ideological~\citep{gururangan-etal-2022-whose}.
+}
+toxicity,\footnote{
+    Similar to ``quality'', there is no single definition for ``toxicity''.
+    Rather, specific definitions vary depending on task~\citep{Vidgen2020-bh} and dataset curators' social identities~\citep{Santy2023-sh};
+    annotators' beliefs also influence toxic language detection~\citep{Sap2021-ne}.
+    Predicting toxicity remains challenging~\citep{welbl-etal-2021-challenges-detoxifying,markov-2023-holistic-approach-undesired-content-detection}, especially as existing methods have been shown to discriminate against minoritized groups~\citep{xu-etal-2021-detoxifying}.
+}
+and PII at the document and sub-document levels.
+In internal tests to replicate C4 recipe, our toolkit performed filtering at a rate of 122 CPU hours per TB; for reference, processing the full ``raw'' \dolma files totaling 200 TB on a \texttt{c6a.48xlarge} instance with 192 vCPUs would take 5 days.
+
+\paragraph{\toolkitDedupeText} We unify common cross-file operations, like up/down-sampling, deduplication and decontamination, into a single Rust module that ``mixes'' content across files into a smaller set of files.
+For example, we can achieve up-sampling by repeatedly reading the same file paths when mixing.
+We also implement a Bloom filter~\citep{Bloom1970} compatible with our mixer which enables linear-time probabilistic detection of duplicates.
+We can repurpose this for test set decontamination by first seeding the Bloom filter with test examples, then flagging any detected duplicates when mixing the pretraining data.
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Data Ablations}
+\label{sec:experimental-methodology}
+
+
+
+To help us make informed decisions, we conduct \textbf{data ablations} 
+in which we train language models on a dataset following a specific data curation decision, or \emph{intervention}, and evaluate the resulting model's performance on a range of test datasets against a \emph{baseline} dataset.
+By comparing intervention and baseline results while controlling for model architecture and training, we can isolate the impact of specific dataset curation decisions on downstream models.
+
+\paragraph{Model training.}
+We conduct data ablations using a 1.2 billion parameter decoder-only model from the OLMo family of open language models~\citep{olmo20247b}.
+This is in line with similar model sizes that have been used for ablations in prior work~\citep{le-scao-etal-2022-language}.
+As training such models to completion is prohibitively expensive, especially when one must perform these experiments for each significant data curation decision, we only train these models up to 150 billion tokens before terminating them early.
+Further details of our training setup in Appendix~\ref{sec:setup:abl}.
+
+
+
+\paragraph{Tasks and test datasets.} 
+To select our evaluation tasks and datasets, we prioritize those that \emph{(i)} have been used in prior language model pretraining evaluation, \emph{(ii)} capture a diverse range of language model knowledge and capabilities, and \emph{(iii)} for which we can avoid test set contamination~\citep{dodge-etal-2021-documenting,Yang2023RethinkingBA}.
+We arrive at \textbf{8 datasets} in our evaluation suite (full details in Appendix~\S\ref{sec:setup}) that have been used in prior language modeling research (e.g., LLaMA, Llama 2, etc.) and capture a range of capabilities (e.g., question answering, commonsense reasoning, etc.).  
+Full test set contamination analysis validating our dataset choices in Appendix~\S\ref{appendix:sec:decontam-dolma-perplexity-paloma}.
+
+\paragraph{Evaluation.} We perform evaluation of our data ablation models using zero-shot in-context prompting, casting every task as (ranked) text classification, following in-context prompt truncation from \citet{min-etal-2022-metaicl}, prompts from PromptSource~\citep{bach2022promptsource}, and using an in-house evaluation harness similar to the Eleuther harness~\citep{eval-harness}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{\dolmaWeb~Curating Dolma-Web}
+\label{sec:common-crawl}
+
+
+
+
+
+
+In this section, we describe the web subset of \dolma, which  consists of 2.28T tokens derived from \textbf{Common Crawl},\footnote{\href{https://commoncrawl.org}{\path{commoncrawl.org}}}
+a collection of over 250 billion pages that were crawled since 2007.
+Common Crawl is organized in snapshots, each corresponding to a full crawl over its seed URLs;
+as of Feb 2024, there are 97 snapshots.
+We used 25 snapshots between \texttt{2020-05} to \texttt{2023-06}.\footnote{To minimize storage and compute costs, we only acquired enough shards of Common Crawl to meet our target 2-3T token corpus size, assuming at least a 10x reduction from the sum of all data cleaning efforts, including CCNet (\S\ref{sec:desiderata}).}
+
+
+
+
+
+\subsection{\toolkitWget~Acquisition \& \toolkitFilter~Language Filtering}
+\label{sec:web:acquisition}
+
+Our web pipeline leverages CCNet~\citep{wenzek-etal-2020-ccnet} to perform language filtering and initial content deduplication.
+CCNet has been used to develop other language model datasets like that for LLaMA, RedPajama v1, RedPajama v2.
+CCNet processes each web page with a FastText~\citep{joulin2016fasttext} language ID model\footnote{\href{https://fasttext.cc/docs/en/language-identification.html}{\path{fasttext.cc/docs/en/language-identification}}} to determine the primary language for each document; 
+we keep all pages with English document score greater than or equal to 0.5 (removed 61.7\% of the data, by byte size). 
+Further, CCNet identifies and removes very common paragraphs by grouping shards in each snapshot into small sets and removing duplicated paragraphs in each.
+This step removed approximately 70\% of paragraphs, primarily consisting of headers and navigation elements.
+Overall, CCNet pipeline filters out 84.2\% of the content in Common Crawl, from 175.1 TB to 27.7 TB. 
+More details are provided in our Datasheet~\S\ref{sec:datasheet}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{\toolkitFilter~Quality Filtering} 
+\label{sub:web:quality}
+
+Web crawled data requires significant cleanup before language model training; undesirable content ranges from artifacts introduced by HTML to plain text conversion (\textit{e.g.}, page headers, ill-formatted text) to pages lacking ``prose-like'' content (\textit{e.g.}, boilerplate text, short segments). 
+Per arguments posed in \citet{Rae2021ScalingLM} and \citet{falcon40b} against model-based quality filters, we approach quality filtering by combining heuristics introduced by Gopher and C4.
+Specifically, we keep all the Gopher rules (\texttt{Gopher All}) and keep a single heuristic from C4 designed to remove paragraphs that do not end in punctuation (\texttt{C4 NoPunc}), as opposed to adopting the full set of C4 rules (\texttt{C4 All}).
+Implementation details of all filtering rules are provided in our Datasheet~\S\ref{sec:datasheet}.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{experiments/ablations_cc_quality_only/downstream/hellaswag.pdf}
+    \caption{We find a positive effect of web data quality filters on 1.2B model performance, evaluated across training iterations, over a no-filtering baseline.
+    We only show results on HellaSwag here; all figures for other evaluation datasets are in the Appendix~\S\ref{app:raw}.
+    }
+    \label{fig:abl_quality_only}
+\end{figure}
+
+
+
+
+
+Ablation results shown in \S\ref{fig:abl_quality_only} validate our filtering strategy: 
+we find that \texttt{C4 NoPunc} on its own outperforms both \texttt{C4 All} as well as \texttt{Gopher All} on both perplexity and downstream tasks. 
+Finally, combining \texttt{Gopher All} + \texttt{C4 NoPunc} offers the best performance.
+In all, \texttt{Gopher All} tagged 15.23\% of \utf characters for removal, while \texttt{C4 NoPunc} tagged 22.73\% of characters for removal. 
+
+\paragraph{Model and heuristic filters are orthogonal.} CCNet also provides quality scores using KenLM~\citep{heafield-2011-kenlm} perplexity that groups documents based on Wikipedia-likeness; these buckets are often interpreted as high (21.9\%), medium (28.5\%), or low (49.6\%) quality content, in which more Wikipedia-like is often associated with higher quality. To our surprise, we found our heuristic filtering rules did not affect these proportions, suggesting that such model-based quality filters may capture other signals orthogonal to heuristic filters.
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{\toolkitFilter~Content Filtering} 
+\label{sec:toxicity}
+\label{sub:web:content}
+
+\paragraph{Filtering Toxic Content}
+
+Data sampled from the web often contains harmful or toxic content~\citep{Matic2020IdentifyingSU,luccioni-viviano-2021-whats,Birhane2023IntoTL,Birhane2023OnHS}.
+Such content is often filtered to minimize the likelihood that downstream language models are prone to toxic content generation~\citep{Anil2023PaLM2T,Rae2021ScalingLM,Thoppilan2022-fn,Hoffmann2022TrainingCL,Longpre2023APG}.
+To remove this content from \dolma, we train our own FastText classifiers on the Jigsaw Toxic Comments~\citep{jigsaw} dataset, producing two models that identify ``\texttt{hate}'' and ``\texttt{NSFW}'' content, respectively.
+See Appendix~\S\ref{app:toxic} for implementation details.
+We run these classifiers on Common Crawl sentences\footnote{Using BlingFire sentence splitter~\citep{blingfire}.} 
+and remove any sentence scored \emph{above} a set threshold.
+
+
+    
+    
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{experiments/ablations_cc_toxic_filtering/downstream/hellaswag.pdf}
+    \caption{
+    We find a positive effect of web data content filters on 1.2B model performance, evaluated across training iterations, over a no-filtering baseline.
+    We only show results on HellaSwag here; all figures for other evaluation  datasets are in the Appendix~\S\ref{app:raw}.
+    }
+    \label{fig:abl_toxic}
+\end{figure}
+
+To understand filter thresholding effects on \dolma, we conduct a data ablation choosing two very different thresholds for these content filters (\S\ref{fig:abl_toxic}).
+We find the ``High Threshold'' ($\tau=0.4$) removes \textit{less} content (5.5--7.3\%), but generally yields
+lower downstream performance than the ``Low Threshold'' ($\tau=0.0004$) which removes \emph{more} content (29.1--34.9\%).\footnote{
+    Manual inspection of the distribution of sentence scores revealed a bi-modal distribution with peaks near 0.0 and 1.0 (e.g., Figure~\ref{fig:reddit-location-toxicity}).
+    As such, we chose ``Low'' to remove even slightly toxic data ($> 0.0$), and ``High'' to limit our max data removal amount to preserve our target dataset scale.
+}
+
+Weighing the tradeoff between dataset scale (``High'') and performance maximization (``Low''), we adopt the more permissive ``High'' threshold to ensure we meet our minimum token count requirement.
+The cause of this was surprising: Our quality, content, and deduplication filters overlap very little in which texts they remove (Figure~\ref{fig:corr}), resulting in a compounded filtering effect when combining them.
+In future versions of \dolma, we will start with more shards of Common Crawl and adopt stricter filter thresholds.
+
+
+\paragraph{Filtering Personally Identifiable Information}
+
+Data sampled from the web can also leak personally identifiable information (PII) of users~\citep{luccioni-viviano-2021-whats,subramani-etal-2023-detecting}.
+Traces of PII are abundant in large-scale datasets~\citep{wimbd}, and 
+language models have also been shown to reproduce PII at inference time~\citep{Carlini2022-mj,Chen2023-zm}. 
+\dolma's size makes it impractical to use model-based PII detectors like Presidio~\citep{presidio};
+instead, we rely on carefully-crafted regular expressions that sacrifice some accuracy for significant speed-up.
+Following \citet{subramani-etal-2023-detecting}, we focus on three kinds of PII that are detectable with high precision: 
+email addresses, IP addresses and phone numbers.
+For documents with 5 or fewer PII spans, we replace the span with a special token (e.g., \texttt{|\negthickspace|\negthickspace|EMAIL\_ADDRESS|\negthickspace|\negthickspace|}); this affects 0.02\% of documents.
+Otherwise, we remove entire documents with higher density of PII spans; this affects 0.001\% of documents.
+In data ablation experiments, we find that execution details around PII (e.g., removal versus special token replacement) had no effect on model performance, which is expected given the tiny percentage of affected data.
+See Appendix~\S\ref{app:pii-filter-details} for implementation details; all figures for results on evaluation suite are in the Appendix~\S\ref{app:raw}.
+
+
+    
+    
+
+
+
+
+
+\subsection{\toolkitDedupe~Deduplication} 
+\label{sub:web:dedup}
+
+Deduplication of pretraining data has been shown to be effective for improving token efficiency during model training~\citep{lee-etal-2022-deduplicating,Abbas2023SemDeDupDL,Tirumala2023D4IL};
+as such, it has become common practice among pretraining data recipes.
+In \dolma, we perform three stages of deduplication:
+\begin{enumerate}[label=(\roman*),leftmargin=2.0em,itemsep=1mm,topsep=1mm]
+    \item\label{item:dup:url}\textbf{Exact \textsc{url} dedup}
+    filters 53.2\% of documents. 
+    \item\label{item:dup:doc}\textbf{Exact document dedup}  
+    filters 14.9\% of \textsc{url}-deduped documents, including empty documents.
+    \item\label{item:dup:par}\textbf{Exact paragraph dedup} 
+    filters 18.7\% of paragraphs from the \textsc{url}-deduped documents, including empty paragraphs.
+\end{enumerate}
+
+This multi-stage approach is designed to increase efficiency: 
+Stage~\ref{item:dup:url} is commonly used first thanks to its computational efficiency~\citep{urldedupe1,urldedupe2,Penedo2023TheRD}.
+Stages~\ref{item:dup:url}~and~\ref{item:dup:doc} are designed to remove copies of the same item, such as re-crawls of the same URL and identical pages with multiple URLs (e.g., same news article in multiple online newspapers). 
+Performing these early before any content or quality filtering greatly reduces the number of documents to process.
+In contrast, Stage~\ref{item:dup:par} removes common boilerplate content (e.g., the byline under all articles by the same author);
+as paragraph removal risks disrupting content analysis, we perform it last.
+We perform all three stages using the Bloom filter in \S\ref{sec:toolkit}.
+
+
+
+\subsection{{\small\toolkitWget\toolkitFilter\toolkitDedupe}\enskip Putting It All Together}
+
+To summarize, the \dolma web pipeline transforms the output of CCNet through URL and document-level deduplication, then quality and content filtering, and finally paragraph-level deduplication.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{experiments/ablations_cc_to_quality_plus_content/downstream/hellaswag.pdf}
+    \caption{We find a positive compounding effect on 1.2B model performance, evaluated across training iterations, 
+    when stacking quality filtering, content filtering and paragraph-level deduplication, over a no-filtering baseline.
+    We show results on HellaSwag here; all figures for other evaluation datasets are in the Appendix~\S\ref{app:raw}.
+    }
+    \label{fig:abl_web_all}
+\end{figure}
+
+
+
+We show the positive compounding effect of all stages of our web pipeline on downstream model performance, as assessed through our data ablations \S\ref{sec:experimental-methodology}.
+We present summary statistics in Appendix~\S\ref{sec:dolma-data-distribution-wimbd}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{\dolmaCode~Curating Dolma-Code}
+\label{sec:curating-dolma-code}
+
+In this section, we describe the code subset of \dolma, which consists of 411B tokens derived from \textbf{GitHub}.
+
+\subsection{\toolkitWget~Acquisition \& \toolkitFilter~Language Filtering}
+
+Like prior work in code language models (e.g., StarCoder~\citep{Li2023StarCoderMT}), we also acquire code through the Stack~\citep{kocetkov2022stack}, a deduplicated but otherwise unfiltered collection of permissively-licensed GitHub repositories.
+The raw version of this dataset was collected in March 2023.
+We filter data-heavy 
+files with extensions such as \texttt{JSON} and \texttt{CSV}.
+
+
+\subsection{\toolkitFilter~Quality Filtering} 
+
+We apply heuristics derived from the code subset of RedPajama v1 and StarCoder. 
+RedPajama v1 uses rules to remove repetitive file preambles, such as license statements
+and documents with excessively long lines or mostly numerical content. 
+Overall, RedPajama v1 is removes files that are mostly data or generated through templates.
+To select high-quality code snippets, we also use rules from the StarCoder pipeline;
+these heuristics filter GitHub repositories with no to few stars, files with too few or too many comments, and HTML files with low code-to-text ratio.
+Implementation details of all filtering rules are provided in our Datasheet~\S\ref{sec:datasheet}.
+
+
+
+When conducting data ablations, we find that, compared to RedPajama v1 rules alone, RedPajama v1 and StarCoder rules combined lead to lower perplexity on code datasets (\textit{e.g.}, HumanEval;~\citealp{chen2021evaluating}) and
+improved performance on datasets in our evaluation suite.\footnote{All figures for results on evaluation suite in Appendix~\S\ref{app:raw}.
+}
+Therefore, we chose to use this combination of the two filtering rules for this \dolma code subset.
+
+\subsection{\toolkitFilter~Content Filtering} 
+
+We apply the same heuristics to filter and mask PII used in the web subset (\S\ref{sec:common-crawl}). 
+Additionally, we filter any documents containing code secrets and software-specific personal information by running the \texttt{detect-secrets} library~\citep{DetectSecrets} and removing any documents with a match.
+
+\subsection{\toolkitDedupe~Deduplication} 
+
+We started from the already-deduplicated version of the Stack, which used the pipeline first introduced by~\citet{Allal2023SantaCoder}, which uses MinHash~\citep{Broder2002-ra} and Locally Sensitive Hashing to find similar documents. 
+
+
+
+
+
+
+
+\section{\dolmaSocial~Curating Dolma-Social}
+\label{sec:curating-dolma-social}
+
+
+
+
+\label{sec:pushshift-reddit-forum}
+
+In this section, we describe the social media subset of \dolma,  which consists of 80B tokens derived from \textbf{Reddit} data.
+
+
+\subsection{\toolkitWget~Acquisition \& \toolkitFilter~Language Filtering}
+
+We derive this subset from 378M posts from December 2005 until March 2023 obtained through  Pushshift \citep{pushshift}.
+We include both \textit{submissions}---initial message in conversations on Reddit---and \textit{comments}---replies to messages.
+The tree-like structure of Reddit threads allows for multiple possible data formats depending on how the various components of a thread are linearized for language model pretraining.
+To better inform this transformation, we conduct a data ablation over several approaches:
+
+\begin{enumerate}
+    \item \textbf{Atomic Content}. Treats all comments and submissionas independent documents.
+    \item \textbf{Partial Threads}. Comments from the same thread combined into a multi-round dialogue between users. Submissions as separate documents. 
+    \item \textbf{Full Threads}. Combines submissions with all child comments into one document.
+\end{enumerate}
+
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{experiments/ablations_reddit_selection/downstream/hellaswag.pdf}
+    \caption{
+    Experimenting with different Reddit thread linearization methods with 1.2B models, evaluated across training iterations.
+    We only show results on HellaSwag here;  all figures for other evaluation  datasets are in the Appendix~\S\ref{app:raw}.
+    }
+    \label{fig:abl_reddit}
+\end{figure}
+
+See Appendix~\S\ref{sec:how-to-thread} for implementation details.
+From results in Figure~\ref{fig:abl_reddit}, we see treating submissions and comments as independent documents (Atomic Content) leads to better performance on our evaluation suite.
+We hypothesize that artificial formatting introduced when combining thread elements negatively impacts language model training; we leave further investigation to future work.
+Finally, we filter non-English content using the approach from \S\ref{sec:web:acquisition}.
+
+
+
+
+
+
+
+
+\subsection{\toolkitFilter~Quality Filtering} 
+\label{sub:reddit:quality}
+
+Like web crawled data, social media posts also require significant cleanup before language model training. 
+We repurpose the pipeline introduced by~\citet{Henderson2019} to filter submissions and comments.
+We remove comments shorter than 500 characters, and submissions shorter than 400 characters.\footnote{Qualitative inspection of the data suggested that submissions are of higher quality than comments; thus, we use a more permissive minimum length.}
+We also remove documents over 40,000 characters. 
+
+We remove comments with fewer than 3 votes\footnote{The total votes for each document are obtained by computing the difference between positive votes, also known as ``upvotes'', negative votes or ``downvotes''.}, as lower scores are more likely for comments that are deeply nested in a conversational thread~\citep{Weninger2013-kz} or content that is more likely to results in emotionally-charged discourse~\citep{Davis2021-rg}.
+Votes have been used as a signal in constructing the WebText~\citep{Radford2019-vq} and OpenWebText~\citep{PetersonUnknown-dv} corpora.
+We discard documents that have been deleted by their authors, removed by moderators, or labeled by their authors as \textit{``over 18''}.
+We exclude any document originated from a set 26,123 banned or NSFW subreddits.\footnote{Available on GitHub as part of \dolma Toolkit (see \href{https://github.com/allenai/dolma/blob/a9eaf294b677af4e724dfc39014014fd3af0627f/sources/reddit/atomic_content_v5/subreddit_blocklist.txt}{\path{subreddit_blocklist.txt}})
+. The list was curated by merging several sources that tracked banned subreddits. We also include any subreddit with over 10\% of posts tagged as NSFW.}
+
+\subsection{\toolkitFilter~Content Filtering} 
+
+We apply the same content filtering in \S\ref{sec:toxicity}, except due to the short length of many Reddit documents, instead of masking PII, we fully remove the document. 
+
+    
+
+
+\subsection{\toolkitDedupe~Deduplication} 
+
+
+We employ the same strategy used in the web pipeline (\S\ref{sub:web:dedup}). 
+Since submissions and comments are shorter than web documents, we only deduplicate at a document-level. 
+This strategy is useful to reduce the incidence of ``\textit{copypasta}'' (identical text repeated across comments and subreddits for comedic effect) and other repetitive information. 
+
+
+
+
+
+\section{Assembling Other Data Sources}
+\label{sec:other-data-sources}
+
+In this section, we briefly summarize additional high-quality sources that were used to derive \dolma. 
+More details on collection and processing in Datasheet~\S\ref{sec:datasheet}.
+
+\paragraph{\dolmaWeb~C4 for Curated Web Content}
+
+Similar to data recipes for LLaMA and Llama 2,  we supplement our web subset with C4~\citep{raffel2020exploring}.
+We further refine this data by reprocessing it through our full web pipeline (excluding URL deduplication) (\S\ref{sec:common-crawl}) which removed additional content, including more low-quality and duplicated texts, and performed PII masking.
+
+
+
+\paragraph{\dolmaPapers~Semantic Scholar for Academic Literature} 
+
+The peS2o dataset~\citep{peS2o} is a collection of approximately 40 million open-access academic papers that have been cleaned, filtered, deduplicated, and formatted for pretraining language models. 
+It is derived from the Semantic Scholar Open Research Corpus (S2ORC;~\citealp{lo-etal-2020-s2orc}).
+As this dataset has been created for language modeling purposes, we use it as-is. 
+
+\paragraph{\dolmaBooks~Project Gutenberg for Books} 
+Project Gutenberg is a repository of over 70 thousand public domain books. 
+We collected Project Gutenberg's archive in April 2023. 
+We use English language books, which we filter using the same approach described in \S\ref{sec:web:acquisition}.
+We deduplicate this dataset based on book title exact match. 
+
+
+\paragraph{\dolmaRefs~Wikipedia and Wikibooks for Encyclopedic Content} 
+
+This dataset was derived by March 2023 Wikimedia dumps. 
+We use the ``English'' and ``Simple'' editions of Wikipedia and Wikibooks as base for the Encyclopedic subset of \dolma. 
+Sources were processed using WikiExtractor\citep{wikiextractor2023}.
+We remove any document with 25 or fewer \utf-segmented words, as we found shorter pages to either be the result of short, templated pages (\textit{e.g.}, pages containing only a few words and an information box) or XML parsing errors.
+By design, this dataset does not contain duplicated documents.

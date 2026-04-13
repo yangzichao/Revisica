@@ -1,0 +1,182 @@
+
+Evaluating the factuality of LLMs is pivotal for ensuring the reliability and trustworthiness of their generated content \citep{pezeshkpour2023measuring,lee2022factuality}. As LLMs become increasingly integrated into various applications, from information retrieval to content generation, the accuracy of their outputs becomes paramount. In this section, we delve into the evaluation metrics and benchmarks used for assessing the factuality of LLMs, studies that have undertaken such evaluations, and domain-specific evaluation.
+% \footnote{We've observed several studies focusing on Factuality Evaluation and Domain-Specific LLMs, including XX \citep{} and YY \citep{}. However, since they haven't published their findings, we've excluded them from this survey.}
+
+
+
+\subsection{Factuality Evaluation Metrics}
+\label{sec:eval_metrics}
+\input{tables/tb-eval-metrics}
+\input{sections/Evaluation_metrics}
+
+
+
+\input{tables/tb-eval-benchmark}
+
+% \subsection{Evaluating Factuality of LLMs}
+
+\subsection{{Benchmarks for Factuality Evaluation}}
+\label{sec:eval_benchmark}
+
+In this section, we delve into the benchmarks that are prominently employed to assess the factuality of LLMs.
+Specific benchmarks tailored for evaluating factuality in LLMs are tabulated in Table \ref{tab:eval_benchmark}. 
+
+\input{tables/tb-evaluation}
+
+
+MMLU \citep{MMLU} and TruthfulQA \citep{TruthfulQA} stand as two pivotal benchmarks in the realm of evaluating the factuality of LLMs \citep{GPT4,llama2,Open-LLM-Leaderboard} . 
+The MMLU benchmark is proposed to measure a text model's multitask accuracy across a diverse set of 57 tasks. These tasks span a wide range of subjects, from elementary mathematics to US history, computer science, law, and more. The benchmark is designed to test both the world knowledge and problem-solving ability of models. The findings from the paper suggest that while most recent models perform at near random-chance accuracy, the largest GPT-3 model showcased a significant improvement. However, even the best models still have a long way to go before achieving expert-level accuracy across all tasks \citep{GPT4}.
+TruthfulQA is a benchmark designed to assess the truthfulness of a language model's generated answers. The benchmark consists of 817 questions spanning 38 categories, including health, law, finance, and politics. These questions were crafted in such a way that some humans might answer them falsely due to misconceptions or false beliefs. The goal for models is to avoid generating these false answers that they might have learned from imitating human texts. The TruthfulQA benchmark serves as a tool to highlight the potential pitfalls of relying solely on LLMs for accurate information and emphasizes the need for continued research in this area.
+
+
+HaluEval \citep{HaluEval} is a benchmark designed to understand and evaluate the propensity of LLMs like ChatGPT to generate hallucinations. A hallucination, in this context, refers to content that either conflicts with the source or cannot be verified based on factual knowledge.
+The HaluEval benchmark offers a vast collection of generated and human-annotated hallucinated samples, aiming to evaluate the performance of LLMs in recognizing such hallucinations. The benchmark utilizes a two-step framework, termed "sampling-then-filtering", based on ChatGPT to generate these samples. Additionally, human labelers were employed to annotate hallucinations in ChatGPT responses. The HaluEval benchmark is a comprehensive tool that not only evaluates the hallucination tendencies of LLMs but also provides insights into the types of content and the extent to which these models are prone to hallucinate. 
+
+BigBench \citep{BigBench} focuses on the capabilities and limitations of LLMs. It comprises 204 tasks from diverse domains such as linguistics, childhood development, math, common-sense reasoning, biology, physics, social bias, software development, and more. The benchmark is designed to evaluate tasks believed to be beyond the capabilities of current language models. The study evaluates the performance of various models, including OpenAI's GPT models, on BIG-bench and compares them to human expert raters. Key findings suggest that model performance and calibration improve with scale but are still suboptimal when compared to human performance. Tasks that involve a significant knowledge or memorization component show predictable improvement, while tasks that exhibit "breakthrough" behavior at a certain scale often involve multiple steps or components. 
+
+\citet{C-Eval} propose C-Eval, the first comprehensive Chinese evaluation suite. It can be used to evaluate the advanced knowledge and reasoning abilities of foundational models within a Chinese context. The evaluation suite comprises multiple-choice questions spanning 52 diverse disciplines, with four levels of difficulty: middle school, high school, college, and professional. Additionally, C-Eval Hard is introduced for very challenging subjects within the C-Eval suite, which demands advanced reasoning abilities to solve. Their evaluations of state-of-the-art LLMs, including both English and Chinese-oriented models, have shows that there is significant room for improvement as only GPT-4 managed to achieve an average accuracy of over 60\%.
+The authors focus on assessing LLMs' advanced abilities within a Chinese context. The researchers assert that LLMs intended for a Chinese environment should be evaluated based on their knowledge of Chinese users' primary interests, such as Chinese culture, history, and laws.
+With C-Eval, the authors aim to guide developers in understanding the abilities of their models from multiple dimensions to facilitate the development and growth of foundational models for Chinese users. Simultaneously, C-Eval has not just introduced a whole suite but subsets that can serve as individual benchmarks, thereby assessing certain model abilities and analyzing key strengths and limitations of foundational models. Experiment results have shown that although GPT-4, ChatGPT, and Claude were not exclusively tailored for Chinese data, they emerged as the top performers on C-Eval.
+
+SelfAware \citep{yin-etal-2023-large} aims to investigate whether models recognize what they don't know. This dataset encompasses two types of questions: unanswerable and answerable. The dataset comprises 2,858 unanswerable questions gathered from various websites and 2,337 answerable questions extracted from sources such as SQuAD, HotpotQA, and TriviaQA. Each unanswerable question is confirmed as such by three human evaluators. In the conducted experiments, GPT-4 achieves the highest F1 score of 75.5, compared to a human score of 85.0. Larger models tend to perform better and in-context learning can enhance performance.
+
+The Pinocchio benchmark \citep{Pinocchio} serves as an extensive evaluation platform, emphasizing factuality and reasoning for LLMs. This benchmark encompasses 20,000 varied factual queries from diverse sources, timeframes, fields, regions, and languages. It tests an LLM's capability to discern combined facts, process both organized and scattered evidence, recognize the temporal evolution of facts, pinpoint minute factual disparities, and withstand adversarial inputs. Each reasoning challenge within the benchmark is calibrated for difficulty to allow for detailed analysis.
+
+
+\citet{kasai2022realtimeqa} introduce a dynamic QA platform named REALTIMEQA. This platform is unique in that it announces questions and evaluates systems on a regular basis, specifically weekly. The questions posed by REALTIMEQA pertain to current events or novel information, challenging the static nature of traditional open domain QA datasets. The platform aims to address instantaneous information needs, pushing QA systems to provide answers about recent events or developments. Their preliminary findings indicate that while GPT-3 can often update its generation results based on newly-retrieved documents, it sometimes returns outdated answers when the retrieved documents lack sufficient information. 
+
+
+FreshQA \citep{vu2023freshllms} is a dynamic benchmark designed to evaluate up-to-date world knowledge of LLMs. Its questions range from those that are never-changing to those that are fast-changing, as well as questions based on false premises. The aim is to challenge the static nature of LLMs and test their adaptability to ever-changing knowledge through human evaluations. They develop a reliable evaluation protocol that uses a two-mode system: RELAXED and STRICT for a comprehensive understanding of model performance, ensuring that answers are confident, definitive, and accurate. They also provide a strong baseline named FRESHPROMPT, which seeks to enhance LLM performance by integrating real-time data from search engines. Initial experiments reveal that, outdated training data weakens the performance of LLMs and the FRESHPROMPT method can significantly enhance it. The research underscores the need for LLMs to be refreshed with current information to ensure their relevance and accuracy in a constantly evolving world.
+
+Several benchmarks, such as BigBench \citep{BigBench} and C-Eval \citep{C-Eval}, encompass subsets that extend beyond the realm of factual knowledge or factuality. In this work, we specifically emphasize and focus on those subsets related to factuality.
+
+There are benchmarks primarily designed for Pre-trained Language Models (PLMs) that can also be adapted for LLMs. Some studies use them for evaluating LLM's factuality, but they are not so widely-used, so we have chosen to exclude them from the table for clarity. These benchmarks predominantly encompass knowledge-intensive tasks, as highlighted by \citep{kilt}. Those benchmarks include NaturalQuestions (NQ) \citep{NQ}, TriviaQA (TQ) \citep{TQ}, OTT-QA~\citep{OTT-QA}, AmbigQA~\cite{ambigQA} and WebQuestion (WQ) \citep{WQ} of Open-domain Question Answering (QA) task, the HotpotQA~\citep{hotpotqa}, 2WikiMultihopQA~\citep{2WikiMultihopQA}, IIRC~\citep{IIRC}, MuSiQue~\citep{musique} of multi-step
+QA, the ELI5 \citep{ELI5} of the Long-form QA task, the FEVER \citep{fever}, FM2 \citep{FM2}, HOVER \citep{HOVER}, FEVEROUS \citep{FEVEROUS} of the Fact Checking task, the T-REx \citep{TREx}, zsRE \citep{ZsRE} and LAMA \citep{LAMA} to examine factual knowledge contained in pretrained language models, the WikiBio \citep{wikiBio} of biography generation task, the RoSE \citep{Rose}, WikiAsp \citep{wikiasp} of summarization task, the KILT \citep{kilt} of comprehensive knowledge intensive tasks, the MassiveText \citep{Gopher}, Curation Corpus \citep{curation}, Wikitext103 \citep{Wikitext103}, Lambada \citep{lambada}, C4 \citep{C4}, Pile \citep{pile} of langauge modeling task, the WoW \citep{WoW}, DSTC7 track2~\citep{dstc7}, DSTC11 track5~\citep{dstc11} of dialogue task, the RealToxicityPrompts \cite{RealToxicityPrompts} of toxicity reduction, the CommaQA \citep{CommaQA}, StrategyQA \citep{StrategyQA}, TempQuestions \citep{TempQuestions}, IN-FOTABS~\citep{INFOTABS} of diverse reasoning tasks.
+
+%\textcolor{red}{TBC} 
+
+Some studies \citep{Min2023-FActScore, SelfCheckGPT} also provide a small dataset, but they mainly concentrate on the evaluation metrics or methods for factuality, we choose to discuss them in the next subsection.
+
+\subsection{Factuality Evaluation Studies}
+\label{sec:factuality-eval}
+
+\input{tables/tb-evaluation2}
+
+In this section, we delve into studies that evaluate factuality in LLMs without introducing a specific benchmark, focusing primarily on those whose main contribution lies in the evaluation methodology. We spotlight works that have pioneered evaluation techniques, metrics, or have offered distinctive insights into the factuality evaluation of LLMs.
+
+
+
+\citet{SelfCheckGPT} use an evaluation process that encompasses several key steps. Initially, synthetic Wikipedia articles are generated using GPT-3, focusing on individuals from the Wikibio dataset. Subsequently, manual annotation is performed at the sentence level, classifying sentences as ``Major Inaccurate" , ``Minor Inaccurate", or ``Accurate", with ``Major Inaccurate" denoting sentences unrelated to the topic. Passage-level scores are derived by averaging sentence-level labels, and identifying cases of total inaccuracies through score distribution analysis. Inter-annotator agreement is assessed using Cohen's $\kappa$ ~\cite{cohen1960coefficient}. Evaluation metrics primarily employ precision-recall curves (PR-Curves), distinguishing between ``Non-Factual Sentences," ``Non-Factual* Sentences" (a specific subset), and ``Factual Sentences." These PR-Curves elucidate the trade-off between precision and recall for different detection methods.
+
+BSChecker \citep{BSChecker} is a factual errors detection framework that detects inaccuracies on triplet-level granularity. Its pipeline comprises a claim extractor and a checker. The claim extractor extracts triplets from model’s response as claims formed with (subject, predicate, object). Meanwhile, the checker compare these claims triplets with references, categorizing each triplet to one of three hallucination labels: Entailment, Contradiction or Neutral, drawing inspiration from the Natural Language Inference task. BSChecker offers a benchmark that distinguishes three task settings: Zero Context, Noisy Context and Accurate Context covering tasks of closed-book QA, retrieval-augmented generation, summarization, closed-QA and information extraction.
+
+\citet{pezeshkpour2023measuring} propose a new metric for measuring whether a certain type of knowledge is present in LLM. This metric is based on information theory and measures knowledge by analyzing the probability distribution of predictions made by LLM before and after injecting target knowledge. The accuracy of GPT-3.5 in the Knowledge Probing task is tested on the T-REx \citep{TREx} and LAMA \citep{LAMA} datasets. %They find that \textcolor{red}{XXXXX}.
+
+
+% \citet{de-cao-etal-2021-editing} 
+% propose a framework to evaluate the performance of LLM editing, represented by the edited parameters $\Theta_0$, with several key metrics on two different tasks: closed-book fact-checking (FC) and closed-book question answering (QA).
+% The metrics are:
+% \textit{(1) Success Rate: }This measures how well the model successfully updates the knowledge in parameters; 
+% \textit{(2) Retain Accuracy:} This is a measure of how well parameters retain the original predictions of the model; 
+% \textit{(3) Equivalence Accuracy:} This measures how consistent the revised model parameters's predictions are for semantically equivalent inputs; and
+% \textit{(4) Performance Deterioration:} This is a measure of how much the updated model's test performance deteriorates.
+% The authors claim that, prior studies like \cite{sinitsin2019editable} only measured performance deterioration and success rate, leaving out retained accuracy and equivalence accuracy. \citet{zhu2020modifying} also fell short in measuring retained accuracy while only exploring accuracy against old or new facts. The authors emphasize the importance of retaining accuracy in production settings where model predictions have potentially been rigorously analyzed and tested. They aim to maintain all original predictions while effectively avoiding the need to recalibrate the models, which is crucial in scenarios where probability estimates are used downstream.
+
+\citet{varshney2023stitch} point out a common real-world occurrence where users often ask questions based on false premises. These questions are challenging for state-of-the-art models.
+This necessitated the creation of a new evaluation dataset. To this end, the authors have conducted a case study and compiled a set of 50 such adversarial questions, all of which the GPT-3.5 model answered incorrectly. The aim is to create a challenging experimental setup to assess the performance of models faced with such questions.
+In order to enhance the evaluation, corresponding true premise questions were created for each of the false premise questions. This allowe for a holistic evaluation of the model's performances, taking into consideration both correct and incorrect premises.
+The authors make sure to evaluate the complete answers given by the model for correct and incorrect questions - in this context, it's not enough for an answer to be partially correct, the entire answer needs to be accurate to be marked as correct. For example: For the false premise question ``Why does Helium have an atomic number of 1?", the corresponding true premise question is ``Why does Hydrogen have an atomic number of 1?".
+
+
+FACTOOL \citep{chern2023factool} is a tool designed to function as a factuality detector, with the primary purpose of auditing generative chatbots and assessing the reliability of their outputs. This tool is employed to evaluate several contemporary chatbots, including GPT-4, ChatGPT, Claude, Bard \citep{bard}, and Vicuna \citep{vicuna2023}. Notably, FACTOOL itself leverages the capabilities of GPT-4.
+For the evaluation process, the researchers have curated a diverse set of prompts: 30 from knowledge-based question answering (KB-QA), 10 each from code, math, and scientific domains. The KB-QA prompts were sourced from a prior study, code prompts were taken from HumanEval, math prompts from another distinct study, while the scientific prompts were crafted by the authors themselves.
+The evaluation metrics included both claim-level and response-level accuracies for each chatbot. To offer a more comprehensive and equitable evaluation, a weighted claim-level accuracy is used. The weighting is determined based on the proportion of prompts from each category.
+The findings are illuminating. GPT-4 emerge as the top performer in terms of both weighted claim-level factual accuracy and response-level accuracy among all the chatbots assessed. Another intriguing observation is that chatbots that underwent supervised fine-tuning, such as Vicuna-13B, exhibited commendable performance in standard scenarios like KB-QA. However, their performance dip in more intricate scenarios, including those involving math, code, and scientific queries.
+
+\citet{wang2023evaluating} ask several LLMs, including ChatGPT, GPT-4 \citep{GPT4}, BingChat \citep{BingChat} to answer open questions from NaturalQuestions \citep{NQ} and TriviaQA \citep{TQ}. They manually estimate the accuracy of those LLMs on open question answering, and find that though LLMs can achieve nice performance but still far away from perfect. Besides, they evaluate whether the GPT-3.5 can assess the correctness of LLM-generated responses, and find negative results, even if the golden answer is also presented.
+Similarity, \citet{fu2023large} ask LLMs, such as GPT-2 and GPT-4, to directly score the factuality of a summary, and find  no significant correlation  between LLM's factuality indicators and human evaluations.
+
+
+\citet{kadavath2022language} investigate whether language models can evaluate the accuracy of their own assertions and predict which questions they can answer correctly. It is found that larger models are well-calibrated on diverse multiple-choice and true/false questions if given in the appropriate format.
+The approach to self-evaluation on open-ended tasks is to ask the models to initially suggest answers, and then evaluate the probability (P[True]) that their answers are correct. This resulted in compelling performance, calibration, and scaling on a diverse range of tasks. Furthermore, self-evaluation performance improved when the models are allowed to consider many of their own suggestions before predicting the validity of a specific one.
+
+
+\citet{yu2023generate} explore whether the internal knowledge of LLMs can replace the retrieved documents on knowledge intensive tasks. They ask LLMs, such as InstructGPT \citep{gpt35}, to directly generate contexts given a question rather than retrieving from database. They find the generated documents contain the golden answers more often than the top retrieved documents. Then they feed the generated docs and retrieved docs to the Fusion-in-Decoder model \citep{Fusion-in-Decoder} for knowledge-intensive tasks such as Open-domain QA \citep{NQ} and find the generated docs are more effective than the retrieved docs, suggesting that the LLMs contain enough knowledge for knowledge-intensive tasks.
+
+\citet{menick2022teaching} propose a task named \textit{Self-supported QA} to evaluate LLMs' ability in also producing citations when generating answers. Authors ask humans to evaluate whether the responses of their proposed model GopherCite are plausible and whether they are supported by the accompanying quote evidence on datasets such as NQ, ELI5, TruthfulQA.
+
+
+
+CONNER \citep{chen2023beyond}, a framework that evaluates LLMs as generators of knowledge. It focuses on six areas: Factuality, Relevance, Coherence, Informativeness, Helpfulness, and Validity. It evaluates whether the generated information can be backed by external proof (Factuality), is relevant to the user's query (Relevance), and is logically consistent (Coherence). It also checks if the knowledge provided is novel or surprising (Informativeness). The Extrinsic evaluation measures whether the knowledge enhances downstream tasks (Helpfulness) and its results are factually accurate (Validity). 
+
+In the realm of factuality evaluation, the Model Editing task holds a unique position, focusing on refining the internal knowledge of models. This task comes with its own set of specialized evaluation metrics. Predominantly, the Zero-Shot Relation Extraction (zsRE) \cite{ZsRE} and CounterFact \cite{meng2022locating} serve as the primary benchmarks for assessing Model Editing techniques. When evaluating these methods, several key criteria emerge:
+Reliability: Post-editing, the model should consistently generate the intended output.
+Generalization: The model should be adept at producing the target output even when presented with paraphrased inputs.
+Locality: Edits should be localized, ensuring that facts not related to the specific edit remain intact.
+However, given the intricate web of interconnected facts, recent studies \citet{zhong2023mquake,yao2023editing,cohen2023evaluating} have advocated for a more holistic evaluation approach. They introduce broader criteria for fact updates, encompassing aspects like portability, logical generalization, among others.
+
+RAGAS \citep{es2023ragas} proposes a framework for the reference-free evaluation of Retrieval-Augmented Generation (RAG) systems in Large Language Models (LLMs). This framework primarily assesses the RAG system's ability to identify relevant and key context paragraphs, the LLM's fidelity in utilizing these paragraphs, and the overall quality of the generated content. The framework focuses on three aspects of quality:
+Faithfulness: The generated answers should be based on the given context. To evaluate faithfulness, the generated content is broken down into sentences, which are then transformed into one or more short assertions. Each assertion's faithfulness is assessed against the retrieved content, with the faithfulness score being the ratio of faithful assertions to the total number of assertions.
+Answer Relevance: The generated answers should appropriately address the posed questions. This is evaluated by having the LLM generate potential questions from each piece of generated content. An embedding model then calculates the similarity between each potential question and the original question. The answer relevance score is the average of these similarities.
+Context Relevance: The retrieved context should be highly relevant, containing as little irrelevant information as possible. This is assessed by using the LLM to extract sentences from the retrieved content that are relevant to the question. The context relevance score is then calculated based on the proportion of these relevant sentences to the total number of sentences retrieved.
+The authors created a WikiEval dataset, consisting of question-context-answer triplets with human judgments. This allows for the measurement of how closely different evaluation frameworks align with human assessments of faithfulness, answer relevance, and context relevance. The paper compares two baselines: GPTScore, which requires ChatGPT to rate the three quality dimensions on a scale of 0 to 10, and GPT Ranking, which does not require ChatGPT to choose a preferred answer/context but includes definitions of the considered quality metrics in the prompt. When evaluating answer relevance, a specific prompt is used.
+Overall, the RAGAS framework proposed in the paper aligns more closely with human judgment compared to the two baselines. 
+
+
+
+%%%%%%%%%
+
+Some work's main contributions lie at the methods to improve the factuality of LLMs, and their evaluation part may also be informative and important when people reach the related study. So we choose to list evaluation parts in the Table \ref{tab:eval-table2} but not to discuss their evaluation in detail.
+% Those work include \citet{borgeaud2022improving}
+
+%%%%%%%%%
+\subsection{Evaluating Domain-specific Factuality}
+
+
+%In our examination of specialized Large Language Models (LLMs), we've identified an extensive array of datasets and benchmarks tailored to a variety of domains. These resources are instrumental not only in assessing the performance of LLMs but also in propelling forward domain-specific applications. For a comprehensive overview, we've compiled these resources in Table~\ref{tab:domain-eval}. The primary focus of this subsection is on domain-specific factuality evaluation, setting it apart from Sec \ref{sec:eval_benchmark} and \ref{sec:factuality-eval}. While the latter sections address general factuality evaluation, they only partly touch upon datasets geared towards factuality within specific domains. %Detailed information about these datasets and benchmarks can be found in the Appendix~\ref{sec:domain-eval}, allowing the main content to remain succinct and focused.
+
+\label{sec:domain-eval}
+\input{tables/tb-domain-eval}
+
+In our examination of specialized Large Language Models (LLMs), we've identified an extensive array of datasets and benchmarks tailored to a variety of domains.  These resources not only serve as critical tools for evaluating the capabilities of LLMs but also facilitate advancements in specialized applications. We summarize them in Table~\ref{tab:domain-eval}. The distinction between this subsection and the previous two lies in its focus. This subsection delves deeper into factuality evaluation tailored to specific domains, while Sec \ref{sec:eval_benchmark} and \ref{sec:factuality-eval} primarily concentrate on general factuality evaluation, with only a portion of their content dedicated to datasets evaluating factuality within specific domains.
+
+
+{\paragraph{Finance}}
+\citet{xie2023pixiu} designed a financial natural language understanding and prediction evaluation benchmark dubbed FLARE, based on their collected financial instruction tuning dataset FIT. This benchmark is used to evaluate their FinMA model. It randomly selects validation sets from FIT to choose the best model checkpoint and utilizes distinct test sets for evaluation.
+FLARE is a broader variant compared to the existing FLUE benchmark~\cite{shah2022flue} as it also encapsulates financial prediction tasks like stock movement prediction in addition to standard NLP tasks. 
+The FLARE dataset includes several subtasks, such as sentiment analysis (FPB, FiQA-SA), news headline  classification (Headline), named entity recognition (NER), question answering (FinQA, ConvFinQA), and stock movement prediction (BigData22, ACL18, CIKM18).
+Performance is gauged via a variety of metrics for each task, such as the accuracy and weighted F1 Score for sentiment analysis, entity-level F1 score for named entity recognition, and accuracy and Matthews correlation coefficient for stock movement prediction.
+Several methods, including their own FIT-fine-tuned FinMA and other LLMs (BloombergGPT, GPT-4, ChatGPT, BLOOM, GPT-NeoX, OPT-66B, Vicuna-13B) are dedicated to their comparison. BloombergGPT's performance is assessed in various shot scenarios, while the zero-shot performance is reported for the remaining results. Some of the baselines depend on human evaluations given that LLMs without fine-tuning fail to generate instruction-defined answers. Conversely, FinMA's results are conducted on a zero-shot basis and can be evaluated automatically. 
+To enable direct comparison between the performance of FinMA and BloombergGPT, despite the former not releasing their test datasets, test datasets were constructed with the same data distribution.
+
+\citet{li2023ecomgpt} propose EcomInstruct benchmark, which experiment investigates the performance of their EcomGPT language model in comparison to baseline models such as BLOOM and BLOOMZ. Categories of these baseline models include pre-trained large models with decoder-only architecture like BLOOM, and instruction-following language models like BLOOMZ and ChatGPT. The evaluation metric of the EcomInstruct involves converting all tasks to generative paradigms and using text generation evaluation metrics like ROUGE-L. Classification tasks were evaluated with precision, recall, and F1 scores. The EcomInstruct dataset, comprising 12 tasks across four major categories, is divided into training and testing sections. The EcomGPT is trained on 85,746 instances of E-commerce data. The performance of the model is assessed based on its capacity to generalize unseen tasks or datasets, with emphasis on cross-language and cross-task paradigm settings.
+
+
+{\paragraph{Medicine}}
+\citet{wang2023cmb} propose a localized medical benchmark called CMB, or the Comprehensive Medical Benchmark in Chinese. CMB is rooted entirely in the native Chinese linguistic and cultural framework. While traditional Chinese medicine is a significant part of this evaluation, it does not make up the entire benchmark.
+Both prominent LLMs, such as ChatGPT and GPT-4, and localized Chinese LLMs, including those specializing in the health domain, are evaluated using CMB. However, the benchmark is not designed as a leaderboard competition, but rather as a tool for self-assessment and understanding the progression of models in this field.
+CMB embodies a comprehensive, multi-layered medical benchmark in Chinese, comprised of hundreds of thousands of multiple-choice questions and complex case consultation questions. This wide range of queries covers all clinical medical specialties and various professional levels, seeking to evaluate a model's medical knowledge and clinical consultation capabilities comprehensively.
+ 
+\citet{li2023huatuo} introduce Huatuo-26M dataset, the largest Chinese medical Question and Answer (QA) dataset to date, including over 26 million high-quality medical QA pairs. It covers a wide range of topics, such as diseases, symptoms, treatments, and drug information. The dataset is a valuable resource for anyone looking to improve AI applications in the medical field, such as chatbots and intelligent diagnostic systems.
+The Huatuo-26M dataset is gathered and integrated from various sources, including online medical encyclopedias, online medical knowledge bases, and online medical consultation records. Each QA pair in the dataset contains a problem description and a corresponding answer from a doctor or expert. Although a significant proportion of the Huatuo-26M dataset is constituted by the online medical consultation records, the text format data from these records is not publicly available, for unspecified reasons.
+This dataset is expected to be instrumental for multiple types of research and AI applications in the medical field. These areas of application extend to Natural Language Processing tasks like developing QA systems, text classification, sentiment analysis, and Machine Learning model training tasks like disease prediction and personalized treatment recommendation. Consequently, the dataset is favorable for developing AI applications in the medical field, from intelligent diagnosis systems to medical consultation chatbots.
+
+% {\paragraph{Gene: }}
+\citet{jin2023genegpt} use nine tasks related to NCBI resources to evaluate the proposed GeneGPT model. The dataset used is GeneTuring benchmark~\cite{Hou2023GeneTuring}, which contains 12 tasks with 50 question-answer pairs each. The tasks are divided into four modules - Nomenclature  (Gene alias, Gene name conversion),  Genomic location(Gene SNP association, Gene location, SNP location), 
+  Functional analysis(Gene disease association, Protein-coding genes), 
+  Sequence alignment (DNA to human genome, DNA to multiple species). Two settings of GeneGPT are assessed: a full setting where all prompt components are used, and a slim setting using only two components. The performance of GeneGPT is compared against various baselines including general-domain GPT-based LLMs like GPT-2, GPT-3, and ChatGPT. Additionally, GPT-2-sized biomedical domain-specific LLMs such as BioGPT and BioMedLM are evaluated. The new Bing, a retrieval-augmented LLM with access to relevant web pages, is also assessed. The result evaluation of the compared methods is based on the results reported in the original benchmark and are manually evaluated. However, the evaluation of the proposed GeneGPT method is determined through automatic evaluations.
+
+
+
+
+
+\paragraph{Law}
+LegalBench~\citep{guha2023legalbench} is a benchmark for legal reasoning introduced due to the increasing use of LLMs in the legal field. It consists of 162 tasks covering six types of legal reasoning and was collaboratively constructed through an interdisciplinary process with significant contributions from legal professionals. The tasks designed aim to either demonstrate practical legal reasoning capabilities or measure reasoning skills that are of interest to lawyers. To facilitate discussions between different fields relating to LLMs in law, LegalBench tasks correspond to popular legal frameworks for describing legal reasoning, thus creating a shared language between lawyers and LLM developers. The paper not only describes LegalBench, but also presents an evaluation of 20 different open-source and commercial LLMs and highlights the types of research opportunities that LegalBench can provide.
+
+LawBench~\citep{fei2023lawbench} is an evaluation framework dedicated to assessing the capabilities of LLMs in relation to legal tasks. The context-specificity and high-stakes nature of the law field make it crucial to have a clear grasp of LLMs' legal knowledge and their ability to execute legal tasks. 
+LawBench dives deep into three cognitive evaluations of LLMs: the capability to memorize crucial legal details, understanding legal texts, and applying legal knowledge to resolve complicated legal problems. A total of 20 diverse tasks have been put together, covering five main task categories: single-label classification, multi-label classification, regression, extraction, and generation. 
+Throughout the evaluation process, 51 LLMs were extensively tested under LawBench, compiling a spectrum of language models including 20 multilingual LLMs, 22 Chinese-oriented LLMs, and 9 law-specific LLMs. The results concluded that GPT-4 ranked as the superior LLM in the law domain, significantly surpassing its competitors. Despite the noted improvements when LLMs were fine-tuned on law-specific texts, the study acknowledged that there is still a long road ahead in achieving highly reliable LLMs for legal tasks.
+
+\citet{bi2023oceangpt}  design OceanBench to evaluate the capabilities of LLMs for oceanography tasks.
+OceanBench includes a total of 15 type of ocean-related tasks, such as question-answering and description tasks.
+The samples in OceanBench are are automatically generated from the seed dataset and have undergone manual verification by experts.

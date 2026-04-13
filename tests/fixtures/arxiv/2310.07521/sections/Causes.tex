@@ -1,0 +1,52 @@
+
+Understanding the root causes of these factual inaccuracies is crucial for refining these models and ensuring their reliable application in real-world scenarios. In this subsection, we delve into the multifaceted origins of these errors, categorizing them based on the stages of model operation: Model Level, Retrieval Level, Generation Level, and other miscellaneous causes. Table~\ref{tab:causes} shows examples of factuality errors caused by different factors.
+
+
+\subsubsection{Model-level Causes}
+\label{sec:model-causes}
+This subsection delves into the intrinsic factors within large language models that contribute to factual errors, originating from their inherent knowledge and capabilities. 
+
+\paragraph{Domain Knowledge Deficit} The model may lack comprehensive expertise in specific domains, leading to inaccuracies. Every LLM has its limitations based on the data it was trained on. If an LLM hasn't been exposed to comprehensive data in a specific domain during its training, it's likely to produce inaccurate or generalized outputs when queried about that domain. For instance, while an LLM might be adept at answering general science questions, it might falter when asked about niche scientific subfields \citep{ScienceQA}.
+
+\paragraph{Outdated Information} The model's dependence on older datasets can make it unaware of recent developments or changes. LLMs are trained on datasets that, at some point, become outdated. This means that any events, discoveries, or changes post-dating the last training update won't be known to the model. For example, ChatGPT and GPT-4 are both trained on data up to 2021.09 might not be aware of events or advancements after then.
+
+\paragraph{Immemorization} The model does not always retain knowledge from its training corpus. While it's a misconception that LLMs ``memorize" data, they do form representations of knowledge based on their training. However, they might not always recall specific, less-emphasized details from their training parameters, especially if such details were rare or not reinforced through multiple examples. For example, ChatGPT has pretrained with Wikipedia, but it still fail in answering some questions from NaturalQuestions \citep{NQ} and TriviaQA \citep{TQ}, which are constructed from Wikipedia \citep{wang2023evaluating}.
+
+\paragraph{Forgetting} The model might not retain knowledge from its training phase or could forget prior knowledge as it undergoes further training. As models are further fine-tuned or trained on new data, there's a risk of ``catastrophic forgetting" ~\citep{goodfellow2015empirical, wang2022preserving, chen2020recall, zhai2023investigating} where they might lose certain knowledge they were previously know. This is a well-known challenge in neural network training, where networks forget previously learned information when exposed to new data, which also happens in large language models \citep{luo2023empirical}.
+
+\paragraph{Reasoning Failure} While the model might possess relevant knowledge, it can sometimes fail to reason with it effectively to answer queries. Even if an LLM has the requisite knowledge to answer a question, it might fail to connect the dots or reason logically. For instance, ambiguity in the input~\citep{liu2023we} can potentially lead to a failure in understanding by LLMs, consequently resulting in reasoning errors. In addition, \citet{berglund2023reversal} find the LLM traps in the reversal curse, for example, it knows that A is B's mother but fail to answer who is B's son. This is especially evident in complex multi-step reasoning tasks or when the model needs to infer based on a combination of facts \citep{tan2023chatgpt,kotha2023understanding}. 
+
+% For instance, while it 
+
+% Multi-modal Deficit: Challenges emerge when the model must process multiple types of data, such as text and images, and struggles to integrate them cohesively. Most LLMs are designed to process textual information. When faced with tasks that require understanding or generating content across multiple modalities (like visual and textual), they might struggle \citep{}. For instance, spatial reasoning or interpreting visual cues alongside text can be challenging for models that aren't specifically trained on multi-modal data.
+
+
+\subsubsection{Retrieval-level Causes}
+\label{sec:retrieval-causes}
+The retrieval process plays a pivotal role in determining the accuracy of LLMs' responses, especially in retrieval-augmented settings. Several factors at this level can lead to factual errors:
+
+\paragraph{Insufficient Information}
+If the retrieved data doesn't provide enough context or details, the LLM might struggle to generate a factual response. This can result in generic or even incorrect outputs due to the lack of comprehensive evidence.
+
+\paragraph{Misinformation Not Recognized by LLMs}
+LLMs can sometimes accept and propagate misinformation present in the retrieved data. This is especially concerning when the model encounters knowledge conflicts, where the retrieved information contradicts its pre-trained knowledge, or multiple retrieved documents contradict each other~\cite{TruthDiscovery}. For instance, \cite{longpre2021entity} observed that the more irrelevant the evidence, the more likely the model is to rely on its intrinsic knowledge. Recent studies, such as \cite{pan2023risk}, have also shown that LLMs are susceptible to misinformation attacks within the retrieval process.
+
+\paragraph{Distracting Information}
+LLMs can be misled by irrelevant or distracting information in the retrieved data. For example, if the evidence mentions a "Russian movie" and "Directors", the LLM might incorrectly infer that "The director is Russian". \cite{luo2023sail} highlighted this vulnerability, noting that LLMs can be significantly impacted by distracting retrieval results. They further proposed instruction tuning as a potential solution to enhance the model's ability to sift through and leverage retrieval results more effectively.
+
+
+Additionally, when dealing with long retrieval inputs, the models tend to show their best performance when processing information given at the beginning or end of the input context, according to \citet{liu2023lost}. In contrast, the models are likely to experience a significant decrease in performance when they are required to extract relevant data from the middle of these extensive contexts.
+% find that performance tends to be at its peak when relevant information is located at the beginning or end of the input context. Conversely, it experiences a notable decline when models are required to retrieve pertinent information from the middle of lengthy contexts. 
+
+\paragraph{Misinterpretation of Related Information}
+Even when the retrieved information is closely related to the query, LLMs can sometimes misunderstand or misinterpret it. While this might be less frequent when the retrieval process is optimized, it remains a potential source of error. For instance, in the ReAct study \citep{yao2023react}, the rate of errors dropped significantly when the retrieval process was improved.
+
+\subsubsection{Inference-level Causes}
+\label{sec:inference-causes}
+\paragraph{Snowballing} During the generation process, a minor error or deviation at the beginning can compound as the model continues to generate content. %This phenomenon, akin to a snowball growing in size as it rolls downhill, can result in outputs that are not only factually incorrect but also contextually incoherent. 
+For instance, if an LLM misinterprets a prompt or starts with an inaccurate premise, the subsequent content can veer further from the truth \citep{Snowball,varshney2023stitch}.
+
+\paragraph{Erroneous Decoding} The decoding phase is crucial for translating the model's internal representations into human-readable content~\citep{chuang2023dola, massarelli2020decoding}. Mistakes during this phase, whether due to issues like beam search errors or suboptimal sampling strategies, can lead to outputs that misrepresent the model's actual "knowledge" or intention. This can manifest as inaccuracies, contradictions, or even nonsensical statements.
+
+\paragraph{Exposure Bias}
+LLMs are a product of their training data. If they've been exposed more frequently to certain types of content or phrasing, they might have a bias toward generating similar content, even when it's not the most factual or relevant. This bias can be especially pronounced if the training data has imbalances or if certain factual scenarios are underrepresented~\citep{felkner2023winoqueer, gallegos2023bias}. The model's outputs, in such cases, reflect its training exposure rather than objective factuality. For example, research by ~\cite{hossain-etal-2023-misgendered} suggests that LLMs can correctly identify the gender of individuals who conform to the binary gender system, but they perform poorly when determining non-binary or neutral genders.

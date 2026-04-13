@@ -1,0 +1,69 @@
+\section*{Limitations}
+\label{sec:limitations}
+
+
+\paragraph{English-only corpus.} 
+\dolma was curated to contain English data. 
+As tools for language identification may have false negatives, \dolma might contain a small percentage of non-English data.
+Traces of non-English data are unlikely to lead to any meaningful downstream performance on non-English tasks for any model trained on \dolma. 
+Thus, \dolma reinforces the expectation of English being the ``default'' language for NLP. 
+
+\paragraph{Representativeness of sources in \dolma.} 
+As mentioned in \S\ref{sec:desiderata}, it is impossible to curate a corpus that is representative of all language model data curation practices. 
+Further, many open and close language models are trained on content that cannot be acquired or redistributed, and thus could not be included in \dolma. 
+
+\paragraph{Single model configuration for ablations.} 
+The experimental setup we use to validate our data curation pipeline only covers a subset of model types used to create language models. 
+For example, while many language models are in the 7 billion to 70 billion parameters range, we train 1 billion parameter models;
+further, we did not investigate the use of any alternative architectures to dense auto-regressive transformer models.
+This choice was dictated by the need to efficiently iterate over many possible configurations, but it might result in design decisions that are not relevant at larger model sizes.
+We expect downstream model developers to scrutinize \dolma before using it to train their language models, similar to the process we sketch in~\S\ref{sec:using}.
+
+\paragraph{Limited tasks in evaluation suite.}
+As detailed in \S\ref{sec:experimental-methodology}, we select tasks that have been used to evaluate previous base language models, and that are not present in our training data (i.e., \dolma is not contaminated against them). 
+As such, we can only assess a subset of tasks language models are routinely used for. 
+For example, the effect of adding code to pretraining data cannot be fully measured until models are able to generate executable code; such capability is typically observed only after models are finetuned to follow instructions~\citep{muennighoff2023octopack,zhuo2024astraios}.  
+
+
+\paragraph{Manual inspection and evaluation of \dolma is infeasible.}
+Given the corpus size, it is impossible to fully inspect \dolma to assess its content. 
+While tools like WIMBD~\citep{wimbd} and Data Portraits~\citep{Marone2023DataPR} aid programmatic inspection of subsets of data, they cannot provide an assessment of all documents in a corpus. 
+As such, we cannot fully describe the properties of \dolma in terms of data distribution, content quality, and potential harms due to the inclusion or exclusion of particular content.
+
+
+\section*{Ethical Considerations}
+\label{sec:ethics}
+
+
+
+
+\paragraph{Minimize risk of harm to individuals during data curation.}
+
+Curating a pretraining corpus may introduce risk to individuals, either by facilitating access to information that is present in the corpus, or by enabling training of harmful models
+that disclose personal information~\citep{Carlini2020-jx} or produce toxic content~\citep{gehman-etal-2020-realtoxicityprompts,Ngo2021-fn}.
+To minimize these risks while meeting our stated goals, we engaged with legal and ethics experts 
+early in the project and evaluated data design decisions based on their feedback on a case-by-case basis.
+Broadly, we follow accepted practices when available (\textit{e.g.}, masking of certain personal identifiable information), and take a measured approach when diverging opinions exist in the literature (\textit{e.g.}, most effective approach to identify and remove toxic content). 
+Further, we will provide tools to request data removal\footnote{\label{foot:removal}Available at {\href{https://docs.google.com/forms/d/e/1FAIpQLSfL6KzFR7xNJj6MPyV1uikIpj-VmrftC9mjty2nXzSClU2rnw/viewform}{\path{forms.gle/FzpUXLJhE57JLJ3f8}}}}
+We believe in compromising on desired research artifact properties like model reproducibility, performance, and extensibility in cases of significant harm to individuals.
+
+Besides a risk-based approach, alternative frameworks for considering the ethical implications of language model data have also been proposed.
+Data stewardship~\citep{Jernite2022DataGI} seeks to create a framework to collect and reflect explicit interests of data owners. 
+Data trusts~\citep{datatrust} or data licensing~\citep{licensing} can also enable explicit consent in sharing data for AI training. 
+As no current state-of-the-art model is trained on data collected through these frameworks, these approaches would limit the representativeness goal stated in \S\ref{sec:desiderata}.
+As these principles are adopted, we will consider them for future versions of \dolma.
+
+
+
+
+\paragraph{Copyright and fair use considerations.} 
+At the time of writing, the landscape governing applicability of copyright law and fair use doctrine (also known as ``fair dealing'') and language models is largely undetermined~\citep{Cooper2023GenerativeAILaw,Lee2023Talking}. 
+In the United States, legal scholars and practitioners have suggested that training models on copyright content might constitute fair use~\citep{iSchoolUIUC2023,UCBerkeley2023,Henderson2023FoundationMA}, while also recognizing limitations of existing doctrine in this application~\citep{uspto-copyright-ai2}.
+Further, legal assessments regarding the use of copyrighted data in language models vary widely depending on jurisdiction: 
+in early 2024, Israel~\citep{Israel2022} and Japan~\citep{Technomancersai2023-rx} allow copyrighted content to be used for AI training data, although the latter is currently re-considering this framework.
+While most datasets we used were curated with copyright and licensing in mind (e.g., open access papers in peS2o~\citep{peS2o}, open source repositories in the Stack~\citep{kocetkov2022stack}) or were already permissively licensed (e.g., Wikipedia is released under a Creative Commons license), we recognize that large web crawls may also contain copyrighted material. 
+Yet, given current tools, it's not possible to reliably or scalably detect copyrighted materials in a corpus of this size.
+Our decision to curate and distribute \dolma factors in several considerations, including that all our data sources were publicly available and already being used in large-scale language model pretraining (both open and closed). 
+We recognize that the legal landscape of AI is changing rapidly, especially as it pertains to use of copyrighted materials for training models. 
+
+

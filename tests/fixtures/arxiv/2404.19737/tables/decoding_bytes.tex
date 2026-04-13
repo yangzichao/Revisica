@@ -1,0 +1,34 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Relative speedups with self-speculative decoding with byte-level models on code.} 
+We prompt the 7B parameter models from Section~\ref{sect:byte-level} on 4096 sequences of 1024 bytes of code not seen during training, and generate completions consisting of 1024 bytes using greedy self-speculative decoding  \cite{stern2018blockwise} as in Table~\ref{tab:decoding}. The speedup was evaluated at a batch size of 16.
+}
+\label{tab:decoding_bytes}
+\resizebox{0.9\textwidth}{!}{
+\begin{tabular}{rrrrrrrrr}
+\toprule
+   & \multicolumn{2}{c}{$n = 8$} & \multicolumn{2}{c}{$n = 16$} & \multicolumn{2}{c}{$n = 32$} \\
+   \cmidrule(l){2-3} \cmidrule(l){4-5} \cmidrule(l){6-7}
+  \# Heads used &  Rel. speedup & Tokens / forward & Rel. speedup & Tokens / forward  & Rel. speedup & tokens / forward \\
+\midrule
+1 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+2 &        1.94 &          1.98 &        1.94 &          1.98 &          1.93 &          1.97 \\
+
+4 &         3.67 &          3.84 &        3.63 &          3.81 &          3.62 &          3.80 \\
+
+8 &         6.39  &          7.04 &        6.25 &          6.92 &         6.22 &          6.89 \\
+
+12 &  $-$    &     $-$      &      8.07 &          9.36 &       8.01 &          9.30 \\
+
+16 &    $-$     &    $-$        &      9.24 &         11.20 &         9.15 &         11.15 \\
+
+20 &     $-$      &   $-$         &   $-$       &     $-$       &          9.83 &         12.61 \\
+
+24 &    $-$     &     $-$       &     $-$    &     $-$       &       10.34 &         13.67 \\
+
+28 &   $-$       &     $-$       &   $-$     &     $-$       &        10.55 &         14.58 \\
+
+32 &    $-$      &    $-$        &   $-$     &     $-$       &       10.84 &         15.35 \\
+\bottomrule
+\end{tabular}}
+\end{table}

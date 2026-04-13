@@ -1,0 +1,14 @@
+
+\section{Auditing our Language Filter}
+\label{app:langid}
+
+To analyze the impact of the FastText language identification classifier, we ran an external audit on the International Corpus of English (ICE)~\citep{Kirk2018TheIC}, a dataset containing spoken and written English from nine countries around the world. We ran our language ID tool on all documents in the ICE dataset to estimate how many documents from each region would have been erroneously filtered. 
+The ground truth in this analysis is that every document is in English, and should be classified as such. Interestingly, we found that at our fairly permissive threshold (keeping documents with at least a 0.5 score for English)  correctly identified all English-language documents in ICE each as English, no matter the region it was from. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\linewidth]{figures/jacob-lang-id-analysis.png}   
+    \caption{Percentage of English-language documents in the International Corpus of English (ICE)~\citep{Kirk2018TheIC} that would be misidentified as non-English as a result of thresholding the FastText classifier's predicted English score. We find a majority of English documents in ICE remain identified as English even with a threshold of 0.90.}
+    \label{fig:lang-id-ice}
+\end{figure}

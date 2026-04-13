@@ -1,0 +1,23 @@
+\section{Discussion} 
+\label{sec:discuss}
+\paragraph{\textbf{Emerging Data Center Transport Protocols:}}
+In our study we focused on the performance evaluation of TCP for low-priority flows. But the challenges introduced by network prioritization can affect \emph{fair-transports}\footnote{End-host based transport protocols that are designed to fairly share the network bandwidth} in general. Majority of the existing data center transport protocols follow the fairshare policy and rely on an end-end feedback loop between the sender and the receiver~\cite{dctcp,swift,timely,dcqcn,hpcc}. We hypothesize that these proposals are susceptible to performance issues when used for low-priority flows however, the sensitivity of these protocols to network prioritization may vary depending on their choice of congestion signal (e.g., delay, ECN etc.,) and the congestion control algorithm~\cite{ecn-or-delay,on-ramp}. For example, a recent work~\cite{bfc} shows that despite HPCC~\cite{hpcc} leveraging a rich network state (e.g., queue size and link utilization information), its performance suffers under network prioritization. The increasing interest in the large-scale deployment of these proposals~\cite{hpcc,dcqcn} may require a separate study on their performance evaluation for low-priority flows.
+
+%which utilizes separate congestion control loops to improve the co-location of WAN and data center network traffic,
+
+\paragraph{\textbf{Dual Congestion Control for Data Center Applications:}}
+Annulus~\cite{annulus}, propose a dual congestion control loop to improve the co-location of WAN and data center network traffic. Annulus relies on a direct congestion signal from network switches to the end host.
+Their findings align with our observations, indicating that augmenting TCP with additional congestion information can improve TCP's performance. A recent work, On-Ramp~\cite{on-ramp}, advocates for the modularization of congestion control into two independent components to handle transient and persistent congestion separately. On-Ramp leverages one-way delay estimates to classify congestion. Similar to On-Ramp, we discuss that the use of a dual congestion control loop to enhance TCP's performance in the presence of network prioritization.
+
+%Their results corroborate with our finding that direct and timely congestion signals can help TCP avoid spurious timeouts for low-priority traffic. A recent work, On-Ramp~\cite{on-ramp}, advocates for modularizing congestion control into two independent components to handle transient and persistent congestion separately. On-Ramp~\cite{on-ramp} leverages one-way delay estimates to classify congestion. Similar to on-ramp, we advocate for a dual congestion control loop that can improve TCP's performance under network prioritization.
+
+\paragraph{\textbf{Reconfigurable Data Center Networks (RDCN)}:} 
+Under RDCNs, the path between the end hosts may alternate rapidly between slow electrical network and fast optical network resulting in an order of magnitude difference in latency and throughput. Chen et. al.~\cite{rdcn-tdtcp} shows that existing TCP variants are unable to take full advantage of the additional capacity provided by RDCNs. Our findings (see 
+~\S\ref{fig:eval-wl-col}) also highlight that TCP suffers significantly under high fluctuation in the available network bandwidth.
+
+\paragraph{\textbf{Switch Buffer Sharing Algorithms:}}
+In~\S\ref{sec:micro}, we evaluate the impact of buffer size on the performance of TCP for low-priority flows. We consider static partitioning of the available buffer between the queues. However, the switch buffer is often dynamically shared across queues~\cite{dt,abm}. Buffer sharing algorithms provides control over queue lengths across priority classes via a configurable parameter $\alpha$. Typically, a high (resp.  low) value of $\alpha$ is selected for high (resp. low) priority classes. A recent work~\cite{abm} shows that under a large number of priority classes (typically 8), the dynamic sharing can lead to starvation for lower priority classes. We observe similar behavior when the available buffer size for low-priority queues is set to a low value.
+
+\paragraph{\textbf{End-host Stack Delays:}}
+Feedback delay for an end-host based transport (e.g., TCP) can broadly be divided in two categories: 1) end-host stack delays, 2) fabric delays.
+In this study, we focused on the fabric delays caused by network prioritization. A recent work~\cite{stack-delays} showed that stack induced delays can be very large especially for networks with high link speeds. We believe that stack induced delays will further deteriorate TCP's problem for the scenarios considered in this study. 

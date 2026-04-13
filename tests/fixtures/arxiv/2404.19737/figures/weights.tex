@@ -1,0 +1,8 @@
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.95\linewidth]{img/implicit_weights.png}
+    \caption{\textbf{Multi-token prediction loss assigns higher implicit weights to \emph{consequential} tokens.} Shown is a sequence in which all transitions except ``5 $\to$ A'' are easy to predict, alongside the corresponding prediction targets in 3-token prediction. Since the consequences of the difficult transition ``5 $\to$ A'' are likewise hard to predict, this transition receives a higher implicit weight in the overall loss via its correlates ``3 $\to$ A'', ..., ``5 $\to$ C''.
+}
+
+\label{fig:weights}
+\end{figure}

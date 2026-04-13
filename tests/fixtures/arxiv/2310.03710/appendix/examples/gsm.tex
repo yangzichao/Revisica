@@ -1,0 +1,74 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the question: The first step is to read the question carefully and understand what is being asked. The questions in the GSM dataset are grade school math word problems that require multi-step mathematical reasoning. They are designed to be solvable by a bright middle school student. 
+
+2. Identify the mathematical operations: The problems primarily involve basic arithmetic operations such as addition, subtraction, multiplication, and division. Identify the operations required to solve the problem. 
+
+3. Apply mathematical reasoning: The problems require a sequence of elementary calculations. Apply your mathematical reasoning to determine the sequence of steps required to solve the problem. 
+
+4. Solve the problem: Perform the calculations in the correct sequence to reach the final answer. 
+
+5. Check your work: Always check your work to ensure that your answer is reasonable and that you have not made any calculation errors. 
+
+Tips:
+
+- Familiarize yourself with common themes found in grade school math, such as fractions, percentages, simple algebra, and basic geometry. These themes are likely to appear in the problems. 
+
+- Practice multi-step mathematical reasoning. The problems in the GSM dataset require between 2 and 8 steps to solve. 
+
+- Remember that the problems are designed to be solvable by a bright middle school student. If a problem seems overly complex, you may be overthinking it. Try to simplify the problem and break it down into smaller, manageable steps.
+
+Question: Finley went to the grocery store and bought rice, beans, and pork for use in their home. It took her 20 more minutes to cook pork than rice, while beans took half the combined cooking time of pork and rice. If it took her 30 minutes to cook rice, how long in minutes did it take to cook all the food?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+1. Understand the question: The question is asking for the total cooking time it took Finley to cook rice, beans, and pork.
+
+2. Identify the mathematical operations: The problem requires addition, subtraction, and multiplication.
+
+3. Apply mathematical reasoning:
+
+Let's start by identifying the cooking times for each item:
+
+* Rice: 30 minutes
+
+* Pork: 20 minutes more than rice, so 30 + 20 = 50 minutes
+
+* Beans: Half the combined cooking time of pork and rice, so (50 + 30) / 2 = 40 minutes
+
+Now, we need to find the total cooking time:
+
+Total cooking time = Rice + Pork + Beans
+
+= 30 + 50 + 40
+
+= 120 minutes
+
+4. Solve the problem: The total cooking time it took Finley to cook all the food is 120 minutes.
+
+5. Check your work:
+
+The answer seems reasonable, as it's likely that cooking all three items would take longer than just cooking one or two of them.
+
+Answer: 120 minutes.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+
+Answer: 120 minutes.
+\end{alltt}
+}}
+\caption{A complete running example of GSM8K.}
+\label{fig:gsm_example}
+\end{figure*}

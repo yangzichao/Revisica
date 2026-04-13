@@ -1,0 +1,28 @@
+
+\section{Details on Toxicity Filters} 
+\label{app:toxic}
+
+
+\paragraph{Implementation.} To remove toxic content from \dolma, 
+we used the Jigsaw Toxic Comments dataset~\citep{jigsaw}, 
+which contains forum comments tagged with (multilabel) categories ``\texttt{toxic}'', ``\texttt{severe toxic}'', ``\texttt{threat}'', ``\texttt{insult}'', ``\texttt{obscene}'', and/or ``\texttt{identity hate}'' alongside unlabeled comments, to train two FastText classifiers---a binary ``\texttt{hate}'' detector and a binary ``\texttt{NSFW}'' detector:
+
+\begin{enumerate}[leftmargin=1em]
+    \item For our ``\texttt{hate}'' detector, we group all unlabeled comments and ``\texttt{obscene}''-only comments as negatives and leave remaining comments as positives.
+    \item For our ``\texttt{NSFW}'' detector, we take all comments tagged as ``\texttt{obscene}'' as positives and leave other remaining comments as negatives. It is important to note this detector only filters \emph{toxic content} that mentions sexual or obscene topics, not sexual content in general. 
+\end{enumerate}
+
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=.8\linewidth]{figures/sachin-reddit-toxicity-analysis.png}   
+    \caption{Distribution of Reddit comments labeled as toxic by English variation.}
+    \label{fig:reddit-location-toxicity}
+\end{figure}
+
+
+\paragraph{Analysis of resulting classifier.} To measure dialectal biases in the FastText toxicity classifier, we analyze its proclivity to predict English variations spoken in different countries as toxic. %
+Starting with the unfiltered Reddit corpus, we create a dataset of comments from location-based subreddits,\footnote{\href{https://www.reddit.com/r/LocationReddits/wiki/index/}{\path{reddit.com/r/LocationReddits/wiki/index}}} filtering for country-specific subreddits with more than 50K comments. This dataset serves as a crude proxy for different dialects of English, assuming most commenters live in the respective locations and speak the variation. We further assume the fraction of actually toxic comments in each of these subreddits to be roughly the same. We compute the toxicity score for each comment in this dataset using the FastText classifier and 
+report the percentage of comments marked as toxic against different classifier thresholds in \autoref{fig:reddit-location-toxicity}.  For all thresholds, for any two locations, we find <5\% difference in the fraction of comments marked as toxic suggesting little to no bias. 
+Further, we plot the distribution of toxicity scores for comments in each subreddit and find that scores assigned to the comments often fall at the extremes (close to 0 or close to 1), suggesting that any reasonable threshold (lying between 0.1 to 0.9) to predict toxicity will lead to similar outcomes.%

@@ -1,0 +1,40 @@
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix,epsfig,endnotes}
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{filecontents}
+\usepackage{caption}
+\captionsetup[table]{skip=10pt}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{comment}
+\usepackage{breakcites}
+\newcommand{\nearopt}{\textsf{Near-Opt}}
+\begin{document}
+\title{Characterizing TCP's Performance for Low-Priority Flows Inside a Cloud}
+\author{
+{\rm Hafiz Mohsin Bashir}\\
+Tufts University
+\and
+{\rm Abdullah Bin Faisal}\\
+Tufts University
+\and
+{\rm Fahad R. Dogar}\\
+Tufts University
+}
+\maketitle
+\begin{abstract}
+Many cloud systems utilize low-priority flows to achieve various performance objectives (e.g., low latency, high utilization), relying on TCP as their preferred transport protocol. However, the suitability of TCP for such low-priority flows -- specifically, how \emph{prioritization-induced} delays in packet transmission can cause spurious timeouts and low utilization -- is relatively unexplored.  In this paper, we conduct an empirical study to investigate the performance of TCP for low-priority flows under a wide range of realistic scenarios: use-cases (with accompanying workloads) where the performance of low-priority flows is crucial to the functioning of the overall system as well as various network loads and other network parameters. Our findings yield two key insights: 1) for several popular use-cases (e.g., network scheduling), TCP's performance for low-priority flows is within $2\times$ of a near-optimal scheme, 2) for emerging workloads that exhibit an \emph{on-off} behavior in the high priority queue (e.g., distributed ML model training), TCP's performance for low-priority flows is poor. Finally, we discuss and conduct preliminary evaluation to show that two simple strategies -- weighted fair queuing (WFQ) and \emph{cross-queue} congestion notification -- can substantially improve TCP's performance for low-priority flows. 
+\end{abstract}
+\input{intro}
+\input{motivation}
+\input{eval-main-new}
+\input{eval-micro-new}
+\input{janus-conext23}
+\input{discussion-conext23}
+\input{conclusion}
+\newpage
+\bibliographystyle{splncs04}
+\bibliography{ref}
+\end{document}

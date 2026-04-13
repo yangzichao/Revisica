@@ -1,0 +1,65 @@
+
+\begin{table}[ht!] 
+\centering
+\caption{\textbf{Performance on abstractive text summarization.} ROUGE-L (longest common subsequence overlap) $F_1$ score for 7B models trained on 200B and 500B tokens of natural language. We finetune the respective models on each task's training data separately for a given number of epochs and select the checkpoints with maximal ROUGE-L $F_1$ on the validation dataset. The second and fifth column report the numbers for a next-token prediction model, while the third, fourth, sixth and seventh one report the absolute improvements for 2-token and 4-token prediction models trained on the same amount of data, respectively.
+Boldface for numbers within 0.05 difference to the best one for each dataset size separately.}
+\label{tab:summarization}
+\begin{tabular}{lrrrrrr}
+\toprule
+      Dataset &     Baseline 200B &  $\Delta_{n=2}$ &  $\Delta_{n=4}$ & Baseline 500B & $\Delta_{n=2}$ & $\Delta_{n=4}$ \\
+\midrule
+CNN/Dailymail &  29.72 &         \textbf{+0.66} &         +0.49 &  30.51 &         \textbf{+0.48} &         +0.37 \\
+Multi-News &  23.82 &         +0.17 &         \textbf{+0.40} &  24.22 &         +0.20 &         \textbf{+0.26} \\
+OrangeSum &  23.62 &         +0.36 &         \textbf{+0.51} &  23.91 &         +0.23 &         \textbf{+0.66} \\
+pn-summary &   \textbf{1.02} &         \textbf{+0.03} &         \textbf{+0.01} &   0.91 &         \textbf{+0.09} &         \textbf{+0.05} \\
+SAMSum &  42.59 &         \textbf{+0.90} &         +0.51 &  43.92 &        -0.10 &         \textbf{+0.63} \\
+ThaiSum &  44.92 &         +0.64 &         \textbf{+1.12} &  45.31 &         +0.76 &         \textbf{+0.89} \\
+WikiSummary &  10.11 &         \textbf{+0.65} &        -0.28 &  \textbf{12.69} &        -0.17 &        -0.99 \\
+XSum &  34.03 &         +0.67 &         \textbf{+0.92} &  35.18 &         \textbf{+0.79} &         +0.63 \\
+         \midrule
+\emph{Average} &  26.23 & \textbf{+0.51} & \textbf{+0.46} & 27.08 & \textbf{+0.28} & \textbf{+0.31} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+\begin{table*}[ht!]
+\centering
+\caption{\textbf{Summary statistics for abstractive text summarization evaluations.} 
+Reported are averages for ROUGE-n and ROUGE-L metrics across all datasets from Table~\ref{tab:summarization_all}, separately for precision, recall and $F_1$ score. Both 2-token and 4-token prediction models outperform the next-token prediction baseline. Trained on 500B tokens, 4-token prediction models appear better at recall metrics while 2-token prediction models appear better at precision metrics. Model checkpoints are selected as described in Table~\ref{tab:summarization_all}. Boldface for numbers within 0.05 difference to the best one for each dataset size separately.}
+\label{tab:summarization_avgs}
+\begin{tabular}{llrrrrrr}
+\toprule
+Metric & Aspect & Baseline 200B & $\Delta_{n=2}$ & $\Delta_{n=4}$ & Baseline 500B & $\Delta_{n=2}$ & $\Delta_{n=4}$ \\
+\midrule
+\multirow{3}{*}{ROUGE-1} & $F_1$ &  33.77 &         \textbf{+0.70} &         \textbf{+0.68} &  34.77 &         \textbf{+0.39} &         \textbf{+0.41} \\
+           & precision &  35.76 &         \textbf{+0.88} &         \textbf{+0.83} &  37.03 &         \textbf{+0.42} &        -0.04 \\
+           & recall &  34.37 &         \textbf{+0.45} &         \textbf{+0.45} &  35.14 &         +0.35 &         \textbf{+0.68} \\
+\midrule
+\multirow{3}{*}{ROUGE-2} & $F_1$ &  16.06 &         \textbf{+0.36} &         \textbf{+0.39} &  16.82 &         \textbf{+0.29} &         \textbf{+0.30} \\
+           & precision &  16.97 &         \textbf{+0.40} &         \textbf{+0.43} &  17.91 &         \textbf{+0.29} &         +0.03 \\
+           & recall &  16.34 &         +0.28 &         \textbf{+0.35} &  16.99 &         +0.32 &         \textbf{+0.48} \\
+\midrule
+\multirow{3}{*}{ROUGE-3} & $F_1$ &   9.08 &         \textbf{+0.26} &         \textbf{+0.23} &   9.54 &         \textbf{+0.18} &         \textbf{+0.22} \\
+           & precision &   9.59 &         \textbf{+0.29} &         \textbf{+0.28} &  10.17 &         \textbf{+0.18} &         +0.05 \\
+           & recall &   9.26 &         \textbf{+0.21} &         \textbf{+0.20} &   9.65 &         +0.21 &         \textbf{+0.35} \\
+\midrule
+\multirow{3}{*}{ROUGE-L} & $F_1$ &  26.23 &         \textbf{+0.51} &         \textbf{+0.46} &  27.08 &         \textbf{+0.28} &         \textbf{+0.31} \\
+           & precision &  27.79 &         \textbf{+0.62} &         +0.55 &  28.85 &         \textbf{+0.28} &        -0.09 \\
+           & recall &  26.71 &         \textbf{+0.37} &         \textbf{+0.32} &  27.40 &         +0.28 &         \textbf{+0.57} \\
+\midrule
+\multirow{3}{*}{ROUGE-L\textsubscript{sum}} & $F_1$ &  27.53 &         \textbf{+0.52} &         \textbf{+0.48} &  28.40 &         \textbf{+0.29} &         \textbf{+0.33} \\
+           & precision &  29.07 &         \textbf{+0.64} &         +0.58 &  30.15 &         \textbf{+0.29} &        -0.08 \\
+           & recall &  28.13 &         \textbf{+0.35} &         \textbf{+0.33} &  28.81 &         +0.29 &         \textbf{+0.60} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+
+
+
+
+

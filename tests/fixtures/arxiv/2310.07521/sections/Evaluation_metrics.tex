@@ -1,0 +1,154 @@
+
+
+In this subsection, we delve into metrics established for evaluating the factuality of LLMs. As the problem formulation is akin to natural language generation (NLG)
+~\citep{celikyilmaz2021evaluation,ji2023survey}, we introduce several automatic evaluation metrics typically used for NLG, as well as specifically examining the metrics for factuality.
+
+We categorize these metrics into the following groups:
+(1) Rule-based evaluation metrics;
+(2) Neural evaluation metrics;
+(3) Human evaluation metrics; and
+(4) LLM-based evaluation metrics.
+
+We list those metrics in Table \ref{tab:eval-metrics}.
+\subsubsection{Rule-based evaluation metrics}
+
+Most assessments of factuality in large language models use rule-based evaluation metrics, due to their consistency, predictability, and ease of implementation; they allow for reproducible outcomes through a systematic method. However, they can be rigid and may not account for nuances or variations in language use, context interpretation, or colloquial expressions. This means language models rated highly by these metrics may still produce content that feels unnatural or inauthentic to human readers.
+
+
+\paragraph{Exact Match} An ``exact match" refers to a situation where the generated text precisely matches a specific input or reference text. This means that the LLM produces output that is identical, word-for-word, to the provided input or reference text. Exact matches are often used in NLG when you want to replicate or repeat a piece of text without any variations or alterations. Exact Match is commonly used in Open-domain Question Answering \citep{Fusion-in-Decoder,rfid}.
+
+\paragraph{Common metrics}
+Many factuality evaluation measurements use commonly adapted metrics, such as Accuracy, Precision, Recall, AUC, F-Measure, Calibration score,  Brier score, and other common metrics used in probabilistic forecasting and machine learning, specifically in tasks involving probabilistic predictions. The common definition of these metrics involves the use of correctly predicted labels and ground-truth labels. As the input and output of LLMs are human-readable sentences, there is no unified method to convert the sentences into labels. Most evaluation will define their own way. That is, these scores are frequently not used in isolation, but rather in combination. For instance, BERTScore~\citep{BERTscore} uses BERT for determining the Precision and Recall, then uses F-measures to get a final weighted score. In the following, we will describe the most simple form of these scores.
+
+
+The \emph{Calibration score}, used in  \citep{lin2022teaching, kadavath2022language} measures the agreement between predicted probabilities and observed frequencies. A perfectly calibrated model should, over a large number of instances, see the predicted probability of an outcome match the relative frequency of that outcome.
+
+The \emph{Brier Score}, used in ~\citep{kadavath2022language} is a metric used in probabilistic forecasting to measure the accuracy of probabilistic predictions. It calculates the mean squared difference between the predicted probability assigned to an event and the actual outcome of the event. 
+The Brier Score ranges from 0 to 1, where 0 indicates a perfect prediction and 1 indicates the worst possible prediction. In other words, the lower the Brier Score, the better the accuracy of the prediction. It's worth noting that this metric is appropriate for binary and categorical outcomes, but not for ordinal outcomes. 
+For binary outcomes, the Brier Score can be calculated as follows:
+
+\begin{equation}
+BS = \frac{1}{N} \sum_{i=1}^{N} (forecast_{i} - actual_{i})^2
+\end{equation}
+
+where \(forecast_{i}\) is the predicted probability, \(actual_{i}\) is the actual outcome (0 or 1), and \(N\) is the total number of forecasts made.
+
+
+\paragraph{MC1 (Single-true) and MC2 (Multi-true)} are widely recognized metrics in multi-choice question answering, particularly in TruthfulQA \citep{TruthfulQA}.
+MC1: For a given question accompanied by several answer choices, the objective is to identify the sole correct answer. The model's selection is determined by the answer choice to which it allocates the highest log probability of completion, independent of the other choices. The score is calculated as the straightforward accuracy across all questions.
+MC2: Presented with a question and multiple reference answers labeled as true or false, the score is derived from the normalized total probability assigned to the collection of true answers.
+
+\paragraph{BLEU}~\citep{papineni2002bleu}, also known as Bilingual Evaluation Understudy metric is commonly employed in the context of factuality evaluation. This metric calculates the co-occurrence frequency of phrases in two sentences, based on a weighted average of matched n-gram phrases. This helps in quantitatively assessing the factual consistency between the generated text and its reference.
+% The BLEU score is computed as 
+
+% \begin{equation}
+% BLEU = BP * \exp\left(\frac{1}{N} * \sum_{n=1}^{N} P_n\right)
+% \end{equation}
+
+% \noindent where 
+% \emph{(1)} \(BP\) (Brevity Penalty) accounts for the length of the candidate translation. If the candidate translation is shorter than the reference, \(BP\) is less than 1, which reduces the BLEU score.
+% \emph{(2)} \(P_n\) is the n-gram precision, which measures the portion of n-grams in the candidate translation that are also present in the reference translation.
+% \emph{(3)} \(N\) is the maximum order of n-grams considered (commonly up to 4 in much of the literature) and \(\sum_{n=1}^{N} P_n\) is the sum of \(\log P_n\) for \(n\) from 1 to \(N\).
+% - \(\exp\) denotes the exponential function.
+
+\paragraph{ROUGE}
+The Recall-Oriented Understudy for Gisting Evaluation (ROUGE) metric \citep{lin2004rouge} serves as a measure of the similarity between the generated text and the reference text, with the similarity grounded on recall scores. Primarily used in the field of text summarization, the ROUGE metric incorporates four distinct types. These include ROUGE-n, which assesses n-gram co-occurrence statistics, and ROUGE-l, which measures the longest common subsequence. ROUGE-w provides evaluation based on the weighted longest common subsequence, while ROUGE-s measures skip-bigram co-occurrence statistics. These diverse metrics collectively provide a comprehensive measure of the factual accuracy of generated text.
+% ROUGE score can be calculated in various ways based on the length of n-grams (unigram, bigram, etc.) used. The simplest version, ROUGE-n score can be compactly represented as:
+
+% \begin{equation}
+% \text{ROUGE-n} = \frac{\sum_{S \in RS}\sum_{gram_n \in S} Count_{match}(gram_n)}{\sum_{S \in RS}\sum_{gram_n \in S} Count(gram_n)}
+% \end{equation}
+
+% \noindent where:
+% \emph{(1)} \(RS\) denotes the set of Reference Summaries,
+% \emph{(2)} \(gram_n\) represents an n-gram within the reference summary \(S\),
+% \emph{(3)} \(Count_{match}(gram_n)\) signifies the number of times that n-gram \(gram_n\) appears in both the generated text and the reference summary,
+% \emph{(4)} \(Count(gram_n)\) is the frequency of occurrence of the n-gram \(gram_n\) within the reference summary.
+
+
+\paragraph{METEOR}
+The Metric for Evaluation of Translation with Explicit Ordering (METEOR) \citep{banerjee2005meteor} aims to address several shortcomings presented by BLEU. These include deficiencies in recall, the absence of higher order n-grams, an absence of explicit word-matching between the generated and reference text, and the use of geometric averaging of n-grams. METEOR overcomes these by introducing a comprehensive measure, calculated based on the harmonic mean of the unigram precision and recall. This offers potentially enhanced appraisals of factuality in the generated text.
+
+
+\paragraph{QUIP-Score}~\citep{weller2023according}  is an n-gram overlap measure. It quantifies the degree to which a generated passage consists of exact spans found in a text corpus. The QUIP-Score serves to evaluate the 'grounding' ability of LLMs, specifically assessing whether model-generated answers can be directly located within the underlying text corpus. It is defined by comparing the precision of the character n-gram from the generated output to the pre-training corpus. 
+% This is formally illustrated by generation $Y$ and the text corpus $C$:
+% \begin{equation}
+% \operatorname{QUIP}(Y ; C)=\frac{\sum_{\operatorname{gram}_n \in Y} \mathbb{1}_C\left(\operatorname{gram}_n\right)}{\left|\operatorname{gram}_n \in Y\right|},
+% \end{equation}
+% where $\mathbb{1}($.$) $is an indicator function:
+% \begin{equation}
+% \mathbb{1}(.) = \begin{cases}
+%     1, & \text{if } \text{gram} \in C\\
+%     0, & \text{otherwise}
+%     \end{cases}
+% \end{equation}
+
+% Therefore, a score of 0.5 implies that 50\% of the n-grams derived from the generated text can be found in the pre-training corpus. The authors calculate a macro-average of this value over a collection of generations, which results in a single performance figure representative of a specific test dataset.
+
+
+
+
+\subsubsection{Neural  Evaluation Metrics}
+These metrics operate by comparing the output of these models with a standard or reference text by learning evaluator models. This category primarily comprises three prominent metrics, namely ADEM, BLEURT, and BERTScore. Each metric approaches the evaluation slightly differently, yet all aim to assess the semantic and lexical alignment between machine-generated text and its reference counterpart, thus ensuring the factuality of the generated content.
+
+\paragraph{ADEM}
+The automatic Dialogue Evaluation Model (ADEM) metric is a cogent tool utilized to gauge the quality of responses generated by language models in a conversation. Developed by \citet{lowe2017towards}, this metric trains a Hierarchical RNN, in a semi-supervised fashion, to predict ratings for the machine-generated responses. The ADEM's assessment primarily hinges on a dialogue context, designated as $\mathbf{c}$, alongside the model's response, labeled as $\mathbf{\hat{r}}$, and a reference response, specified as $\mathbf{r}$. These elements, when encoded via the hierarchical RNN, inform the ADEM which then predicts a score, reflecting the proximity of the model's response to factual accuracy and relevance.
+% :
+% \begin{equation}
+% score = (\mathbf{c}^{\top} M \mathbf{\hat{r}} + \mathbf{r}^{\top} N \mathbf{\hat{r}} - \alpha) / \beta,
+% \end{equation}
+% where $M, N$ are learnable parameters and $\alpha, \beta$, represent scalar constants that serve as initial values. 
+
+
+
+
+\paragraph{BERTScore}
+the BERTScore metric, as introduced by \citet{zhang2020bertscore}, utilizes pre-trained embeddings from BERT to gauge the similarity between two sentences. This is done by assigning embeddings to a referenced sentence, "x", and a model-generated sentence, "$\hat{x}$", denoted as "$\mathbf{x}$" and "$ \mathbf{\hat{x}}$", respectively. The recall, precision, and F1-scores are then calculated to quantify the similarity between "$\mathbf{x}$" and "$ \mathbf{\hat{x}}$". This score provides a measure of the generated sentence's factuality.
+% , and thus, the reliability of the large language model itself:
+% \begin{align}
+% R_{\rm BERT} &= \frac{1}{|x|} \sum_{x_i \in x} \max_{\hat{x}_j \in \hat{x}} \mathbf{x}_i^{\top} \mathbf{\hat{x}}_j, \\
+% P_{\rm BERT} &= \frac{1}{|\hat{x}|} \sum_{\hat{x}_j \in \hat{x}} \max_{x_i \in x} \mathbf{x}_i^{\top} \mathbf{\hat{x}}_j, \\
+% F_{\rm BERT} &= 2 \frac{P_{\rm BERT} \cdot R_{\rm BERT}}{P_{\rm BERT} + R_{\rm BERT}},
+% \end{align}
+% where the recall and precision elements are calculated based on a token-match approach. The recall score stems from comparing each token in the reference sentence "$x$" to the corresponding token in the generated sentence "$\hat{x}$". Conversely, the precision score is derived by comparing each token in "$\hat{x}$" to a token in "$x$". A greedy matching strategy is employed to pair tokens that demonstrate the highest degree of similarity. This method provides a comprehensive analysis of how precise and accurate the language model's output aligns with the factual reference sentence.
+
+\paragraph{BLEURT}
+the Bilingual Evaluation Understudy with Representations from Transformers (BLEURT) metric \citep{sellam2020bleurt} employs a unique pre-training scheme, where BERT is initially trained on a significant corpus of synthetic sentence pairs. This is reinforced by multiple lexical and semantic-level supervision signals, used concurrently. Following this pre-training stage, BERT is further fine-tuned on rating data, and its objective is to estimate human rating scores accurately. The initial stage of pre-training is essential for this metric because it significantly enhances the model's robustness, thereby effectively transforming it into a secure bulwark against quality drifts inherent in generative systems.
+
+\paragraph{BARTScore} ~\citep{yuan2021bartscore} is a metric proposed to evaluate the quality of the generated text, such as in applications like machine translation and summarization. This metric conceives this evaluation as a problem of text generation, modeled using pre-trained sequence-to-sequence models. BARTScore uses BART, an encoder-decoder-based pre-trained model, to translate generated text to and from a reference point, earning higher scores when the text is more accurate and fluent. This metric offers several variants that can be flexibly applied in an unsupervised manner for different perspectives of text evaluation, such as fluency or factuality. Tests have shown that BARTScore can outperform existing top-scoring metrics in the majority of test settings across multiple datasets and perspectives. 
+
+
+\subsubsection{Human Evaluation Metrics}
+
+Human evaluation in factuality assessment is crucial due to its sensitivity to nuanced elements of language and context that may elude automated systems. Human evaluators excel at interpreting abstract concepts and emotional subtleties that can significantly inform the accuracy of evaluation. However, they are subject to limitations such as subjectivity, inconsistency, and potential for error. On the other hand, automated evaluations offer consistent results, and efficient processing of large data sets, and are ideal for tasks needing quantitative measurements. They also provide an objective benchmark for model performance comparison. Overall, an ideal evaluation framework might blend automated evaluation's scalability and consistency with human evaluation's ability to interpret complex linguistic concepts.
+
+
+\paragraph{Attribution} is a metric to verify that the output of LLMs is sharing only verifiable information about the external world. 
+As proposed by \citep{rashkin2023measuring}, Attributable to Identified Sources (AIS) is a human evaluation framework that adopts a binary concept of attribution. A text passage $y$ is deemed attributable to a set $A$ of evidence if, and only if, an arbitrary listener would agree with the statement "According to $A$, $y$" within the context of $y$. The AIS framework awards a full score (1.0) if every element of content in passage $y$ can be linked to the evidence set $A$. Conversely, it gives a score of zero (0.0) if this condition is not met.
+
+Based on AIS,~\citet{gao2023rarr} propose a more fine-grained, sentence-level extension of AIS called Auto-AIS, where annotators assign AIS scores to each sentence, and an average score across all sentences is reported. This procedure effectively measures the percentage of sentences that are fully attributable to the evidence. Context, such as surrounding sentences and the question the text answers, is provided to annotators for more informed judgment. A limit is also set for the number of evidence snippets in the attribution report to maintain conciseness.
+
+During model development, an automated AIS metric is defined to approximate human AIS evaluations, using a natural language inference model, which correlates well with AIS scores. Before computing the scores, they improve accuracy by decontextualizing each sentence in context. 
+
+\paragraph{FActScore} \citep{Min2023-FActScore} is a novel evaluation metric designed to assess the factual precision of long-form text generated by LLMs. The challenge of evaluating the factuality of such text arises from two main issues: (1) the generated content often contains a mix of supported and unsupported information, making binary judgments insufficient, and (2) human evaluation is both time-consuming and expensive.
+To address these challenges, FActScore breaks down a generated text into a series of atomic facts—short statements that each convey a single piece of information. Each atomic fact is then evaluated based on its support from a reliable knowledge source. The overall score represents the percentage of atomic facts that are supported by the knowledge source.
+The paper conducted extensive human evaluations to compute FActScores for biographies generated by several state-of-the-art commercial LLMs, including InstructGPT, ChatGPT, and the retrieval-augmented PerplexityAI. The results revealed that these LLMs often contain factual inaccuracies, with FActScores ranging from 42\% to 71\%. Notably, the factual precision of these models tends to decrease as the rarity of the entities in the biographies increases.
+
+
+
+
+\subsubsection{LLM-based Metrics}
+Using LLMs for evaluation offers efficiency, versatility, reduced reliance on human annotation, and the capability of evaluating multiple dimensions of conversation quality in a single model call, which improves scalability. However, potential issues include a lack of established validation, which can lead to bias or accuracy problems if the LLM used for evaluation is not thoroughly vetted. The decision process to identify suitable LLMs and decoding strategies can be complex and pivotal to obtaining accurate evaluations. The range of evaluation may also be limited, as the focus is often on open-domain conversations, possibly leaving out assessments in specific or narrow domains. While reducing human input can be beneficial, it can also miss out on crucial interaction quality aspects better evaluated by human judges, such as emotional resonance or nuanced understandings.
+
+
+\paragraph{GPTScore}~\citep{fu2023gptscore} is a new evaluation framework designed to assess the quality of output from generative AI models. To provide these evaluations, GPTScore taps into the emergent capabilities of 19 different pre-trained models, such as zero-shot instruction, and uses them to judge the generated texts. These models vary in scale from 80M to 175B. Testing across four text generation tasks, 22 aspects of evaluation, and 37 related datasets, has demonstrated that GPTScore can effectively evaluate text per instructions in natural language. This attribute allows it to sidestep challenges traditionally encountered in text evaluation, like the need for sample annotations and achieving custom, multi-faceted evaluations.
+
+\paragraph{GPT-judge}~\citep{TruthfulQA} is a finetuned model based on the GPT-3-6.7B, which is trained to evaluate the truthfulness of answers to questions in the TruthfulQA dataset. The training set consists of triples in the form of question-answer-label combinations, where the label can be either true or false. The model's training set includes examples from the benchmark and answers generated by other models assessed by human evaluation. In its final form, the GPT-judge uses examples from all models to evaluate the truthfulness of responses. This training includes all questions from the dataset, with the goal being to evaluate truth, not generalize new questions.
+
+
+The study conducted by the authors~\citep{TruthfulQA} focuses on the application of GPT-judge in assessing \emph{Truthfulness} and \emph{Informativeness} using the TruthfulQA Dataset. The authors undertook the fine-tuning of two distinct GPT-3 models to evaluate two essential aspects: Truthfulness, which pertains to the accuracy and honesty of information provided by the LLM, and Informativeness, which measures how effectively the LLM conveys relevant and valuable information in its responses.
+From these two fundamental concepts, the authors derived a combined metric denoted as \emph{truth * info}. This metric represents the product of scalar scores for both truthfulness and informativeness. It not only quantifies the extent to which questions are answered truthfully but also incorporates the assessment of informativeness for each response. This comprehensive approach prevents the model from generating generic responses like "I have no comment" and ensures that responses are not only truthful but also valuable.
+These metrics have found widespread deployment in evaluating the factuality of information generated by LLMs~\citep{chuang2023dola, li2023inferencetime}.
+
+\paragraph{LLM-Eval} \citep{lin2023llm} is a novel evaluation methodology for open-domain dialogues with LLMs. Unlike conventional evaluation methods which rely on human annotations, ground-truth responses, or multiple LLM prompts, LLM-Eval uses a unique prompt-based evaluation process employing a unified schema to assess various elements of a conversation's quality during a single model function. Extensive evaluations of LLM-Eval's performance using multiple benchmark datasets indicate it is effective, efficient, and adaptable compared to traditional evaluation practices. Further, the authors stress the necessity of selecting appropriate LLMs and decoding strategies for precise evaluation outcomes, underscoring LLM-Eval's versatility and dependability in assessing open-domain conversation systems across a variety of circumstances.
+

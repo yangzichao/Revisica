@@ -1,0 +1,107 @@
+\begin{table*}[]\small
+\caption{Benchmarks for Evaluating the Factual Checker of LLMs}
+\centering
+\label{tab:eval_llms}
+\vspace{-2mm}
+  \setlength{\tabcolsep}{1.2mm}
+{
+
+\begin{tabular}{llllcll}
+\toprule
+Reference& \makecell[l]{Target\\Task} & Task & Dataset(Domain) & Metrics & \makecell[l]{Evaluated\\Checker}  \\
+\midrule 
+\citep{wang2023evaluating} &
+Open QA &
+QA-Eval &
+EVOUNA &
+\begin{tabular}[c]{@{}l@{}} 
+ACC\\F1
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+Lexical Match,\\
+BERTScore\\
+GPT3.5
+\end{tabular}
+\\
+
+\citep{FActScore} &
+&
+\begin{tabular}[c]{@{}l@{}} 
+Factual Precision\\ of LLMs
+\end{tabular}&
+Biographies&
+\begin{tabular}[c]{@{}l@{}} 
+F1
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+GPT-3.5\\
+ChatGPT\\
+Perplexity AI
+\end{tabular}
+\\
+
+\citep{TRUE_re-evaluating}&
+&
+\begin{tabular}[c]{@{}l@{}} 
+Factual\\Consistency\\ of NLG\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+FRANK,\\
+SummEval,\\
+MNBM,\\
+QAGS-CNNDM,\\
+QAGS-XSum,\\
+BEGIN,\\
+Q2,\\
+DialFact,\\
+FEVER,\\
+VitaminC,\\
+PAWS
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+ROC-AUC\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+Q2,\\
+ANLI,\\
+SCzs,\\
+F1,\\
+BLEURT,\\
+QuestEval,\\
+FactCC,\\
+BARTScore,\\
+BERTScore
+\end{tabular}
+\\
+\citep{nimah-etal-2023-nlg}&
+&
+\begin{tabular}[c]{@{}l@{}}
+Controllable\\Generation
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+UBER-PPLM,\\
+CTRL,\\
+CTRL-Eval UBER,\\
+USR Persona chat,\\
+USR Topical chat,\\
+SummEval,\\
+Newsroom,\\
+UniEval,\\ SummEval...
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+correlation,\\
+human preference,\\
+Kolmogorov-\\Smirnov
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+BLEU,\\
+ROUGE,\\
+BERTScore,\\
+Perplexity,\\
+CTC,\\
+CTRLEval,\\
+UniEval
+\end{tabular}
+\\
+
+\bottomrule
+\end{tabular}}
+\end{table*}

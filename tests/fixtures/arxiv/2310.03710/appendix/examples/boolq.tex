@@ -1,0 +1,55 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the question: The question is a naturally occurring, factual question that was asked on Google. It is unambiguous and requires a "yes" or "no" answer. Make sure you fully understand what the question is asking.
+
+2. Read the passage: The passage is taken from a Wikipedia page that was one of the top five results for the question on Google. It contains the information needed to answer the question. Read the passage carefully and extract the relevant information.
+
+3. Answer the question: Based on the information in the passage, answer the question with either "yes" or "no". Make sure your answer is supported by the information in the passage.
+
+4. Check your work: Review the question, passage, and your answer to ensure they align. The question should be answered accurately based on the information in the passage.
+
+Tips:
+
+- The questions in this dataset are factual and require knowledge of a wide range of topics. Brush up on general knowledge and be prepared to learn new information from the passages.
+
+- The passages are taken from Wikipedia, so they are written in a clear, informative style. Use this to your advantage when extracting information.
+
+- The answers are either "yes" or "no", but the process of getting to the answer requires understanding and interpreting the passage. Take your time to understand the passage before answering.
+
+- Always double-check your work to ensure accuracy.
+
+Passage: Elmendorf Air Force Base (IATA: EDF, ICAO: PAED, FAA LID: EDF) is a United States military facility in Anchorage, the largest city in Alaska. Originally known as Elmendorf Field, it became Elmendorf Air Force Base after World War II, and in 2010 it merged with nearby Fort Richardson to form Joint Base Elmendorf-Richardson.
+Question: Is there an air force base in anchorage alaska?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The question asks whether there is an air force base in Anchorage, Alaska. To answer this question, we need to look at the provided passage.
+
+The passage states that Elmendorf Air Force Base is a United States military facility located in Anchorage, Alaska. It was originally known as Elmendorf Field and later became Elmendorf Air Force Base after World War II. In 2010, it merged with nearby Fort Richardson to form Joint Base Elmendorf-Richardson.
+
+Based on the information in the passage, it is clear that there is indeed an air force base in Anchorage, Alaska. The passage explicitly states that Elmendorf Air Force Base is located in Anchorage, and its history is described in the passage.
+
+Therefore, the answer to the question is "yes."
+
+Answer: Yes.
+
+Therefore, the correct label among {'No', 'Yes'} (just the label) to the original task is below.
+
+Answer: Yes.
+\end{alltt}
+}}
+\caption{A complete running example of BoolQ.}
+\label{fig:boolq_example}
+\end{figure*}

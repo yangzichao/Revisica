@@ -1,0 +1,119 @@
+
+
+
+\begin{table*}[h]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lm{19em}cc}
+    \toprule
+    \textbf{Mix Name} &
+    \textbf{Description} &
+    \textbf{Sampling} &
+    \textbf{Proportion} \\
+    \midrule
+    \textbf{
+        Na\"ive
+    } & {
+        Sample each source in \autoref{tab:statistics} equally.
+    }  &  {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 100\% \\
+        {\tiny\dolmaCode}~Code & 100\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 100\% \\
+        {\tiny\dolmaBooks}~Books & 100\% \\
+        \end{tabular}
+    }  & {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 83.5\% \\
+        {\tiny\dolmaCode}~Code & 13.8\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 2.5\% \\
+        {\tiny\dolmaBooks}~Books & 0.2\% \\
+        \end{tabular}
+        \vspace{1em}
+    } \\
+    \textbf{Web Only} &
+    {
+        Similar to~\citet{ayoola-etal-2022-refined}, we test a mixture that only uses web data.
+        
+        
+    }  &  {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 100\% \\
+        {\tiny\dolmaCode}~Code & 0\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 0\% \\
+        {\tiny\dolmaBooks}~Books & 0\% \\
+        \end{tabular}
+    }  & {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 100\% \\
+        {\tiny\dolmaCode}~Code & 0\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 0\% \\
+        {\tiny\dolmaBooks}~Books & 0\% \\
+        \end{tabular}
+    }  \\
+    \textbf{
+        Reference+
+    } & {
+        It is common practice to upsamole knowledge-intensive documents when composing training mixture. 
+        In our case, we upsample the PeS2o papers, Wikipedia, Wikibooks, and Gutenberg books subsets by 2x.
+    }&  {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 100\% \\
+        {\tiny\dolmaCode}~Code & 100\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 200\% \\
+        {\tiny\dolmaBooks}~Books & 200\% \\
+        \end{tabular}
+    }  & {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 81.2\% \\
+        {\tiny\dolmaCode}~Code & 13.5\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 4.9\% \\
+        {\tiny\dolmaBooks}~Books & 0.4\% \\
+        \end{tabular}
+        \vspace{1em}
+    }  \\
+    \textbf{
+        Gopher-like
+    } & {
+        Following~\citet{Rae2021ScalingLM}, we create a mix that is heavily biased towards reference material. 
+        As we do not have access to the same sources, an exact replication of their mix is not possible.
+    }&  {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 17\% \\
+        {\tiny\dolmaCode}~Code & 8\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 200\% \\
+        {\tiny\dolmaBooks}~Books & 200\% \\
+        \end{tabular}
+    }  & {
+        \renewcommand{\arraystretch}{1}
+        \scriptsize
+        \begin{tabular}{@{}lr@{}}
+        {\tiny\dolmaWeb}~Web & 68.4\% \\
+        {\tiny\dolmaCode}~Code & 5.4\% \\
+        {\tiny\dolmaRefs~\dolmaPapers}~Ref. & 24.2\% \\
+        {\tiny\dolmaBooks}~Books & 2.0\% \\
+        \end{tabular}
+    }  \\
+    \bottomrule
+\end{tabular}
+\vspace{1em}
+\caption{
+    Overview of the mixtures and their composition. 
+}
+\label{table:mix}
+\end{table*}

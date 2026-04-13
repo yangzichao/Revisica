@@ -1,0 +1,53 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Read the question carefully. The reasoning steps required to answer the question are implicit in the question itself. 
+
+2. Infer the reasoning steps from the question. This might require knowledge on a wide range of topics, as the questions in 'strategyqa' are diverse. 
+
+3. Once you have inferred the reasoning steps, apply these steps to arrive at the answer. 
+
+4. The possible answers are provided in a dictionary format. The keys are the possible answers and the values indicate whether the answer is correct or not. Select the correct answer from the possible options.
+
+5. Provide a detailed explanation for your choice of answer. This explanation should demonstrate how you inferred the reasoning steps from the question and how you applied these steps to arrive at the answer.
+
+6. Remember, the aim of 'strategyqa' is to measure your ability to answer questions that require multi-step implicit reasoning. Always keep this in mind when answering the questions.
+
+Question: Would Donald Duck be allowed into most grocery stores?
+
+A. Yes
+
+B. No
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The question asks whether Donald Duck would be allowed into most grocery stores. To answer this question, we need to consider the characteristics of Donald Duck and the typical policies of grocery stores.
+
+Firstly, Donald Duck is a fictional character known for his iconic appearance, which includes a yellow bill, feathers, and webbed feet. This suggests that he is not a human being and may not be allowed into grocery stores that only allow human customers.
+
+Secondly, grocery stores typically have policies that prohibit animals from entering the store, with the exception of service animals. Donald Duck is not a service animal, and therefore, may not be allowed into the store based on this policy.
+
+Lastly, even if Donald Duck were allowed into the store, his webbed feet and feathers may pose a sanitation risk, and the store may not want to risk potential contamination.
+
+Based on these reasoning steps, the answer to the question is B. No, Donald Duck would not be allowed into most grocery stores.
+
+Therefore, the correct answer is B. No.
+
+Therefore, the correct multiple choice label (just the letter) to the task is below.
+
+Answer: B
+\end{alltt}
+}}
+\caption{A complete running example of StrategyQA.}
+\label{fig:big_bench:task=strategyqa}
+\end{figure*}

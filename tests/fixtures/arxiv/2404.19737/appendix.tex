@@ -1,0 +1,201 @@
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{table}}
+\newpage
+\appendix
+\onecolumn
+
+\section{Additional results on self-speculative decoding}
+\label{app:decoding}
+\input{figures/decoding}
+\input{tables/decoding_nlp}
+\input{tables/decoding_bytes}
+
+\newpage
+
+\section{Alternative architectures}
+\label{app:architecture}
+\input{tables/extra_architectures}
+The architecture described in Section~\ref{sect:method} is not the only sensible option, but proved technically viable and well-performing in our experiments. We describe and compare alternative architectures in this section.
+\paragraph{Replicated unembeddings}
+Replicating the unembedding matrix $n$ times is a simple method for implementing multi-token prediction architectures. However, it requires matrices with shapes $(d, nV)$ in the notation of Section~\ref{sect:method}, which is prohibitive for large-scale trainings. 
+
+\paragraph{Linear heads}
+Apart from using a single transformer layer for the heads $H_i$, other architectures are conceivable. We experimented with a single linear layer without any nonlinearity as heads, amounting to linear probing of the model's residual representation $z$. Architectures with more than one layer per head are also possible, but we did not pursue this direction further.
+
+\paragraph{Causal and anticausal variant}
+Instead of making the prediction heads $P_i(x_{t+i}\,|\,z_{t:1})$ architecturally independent of each other, we can also allow them to rely on other heads' (pre-unembedding) outputs. In a \emph{causal} variant, later prediction heads are applied on top of the previous ones, i.e. the $i$-th prediction head $P_i$ is given by 
+\[ P_\theta(x_{t+i}|\cdot) = \mathrm{softmax} \circ f_u \circ f_{h_i} \circ f_{h_{i-1}} \cdots \circ f_{h_1} \circ f_s. \]
+In another \emph{anticausal} variant, the network starts by predicting the most distant tokens before gradually refining up to the following token:
+\[ P_\theta(x_{t+i}|\cdot) = \mathrm{softmax} \circ f_u \circ f_{h_i} \circ f_{h_{i+1}} \cdots \circ f_{h_{n}} \circ f_s. \]
+These architectures likewise allow a sequential forward/backward order as the parallel architecture from Section~\ref{sect:method}. This is described in Figure~\ref{fig:backward_causal}.
+
+\input{figures/backward_causal}
+
+\newpage
+\section{Training speeds}
+\input{tables/wps}
+
+\section{Finetuning}
+\input{tables/llama_finetune}
+
+\newpage
+\section{Additional results on model scaling behavior}
+\label{app:model-scaling}
+\input{tables/model_scaling}
+
+\section{Details on CodeContests finetuning}
+\label{app:finetuning}
+We use the Python subset of the CodeContests \citep{li2022competition} train split with reward annotations (``correct'' / ``incorrect'') and condition on correct solutions at evaluation time. For evaluation, we generate 1000 samples per problem from the test split for each temperature $T \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$, and compute the unbiased estimator for pass@k  from \citet{chen2021evaluating} for each value of $k$ and $T$. It is possible that models that were pretrained with different losses have different respective optimal temperatures for pass@k, so we compute and show $k \mapsto \max_T \mathrm{pass\_at}(k, T)$ in Figure~\ref{fig:dm_contests}. In other words, we grant pass@k access to a temperature oracle. For small values of $k$, pass@k measures the capability of understanding and solving tasks while for large $k$, it additionally favors diversity in outputs. According to the results in Figure~\ref{fig:dm_contests}, multi-token prediction pretraining leads to finetuned models that are better on both axes.
+
+\newpage
+\section{Additional results on natural language benchmarks}
+\label{app:choice_nlp}
+We evaluate the models from Section~\ref{sect:nlp} on standard natural language processing benchmarks: ARC Challenge \citep{yadav2019quick}, COPA \citep{roemmele2011choice}, Hellaswag \citep{zellers2019hellaswag}, Natural Questions \citep{kwiatkowski2019natural}, PIQA \citep{bisk2019piqa}, SIQA \citep{sap2019socialiqa} and TriviaQA \citep{joshi2017triviaqa}.
+
+\input{figures/nlp_exploded}
+\newpage
+\section{Additional results on abstractive text summarization}
+\label{app:summarzation_all}
+\input{tables/summarization_all}
+In this section, we report comprehensive evaluation results on summarization tasks for the 7B parameter models trained on 200B and 500B tokens of natural language from Section~\ref{sect:nlp}.
+\input{tables/summarization}
+
+\clearpage
+\section{Additional results on mathematical reasoning in natural language}
+\label{app:gsm8k}
+\input{figures/gsm8k}
+
+\newpage
+\section{Additional results on induction learning}
+\label{app:induction}
+\input{figures/induction_b3g}
+
+\newpage
+\section{Additional results on algorithmic reasoning}
+\label{app:poly}
+We investigate the following \emph{computation-sharing hypothesis} for explaining the efficacy of multi-token prediction as training loss.
+\begin{quote}
+    The prediction difficulty of different tokens in natural text varies greatly. Some tokens may be the continuations of partial words that are uniquely determined from their preceding context without any effort, while others may require to predict theorem names in difficult mathematical proofs or the correct answer to an exam question. Language models with residual connections have been shown to refine their output token distribution with each successive layer, and can be trained with early exit strategies that spend variable amounts of computational resources per token position. Multi-token prediction losses explicitly encourage information-sharing between adjacent token positions and can thus be viewed as a method to learn allocating computational resources in language models more efficiently to the tokens that benefit most of it.
+\end{quote}
+To check the truth of this hypothesis, we augment the polynomial arithmetic task from Section~\ref{sect:algorithmic} with a varying number of \emph{pause tokens} \citep{goyal2023think} inserted between the question and a token that denotes the beginning of the answer. Pause tokens introduce additional computational resources that can be expended for computations that are expected to be useful later on in the sequence, in other words: to start thinking about the answer. According to the \emph{computation-sharing hypothesis}, multi-token prediction models learn information-sharing and thus computation-sharing between token positions more easily, and may be better at making use of these additional computational resources than next-token prediction models are. In Figure~\ref{fig:poly_pause}, we show the evaluation results on the polynomial arithmetic task with a fixed number of pause tokens inserted both at training and evaluation time. Multi-token prediction models likewise outperform next-token prediction models on these task variants across task difficulties and model sizes. However, we do not see strong evidence of a widening or shrinking of this gap i.e. we cannot conclude from these experiments on the veracity of the computation-sharing hypothesis.
+
+In Table~\ref{tab:pause}, we report results from another experiment in the same spirit: by adding spaces and newlines to HumanEval and MBPP prompts, we add ``pause tokens'' in a somewhat natural way. According to these results, multi-token prediction models have a slight advantage at using this additionally provided compute, but the effect is marginal. 
+
+\input{figures/poly_appendix}
+\input{figures/poly_scale}
+\input{tables/pause}
+
+
+\newpage
+\input{tables/optimal_temps}
+
+\section{Additional intuitions on multi-token prediction}
+\label{app:intuitions}
+
+\subsection{Comparison to scheduled sampling}
+In Section~\ref{sect:mismatch}, we argued that multi-token prediction reduces the distribution mismatch between teacher-forced training and autoregressive evaluation of language models. Scheduled sampling \citep{bengio2015scheduled} is a curriculum learning method that likewise aims to bridge this gap in sequence prediction tasks by gradually replacing more and more input tokens with model-generated ones.
+
+While effective in areas such as time series forecasting, scheduled sampling is, in our opinion, inapplicable to language modelling due to the discrete nature of text. Replacing ground truth input sequences by interleavings of ground truth and model-generated tokens frequently results in ungrammatical, factually wrong or otherwise incoherent text, which should be avoided at all cost. Moreover, unlike multi-token prediction, the technique originally developed for recurrent neural networks cannot easily be adapted for parallel training setups like the ones of transformer models.
+
+\subsection{Information-theoretic argument}
+\label{app:loss-dec}
+We give details on the information-theoretic terms appearing in the decomposition in Section~\ref{sect:mismatch} and derive a relative version that similarly allows to decompose multi-token prediction losses. As in Section~\ref{sect:mismatch}, denote by $X$ the next token and by $Y$ the second-next one, and omit conditioning on the preceding context $C$ for ease of notation. In Section~\ref{sect:mismatch}, we decomposed $H(X) + H(Y)$---the quantity of interest for 2-token prediction models---as follows:
+\begin{equation} \label{eq:entr-dec}
+  H(X) + H(Y) = H(X \mid Y) + 2 I(X; Y) + H(Y \mid X).
+\end{equation}
+Let us explain each of the terms. The entropy terms denote the uncertainty contained in the ground-truth random variables $X$ and $Y$. \footnote{In particular, they do not refer to \emph{model} predictions.} The term $H(Y \mid X)$ is a classical next-token entropy for the prefix $(C, X)$. The conditional entropy $H(X \mid Y)$ is a more theoretical entity not modelled by causal models. It describes the uncertainty about $X$ given the prefix $C$ and suffix $Y$, and therefore captures the local variations of $X$ that do not affect the continuation of the text $Y$. The mutual information $I(X;Y)$ on the other hand describes the information about $Y$ contained in $X$ (and vice versa) and therefore captures the variations of $X$ which constrain the continuation of the text.
+
+However, the argument given in Section~\ref{sect:mismatch} relies on the assumption that multi-token prediction losses obey a similar decomposition as the sum of the ground-truth entropies themselves. Let us make this rigorous. Denote by $p(x, y)$ the joint distribution of $X$ and $Y$, by $p(x)$ (short for $p_X(x)$) the marginal distribution of $X$ and by $p(y)$ the one of $Y$. Denote the densities of the model's predictions by $q(x, y)$, $q(x)$ and $q(y)$, respectively, conditional distributions by $p(x \mid y)$ and Kullback-Leibler divergence from $q$ to $p$ by $\KL{p}{q}$ and cross-entropy from $q$ to $p$ by $H(p, q)$.
+\begin{definition}
+    The \emph{conditional cross-entropy} $H(p_{X \mid Y}, q_{X \mid Y})$ of $X$ conditioned on $Y$ from $q$ to $p$ is defined as the expectation under $y$ of the cross-entropy between the distributions $p_X$ and $q_X$ conditioned on $y$, in formulas:
+    \[
+    H(p_{X \mid Y}, q_{X \mid Y})
+    = \E_{y \sim p_Y} H(p_{X \mid Y=y}, q_{X \mid Y=y})
+    = \E_{y \sim p_Y} H(p(\cdot \mid y), q(\cdot \mid y)).
+    \]
+\end{definition}
+\begin{definition}
+    The \emph{relative mutual information} $I_{p \| q}(X; Y)$ of $X$ and $Y$ from $q$ relative to $p$ is defined by
+    \[
+    I_{p \| q}(X; Y)
+    = \KL{p}{q_X \otimes q_Y} - \KL{p}{q}.
+    \]
+\end{definition}
+We have $I_{p \| q}(X; Y) = H(p_X, q_X) + H(p_Y, q_Y) - H(p, q)$, $I_{p \| p}(X; Y) = I_p(X; Y)$ reduces to standard mutual information under the distribution $p$ and $I_{p \| q}(X; Y)$ is symmetric in $X$ and $Y$ but can be negative.
+
+We have the following relative version of the decomposition $H(X) = H(X \mid Y) + I(X; Y)$.
+\begin{lemma}
+    $H(p_X, q_X) = H(p_{X \mid Y}, q_{X \mid Y}) + I_{p \| q}(X; Y).$
+\end{lemma}
+\begin{proof}
+We calculate
+\begin{align*}
+    H(p_X, q_X)
+    &= -\sum_x p(x) \log q(x) \\
+    &= -\sum_{x,y} p(x, y) \log q(x) \\
+    &= -\sum_{x,y} p(x, y) \log \frac{q(x)q(y)}{p(x, y)}\frac{p(x, y)}{q(x, y)}\frac{q(x, y)}{q(y)}  \\
+    &= \KL{p}{q_X \otimes q_Y} - \KL{p}{q} - \sum_{x,y} p(y) p(x \mid y) \log q(x \mid y) \\
+    &= I_{p \| q}(X; Y) + \sum_y p(y) H(p_{X\mid y}, q_{Y\mid y}) \\
+    &= I_{p \| q}(X; Y) + H(p_{X \mid Y}, q_{X \mid Y}).
+\end{align*}
+\end{proof}
+Symmetrizing, we get the desired relative version of $H(X) + H(Y) = H(X \mid Y) + 2 I(X; Y) + H(Y \mid X)$:
+\[
+    H(p_X, q_X) + H(p_Y, q_Y)
+    = H(p_{X \mid Y}, q_{X \mid Y}) + 2 I_{p \| q}(X; Y) + H(p_{Y \mid X}, q_{Y \mid X}).
+\]
+Setting $p$ to be the empirical distribution of the training data, the left-hand side describes the cross-entropy loss used to train 2-token prediction models. The right-hand side gives the decomposition into a \emph{local} cross-entropy term, a mutual information term with weight two and a shifted next-token cross-entropy term. We interpret this as follows: by adding the term $H(p_Y, q_Y)$ to the loss, 2-token prediction incentivizes models to precompute features which will become useful for predicting $Y$ in the next step and increases the weight of the relative mutual information term in the loss. What does relative mutual information actually mean? By interpreting Kullback-Leibler divergence $\KL{p}{q}$ as the average number of bits needed in addition to send data from $p$ with a code optimized for $q$ instead of $p$, we see that minimizing
+\[
+I_{p \| q}(X; Y) = \KL{p}{q_X \otimes q_Y} - \KL{p}{q}
+\]
+means minimizing the average number of additional bits needed to send data from $p$ with a code optimized for $q$ that treats $X$ and $Y$ as independent compared to one that does not. If this number is small, $q$ managed to exploit the mutual information of $X$ and $Y$ under $p$.
+
+
+
+
+
+\subsection{Lookahead reinforces choice points}
+\label{app:choice}
+\input{figures/maze}
+Training with multi-head prediction increases the importance of choice points in the loss in comparison to inconsequential decisions. To make this argument, we present a simplified model of language modelling. Consider a sequential decision task and a model $M$ that is trained in a teacher-forced way on optimal trajectories. We distinguish \emph{choice points} --transitions that lead to different outcomes -- and \emph{inconsequential} decisions which do not (Figure~\ref{fig:maze} (a) and (b)).
+
+More formally, assume that the language model is deployed in a reinforcement learning setting like in \emph{reinforcement learning from human feedback} \cite{ouyang2022training} (states are prompts followed by the partial sequence of tokens $x_{t:1}$ generated so far, actions are single tokens  $x_{t+1}$ to generate, rewards are external $R(x_{t:1})$). The quantity
+\[
+V_\pi(x_{t:1}) = \mathbb{E}_{x_{t+i} \sim \pi(x_{t+i-1:1}), i \geq 1} \left[ \sum_{i \geq 0} R(x_{t+i:1}) \right]
+\]
+is the value of the state $x_{t:1}$ following the policy $\pi$, while
+\[
+\sigma_\pi(x_{t:1}) = \sqrt{\Var_{x_{t+1} \sim \pi(x_{t:1})} \left[ 
+V_\pi(x_{t+1:1}) \right] }
+\]
+quantifies the importance of the decision $x_{t+1}$ on the value thereafter. \emph{Choice points} can formally be viewed as steps $t$ for which $\sigma_\pi(x_{t:1})$ is large, while \emph{inconsequential points} are steps where it is low. Note that for completion models, there is no explicit reward, and our argument is merely meant to illustrate what we mean by \emph{choice points}.
+
+\emph{Derailing} denotes a situation where autoregressive generation of trajectories from $M$ at inference time results in bad outcomes after $M$ made a mistake on a choice point. Even if subsequently, $M$ acts optimally given this choice, the final outcome can be significantly worse than the outcome of the optimal trajectory.
+
+Staying in the teacher-forced setting, we ask: What is the impact of training $M$ with $n$-step prediction instead of next-step prediction on this task? Say $x_t \to x_{t+1}$ is a choice point in an optimal trajectory with the suboptimal choice being $x_t \to \tilde{x}_{t+1}$ (Figure~\ref{fig:maze}~(a)). Assume that the trajectories preceding $x_t$ and succeeding $x_{t+1}$ and $\tilde{x}_{t+1}$ consist of inconsequential transitions, the latter denoted by $\tilde{x}_{t+j} \to \tilde{x}_{t+j+1}$. We will compare the losses of a teacher-forced next-step prediction model and a teacher-forced $n$-step prediction model on the partial trajectory $(x_{t-n+1}, \ldots x_t)$. For the next-step prediction model, the predictions are $(x_{t-n+2}, \ldots, x_t, \tilde{x}_{t+1})$ with a single wrong prediction. The predictions of an $n$-step prediction model at time $t - n + i$, $i = 1, \ldots, n$ are $(x_{t-n+i+1}, \ldots, x_t, \tilde{x}_{t+1}, \ldots, \tilde{x}_{t+i})$ with $i$ wrong predictions. In other words, an $n$-step prediction model receives $1 + \ldots + n = \frac{n(n+1)}{2}$ loss terms pertaining to such a choice point and its consequences, while each inconsequential transition (Figure~\ref{fig:maze}~(b)) is only reinforced $n$ times as often as in a next-step prediction model. In other words, choice points receive on average $\frac{n+1}{2}$ times more importance in the loss of $n$-step prediction models than in next-step prediction models.
+
+As argued in Section~\ref{sect:derailing}, we believe that this model captures important features of training and inference with language models: choice points are semantically important turning points in the generated texts, such as the final answer to a question or a specific line of code, while inconsequential decisions can be a choice among synonyms or of variable names in code.
+
+Apart from this training dynamics point of view, we hypothesize that $n$-step prediction also allows the formation of circuits that specifically spot inconsistencies between predictions for earlier and later steps. For instance, if in an early layer of the model, it can be predicted that a decision $x_t \to \tilde{x}_{t+1}$ leads to suboptimal outcomes $\tilde{x}_{t+n}$ (Figure~\ref{fig:maze}~(c)), subsequent layers can reduce the probability of $x_t \to \tilde{x}_{t+1}$ in the model's next-step prediction. Such behaviors also happen in next-step prediction models given enough capacity, but our experiments in Section~\ref{sect:algorithmic} point to the fact that circuits of this kind are formed more easily in multi-step architectures that enforce the required information $\tilde{x}_{t+n}$ to be available to the model when predicting $\tilde{x}_{t+1}$. We believe that this situation appears frequently in natural language and code modelling, for instance where an initial answer to a question contradicts the results of the \emph{chain of thought} brought forward with the intention to justify it.
+
+In more general terms, this situation arises whenever predicting first $\tilde{x}_{n+i}$ for some $ 1 < i \leq n$ and then $\tilde{x}_{n+1}$ based on $\tilde{x}_{n+i}$ is easier than predicting $\tilde{x}_{n+1}$ directly. We discuss this phenomenon of \emph{factorization orders} in the next section and present a specific instance of it that frequently appears in modelling natural language.
+
+\subsection{Factorization orders}
+Causal language modelling factorizes probabilities over text sequences $x_t \cdots x_1$ classically as 
+\[ P(x_t \cdots x_1) = \prod_{i=1}^t P(x_i \,|\, x_{i-1} \cdots x_1). \]
+While moving forward in time is certainly the most natural choice of factorization order, there exist cases where it is suboptimal. In inflectional languages, for instance, agreement between related sentence parts is a frequent pattern with one word directing the grammatical forms of others. Consider the German sentence
+\begin{quote}
+Wie konnten auch Worte meiner durstenden Seele genügen?\footnote{roughly: \textit{How could words be enough for my thirsty soul?}}
+\par\noindent\hfill\textit{Friedrich Hölderlin, Fragment von Hyperion (1793)}
+\end{quote}
+where "genügen" requires a dative case object and then "Seele" requires the possessive pronoun "mein" to be in female singular dative form "meiner" and the participle "durstend" to be in female singular dative form in weak declination "durstenden" because it follows "meiner". In other words, the factorization order
+\begin{quote}
+Wie konnten auch Worte $\rightarrow$ genügen $\rightarrow$ Seele $\rightarrow$ meiner $\rightarrow$ durstenden?
+\end{quote}
+is arguably an easier one for constructing the above sentence. Humans as well as language models therefore have to perform this factorization (which deviates from the causal order in which predictions take place!) within their latent activations, and a $4$-token prediction loss makes this easier as it explicitly encourages models to have all information about the successive 4 tokens in its latent representations.
+
+\newpage
+\section{Training hyperparameters}
+\input{tables/hyperparams}
+\input{tables/models}

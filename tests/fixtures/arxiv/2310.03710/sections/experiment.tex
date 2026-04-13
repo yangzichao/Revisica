@@ -1,0 +1,143 @@
+We show that \zeroshotmid\ \method\ successfully improves the zero-shot reasoning abilities of LLMs, namely, Vicuna~\citep{vicuna2023}, Llama-2-chat~\citep{touvron2023llama2}, and GPT-3.5 Turbo~\citep{openaichatgpt}, by a large margin on average. We evaluate \zeroshotmid\ \method\ on an exhaustive selection of \NumDatasets\ benchmarking datasets containing \NumSubsets\ subsets. As shown in Figure~\ref{fig:dataset-categorization}, each dataset is either a generation or classification task, and a portion of the datasets in each category are also reasoning tasks. The datasets consist of all HELM core scenarios from \citet{liang2022holistic}, as well as the reasoning datasets from \citet{kojima2023large}. The details of the experimental setup, including datasets and models, are described in Appendix~\ref{sec:main-experimental-setup}.
+
+\subsection{Main Results}
+Results are shown in Figure \ref{fig:condensed-results}. We compare \zeroshotmid\ \method\ to standard zero-shot and zero-shot CoT. We focus our analysis on three models: Vicuna-13b, Llama-2-70b-chat, and GPT-3.5 Turbo. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/pdfs/927_dataset-overview-expand.pdf}
+    \caption{Datasets for generation (blue), classification (green), and reasoning (orange). Reasoning contains generation and classification tasks.
+    }
+    \label{fig:dataset-categorization}
+\end{figure}
+\begin{figure}
+    \centering
+    \begin{subfigure}[t]{0.5\textwidth}
+    \includegraphics[width=\linewidth]{figures/pdfs/agentinstruct_win_like_gpt4judge_subplots_alignfix-1.pdf}
+    \caption{All datasets.}
+    \label{subfig:overall-won}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+    \includegraphics[width=\linewidth]{figures/pdfs/agentinstruct_win_like_gpt4judge_subplots_alignfix-2.pdf}
+    \caption{Generation datasets.}
+    \label{subfig:generation-won}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+    \includegraphics[width=\linewidth]{figures/pdfs/agentinstruct_win_like_gpt4judge_subplots-rounded3.pdf}
+    \caption{Classification datasets.}
+    \label{subfig:classification-won}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.5\textwidth}
+    \includegraphics[width=\linewidth]{figures/pdfs/agentinstruct_win_like_gpt4judge_subplots-rounded4.pdf}
+    \caption{Reasoning datasets.}
+    \label{subfig:reasoning-won}
+    
+    \end{subfigure}
+    \caption{Winning rate (\%) between zero-shot, zero-shot CoT, and \zeroshotmid\ \method\ based on the average results over three models.
+    }
+    \label{fig:method-win-like-gpt4judge}
+\end{figure}
+
+We first compare \zeroshotmid\ \method\ to standard zero-shot prompting (Figure~\ref{fig:full-pipeline}). The zero-shot prompt design follows~\citet{liang2022holistic}. On each model, \zeroshotmid\ \method\ wins on the majority of datasets, with no less than a 13.0\% increase on average. Average performance versus the zero-shot setting is best on Llama-2-70b-chat with a \LlamaTwoSeventyChatAvgwinOverZs\ improvement. Figure~\ref{subfig:generation} and Figure~\ref{subfig:classification} show the results for generation and classification tasks respectively. On average, with \zeroshotmid\ \method, the three models beat the zero-shot setup by \ThreemodelsGenerationAvgwinOverZs\ for generation and \ThreemodelsClassificationAvgwinOverZs\ for classification. We hypothesize that generation datasets generally require more specific instructions than classification datasets, as the model does not know the best format for the generation output unless it has sufficient task information. This shows that our agent is able to instruct the reasoning process to improve the final outputs for different tasks, and \zeroshotmid\ \method\ is able to generalize LLMs' reasoning abilities across tasks. Note that we only run the agent 53 times, resulting in 53 agent generated instructions, as we evaluate on 53 subsets. With \zeroshotmid\ \method, we also observe a large margin of improvement for zero-shot performance across different models. Significantly, Llama-2-70b-chat beats the performance of zero-shot GPT-3.5 Turbo by \LlamaTwoSeventyChatAvgwinOverChatgptZs\ on average across all datasets. This indicates our agent instructions are the key to improving the reasoning performance of LLMs.
+
+The most immediate comparison to \zeroshotmid\ \method\ is zero-shot CoT, as \zeroshotmid\ \method\ uses task-specific instructions instead of a fixed manual instruction. On average, across all three models, \zeroshotmid\ \method\ beats zero-shot CoT by \ThreemodelsOverallAvgwinOverZscot, with the largest growth being Vicuna-13b at \VicunaThirteenAvgwinOverZscot. On both generation and classification datasets, across three models, \zeroshotmid\ \method\ wins by \ThreemodelsGenerationAvgwinOverZscot\ and \ThreemodelsClassificationAvgwinOverZscot\ on each category respectively. This suggests that \zeroshotmid\ \method\ is able to generalize the zero-shot reasoning abilities of LLMs to both generation and classification tasks, and optimize the performance of specific tasks.
+
+In particular, we look into the performance of reasoning tasks (Figure~\ref{subfig:reasoning}). Of our three models, the average difference between \zeroshotmid\ \method\ and the zero-shot setting on reasoning tasks is \ThreemodelsReasoningAvgwinOverZs, whereas the difference between \zeroshotmid\ \method\ and zero-shot CoT is \ThreemodelsReasoningAvgwinOverZscot. This shows that our task-specific instructions are more helpful for LLMs to break down tasks into more specific intermediate reasoning steps compared to the task-agnostic instructions in zero-shot CoT, which leads to improved final predictions.
+
+Overall, \zeroshotmid\ \method\ wins on 9 of the 13 generation datasets, 11 of the 16 classification datasets, and 10 of the 12 reasoning datasets (Figure~\ref{fig:method-win-like-gpt4judge}). See Appendix~\ref{sec:additional-results} for additional results and analysis, including results on individual datasets and subsets.
+
+\begin{figure*}[ht!]
+\centering
+\begin{subfigure}{\textwidth}
+\centering
+\includegraphics[width=0.9\linewidth]{figures/pdfs/Generation1.pdf}
+\caption{Generation datasets.}
+\label{subfig:generation}
+\end{subfigure}\\
+\begin{subfigure}{\textwidth}
+\centering
+\includegraphics[width=0.9\linewidth]{figures/pdfs/Classification1.pdf}
+\caption{Classification datasets.}
+\label{subfig:classification}
+\end{subfigure}\\
+\begin{subfigure}{\textwidth}
+\centering
+\includegraphics[width=0.9\linewidth]{figures/pdfs/Reasoning1.pdf}
+\caption{Reasoning datasets.}
+\label{subfig:reasoning}
+\end{subfigure}
+\caption{Results on Vicuna-13b, Llama-2-70b-chat, and GPT-3.5 Turbo across tasks. Top: generation. Middle: classification. Bottom: reasoning.}
+\label{fig:condensed-results}
+\end{figure*}
+
+\subsection{Ablation Studies}
+\input{tables/llama270bchat-all-ablation}
+
+We examine how different components of \zeroshotmid\ \method\ impact its zero-shot reasoning performance. Results are shown in Table~\ref{table:all-ablation} on AddSub (reasoning), IMDB (classification), and NarrativeQA (generation). We use Llama-2-70b-chat for the reasoning step. The four settings examine the importance of agent instructions in \zeroshotmid\ \method. Descriptions of each setting are as follows: (\expandafter{\romannumeral1}) w/o Agent Instructions: We compare the \zeroshotmid\ \method\ methodology to zero-shot CoT. (\expandafter{\romannumeral2}) w/o Input Examples: We remove the input-only examples from agent's input. (\expandafter{\romannumeral3}) w/o Label Description: We remove the description of the labels from the agent's input. (\expandafter{\romannumeral4}) w/o GPT-4: We use GPT-3.5 Turbo, instead of GPT-4, as the agent to generate instructions. The results suggest that all components of \zeroshotmid\ \method\ are effective in providing high-quality instructions and eliciting high-quality reasoning steps. See Appendix~\ref{sec:table1-clarifications} for further descriptions of each setting. 
+
+\paragraph{Importance of Synthesizing Instructions}
+As \zeroshotmid\ \method\ uses additional dataset information to craft instructions, we test zero-shot CoT with that same information prepended to isolate the impact of synthesizing this information into high-quality instructions. We find that merely prepending this information does not consistently improve the performance over zero-shot CoT, whereas the synthesis of this information into high-quality instructions with \zeroshotmid\ \method\ does, suggesting the instructions are integral in guiding the reasoning steps (Table~\ref{table:equal-info-baselines}).
+\input{tables/equal_info_baseline}
+
+\paragraph{Comparison to GPT-4 Methods}
+We test the following methods using GPT-4: zero-shot, zero-shot CoT, ReAct \citep{yao2023react}, and \zeroshotmid\ \method. Figure~\ref{fig:gpt-4-ablation} shows the performance of each method on AddSub. \zeroshotstart\ \method\ outperforms zero-shot GPT-4 by 8.6\% and ties the performance of zero-shot CoT GPT-4 for approximately one-tenth of the cost. \zeroshotstart\ \method\ is using GPT-4 for the instructions and GPT-3.5 Turbo for the CoT reasoning, following the standard knowledge distillation setting. 
+This shows \zeroshotmid\ \method\ is a cost-effective solution for improving performance, as it far exceeds GPT-3.5 performance for a small amount more and reaches GPT-4 performance for much less.
+Though ReAct narrowly outperforms \zeroshotmid\ \method, it costs nearly 100 times more since the \zeroshotmid\ \method\ agent is run only once per dataset rather than per instance. Each run of our agent to generate instructions cost less than \$1. 
+This result implies that decoupling the instruction generation and reasoning steps further unleashes the zero-shot reasoning abilities of LLMs, and that \zeroshotmid\ \method\ is a cost-effective alternative to using agents directly.
+\begin{figure}[h!]
+    \vspace{-20pt}
+    \centering
+    \includegraphics[trim={0 3mm 0 6mm},clip,width=\linewidth]{figures/pdfs/gpt-4.pdf}
+      \vspace{-0.2in}\captionof{figure}{Comparison on GPT-4 using zero-shot, zero-shot CoT, ReAct, and \zeroshotmid\ \method\ (using GPT-3.5 Turbo for reasoning) on AddSub.}
+      \label{fig:gpt-4-ablation}
+\vskip -0.2in
+\end{figure}
+
+\paragraph{Using GPT-4 in AgentInstruct} Though \zeroshotmid\ \method\ is primarily a cost-effective solution to distill knowledge from a powerful LLM agent to a smaller reasoner, we also consider the use of the same underlying model for both the instruction generation and reasoning steps. Specifically, we leverage GPT-4 for both the instruction generation and reasoning steps on IMDB and AddSub to see whether \zeroshotmid\ \method\ is as effective outside the knowledge distillation setting. On IMDB, zero-shot GPT-4, zero-shot CoT GPT-4, and \zeroshotmid\ \method\ GPT-4 (where both the instruction generation and CoT reasoning steps use GPT-4) score 87.4, 96.1, and 96.6 respectively. Similarly, on AddSub, the results are 79.5, 88.1, and 88.1 respectively. In both cases, we see \zeroshotmid\ \method\ is at least as good as zero-shot GPT-4 and zero-shot CoT GPT-4, meaning our method shows promise when the same model is used throughout the AgentInstruct pipeline.
+
+\input{tables/prompt-sensitivity-ablation}
+
+\subsection{Manual Prompt Sensitivity}
+\zeroshotstart\ \method\ has two manual prompts during the CoT reasoning step: (1) the reasoning extraction prompt, which asks for intermediate reasoning steps, and (2) the answer extraction prompt, which extracts the final answer from the intermediate reasoning steps. To test the sensitivity of each manual prompt, we vary a single prompt while keeping the default \zeroshotmid\ \method\ prompt for the other. Results are shown in Table \ref{table:prompt-sensitivity-overview} based on Llama-2-70b-chat on AddSub. Overall, \zeroshotmid\ \method's performance does not appear particularly sensitive to changes in the manual prompts, suggesting that the methodology behind \zeroshotmid\ \method\ is robust. Additional prompt sensitivity experiments are conducted in Appendix~\ref{sec:prompt-sensitivity-1}.
+
+\subsection{Model Scaling}
+As it is often the case that more parameters substantially improve the reasoning capabilities of LLMs~\citep{wei2023chainofthought}, we test \zeroshotmid\ \method's performance on models of various sizes. Specifically, we test on three Llama-2-chat models with 7 billion, 13 billion, and 70 billion parameters. Figure \ref{fig:llama2chat-scaling} shows the average score across all \NumDatasets\ datasets for zero-shot, zero-shot CoT, and \zeroshotmid\ \method. 
+\begin{figure}[h!]
+\centering        
+    \includegraphics[width=\linewidth]{figures/pdfs/model_scale2.pdf}
+  \caption{Model scaling results of zero-shot, zero-shot CoT, and \zeroshotmid\ \method\ with Llama-2-chat on all datasets.  
+  }
+  \label{fig:llama2chat-scaling}
+\end{figure}
+
+These results confirm that the average performance of all three methods increases with model size. Each time model size increases, zero-shot CoT and \zeroshotmid\ \method\ show consistent improvement of around 6\%, while zero-shot exhibits smaller gains near 2\%. This is because reasoning steps are best produced with more powerful models. Still, at just 13b parameters, Llama-2-13b-chat with \zeroshotmid\ \method\ surpasses the performance of zero-shot GPT-3.5 Turbo by over 2\%. Additionally, \zeroshotmid\ \method's superiority over zero-shot and zero-shot CoT appears independent of model size. 
+
+\vspace{2pt}
+\subsection{Error Analysis}
+To investigate the causes of errors made by \zeroshotmid\ \method, we manually analyze 25 samples from AddSub, IMDB, and NewsQA respectively where \zeroshotmid\ \method\ results in incorrect predictions on Llama-2-70b-chat. We define incorrect predictions as those with a quasi-exact match or F1 score less than 1. 
+
+The most common error across these datasets is incorrect reasoning (32.0\%), i.e., not correctly reasoning through the problem when applying accurate agent instructions. For example, on AddSub, \zeroshotmid\ \method\ may choose the wrong operation due to a misleading verb. On IMDB, \zeroshotmid\ \method\ may misread the sentiment due to emphasizing words describing the movie, not the review. This is problematic, as we want to describe the sentiment of the review, not the sentiment of the movie. See Figure~\ref{table:error-analysis-one-example} for an example of incorrect reasoning on IMDB. The answer ambiguity is another main source of errors (22.7\%). For example, in a review where the reviewer clearly enjoyed the movie even though the reviewer acknowledged it was a typical bad movie, our prediction is ``Positive'' while the ground truth is ``Negative'' on IMDB. For many errors, either the instructions are taken too literally or partially ignored. As models become better at reasoning, such errors should be minimized. More thorough error analysis and full examples for each error category are in Appendix~\ref{sec:error-analysis}.
+
+\input{tables/error-analysis-examples}
+
+\subsection{Case Study}
+Next, we analyze the quality of the CoT reasoning steps when predictions are correct. On three datasets (AddSub, IMDB, and NewsQA), we randomly select 25 examples from each dataset with a perfect quasi-exact match or F1 score. We find that the reasoning capabilities are greatly enhanced by the combination of effective agent instructions and the task-specific reasoning process of LLMs. An example is in Figure \ref{table:case-study-reasoning-attempted-error}.
+\input{tables/case-study-examples}
+
+\subsection{Comparison to Related Methods}
+\paragraph{Few-Shot}
+We compare Llama-2-70b-chat \zeroshotmid\ \method\ results with few-shot results on AddSub, IMDB, and NarrativeQA in Figure~\ref{fig:llama-2-70b-chat-fs-comparison}. Specifically, we sample 5 training instances from each dataset to prepend to the test instances. Surprisingly, \zeroshotmid\ \method\ reaches competitiveness with few-shot prompting. \zeroshotstart\ \method, without any few-shot examples, outperforms few-shot performance on AddSub and NarrativeQA, by over 4.3\% and  23.7\% respectively, and loses by 0.7\% on IMDB. Ideally, all the information encoded within the few-shot examples is found by \method\ and synthesized into agent instructions, with additional information not in the few-shot examples also being used. We hypothesize this information can be presented in a clearer manner within the agent instructions rather than through examples to better utilize the instruction-following and reasoning capabilities of LLMs. As shown, \zeroshotmid\ \method\ has the potential to reach or even beat few-shot performance. 
+
+\input{tables/llama-2-70b-chat-fs-and-self-consistency}
+
+\paragraph{Self-Consistency}
+Finally, we compare \zeroshotmid\ \method\ results with self-consistency \citep{wang2023selfconsistency} results of Llama-2-70b-chat on AddSub, IMDB, and NarrativeQA in Figure~\ref{fig:llama-2-70b-chat-self-consistency}. We adapt self-consistency to the zero-shot setting as follows: we sample three responses using a temperature of 0.7, top-$k$ sampling with $k=40$, and a randomly generated seed for each request. After cleaning the outputs, we use a majority vote to determine the consensus answer, choosing at random to break ties. On AddSub, IMDB, and NarrativeQA, \zeroshotmid\ \method\ outperforms self-consistency by 5.8\%, 7.5\%, and 1.9\% respectively. Moreover, \zeroshotmid\ \method\ is more computationally efficient than self-consistency as there is no need for sampling the reasoning paths multiple times.
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=\linewidth]{figures/pdfs/self_consistency.pdf}
+  \vspace{-0.3in}
+\caption{Comparison between \zeroshotmid\ \method\ and zero-shot self-consistency on Llama-2-70b-chat on AddSub, IMDB, and NarrativeQA.
+}
+  \label{fig:llama-2-70b-chat-self-consistency}
+\vskip -0.15in
+\end{figure}

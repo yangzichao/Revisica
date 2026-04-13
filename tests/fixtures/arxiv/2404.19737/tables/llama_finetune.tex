@@ -1,0 +1,20 @@
+\begin{table*}[ht!]
+    \centering
+    \caption{\textbf{Finetuning LLama 2 with multi-token prediction does not significantly improve performance.} We tried to finetune LLama 2 with 4-token prediction but this did not yield significant improvements compared to the baseline. We suppose that this new loss changes the initialization too brutally and never really recovers. We still some improvements for example on MBPP Pass@1. All runs use 200B tokens of code.}
+\label{tab:finetune_llama}
+\resizebox{.95\textwidth}{!}{
+\begin{tabular}{lllrrrrrrrrr}
+\toprule
+   &  &   & \multicolumn{3}{c}{MBPP} & \multicolumn{3}{c}{HumanEval} & \multicolumn{3}{c}{APPS/Intro} \\
+$n$ & Head type  & +Layers & @1 & @10 & @100 & @1 & @10 & @100 & @1 & @10 & @100 \\
+\midrule
+ 1 & transformer  & 0 & 39.6 & 65.1 & 82.4 & 31.4 & 57.7 & 84.7 & 10.0 & 21.6 & 36.7 \\
+\cmidrule{1-12}
+   \multirow[c]{3}{*}{4} & linear  & 0 & 39.3 & 63.7 & 81.3 & 29.0 & 53.4 & 82.2 & 6.9 & 20.0 & 34.0 \\
+ \cmidrule{2-12}
+   & \multirow[c]{2}{*}{transformer}  & 0 & 38.3 & 62.2 & 80.1 & 27.9 & 53.6 & 82.4 & 5.8 & 18.2 & 34.3 \\
+    &  & 3 & 42.5 & 64.4 & 81.3 & 28.7 & 56.9 & 82.4 & 7.8 & 21.2 & 37.3 \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

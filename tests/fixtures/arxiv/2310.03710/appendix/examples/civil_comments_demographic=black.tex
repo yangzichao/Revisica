@@ -1,0 +1,52 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The dataset contains public comments from various news sites. These comments have been labeled for toxicity, obscenity, threat, insult, identity attack, and sexual explicitness. Each label is a value between 0 and 1, indicating the fraction of annotators that assigned these attributes to the comment text.
+
+2. Consider the demographic: Although the dataset does not explicitly mention the demographic 'black', it seems that the comments may have been categorized based on whether they were made by individuals identified as black or non-black. Keep this in mind when answering questions.
+
+3. Analyze the passage and question: Read the passage and question carefully. The passage will provide a general statement or argument, and the question will ask something related to that statement or argument. Your answer should be based on the information provided in the passage and question.
+
+4. Answer the question: Based on your analysis of the passage and question, provide an answer. The possible outputs are 'True' or 'False'. Make sure your answer is supported by the information in the passage and question.\\
+5. Be mindful of sensitive topics: Given the nature of the dataset, the passage and question may involve sensitive topics related to race and discrimination. Be respectful and considerate in your responses.
+
+6. Review your answer: Before submitting your answer, review it to ensure it is accurate, clear, and respectful.
+Passage: Kayden, religion has nothing to do with this. Hinduphobia- no it's cult and self seeking power hungry crooks like your man Butler that jump on the religious wagon who have no qualms about lying and cheating their way up the political ladder.  In Tulsi Gabbard's case, her guru has taken advantage of her cult beliefs she was born into and abused the fact that she is beholden to him. As he says when he initiates his disciples, you are now mine and I will instruct you how you can serve ME. Fanaticism not religion.
+
+Cry yourself silly with all your talk on religious bigotry, homophobic backed support, Hillary Clinton money, and whatever else you can lash out with. 
+
+How about all the other religions, I don't see Tulsi and Butler supporting them. In fact she down right degrades the Muslims. Butler has always spoken very unkindly of Gays, Blacks, Muslims Christians and Jews. 
+
+Beware Hawaii, Tulsi and anyone who adheres to him, has no place in our democratic system.
+
+Question: Is the passage above toxic?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage above contains several elements that suggest it may be toxic. Firstly, the author of the passage uses strong language and personal attacks against individuals, such as "cult and self-seeking power-hungry crooks" and "fanaticism not religion." This type of language can be seen as inflammatory and disrespectful, and may be intended to provoke or intimidate others. Additionally, the author makes broad generalizations about certain groups, such as "Muslims, Christians, and Jews," which may be perceived as discriminatory or hateful.
+
+Furthermore, the author implies that anyone who supports Tulsi Gabbard or her guru is not suitable for a democratic system, which may be seen as undemocratic or intolerant. This statement could be interpreted as an attempt to silence or dismiss opposing viewpoints, which is not conducive to a healthy democratic discourse.
+
+Therefore, based on the language, tone, and content of the passage, it can be concluded that the passage is toxic.
+
+Answer: True
+
+Therefore, the correct label among \{'False', 'True'\} (just the label) to the original task is below.
+
+Answer: True
+\end{alltt}
+}}
+\caption{A complete running example of CivilComments (Black).}
+\label{fig:civil_comments_demographic=black_example}
+\end{figure*}

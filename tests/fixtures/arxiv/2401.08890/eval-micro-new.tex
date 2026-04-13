@@ -1,0 +1,62 @@
+\section{Beyond Default Settings}
+We now revisit default configurations that we used so far in our study.
+Throughout this section, we focus on the workload co-location scenario (\S\ref{sec:eval-wl-col}) at a high load setting and fix the gradient update size to 4MB.
+\label{sec:micro}
+
+
+\begin{figure}[t]
+  \begin{minipage}[t]{.48\columnwidth}
+    \includegraphics[width=\columnwidth]{res/micro/conext23-micro-buff.pdf}
+    \caption{Shows that a smaller buffer size, a common case with low-priority queue, contributes to the performance degradation of TCP.}
+	\label{fig:micro-buff}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{.48\columnwidth}
+    \includegraphics[width=\columnwidth]{res/micro/conext23-micro-rto.pdf}
+    \caption{Shows that a too small or too high value of \emph{RTO\textsubscript{min}} severely degrades the performance of TCP for low-priority flows.}
+	\label{fig:micro-rto-fct}
+  \end{minipage}
+\end{figure}
+
+\paragraph{\textbf{Role of Buffer Sizes:}}
+Data center network link speeds are increasing from 10Gbps to 40Gbps and 100Gbps however, the relative switch buffer sizes are shrinking. Studies show that per port per Gbps buffer size has shrunk from 192KB for 10Gbps to less than 10KB for 40Gbps switches~\cite{one-more-config}. Moreover, the available buffer size for low-priority queues is even smaller~\cite{fb-buffalloc}.
+These settings can have detrimental impact on the performance of TCP for low-priority flows.
+Following the \textit{Broadcom Tridant+} switch configuration~\cite{one-more-config} -- commonly deployed in data center networks, we assume per port buffer size of 192KB. We evaluate 4 different configuration of buffer sharing: 192KB indicates the availability of the entire port buffer for low-priority flow, 96KB represents the equal partitioning of port buffer between high and low-priority queues, 64KB refers to the default case in our experiments discuss in~\S\ref{sec:eval-main}, and 24KB represents the equal sharing of port buffer across 8 queues (typically 8 queues per port are available in switches).
+
+Figure~\ref{fig:micro-buff} shows as the available buffer for low-priority queue shrinks, the performance of TCP deteriorates. 
+For example, at p99 TCP's performance is 5.7$\times$ worse for 24KB case compared to 192KB case when entire port buffer is available to low-priority queue.
+While a low buffer size is generally bad for TCP (i.e., fair-queuing case), this issue becomes even more pronounced when dealing with low-priority flows.
+
+\paragraph{\textbf{Role of \textit{RTO\textsubscript{min}}:}}
+The retransmission timeout (\emph{RTO}) indicates packet loss and triggers the packet retransmission. This value is estimated by continuously monitoring a flows RTT and incorporates \emph{RTO\textsubscript{min}} as a lower bound for on the \emph{RTO} value. Thus, it plays an important role in TCP's loss recovery process. Existing literature, on the other hand, argues in the favor of choosing a smaller value of RTO\textsubscript{min} for data center network in fairshare settings~\cite{hrtimer-sigcomm09,pfabric,fastlane,annulus,ndp}. Since, low-priority flows are prone to spurious timeouts (discussed in ~\S\ref{sec:motive}), one can argue that a lower value of \emph{RTO\textsubscript{min}} can exacerbate this issue. Overall, coming up with a right timeout value is a challenge in priority queue settings~\cite{aeolus}.
+
+To investigate this in detail, we choose four different values of \emph{RTO\textsubscript{min}} commonly used in the literature: 500$\mu$s (following the 3$\times$ Avg RTT), 1ms (our default case), 5ms, and 10ms~\cite{dctcp,annulus,ndp}.
+Figure~\ref{fig:micro-rto-fct} shows that a too small and too high value of \textit{RTO\textsubscript{min}} severely affects the flow completion times. This is primarily due to the fact that a larger value significantly contributes to latency in loss recovery, which becomes a major concern, particularly when dealing with tail losses where fast recovery is not an option. On the other hand, an excessively small value notably increases the occurrence of spurious timeouts.
+
+
+\paragraph{\textbf{Impact of TCP Configurations:}}
+Our study focuses on TCP-Cubic with the SACK (Selective Acknowledgment) option enabled. TCP-Cubic is designed to maintain a plateau around \emph{WMAX}, which is determined after a packet loss event. However, in the presence of network prioritization which can cause excessive packet loss, TCP-Cubic, in theory, can act conservatively.
+To evaluate this, we modify the TCP configurations by considering both TCP-Cubic and TCP-NewReno and comparing their performance with and without the SACK option enabled.
+Figure~\ref{fig:micro-tcpvariants} shows that changing these configurations has minimal to no impact on TCP's performance.
+
+
+\begin{figure}[t]
+  \hfill
+    \begin{minipage}[t]{.48\columnwidth}
+	\includegraphics[width=\columnwidth]{res/micro/conext23-micro-tcpvariant.pdf}
+    \caption{Compares the performance of various configurations of TCP. The choice of these configurations have negligible impact on the performance of TCP}
+	\label{fig:micro-tcpvariants}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{.48\columnwidth}
+    \includegraphics[width=\columnwidth]{res/micro/conext23-micro-wan-lpt.pdf}
+    \caption{Shows that low-priority transport protocols designed for WAN settings are misfit for cloud environment.}
+	\label{fig:micro-lpt}
+  \end{minipage}  
+\end{figure}
+\paragraph{\textbf{Low-Priority Transports for WAN:}}
+Several proposals have looked at the need to optimize transport protocols for low-priority traffic under wide area network (WAN) settings~\cite{lpt-pcc-proteus,lpt-ledbat,lpt-tcp-lp}.
+These proposals implement congestion control mechanisms specifically tailored for background traffic, which tend to be conservative to avoid disrupting higher priority traffic when network prioritization is absent.
+However, due to their end-to-end nature, these protocols are susceptible to frequent stalls in their feedback loop. The challenges associated with such frequent stalls, combined with their conservative rate control, make them sub-optimal choices for low-priority flows under our scenario.
+
+To evaluate this, we consider TCP-LP~\cite{lpt-tcp-lp} and LEDBAT~\cite{lpt-ledbat}. Both of these are delay based transport protocols designed for low-priority traffic for WAN. LEDBAT aims to maintain the bottleneck queuing delay around a specified \emph{target}. Estimating this bottleneck queuing delay for low-priority packets is challenging because it is influenced by both the queue lengths and the \emph{priority-induced} delay. To simplify this choice, we made an observation in our experiments that a low-priority packet, once enqueued, experiences the \emph{priority-induced} delay due to a single gradient update. This observation allowed us to approximate the \emph{target} value, which we set to 3.2ms. Figure~\ref{fig:micro-lpt} shows that both these protocols experience a significant increase in the FCTs. Specifically, compared to TCP, we observed up to 2.4$\times$ and 6.67$\times$ increase in FCTs on avg and at p99 respectively.

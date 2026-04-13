@@ -1,0 +1,179 @@
+\subsection{Model Capabilities}
+
+Beyond the general post-training outlined above, we apply techniques to improve a set of key capabilities. These capabilities cover a range of use cases inspired by current user needs and research-inspired future applications. We outline capability examples not detailed in previous sections below. The post-training recipes are carefully designed to balance multiple objectives, including creativity, factuality, safety and more \citep{bai2022constitutional, thoppilan2022lamda}. We have a particular focus on safety and alignment, and hence address this in a further dedicated section.
+
+\subsubsection{Instruction Following}
+
+Following a user’s prompt accurately is a fundamental capability for LLMs, especially as these models become more sophisticated and are presented with increasingly complex user prompts. User prompts vary in granularity, specificity, and requirements (e.g., content, format, length). Individual instructions can also be ambiguous, optional, or even impossible or undesirable to satisfy~\citep{he2023can, xu2023wizardlm}.
+
+We improve Gemini Apps and Gemini API models’ instruction following (IF) abilities by collecting data for a diverse set of instruction following categories. For instructions that are verifiable programmatically such as word count, we generate synthetic data via prompting and response editing to ensure that such instructions are satisfied.
+
+\textbf{Complex prompts evaluation}: We investigate performance on complex prompts containing multiple instructions using a fine-grained evaluation method that assesses how well models adhere to each instruction. Human raters are presented with a prompt-response pair and a list of the individual (sub)-instructions contained in the prompt. Each prompt may have anywhere from one to dozens of individual instructions, and the annotators are tasked with determining whether each instruction is followed (or not) by the response.
+
+Table~\ref{tab:posttrain-complex-prompt-results} reports results on an internal dataset of prompts with instructions of varying complexity that encompass a wide range of instructions and are designed to be challenging for LLMs. We report two metrics: per-instruction accuracy (the percentage of sub instructions in the eval set that are followed), and full-response accuracy (the percentage of eval set prompts where all sub-instructions are followed).
+
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{3cm}lll}
+    \toprule
+    & Post-trained PaLM 2 & Gemini (with Pro) & Gemini Advanced (with Ultra) \\
+    \midrule
+    Per-instruction accuracy & 59.5$\pm$3.0\% & 77.8$\pm$2.0\% & 87.4$\pm$1.4\% \\
+    Full-response accuracy & 25.5$\pm$3.3\% & 38.5$\pm$3.6\% & 54.1$\pm$3.7\% \\
+    \bottomrule
+    \end{tabular}
+    \caption{Performance of Gemini on our complex prompts instruction-following internal benchmark.}
+    \label{tab:posttrain-complex-prompt-results}
+\end{table}
+
+
+Gemini Advanced (with Ultra) achieves an average per-instruction accuracy close to 90\%, representing a significant improvement over Gemini (with Pro) and a post-trained PaLM 2 model. We find that the sub-instructions that aren’t followed are well-distributed across responses. As a result Gemini Advanced’s full-response accuracy is lower, at around 54\%. This indicates that there is further headroom for models to fully satisfy all instructions.
+
+\subsubsection{Tool Use}
+
+By training LLMs to use tools, we greatly expand LLM capabilities beyond their internal knowledge. We treat tool use for both Gemini Apps and Gemini API models as a code generation problem, leveraging the base model’s preexisting strong coding capabilities. Every tool invocation is represented as a code block in which tool calls are invoked. This process allows the model to both compose multiple tools in each code block, as well as observe and react to the results of tool execution.
+At inference time, to generate a response to a user prompt, our system executes the loop shown in Figure \ref{fig:capabilities-tool-use}, where sampling from the LLM and execution of tool code work together to create a final response.
+
+
+\begin{figure*}[h!]
+\centering
+\includegraphics[width=0.7\textwidth,keepaspectratio]{figs/gemini_tech-report_01_final.pdf}
+\caption{A Gemini tool-use control loop.}
+\label{fig:capabilities-tool-use}
+\end{figure*}
+
+
+\textbf{Gemini Apps models}: Gemini draws on a range of tools via Gemini Extensions, including Google Workspace, Google Maps, YouTube, Google Flights, and Google Hotels. These tool-use capabilities also enable Gemini to be integrated as part of Gmail, Docs, Slides, Sheets and more. We are aiming to bring further tool-use capabilities in order to both enhance Gemini models and integrate Gemini models into further products.
+
+We created an internal benchmark to assess Gemini performance on tasks that may benefit from access to these extensions. This benchmark measures human preference in domains such as travel planning and video discovery. We find models equipped with tools are preferred on this set 78\% of the time over models without tools (excluding ties).
+
+\textbf{Gemini API models}: We have found that fine-tuning Gemini API models is very effective at teaching the model tool-use behaviors. Furthermore, training models to use programming and search as tools leads to improved performance on a range of academic benchmarks. In Table~\ref{tab:posttraining-gemini-api-tools-results}, we compare tool-use models fine-tuned from an early version of Gemini API Pro against equivalent models that do not use tools.
+
+\begin{table}[!h]
+\setlength{\tabcolsep}{3pt}
+\scriptsize
+\renewcommand{\arraystretch}{1.25}
+\centering
+\begin{tabular}{L{2.5cm}|p{1.8cm}p{1.8cm}|p{1.8cm}p{1.8cm}}
+\toprule
+ & \multicolumn{2}{p{3.6cm}|}{Mathematical Reasoning} & \multicolumn{2}{p{3.6cm}}{Factuality \& Knowledge \newline Retrieval}\\
+   & GSM8K\newline\tiny{\citet{cobbe2021training}} &  MATH\newline\tiny{\citet{hendrycks2021measuring}} &  NQ\newline\tiny{\citet{kwiatkowski2019natural}} & Realtime QA\newline\tiny{\citet{kasai2022realtime}}\\
+\midrule
+Gemini API Pro \newline with tools & 80.1\% & 41.8\% & 68.0\% & 70.8\%  \\
+Gemini API Pro without tools & 69.7\% & 30.7\% & 59.0\% & 39.2\%  \\
+\bottomrule
+\end{tabular}
+\caption{Comparison between Gemini API tool-use models and comparable models that do not use tools. Gemini API Pro without tools is an early version of our Pro model trained without tool-use data. Gemini API Pro with tools is the same model fine-tuned with tool-use data.}
+\label{tab:posttraining-gemini-api-tools-results}
+\end{table}
+
+\subsubsection{Multilinguality}
+\label{sec:post-training-ml}
+
+Multilinguality is critical to make sure Gemini models effectively support a wide range of languages. We discuss our key approaches for Gemini Apps and Gemini API models respectively below. 
+
+\textbf{Gemini Apps models}: Scaling Gemini from English to 40+ languages imposed research challenges in data quality. We leverage abundant high-quality English data by localization to native cultures (e.g., “president of the United States” -> “
+\begin{CJK*}{UTF8}{gbsn}日本の首相\end{CJK*}”). 
+
+Table~\ref{tab:posttrain-gemini-multilingual} shows the performance of Gemini (with Pro) on 5 languages compared to Bard with an older post-training recipe and based on PaLM 2. For side-by-side comparisons between a model A and a model B, we calculate a metric called SxS score. Each rating is converted to an ordinal value centered at 0: ratings preferring A are positive and ratings preferring B are negative over a scale between -1.5 and 1.5. The converted values are averaged to return the SxS score. Intuitively, a positive SxS score indicates the extent to which model A is preferred over model B. Here, we find quality improved by more than 0.1 SxS score for all five languages. Coding and reasoning gains from Gemini Pro are preserved across languages.
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{1.8cm}|p{2.0cm}p{2.0cm}p{2.0cm}}
+    \toprule
+    Language & Quality \newline \tiny{SxS} & Coding \newline \tiny{MBPP Pass@1\newline\citet{austin2021program}} & Reasoning \newline \tiny{MMLU\newline\citet{mmlu}} \\
+    \midrule
+ja-JP & +0.14 & +22.2\% & +3.6\%\\
+pt-BR & +0.17 & +23.2\% & +5.2\%\\
+de-DE & +0.1 & +21.4\% & +7.5\%\\
+es-419 & +0.12 & +22.8\% & +9.3\%\\
+it-IT & +0.13 & +13.8\% & +7.5\%\\
+    \bottomrule
+    \end{tabular}
+    \caption{Multilingual performance of Gemini (with Pro) compared to Gemini with an older post-training recipe and PaLM 2.}
+    \label{tab:posttrain-gemini-multilingual}
+\end{table}
+
+\textbf{Gemini API models}: Similar to Gemini Apps models, we train Gemini API models on additional multilingual post-training data, effectively adapting the original English model for use in various languages. We experiment with both human-generated non-English prompt-response pairs as well as automatically translated pairs. For the latter, we leverage abundant high-quality English demonstration data by translation. We ensure the quality of such translated data by translationability filtering and response rating by humans.
+
+\emph{Translatability Filtering}: Not all prompt-response pairs make sense when automatically translated, and may require expensive localization instead. Example prompts of this type (responses omitted for space) include:
+
+\begin{itemize}
+\item (strict word requirements) Write a 1000 word essay about world peace.
+\item (too English centric) Write a poem in iambic pentameter about apples.
+\item (too Latin-script centric) What is a word with 1 E, 2 As, and 1 U?
+\end{itemize}
+
+\emph{Translation Quality Validation}: Each translated prompt-response pair was rated for translation quality by at least 3 human raters, and was kept in the final mixture if the majority of raters rated it as accurate.
+Section 5.1.4 reports evaluations of the multilingual capabilities of post-trained Gemini API models.
+
+\subsubsection{Multimodal Vision}
+
+Multimodal post-training enhances the capabilities of our natively multimodal Gemini models for a wide range of useful applications. In the following, we discuss how image understanding ability is incorporated into Gemini Apps and Gemini API models. For this evaluation, we further train both of these Gemini model variants on a mixture of text data and expert curated image-text data over several vertically-defined multimodal use cases
+
+\textbf{Gemini Apps models}: We empower Gemini and Gemini Advanced with image understanding capabilities by fine-tuning pre-trained Gemini models on a mixture of text-only and image-text data. Careful balancing of text and multimodal data ensures the model develops robust image understanding without adversely affecting the quality of the text-only interactions. To assess our models, we compile a dataset of human-curated and synthetic image-text prompts and responses, spanning various categories and difficulty levels. This dataset facilitates human evaluation for model comparison and selection.
+
+We find that introducing this image-text data preserves Gemini Apps model quality on text-only tasks, with a SxS score on text-only tasks of +0.01$\pm$0.01 for a Gemini Apps Pro model trained on this data versus an equivalent model trained only on text data. In addition, post-training via RLHF improves performance on multimodal tasks, with a SxS score on image-understanding tasks of +0.223$\pm$0.06 for a Gemini Apps Pro model post-trained with SFT \& RLHF vs SFT alone.
+
+\textbf{Gemini API models}: We evaluate the impact of post-training via SFT on Gemini API models’ multimodal vision performance by tracking the performance of both pre-trained models and post-trained Gemini API Vision models on a series of standard benchmarks. These post-trained results have already been given in Table~\ref{tab:mm_image_text}, in Table~\ref{tab:posttraining_mm_image_text} we further report the difference in performance between  pre-trained and post-trained Gemini API models.
+
+\definecolor{light-gray}{gray}{0.92}
+\begin{table}[ht!]
+    \setlength{\tabcolsep}{6pt}
+    \centering
+    \scriptsize
+\begin{tabular}{p{3.5cm}p{2cm}p{2cm}p{2.3cm}}
+\toprule
+ & Gemini Ultra \newline Pre-trained only \newline 0-shot \newline \tiny{(pixel only)} & Gemini API Ultra \newline 0-shot \newline \tiny{(pixel only)} & Gemini Ultra \newline pre- to post-trained \newline improvement \\
+\midrule
+\textbf{MMMU (val)} \newline \tiny{Multi-discipline college-level problems \citep{mmmu}} & n/a & 59.4\% \newline \tiny{pass$@$1} \newline \newline \scriptsize{62.4\%} \newline \tiny{Maj1$@$32} & n/a \\
+\addlinespace[1ex]
+\textbf{TextVQA (val)} \newline \tiny{Text reading on natural images \newline \citep{textvqa}} & 81.4\% & 82.3\% & +0.9\% \\
+\addlinespace[1ex]
+\textbf{DocVQA (test)} \newline \tiny{Document understanding \newline\citep{docvqa}} &    90.1\% & 90.9\% & +0.8\%  \\
+\addlinespace[2ex]
+\textbf{ChartQA (test)} \newline \tiny{Chart understanding \newline \citep{chartqa}} & 80.8\% & 80.8\%  & 0.0\% \\
+\addlinespace[1ex]
+\textbf{InfographicVQA (test)} \newline \tiny{Infographic understanding \newline \citep{infographicvqa}} & 77.9\% & 80.3\% & +2.4\% \\
+\addlinespace[1ex]
+\textbf{MathVista (testmini)} \newline \tiny{Mathematical reasoning \newline \citep{MathVista}} & n/a & 53.0\% & n/a \\
+\addlinespace[1ex]
+\textbf{AI2D (test)} \newline \tiny{Science diagrams \newline\citep{ai2d}} & 76.6\% & 79.5\% & +2.9\% \\
+\addlinespace[1ex]
+\textbf{VQAv2 (test-dev)} \newline \tiny{Natural image understanding \newline\citep{vqav2}} & 74.5\% &  77.8\% & +3.3\% \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Post-trained model image understanding} Post-training improves image understanding capabilities of Gemini API Ultra over the base pre-trained model. Comparisons of Gemini API Ultra to other models on these benchmarks are given in Table~\ref{tab:mm_image_text}.
+\label{tab:posttraining_mm_image_text}
+}
+\vspace{-0.1cm}
+\end{table}
+
+The results indicate that the pre-trained model already has high performance across the capabilities represented by these benchmarks, in line with previous observations. However, the post-training SFT stage used for the Gemini API Vision models succeeds in improving the performance over several of these benchmarks (InfographicVQA, AI2D, VQAv2), most likely due to the model’s increased instruction-following capabilities that succeed in aligning the model output style with that of the golden references.
+
+\subsubsection{Coding}
+
+Despite the strong coding benchmark performance of the base model, post-training data still provides a significant boost to both code quality and code correctness. This highlights the benefit of high-quality demonstration data and feedback data for coding use cases. Gemini Apps and Gemini API models use a combination of human and synthetic approaches to collect such data.
+
+We evaluate our Gemini Apps models’ coding performance on a set of internally curated prompts, distributed across code use cases and languages. Table~\ref{tab:posttrain-coding} reports SxS scores, where Gemini (with Pro) significantly improves upon Bard with an older post-training recipe and based on PaLM 2. Gemini Advanced (with Ultra) further improves upon Gemini (with Pro). 
+
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{4cm}p{4cm}|l}
+    \toprule
+    Side A & Side B & SxS score \\
+    \midrule
+    Gemini (with Pro) & Bard (PaLM 2, Sept. 2023) & 0.19$\pm$0.03 \\
+    Gemini Advanced (with Ultra) & Gemini (with Pro) & 0.13$\pm$ 0.02 \\
+    \bottomrule
+    \end{tabular}
+    \caption{SxS comparisons of Gemini models on an internal coding benchmark.}
+    \label{tab:posttrain-coding}
+\end{table}
+
+For the coding capabilities of post-trained Gemini API Models, see Table~\ref{tab:text-results} which reports their academic benchmark performance.

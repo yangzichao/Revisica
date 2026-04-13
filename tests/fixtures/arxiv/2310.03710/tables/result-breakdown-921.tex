@@ -1,0 +1,41 @@
+\begin{table}[]
+\caption{Zero-shot, zero-shot CoT, and \zeroshotmid\ \method\ results split by category. The table shows the comparison for all five models split by category. The average over three models is based on Vicuna-13b, Llama-2-70b-chat, and GPT 3.5 Turbo.
+}
+\label{table:result-breakdown}
+\vskip 0.1in
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Category       & Model                 & Zero-Shot (\%) & Zero-Shot CoT (\%) & \zeroshotcap\ \method\ (\%) \\ \midrule
+Overall        & Vicuna-13b            & 30.6       & 34.4          & 43.9         \\
+               & Llama-2-7b-chat       & 32.1       & 38.3          & 44.6         \\
+               & Llama-2-13b-chat      & 34.3       & 44.5          & 50.2         \\
+               & Llama-2-70b-chat      & 35.1       & 52.4          & 58.3         \\
+               & GPT-3.5 Turbo               & 48.1       & 60.8          & 65.1         \\ \cdashlinelr{2-5}
+               & Average over 5 models & 36.1       & 46.1          & 52.4         \\
+               & Average over 3 models & 37.9       & 49.2          & 55.7         \\ \midrule
+Classification & Vicuna-13b            & 41.2       & 42.7          & 50.6         \\
+               & Llama-2-7b-chat       & 37.3       & 39.0          & 46.9         \\
+               & Llama-2-13b-chat      & 39.2       & 46.1          & 52.8         \\
+               & Llama-2-70b-chat      & 44.0       & 51.1          & 61.0         \\
+               & GPT-3.5 Turbo               & 54.0       & 62.6          & 68.1         \\ \cdashlinelr{2-5}
+               & Average over 5 models & 43.2       & 48.3          & 55.9         \\
+               & Average over 3 models & 46.4       & 52.1          & 59.9         \\ \midrule
+Generation     & Vicuna-13b            & 17.6       & 24.1          & 35.6         \\
+               & Llama-2-7b-chat       & 25.7       & 37.4          & 41.7         \\
+               & Llama-2-13b-chat      & 28.4       & 42.4          & 47.0         \\
+               & Llama-2-70b-chat      & 24.1       & 54.1          & 54.9         \\
+               & GPT-3.5 Turbo               & 40.8       & 58.6          & 61.3         \\ \cdashlinelr{2-5}
+               & Average over 5 models & 27.3       & 43.3          & 48.1         \\
+               & Average over 3 models & 27.5       & 45.6          & 50.6         \\ \midrule
+Reasoning      & Vicuna-13b            & 26.1       & 29.1          & 45.2         \\
+               & Llama-2-7b-chat       & 26.4       & 35.9          & 48.0         \\
+               & Llama-2-13b-chat      & 28.5       & 46.9          & 54.8         \\
+               & Llama-2-70b-chat      & 26.6       & 62.1          & 69.5         \\
+               & GPT-3.5 Turbo               & 46.9       & 70.9          & 78.7         \\ \cdashlinelr{2-5}
+               & Average over 5 models & 30.9       & 49.0          & 59.2         \\
+               & Average over 3 models & 33.2       & 54.0          & 64.5         \\ \bottomrule
+\end{tabular}
+}
+\end{table}

@@ -1,0 +1,182 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{geometry}
+\usepackage{commath}
+\usepackage{tabularx,booktabs}
+\usepackage{lscape}
+\usepackage{color}
+\usepackage{colortbl}
+\geometry{letterpaper,left=1.0in,right=1.0in,top=1.0in,bottom=1.0in}
+\usepackage{xr}
+
+%-------- Bibliography ---------------------------------------
+
+\usepackage[longnamesfirst]{natbib}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\newcommand{\myref}[2]{\hyperref[#1]{#2}}
+\numberwithin{equation}{section}
+
+%-------- PACKAGES ------------------------------------------
+\usepackage{latexsym}
+\usepackage{adjustbox}
+\usepackage{graphicx} % include figures
+\usepackage{enumerate}
+\usepackage{setspace}
+\usepackage{multirow}
+
+
+
+\onehalfspacing
+\def\qed{\rule{2mm}{2mm}}
+\def\indep{\perp \!\!\! \perp}
+%\parskip = 1.5ex plus 0.5 ex minus0.2 ex
+\def\enotesize{\normalsize}
+%\doublespacing
+% \setstretch{1.20}
+\usepackage[toc,title,titletoc,header]{appendix}
+\usepackage[bottom]{footmisc} % forces the footnotes to go at the bottom of page.
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\definecolor{fede_color}{cmyk}{0,0.9,0.33,.22}%{RGB}{205,133,63}
+\usepackage{siunitx}
+% Lines
+\interfootnotelinepenalty=10000
+\usepackage{lineno}
+\setpagewiselinenumbers
+%%\modulolinenumbers[2]
+% \linenumbers
+
+%-------- ENVIRONMENTS ------------------------------------------
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{condition}{Condition}[section]
+\newtheorem{assumption}{Assumption}[section]
+\newtheorem{summary}{Summary}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{exercise}{Exercise}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{conclusion}{Conclusion}[section]
+\newtheorem{algorithm}{Algorithm}[section]
+
+\theoremstyle{remark}
+\newtheorem{comment}{Comment}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+
+\newcounter{assumptionM}
+\newcounter{assumptionA}
+\def\theassumptionM{M.\arabic{assumptionM}}
+\def\theassumptionA{A}
+\setcounter{assumptionM}{0}
+\setcounter{assumptionA}{0}
+\newenvironment{assumptionA}[1][]{\refstepcounter{assumptionA}\\\medskip\noindent{\textbf{Assumption A.}}}{\medskip}
+\newenvironment{assumptionM}[1][]{\refstepcounter{assumptionM}\medskip\noindent{\textbf{Assumption \theassumptionM. #1}}}{\medskip}
+
+% Define the Running Example environment
+\newenvironment{runningexample}[1][]{%
+    \vspace{0.5\baselineskip} % Adds space before the environment
+    \noindent\textbf{Running Example.}\ #1%
+    \begin{itshape}%
+}{%
+    \end{itshape}%
+    \vspace{0.5\baselineskip} % Adds space after the environment
+}
+
+% Define the Running Example Continued environment
+\newenvironment{runningexamplecont}[1][]{%
+    \vspace{0.5\baselineskip} % Adds space before the environment
+    \noindent\textbf{Running Example, continued.}\ #1%
+    \begin{itshape}%
+}{%
+    \end{itshape}%
+    \vspace{0.5\baselineskip} % Adds space after the environment
+}
+
+%-----New commands---------------
+\newcommand{\sgn}{\mathrm{sign}}
+%-----------
+
+\hypersetup{
+ colorlinks=true,linkcolor=blue, citecolor=blue, filecolor=blue, 
+ linkbordercolor={0 1 1}, citebordercolor={1 0 0},
+ pdftitle={Stationarity},
+ pdfauthor={Bugni and Wang},
+ pdfcreator={\LaTeX\ with package \flqq hyperref\frqq},
+ pdfsubject={},
+}
+
+
+
+
+\begin{document}
+\sloppy
+\title{Inference in Auctions with Many Bidders Using Transaction Prices\thanks{%The first arXiv date:  ????????. 
+First ArXiv date: November 16, 2023. We thank 
+\'Aureo de Paula, Joel Horowitz, Yu-Chin Hsu, Tong Li, Yao Luo, Christian Gourieroux, Ulrich M\"uller, Nicholas Papageorge, Rob Porter, and Daiqiang Zhang for very helpful comments and suggestions, and Vinci Chow for kindly sharing the Hong Kong car license auction dataset. We also thank the seminar and conference participants at UToronto, UPenn, John Hopkins, Vanderbilt, Hong Kong University, Hong Kong University of Science and Technology, Academia Sinica, Conference of Econometrics and Mathematic Economics at Duke, Greater New York Econometrics Colloquium at Princeton, IAAE conference in Greece, NY Camp Econometrics, and the EEA annual congress in Rotterdam for their helpful comments.}% and the participants TBA.}% Bugni acknowledges support by TBA. TBA}
+}
+\author{Federico A. Bugni\\ Department of Economics\\ Northwestern University\\ \url{federico.bugni@northwestern.edu}
+\and
+Yulong Wang\\ Department of Economics\\ Syracuse University\\ \url{ywang402@syr.edu}}
+% \date{November 16, 2023} arXiv date
+\date{\today}
+\maketitle
+
+% 98 words
+\begin{abstract}
+%In Hong Kong, single-letter vehicle license plates have drawn significant bidder interest, fetching exorbitant prices in four historical auctions. 
+%Understanding the winner's expected utility and the government's expected revenue is insightful yet challenging. 
+%We introduce a novel asymptotic framework where the number of bidders increases, but the number of auctions remains small and fixed. 
+%This framework allows us to create asymptotically optimal confidence intervals for auction fundamentals, validated in finite samples. 
+%We also extend our analysis to first-price auctions, non-independent private values, and binding reserve prices, offering new insights into the econometric analysis of auction datasets.
+
+%This paper considers inference in first-price and second-price sealed-bid auctions in empirical settings where we observe auctions with a large number of bidders. Given the abundance of bidders in each auction, we propose an asymptotic framework in which the number of bidders diverges while the number of auctions remains fixed. Relevant applications include auctions in which the number of bidders is large relative to the number of homogeneous auctions, such as online auctions, treasury auctions, spectrum auctions, art auctions, and IPO auctions, among others. This framework allows us to perform asymptotically exact inference on key model features using only transaction price data. Specifically, we examine inference on the expected utility of the auction winner, the expected revenue of the seller, and the tail properties of the valuation distribution. Simulations confirm the accuracy of our inference methods in finite samples. Finally, we also apply them to Hong Kong car license auction data.
+
+% AER version: 95 words 
+This paper studies inference in first- and second-price sealed-bid auctions with many bidders, using an asymptotic framework where the number of bidders increases while the number of auctions remains fixed. Relevant applications include online, treasury, spectrum, and art auctions. Our approach enables asymptotically exact inference on key features such as the winner’s expected utility, seller’s expected revenue, and the tail of the valuation distribution using only transaction price data. Our simulations demonstrate the accuracy of the methods in finite samples. We apply our methods to Hong Kong vehicle license auctions, focusing on high-priced, single-letter plates.
+
+%\addtocontents{toc}{nprotectnenlargethispage*{1000pt}} 
+\flushleft\textbf{Keywords:} auctions, hypothesis testing, confidence intervals, extreme value theory, tail index.
+\flushleft\textbf{JEL code:} C12, C57
+%\addtocontents{toc}{nprotectnpagebreak}
+\end{abstract}
+
+\newpage
+
+%\tableofcontents
+%\newpage
+
+\setcounter{page}{1} \renewcommand{\thepage}{\arabic{page}} 
+\renewcommand{\thefootnote}{\arabic{footnote}} 
+
+\renewcommand{\baselinestretch}{1.3} \small \normalsize
+
+
+\newpage
+
+\setcounter{page}{1}
+\input{Intro} % the previous (submitted) version is Intro
+\input{maintext}
+
+\bibliographystyle{ecta}
+\bibliography{bib_auction}
+%\input{extension} % put extension into maintext
+
+
+\newpage
+\appendix
+\input{appendix}
+%\begin{small}
+% \input{shortAppendix}
+%\end{small}
+
+
+%\newpage 
+%\input{supplement}
+
+
+\end{document}

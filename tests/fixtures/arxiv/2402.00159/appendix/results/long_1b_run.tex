@@ -1,0 +1,159 @@
+\subsection{Training \OlmoTiny}
+\label{sec:long_1b_run}
+
+\label{sec:long_1b_run:ppl}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/4chan.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/dolma_reddit.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/dolma_pes2o_v2.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets 4chan~\citep{papasavva2020raiders}, Dolma Reddit Subset, and Dolma Papers Subset}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/ice.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/m2d2_wiki.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/twitteraee.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets ICE~\citep{greenbaum1991ice}, M2D2~\citep{reid-etal-2022-m2d2} (Wiki), and Twitter AAE~\citep{blodgett-etal-2016-demographic}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/manosphere.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Manosphere~\citep{ribeiroevolution2021}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/mc4_english.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/m2d2_s2orc.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/c4.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets mC4~\citep{mc4} (English), M2D2~\citep{reid-etal-2022-m2d2} (S2ORC), and C4~\citep{raffel2020exploring,dodge-etal-2021-documenting}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/penn_treebank.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/dolma_wiki.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/gab.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Penn Tree Bank~\citep{marcus-etal-1994-penn}, Dolma Wikipedia Subset, and Gab~\citep{zannettou2018gab}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/pile.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/dolma_books.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/c4_100_domains.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets Pile~\citep{Gao2020ThePA} (Val), Dolma Books Subset, and C4 100 dom~\citep{chronopoulou-etal-2022-efficient}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/wikitext_103.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/dolma_stack_v5.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/ppl/dolma_common_crawl.pdf}
+	\end{subfigure}
+	\caption{Perplexity results on Paloma~\citep{paloma}; subsets WikiText 103~\citep{merity2016pointer}, Dolma Code Subset, and Dolma Web Subset}
+\end{figure}
+
+
+
+\label{sec:long_1b_run:downstream}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/downstream/openbookqa.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/downstream/arc_easy.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/downstream/winogrande.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks OpenBookQA~\citep{openbookQA}, ARC-E~\citep{arc}, and WinoGrande~\citep{winogrande}}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/downstream/sciq.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/downstream/hellaswag.pdf}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/downstream/piqa.pdf}
+	\end{subfigure}
+	\caption{Results downstream tasks SciQ~\citep{sciq}, HellaSwag~\citep{zellers2019hellaswag}, and PIQA~\citep{piqa}}
+\end{figure}
+
+
+
+\label{sec:long_1b_run:train}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}{0.31\textwidth}
+		\includegraphics[width=\linewidth]{experiments/long_1b_run/train/train_cross_entropy.pdf}
+	\end{subfigure}
+	\caption{Training Cross Entropy}
+\end{figure}
+
+
+\FloatBarrier

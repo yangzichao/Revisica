@@ -1,0 +1,236 @@
+\begin{table*}[]\small
+\caption{Benchmarks for Evaluating Factuality in LLMs. This table details each benchmark's task type, associated sub-datasets, evaluation metrics, and the performance of select representative LLMs.}% The column `Human Annotation' indicates the benchmark involves human annotation.}
+\centering
+\label{tab:eval_benchmark}
+\vspace{-2mm}
+\begin{adjustbox}{max width=\textwidth}
+  \setlength{\tabcolsep}{2mm}
+  \renewcommand{\arraystretch}{1.25}
+{
+
+\begin{tabular}{lllll}
+\toprule
+Reference & Task Type & Dataset & Metrics & \makecell[l]{Performance of\\ Representative LLMs}  \\
+\midrule 
+% 
+
+MMLU \citep{MMLU}
+&
+\begin{tabular}[c]{@{}l@{}}
+Multi-Choice QA
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+Humanities,\\
+Social,\\Sciences,\\
+STEM...
+\end{tabular}&
+ACC&
+\begin{tabular}[c]{@{}l@{}}
+(ACC, 5-shot)\\
+GPT-4: 86.4\quad  GPT-3.5: 70  \\LLaMA2-70B: 68.9
+\end{tabular} 
+\\
+\hline 
+
+TruthfulQA \citep{TruthfulQA} &
+\begin{tabular}[c]{@{}l@{}}QA \end{tabular}&
+\begin{tabular}[c]{@{}l@{}}Health, Law,\\ Conspiracies,\\ Fiction...\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}Human Score,\\ GPT-judge, \\ ROUGE, BLEU, \\ MC1,MC2... \end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+(zero-shot)\\
+GPT-4: $\sim$29 (MC1)\\ GPT-3.5: $\sim$28 (MC1),  79.92(\%true)  \\
+LLaMA2-70B: 53.37 (\%true)
+\end{tabular}
+\\
+\hline
+
+C-Eval \citep{C-Eval} &
+Multi-Choice QA &
+\begin{tabular}[c]{@{}l@{}} 
+STEM,\\Social Science,\\Humanities...
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+ACC
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+(zero-shot, average ACC)\\
+GPT-4: 68.7\quad GPT-3.5: 54.4\\
+LLaMA2-70B: 50.13
+\end{tabular} 
+ \\
+ \hline
+
+
+AGIEval \citep{C-Eval} &
+Multi-Choice QA &
+\begin{tabular}[c]{@{}l@{}} 
+Gaokao, \\(geometry, Bio,\\ history...),\\SAT, Law...
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+ACC
+\end{tabular} &
+\begin{tabular}[l]{@{}l@{}} 
+(zero-shot, average ACC)\\
+GPT-4: 56.4\quad GPT-3.5: 42.9\\
+LLaMA2-70B: 40.02
+\end{tabular} 
+\\
+\hline
+
+
+HaluEval \citep{HaluEval} &
+\begin{tabular}[c]{@{}l@{}} 
+Hallucination\\Evaluation \end{tabular}&
+HaluEval &
+ACC&
+\begin{tabular}[c]{@{}l@{}} 
+(general ACC)\\
+GPT-3.5: 86.22
+\end{tabular}
+\\
+\hline
+
+BigBench \citep{BigBench} &
+\begin{tabular}[c]{@{}l@{}} 
+Multi-tasks
+(QA, NLI, \\Fact Checking,\\ Reasoning...)
+\end{tabular}&
+BigBench
+&
+\begin{tabular}[c]{@{}l@{}} 
+Metric to each\\type of task
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+(Big-Bench Hard)\\
+GPT-3.5: 49.6 \\
+LLaMA-65B: 42.6
+\end{tabular}
+\\
+\hline
+
+
+ALCE \citep{gao2023enabling} &
+\begin{tabular}[c]{@{}l@{}} 
+Citation\\Generation
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+ASQA, ELI5,\\QAMPARI\\
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+MAUVE,\\
+Exact Match,\\
+ROUGE-L...
+\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} 
+(ASQA, 3-psg, citation prec)\\
+GPT-3.5: 73.9\\
+LLaMA-33B: 23.0
+\end{tabular} 
+\\
+\hline
+
+QUIP \citep{weller2023according} &
+Generative QA &
+\begin{tabular}[c]{@{}l@{}}
+ TriviaQA,\\ NQ, ELI5,\\HotpotQA 
+ \end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+ QUIP-Score \\ Exact match
+ \end{tabular} &
+ \begin{tabular}[c]{@{}l@{}}
+ (ELI5, QUIP, null prompt)\\
+ GPT-4: 21.0\\ GPT-3.5: 27.7
+ \end{tabular} 
+ \\
+  \hline
+
+ PopQA \citep{PopQA} &
+ Multi-Choice QA &
+\begin{tabular}[c]{@{}l@{}}
+PopQA,\\
+EntityQuestions
+ \end{tabular} &
+ ACC &
+\begin{tabular}[c]{@{}l@{}}
+(overall ACC)\\
+GPT-3.5: $\sim$37.0
+\end{tabular} 
+ \\
+ \hline
+
+UniLC \citep{UniLC} &
+Fact Checking &
+\begin{tabular}[c]{@{}l@{}}
+Climate,\\
+Health, MGFN
+ \end{tabular} &
+ \begin{tabular}[c]{@{}l@{}}
+ACC\\F1
+ \end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+(zero-shot, fact tasks, average F1)\\
+GPT-3.5: 51.62
+\end{tabular} 
+\\
+\hline
+
+Pinocchio \citep{Pinocchio} &
+\begin{tabular}[c]{@{}l@{}}
+Fact Checking\\QA, Reasoning \end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+Pinocchio
+ \end{tabular} &
+ \begin{tabular}[c]{@{}l@{}}
+ACC\\F1
+ \end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+GPT-3.5: (Zero-shot ACC: 46.8, F1:44.4)\\
+GPT-3.5: (Few-shot ACC: 47.1, F1:45.7)
+\end{tabular} 
+\\
+\hline
+
+
+SelfAware \citep{yin-etal-2023-large} &
+ Self-evaluation&
+\begin{tabular}[c]{@{}l@{}}
+SelfAware
+ \end{tabular} &
+ \begin{tabular}[c]{@{}l@{}}
+ACC
+ \end{tabular} &
+\begin{tabular}[c]{@{}l@{}}
+(instruction input, F1)\\
+GPT-4: 75.47\quad GPT-3.5: 51.43\\
+LLaMA-65B: 46.89
+\end{tabular}
+\\
+\hline
+
+RealTimeQA \citep{kasai2022realtimeqa} &
+\begin{tabular}[c]{@{}l@{}} 
+Multi-Choice QA,\\Generative QA \end{tabular}&
+RealTimeQA &
+ACC, F1 &
+\begin{tabular}[c]{@{}l@{}}
+(original setting, GCS retrieval)\\
+GPT-3: 69.3 (ACC for MC)\\
+GPT-3: 39.4 (F1 for generation)
+\end{tabular}
+\\
+ \hline
+
+FreshQA \citep{vu2023freshllms} &
+Generative QA&
+FRESHQA&
+ACC (Human)&
+\begin{tabular}[c]{@{}l@{}}
+(strict ACC, null prompt)\\
+GPT-4: 28.6\quad GPT-3.5: 26.0
+\end{tabular}
+\\
+
+\bottomrule
+\end{tabular}}
+\end{adjustbox}
+\end{table*}

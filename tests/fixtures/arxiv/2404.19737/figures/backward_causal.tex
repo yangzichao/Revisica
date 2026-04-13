@@ -1,0 +1,21 @@
+\begin{figure*}[ht!]
+    \centering
+    \includegraphics{img/backward_causal.pdf}
+
+    
+
+        
+        
+    
+        
+    
+    
+        
+    
+        
+    
+        
+    \caption{\textbf{Order of the forward/backward in a causal $n$-token prediction model with $n = 2$ heads.} Like in the forward/backward depicted for parallel prediction heads in Figure~\ref{fig:backward}, we avoid materializing all unembedding layer gradients in memory simultaneously and reduce peak GPU memory usage significantly. The iteration over the heads starts with the one furthest to the trunk. At each head, a gradient from the succeeding prediction heads and from the head's own loss are accumulated for both the head's output and its weights.
+    }
+    \label{fig:backward_causal}
+\end{figure*}

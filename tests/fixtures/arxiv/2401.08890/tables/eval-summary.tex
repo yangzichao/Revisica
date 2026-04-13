@@ -1,0 +1,30 @@
+\begin{table*}[]
+\centering
+\resizebox{0.85\textwidth}{!}{%
+\begin{tabular}{|c|c|c|l|}
+\hline
+\textbf{Use-Case} &
+  \textbf{\begin{tabular}[c]{@{}c@{}}Load \\ Distribution\end{tabular}} &
+  \textbf{\begin{tabular}[c]{@{}c@{}}Flow Size \\ Distribution\end{tabular}} &
+  \multicolumn{1}{c|}{\textbf{Key Insights}} \\ \hline
+\begin{tabular}[c]{@{}c@{}}Duplicate-Aware\\Scheduling (DAS)~\cite{das}\end{tabular} &
+  Same &
+  Same &
+  \begin{tabular}[c]{@{}l@{}}Equal load across queues yields ample bandwidth for \\ low-priority flows to make progress. Consequently,\\ TCP does not suffer from issues discussed in~\ref{sec:motive}\end{tabular} \\ \hline
+\begin{tabular}[c]{@{}c@{}}Shortest-Job-First\\ (SJF) \end{tabular} &
+  Different &
+  Different &
+  \begin{tabular}[c]{@{}l@{}}The fraction of load induced by high priority flows determines\\ the impact of prioritization. The skewness in a workload's flow \\ size distribution plays a crucial role: greater skewness results\\  in higher performance penalty.\end{tabular} \\ \hline
+\begin{tabular}[c]{@{}c@{}}Workload Colocation\end{tabular} &
+  Different &
+  Different &
+  \begin{tabular}[c]{@{}l@{}}\emph{On-Off} network behavior of high priority workload\\ severely affects low-priority flows. This is primarily due to \\ the rapid fluctuations between very high and very low load, \\ which leads to high retransmissions and frequent backoffs.\end{tabular} \\ \hline
+\begin{tabular}[c]{@{}c@{}}Hybrid Services\end{tabular} &
+  Different &
+  Same &
+  \begin{tabular}[c]{@{}l@{}}The choice of high priority transport protocol has little impact.\\ Rather, the choice of workload is a dominant factor.\end{tabular} \\ \hline
+\end{tabular}%
+}
+\caption{Compares high and low priority traffic classes in our evaluation scenarios across different axes and highlights key insights derived from each use-case. For example, in the context of DAS, both the high and low priority traffic experience the same load, and service the same workload (i.e., flow size distribution).}
+\label{tab:eval-summary}
+\end{table*}

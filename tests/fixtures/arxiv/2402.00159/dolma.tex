@@ -1,0 +1,512 @@
+\documentclass{article}
+
+
+
+\usepackage{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{fancyvrb}
+
+
+
+
+\usepackage[T1]{fontenc}
+
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{microtype}
+
+\usepackage{inconsolata}
+\usepackage{url}            %
+\usepackage{booktabs}       %
+\usepackage{amsfonts}       %
+\usepackage{nicefrac}       %
+\usepackage{microtype}      %
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{tcolorbox}      %
+\usepackage{colortbl}
+\usepackage{color}
+\usepackage{tcolorbox}
+
+\usepackage{placeins}
+
+
+\usepackage{multirow}
+\usepackage{rotating} %
+\usepackage{makecell}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{fontawesome5}
+\usepackage{longtable} %
+\usepackage{booktabs} %
+\usepackage{arydshln}
+\usepackage{wasysym} %
+
+\usepackage{fdsymbol}
+
+\renewcommand{\sectionautorefname}{\S\hspace{-.15em}}
+\renewcommand{\subsectionautorefname}{\S\hspace{-.15em}}
+\renewcommand{\subsubsectionautorefname}{\S\hspace{-.15em}}
+
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
+\definecolor{olmoDarkBlue}{HTML}{012e59}
+\definecolor{olmoBlue}{HTML}{265ed4}
+\definecolor{olmoLightBlue}{HTML}{012e59}
+\definecolor{olmoTeal}{HTML}{00d5ff}
+\definecolor{olmoYellow}{HTML}{ffbb00}
+\definecolor{olmoOrange}{HTML}{ff9100}
+\definecolor{VarnishBravoFive}{HTML}{223367}
+\definecolor{VarnishBravoFour}{HTML}{1B4596}
+\definecolor{VarnishBravoThree}{HTML}{265ED4}
+\definecolor{VarnishBravoTwo}{HTML}{80BDFF}
+\definecolor{VarnishBravoOne}{HTML}{F0F7FF}
+\definecolor{VarnishAlfaFive}{HTML}{054976}
+\definecolor{VarnishAlfaFour}{HTML}{01A2CA}
+\definecolor{VarnishAlfaThree}{HTML}{4DE1FF}
+\definecolor{VarnishAlfaTwo}{HTML}{B5F0FF}
+\definecolor{VarnishAlfaOne}{HTML}{F2FCFF}
+\definecolor{VarnishTangoFive}{HTML}{004752}
+\definecolor{VarnishTangoFour}{HTML}{078E9E}
+\definecolor{VarnishTangoThree}{HTML}{16C4CF}
+\definecolor{VarnishTangoTwo}{HTML}{9AE7EC}
+\definecolor{VarnishTangoOne}{HTML}{E6FDFE}
+\definecolor{VarnishGolfFive}{HTML}{005340}
+\definecolor{VarnishGolfFour}{HTML}{0A8F6B}
+\definecolor{VarnishGolfThree}{HTML}{1EC28E}
+\definecolor{VarnishGolfTwo}{HTML}{70DDBA}
+\definecolor{VarnishGolfOne}{HTML}{C1F7E6}
+\definecolor{VarnishOscarFive}{HTML}{DD6502}
+\definecolor{VarnishOscarFour}{HTML}{FF9100}
+\definecolor{VarnishOscarThree}{HTML}{FFBB00}
+\definecolor{VarnishOscarTwo}{HTML}{FFD45D}
+\definecolor{VarnishOscarOne}{HTML}{FFF1C4}
+\definecolor{VarnishRomeoFive}{HTML}{932222}
+\definecolor{VarnishRomeoFour}{HTML}{D63F3F}
+\definecolor{VarnishRomeoThree}{HTML}{F7605F}
+\definecolor{VarnishRomeoTwo}{HTML}{FF9F9E}
+\definecolor{VarnishRomeoOne}{HTML}{FFE1E0}
+\definecolor{VarnishFoxtrotFive}{HTML}{65295D}
+\definecolor{VarnishFoxtrotFour}{HTML}{A44397}
+\definecolor{VarnishFoxtrotThree}{HTML}{D864C9}
+\definecolor{VarnishFoxtrotTwo}{HTML}{E7A2DE}
+\definecolor{VarnishFoxtrotOne}{HTML}{FDF7FC}
+\definecolor{VarnishPapaFive}{HTML}{271F55}
+\definecolor{VarnishPapaFour}{HTML}{5C50A4}
+\definecolor{VarnishPapaThree}{HTML}{7446F2}
+\definecolor{VarnishPapaTwo}{HTML}{B7AFEB}
+\definecolor{VarnishPapaOne}{HTML}{E6E3F7}
+\definecolor{VarnishNovemberFive}{HTML}{47515C}
+\definecolor{VarnishNovemberFour}{HTML}{616C7A}
+\definecolor{VarnishNovemberThree}{HTML}{AEB7C4}
+\definecolor{VarnishNovemberTwo}{HTML}{E8ECF2}
+\definecolor{VarnishNovemberOne}{HTML}{F8F9FA}
+\definecolor{VarnishLightCatRed}{HTML}{932222}
+\definecolor{VarnishLightCatOrange}{HTML}{DD6502}
+\definecolor{VarnishLightCatAqua}{HTML}{054976}
+\definecolor{VarnishLightCatTeal}{HTML}{078E9E}
+\definecolor{VarnishLightCatBlue}{HTML}{265ED4}
+\definecolor{VarnishLightCatFuchsia}{HTML}{65295D}
+\definecolor{VarnishLightCatPurple}{HTML}{5C50A4}
+\definecolor{VarnishLightCatGreen}{HTML}{005340}
+\definecolor{VarnishDarkCatRed}{HTML}{FF9F9E}
+\definecolor{VarnishDarkCatOrange}{HTML}{FFD45D}
+\definecolor{VarnishDarkCatAqua}{HTML}{B5F0FF}
+\definecolor{VarnishDarkCatTeal}{HTML}{9AE7EC}
+\definecolor{VarnishDarkCatBlue}{HTML}{80BDFF}
+\definecolor{VarnishDarkCatFuchsia}{HTML}{E7A2DE}
+\definecolor{VarnishDarkCatPurple}{HTML}{B7AFEB}
+\definecolor{VarnishDarkCatGreen}{HTML}{70DDBA}
+
+\newcommand{\dolma}{Dolma\xspace}
+\newcommand{\olmo}{OLMo\xspace}
+\newcommand*{\fnref}[1]{\textsuperscript{\ref{#1}}}
+
+\newcommand{\dolmaWeb}{{\color{VarnishAlfaFour}\faGlobe}\xspace}
+\newcommand{\dolmaRefs}{{\color{VarnishPapaThree}\faBookmark}\xspace}
+\newcommand{\dolmaCode}{{\color{VarnishRomeoFour}\faCode}\xspace}
+\newcommand{\dolmaBooks}{{\color{VarnishGolfThree}\faBook}\xspace}
+\newcommand{\dolmaSocial}{{\color{VarnishOscarFour}\faComments}\xspace}
+\newcommand{\dolmaPapers}{{\color{VarnishFoxtrotThree}\faGraduationCap}\xspace}
+
+\newcommand{\toolkitWget}{{\color{VarnishNovemberThree}\faDownload}\xspace}
+\newcommand{\toolkitFilter}{{\color{VarnishNovemberThree}\faFilter}\xspace}
+\newcommand{\toolkitDedupe}{{\color{VarnishNovemberThree}\faCopy}\xspace}
+\newcommand{\toolkitWgetText}{{\small\toolkitWget\:}{\color{VarnishNovemberFour}\texttt{acquisition}}\xspace}
+\newcommand{\toolkitFilterText}{{\small\toolkitFilter}{\color{VarnishNovemberFour}\texttt{filtering}}\xspace}
+\newcommand{\toolkitDedupeText}{{\small\toolkitDedupe\:}{\color{VarnishNovemberFour}\texttt{mixing}}\xspace}
+
+\newcommand{\utf}{\texttt{UTF-8}\xspace}
+\newcommand{\OlmoTiny}{\texttt{OLMo-1B}\xspace}
+
+\newcommand{\huggingface}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/hf-logo.pdf}}\xspace}
+\newcommand{\allenai}{\raisebox{-.5pt}{\includegraphics[height=.8em]{figures/ai2-logo.pdf}}\xspace}
+\newcommand{\github}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/github-logo.pdf}}\xspace}
+\newcommand{\dolmaLogo}{\raisebox{-.1em}{\includegraphics[height=1.05em]{figures/dolma-logo.pdf}}\xspace}
+
+\newcommand{\todo}[1]{{\color{red} \textbf{TODO}: #1}\xspace}
+\newcommand{\kyle}[1]{\textcolor{red}{[ #1 --kyle]}}
+\newcommand{\nascomment}[1]{\textcolor{blue}{[ #1 --Noah]}}
+\newcommand{\kyler}[1]{\textcolor{blue}{[ #1 --kyleR]}}
+\newcommand{\luca}[1]{\textcolor{violet}{[ #1 --luca]}}
+\newcommand{\ian}[1]{\textcolor{orange}{[ #1 --ian]}}
+\newcommand{\lucy}[1]{\textcolor{pink}{[ #1 --lucy]}}
+\newcommand{\ye}[1]{\textcolor{purple}{[ #1 --yanai]}}
+\newcommand{\dustin}[1]{\textcolor{green}{[ #1 --dustin]}}
+\newcommand{\emma}[1]{\textcolor{olive}{[ #1 --emma]}}
+\newcommand{\akshita}[1]{\textcolor{brown}{[ #1 --akshita]}}
+\newcommand{\hanna}[1]{\textcolor{gray}{[ #1 --hanna]}}
+\newcommand{\ar}[1]{\textcolor{red}{[ #1 --abhilasha]}}
+
+\newcommand{\suppress}[1]{}
+
+\newcommand\extrafootertext[1]{%
+    \bgroup
+    \renewcommand\thefootnote{\fnsymbol{footnote}}%
+    \renewcommand\thempfootnote{\fnsymbol{mpfootnote}}%
+    \footnotetext[0]{#1}%
+    \egroup
+}
+
+\newtcolorbox{noticebox}[1][]{
+  colback=white,       %
+  colframe=black,      %
+  fonttitle=\bfseries, %
+  coltitle=black,      %
+  title=Notice,        %
+  #1                   %
+}
+
+
+
+\newtcolorbox{CalloutNormal}[1]{%
+    colback=white,%
+    colframe=olmoBlue,%
+    coltitle=white,%
+    center title,
+    title={\vspace{.1em}\large\centering#1\vspace{.1em}},%
+    width=0.8\linewidth
+}
+
+\newcommand{\dolmaLogoWithText}{\raisebox{-.3em}{\rlap{\raisebox{.3em}{\hspace{1.8em}\scriptsize Dolma}}\includegraphics[height=1.5em]{figures/dolma_logo_bg.pdf}}\xspace}
+
+\newcommand{\cFour}{\textsc{C4}}
+\newcommand{\mCFourEn}{\textsc{mC4-en}}
+\newcommand{\pile}{\textsc{The Pile}}
+\newcommand{\wikitext}{\textsc{Wikitext-103}}
+\newcommand{\ptb}{\textsc{Penn Treebank}}
+\newcommand{\mTwoDTwoSTwoORC}{\textsc{M2D2 S2ORC}}
+\newcommand{\mTwoDTwoWiki}{\textsc{M2D2 Wikipedia}}
+\newcommand{\cFourOneHundredDomains}{\textsc{C4-100-domains}}
+\newcommand{\ice}{\textsc{ICE}}
+\newcommand{\twitterAAE}{\textsc{TwitterAAE}}
+\newcommand{\manosphere}{\textsc{Manosphere Corpus}}
+\newcommand{\gab}{\textsc{Gab Corpus}}
+\newcommand{\fourChan}{\textsc{4chan Corpus}}
+
+
+
+
+\setlength\titlebox{11cm}
+
+
+
+
+\title{\dolmaLogoWithText: an Open Corpus of Three Trillion Tokens \\for Language Model Pretraining Research}
+
+
+
+
+
+
+\author{%
+  {\bf
+    Luca Soldaini
+    $^{{\color{olmoOrange}\boldsymbol{\varheartsuit}}\hspace{.1em}{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \quad
+    Rodney Kinney
+    \hspace{-0.5em}
+    $^{{\color{olmoOrange}\boldsymbol{\varheartsuit}}\hspace{.1em}{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \quad
+    Akshita Bhagia
+    \hspace{-0.5em}
+    $^{{\color{olmoOrange}\boldsymbol{\varheartsuit}}\hspace{.1em}{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \quad
+    Dustin Schwenk
+    \hspace{-0.5em}
+    $^{{\color{olmoOrange}\boldsymbol{\varheartsuit}}\hspace{.1em}{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{8pt}
+  } \\
+  {\bf
+    David Atkinson
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Russell Authur
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Ben Bogin
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}\hspace{.1em}\boldsymbol{\omega}}}$
+    \enskip 
+    Khyathi Chandu
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{1.5pt}
+  } \\
+  {\bf
+    Jennifer Dumas
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Yanai Elazar
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}\hspace{.1em}\boldsymbol{\omega}}}$
+    \enskip 
+    Valentin Hofmann
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Ananya Harsh Jha
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{1.5pt}
+    } \\
+  {\bf
+    Sachin Kumar
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$    
+    \enskip
+    Li Lucy
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\beta}}}$
+    \enskip
+    Xinxi Lyu
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\omega}}}$
+    \enskip 
+    Nathan Lambert
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$    
+    \enskip 
+    Ian Magnusson
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$    
+    \vspace{1.5pt}
+  } \\
+  {\bf
+    Jacob Morrison
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$    
+    \enskip
+    Niklas Muennighoff
+    \hspace{-0.4em}
+    \enskip
+    Aakanksha Naik
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Crystal Nam
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{1.5pt}
+  } \\
+  {\bf
+    Matthew E. Peters
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\sigma}}}$
+    \enskip
+    Abhilasha Ravichander
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Kyle Richardson
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Zejiang Shen
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\tau}}}$
+    \vspace{1.5pt}
+  } \\
+{\bf
+    Emma Strubell
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\chi}\hspace{.1em}\boldsymbol{\alpha}}}$
+    \enskip
+    Nishant Subramani
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\chi}\hspace{.1em}\boldsymbol{\alpha}}}$
+    \enskip
+    Oyvind Tafjord
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Pete Walsh
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{1.5pt}
+  } \\
+  {\bf
+    Luke Zettlemoyer
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\omega}}}$
+     \enskip 
+    Noah A. Smith
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}\hspace{.1em}\boldsymbol{\omega}}}$
+    \enskip
+    Hannaneh Hajishirzi
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}\hspace{.1em}\boldsymbol{\omega}}}$
+    \vspace{1.5pt}
+  } \\
+  {\bf
+    Iz Beltagy
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Dirk Groeneveld
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \enskip
+    Jesse Dodge
+    \hspace{-0.5em}
+    $^{{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{8pt}
+  } \\
+  {\bf
+    Kyle Lo
+    \hspace{-0.5em}
+    $^{{\color{olmoOrange}\boldsymbol{\varheartsuit}}\hspace{.1em}{\color{olmoBlue}\boldsymbol{\alpha}}}$
+    \vspace{8pt}
+  } \\
+  {
+    $^\alpha$Allen Institute for AI \quad
+    $^{\beta}$University of California, Berkeley \quad
+    $^\chi$Carnegie Mellon University
+  }\\
+  {
+    $^\sigma$Spiffy AI\quad
+    $^\tau$Massachusetts Institute of Technology \quad
+    $^\omega$University of Washington
+  }\vspace{4pt}\\
+  \texttt{\{lucas,kylel\}@allenai.org}
+}
+
+
+\begin{document}
+
+
+
+
+
+
+
+
+\maketitle
+
+
+\input{0-abstract}
+
+
+
+\begin{table*}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lc@{\hskip .3em}lcccc}
+\toprule
+\textbf{ Source } & \multicolumn{2}{c}{\textbf{ Doc Type }} & {\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}\textbf{\texttt{UTF-8}  bytes}\\\textit{(GB)}\vspace{.0em}\end{tabular}} & {\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}\textbf{ Documents }\\\textit{(millions) }\vspace{.0em}\end{tabular}} & {\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}\textbf{Unicode}\\\textbf{words}\\\textit{(billions) }\vspace{.0em}\end{tabular}} 
+& {\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}\textbf{Llama}\\\textbf{tokens}\\\textit{(billions) }\vspace{.0em}\end{tabular}} \\
+\midrule
+{\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}Common Crawl\end{tabular}} & \dolmaWeb & web pages & 9,812 & 3,734 & 1,928 & 2,479 \\
+{\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}GitHub\end{tabular}} & \dolmaCode & code & 1,043 & 210 & 260 & 411 \\
+{\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}Reddit\end{tabular}} & \dolmaSocial & social media & 339 & 377 & 72 & 89 \\
+{\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}Semantic Scholar\end{tabular}} & \dolmaPapers & papers & 268 & 38.8 & 50 & 70 \\
+{\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}Project Gutenberg\end{tabular}} & \dolmaBooks & books & 20.4 & 0.056 & 4.0 & 6.0 \\
+{\renewcommand{\arraystretch}{1}\begin{tabular}[c]{@{}c@{}}Wikipedia, Wikibooks\end{tabular}} & \dolmaRefs& encyclopedic & 16.2 & 6.2 & 3.7 & 4.3\\
+\midrule
+\multicolumn{3}{c}{\textbf{Total}} & \textbf{11,519} & \textbf{4,367} & \textbf{2,318} & \textbf{3,059} \\
+\bottomrule
+\end{tabular}
+\vspace{1em}
+\caption{
+     The \dolma corpus at-a-glance. 
+    It consists of three trillion tokens sampled from a diverse set of domains; sourced from approximately 200 TB of raw text before curation down to an 11 TB dataset.
+    It has been extensively cleaned for language model pretraining use. Tokens calculated using the LLaMA tokenizer.
+}
+\label{tab:statistics}
+\end{table*}
+
+\extrafootertext{{\color{olmoOrange}$^\varheartsuit$}Core authors. See \autoref{sec:contrib} for list of contributions.}
+\pagebreak
+\footnotetext[1]{This manuscript was prepared for \textbf{\dolma \texttt{v.1.6}}. As our work on open data for language modeling continues, we will continue to improve \dolma. Updated versions can be found in the provided links.}
+\input{1-intro.tex}
+\input{5-related-work}
+\input{2-desiderata.tex}
+\input{3-creating}
+\input{4-training}
+\input{7-conclusion}
+
+
+\input{6-ethics}
+
+
+\bibliography{references,anthology}
+
+\appendix
+
+\input{appendix/contribs}
+
+\input{relatedwork/llms}
+
+\input{appendix/setup}
+
+\input{appendix/reddit}
+
+\input{appendix/tokenization}
+
+\input{appendix/langid}
+
+\input{appendix/toxic}
+
+\input{appendix/pii-details}
+
+\input{appendix/quality-content-correlation}
+
+\input{appendix/dolma-wimbd-data-distribution}
+
+
+\input{appendix/perplexity-decontam}
+
+\input{appendix/mixing-experiments}
+
+\input{appendix/datasheet}
+
+\section{All Raw Ablation Results}
+\label{app:raw}
+
+\input{appendix/results/150b_runs}
+\input{appendix/results/ablations_cc_dedupe}
+\input{appendix/results/ablations_cc_pii_filtering}
+\input{appendix/results/ablations_cc_quality_only}
+\input{appendix/results/ablations_cc_to_quality_plus_content}
+\input{appendix/results/ablations_cc_toxic_filtering}
+\input{appendix/results/ablations_code_stack_v2_vs_v4}
+\input{appendix/results/ablations_dolma_mix}
+\input{appendix/results/ablations_reddit_selection}
+\input{appendix/results/ablations_reddit_toxic_filtering}
+\input{appendix/results/long_1b_run}
+
+\end{document}

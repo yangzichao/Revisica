@@ -1,0 +1,70 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the structure of the dataset: The AQUA dataset contains question-and-answer pairs related to algebra. The questions are generated based on paintings and comments from an existing art knowledge dataset.
+
+2. Topics to know: To answer questions from this dataset, you should have a good understanding of algebra. Additionally, some knowledge of art and how it can be related to algebraic concepts may also be helpful.
+
+3. Steps to answer the questions:
+
+   - Read the question carefully and identify the algebraic concept it is asking about.
+
+   - Consider the options provided. Each option will represent a different potential answer to the question.
+
+   - Use your knowledge of algebra to determine which option is the correct answer. Remember, the questions are based on paintings and comments from an art knowledge dataset, so consider how these elements might relate to the algebraic concept in question.
+
+   - Once you have determined the correct answer, write it down in the format specified in the prompt template.
+
+4. Tips for answering the questions:
+
+   - Don't rush. Take your time to understand the question and the options provided.
+
+   - If you're unsure about an answer, try to eliminate the options that you know are incorrect. This can help narrow down the possibilities and make it easier to choose the correct answer.
+
+   - Remember, the questions are based on art knowledge as well as algebra. Try to think creatively about how these two areas might intersect.
+
+Question: Three birds are flying at a fast rate of 900 kilometers per hour. What is their speed in miles per minute? [1km = 0.6 miles]
+
+A. 32400
+
+B. 6000
+
+C. 600
+
+D. 60000
+
+E. 10
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+First, let's convert 900 kilometers per hour to miles per hour. We know that 1 kilometer is equal to 0.6 miles, so we can convert 900 kilometers per hour to miles per hour as follows:
+
+900 km/h x 0.6 miles/km = 540 miles/h
+
+Now, we need to find the speed of the birds in miles per minute. To do this, we can divide the speed in miles per hour by 60:
+
+540 miles/h ÷ 60 = 9 miles/min
+
+Therefore, the correct answer is C. 600.
+
+Answer: C. 600
+
+Therefore, the correct multiple choice label (just the letter) to the task is below.
+
+Answer: C
+\end{alltt}
+}}
+\caption{A complete running example of AQuA.}
+\label{fig:aqua_example}
+\end{figure*}

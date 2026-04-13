@@ -1,0 +1,47 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the nature of the civil\_comments dataset: This dataset contains public comments from news sites, with labels for toxicity and identity mentions. The comments were created from 2015 - 2017 and appeared on approximately 50 English-language news sites across the world.
+
+2. Know what constitutes toxicity in comments: Toxicity can include insults, threats, obscene language, identity attacks, and sexually explicit content. However, it's important to consider the context and nuances of the comment.
+
+3. Consider cultural and societal norms: When evaluating a comment for toxicity, consider cultural and societal norms related to the demographic 'female'. Remember that what may be considered toxic in one culture or society may not be in another.
+
+4. Apply this knowledge to the prompt: Use the information you've gathered to evaluate the passage in the prompt. Is it toxic? Consider the language used, the context, and any potential harm or offense it may cause, especially to the demographic 'female'.
+
+5. Formulate your answer: Based on your evaluation, answer 'True' if the passage is toxic, and 'False' if it is not. Be prepared to provide reasoning for your answer if necessary.
+
+Passage: Actually, we are a secular organization.  Ninety-nine percent of the Church's population is secular, and it's founder, Jesus Himself, was a secular.  The word "secular" has gotten a bad rap.  "Secular" means in the world, in the world God created and and looked at as "very good".  The priesthood which exists is the Royal Priesthood we all share by virtue of our baptism.  Some of us (both male and female) may be called to the ordained priesthood of servant-leadership.  That call comes from God Who does not distinguish between male and female. Just as the world is constantly evolving in its journey to Christ-centered completion, so too our understanding of servant-leadership will continue to unfold until we finally realize that "in Christ there is neither male nor female" and "all are one in Christ Jesus".
+
+Question: Is the passage above toxic?
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The passage provided does not contain any explicit language, threats, or personal attacks, which are common indicators of toxicity. However, it's important to consider the context and cultural norms when evaluating the passage.
+
+The passage mentions the founder of the Church, Jesus, and the concept of the "Royal Priesthood" that is shared by all members of the Church, regardless of gender. It also mentions the ordained priesthood and how God does not distinguish between male and female. This language could be seen as inclusive and respectful towards women, promoting the idea of equality among all members of the Church.
+
+Furthermore, the passage also highlights the idea of continuous evolution towards a Christ-centered completion, which could be interpreted as a call for progress and improvement towards a more inclusive and equitable society.\\
+Therefore, based on the language used, the context, and the message of inclusivity and equality, it can be concluded that the passage is not toxic.
+
+Answer: False.
+
+Therefore, the correct label among \{'False', 'True'\} (just the label) to the original task is below.
+
+Answer: False
+\end{alltt}
+}}
+\caption{A complete running example of CivilComments (Female).}
+\label{fig:civil_comments_demographic=female_example}
+\end{figure*}

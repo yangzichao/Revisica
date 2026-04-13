@@ -1,0 +1,61 @@
+\begin{table}[H]
+    \centering
+        \caption{\textbf{Overview of all training hyperparameters used.} We schedule all learning rates with a linear warmup and cosine decay \citep{loshchilov2017sgdr} to a fraction of the peak learning rate which is depicted in the last column (``decay ratio''). All experiments use the Adam \citep{kingma2014adam} optimizer with $\beta_1 = 0.9$, $\beta_2 = 0.95$ and decoupled $L_2$ weight decay \citep{loshchilov2019decoupled} coefficient $0.1$. We clip gradients to a maximal Euclidean norm of $1.0$ in all experiments except CodeContests finetunings, where we use $0.1$ instead. Summarization finetunings correspond to three epochs on all datasets except BigPatent (1 epoch). Byte-level models use the architecture with replicated unembeddings from Appendix~\ref{app:architecture}.}
+    \label{tab:hyperparams}
+    \resizebox{0.98\textwidth}{!}{
+    \begin{tabular}{lrrrrrrr}
+        \toprule
+        Model & Batch size ($2^{20}$) & Steps & Tokens (B) & Warmup steps & Peak LR & Context length & Decay ratio \\
+        \midrule
+        \multicolumn{2}{l}{Model scaling (Section~\ref{sect:model-scaling})} \\
+        \cmidrule(r{3em}){1-2}
+        0.3B & 8 & 10,850 & 91.0 & 1000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        0.6B & 8 & 10,850 & 91.0 & 1000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        1.3B & 8 & 10,850 & 91.0 & 1000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        3B & 8 & 10,850 & 91.0 & 1000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        7B & 8 & 25,000 & 209.7 & 2000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        13B & 8 & 25,000 & 209.7 & 1000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        \midrule
+        \multicolumn{2}{l}{Code models (Section~\ref{sect:results})} \\
+        \cmidrule(r{3em}){1-2}
+        7B 200B & 8 & 25,000 & 209.7 & 2000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        7B 500B & 7 & 68,570 & 503.3 & 2000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        7B 1T & 7 & 136,240 & 1000.0 & 2000 & $3 \times 10^{-4}$ & 4096 & 0.03 \\
+        \midrule
+        \multicolumn{2}{l}{Byte-level models (Section~\ref{sect:byte-level})} \\
+        \cmidrule(r{2em}){1-2}
+        7B 314GB & 12 & 25,000 & 314.6 & 2000 & $3 \times 10^{-4}$ & 8192 & 0.03 \\
+        \midrule
+        \multicolumn{2}{l}{Language models (Section~\ref{sect:nlp})} \\
+        \cmidrule(r{2em}){1-2}
+        7B 200B & 8 & 25,000 & 209.7 & 2000 & $3 \times 10^{-4}$ & 4096 & 0.10 \\
+        7B 500B & 8 & 60,000 & 503.3 & 2000 & $3 \times 10^{-4}$ & 4096 & 0.10 \\
+        \midrule
+        \multicolumn{2}{l}{Induction task (Section~\ref{sect:induction})} \\
+        \cmidrule(r{3em}){1-2}
+        1M -- 1B& 0.25 & 100,000 & 26.2 & 2000 & $10^{-4}$ & 2048 & 0.03 \\
+        1M -- 1B (Appendix~\ref{app:induction}) & 0.5 & 50000 & 26.2 & 2000 & $10^{-4}$ & 2048 & 0.03 \\
+        \midrule
+        \multicolumn{2}{l}{Arithmetic task (Section~\ref{sect:algorithmic})} \\
+        \cmidrule(r{3em}){1-2}
+        30M & 0.25 & 100,000 & 26.2 & 2000 & $10^{-4}$ & 1024 & 0.03 \\
+        100M & 0.25 & 100,000 & 26.2 & 2000 & $10^{-4}$ & 2048 & 0.03 \\
+        \midrule
+        \multicolumn{2}{l}{Summarization (Section~\ref{sect:nlp})} \\
+        \cmidrule(r{3em}){1-2}
+        BigPatent & 0.125 & 76,680 & 10.1 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        CNN/Dailymail & 0.125 & 7,140 & 0.9 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        Multi-News & 0.125 & 3,330 & 0.4 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        OrangeSum & 0.125 & 360 & 0.0 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        pn-summary & 0.125 & 3,450 & 0.5 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        SAMSum & 0.125 & 60 & 0.0 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        ThaiSum & 0.125 & 23,640 & 3.1 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        WikiSummary & 0.125 & 2,550 & 0.3 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        XSum & 0.125 & 2,760 & 0.4 & 100 & $3 \times 10^{-5}$ & 4096 & 0.03 \\
+        \midrule
+        \multicolumn{2}{l}{CodeContests (Section~\ref{sect:finetuning})} \\
+        \cmidrule(r{3em}){1-2}
+        7B & 0.25 & 13,000 & 3.6 & 400 & $5 \times 10^{-5}$ & 4096 & 0.004 \\
+        \bottomrule
+    \end{tabular}}
+\end{table}

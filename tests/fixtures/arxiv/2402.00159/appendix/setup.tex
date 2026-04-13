@@ -1,0 +1,81 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+
+\subsection{Ablation Setup}
+\label{sec:setup:abl}
+
+For all data ablations described in this section, we train a 1B parameter model on up to 150B tokens. 
+We follow model architecture and training from OLMo~\citep{olmo20247b}; we summarize key details here, but direct the reader to the manuscript for further details.
+Each model is an decoder-only transformer model with 16 layers, 16 attention heads, and 2048 dimensionality. 
+We use ALiBi positional embeddings~\citep{Press2021Alibi}, SwiGLU activation~\citep{Shazeer2020swiglu}, and mixed precision; model context size is set to $2048$ tokens. 
+We use EleutherAI's GPT NeoX tokenizer~\citep{Black2022GPTNeoX20BAO}.
+The model is trained using the LionW optimizer~\citep{Chen2023Lion} with $1\text{e-}4$ peak learning rate, warm-up of $2000$ steps, cosine decay, and $1\text{e-}2$ weight decay. 
+Batch size was set to $1024$.
+While we set our max number of steps to 95k (which is approximately 200B tokens), we conclude our experiments at 150B tokens.
+
+We use 64 \href{https://www.amd.com/en/products/server-accelerators/instinct-mi250x}{AMD Instinct MI250X accelerators}. Each MI250X accelerator contains two logical nodes; therefore, from the point of view of our training code, our experiments ran on 128 compute units grouped in 16 nodes. Per each logical unit, we use a micro-batch size of 8. 
+We implement our experiments using the \texttt{anonymized} codebase.
+
+
+
+\subsection{Perplexity Evaluation Suite}
+\label{sec:setup:ppl}
+
+For data ablations, we keep track of language model perplexity using Paloma~\citep{paloma}. Datasets included:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{C4}~\citep{raffel2020exploring,dodge-etal-2021-documenting}: Standard contemporary LM pretraining corpus automatically filtered from the April 2019 Common Crawl scrape.
+    \item \textbf{mC4}~\citep{mc4}; \textit{English subset}: the English language portion of a pretraining corpus automatically filtered from 71 Common Crawl scrapes.
+    \item \textbf{Pile}~\citep{Gao2020ThePA}, \textit{validation set}: widely-used language modeling pretraining corpus; 
+    contains documents curated from multiple sources including several non-web sources.
+    \item \textbf{WikiText 103}~\citep{merity2016pointer}: a standard collection of verified “Good” and “Featured” articles on Wikipedia.
+    \item \textbf{Penn Tree Bank}~\citep{marcus-etal-1994-penn}: widely-used NLP corpus derived from Wall Street Journal articles.
+    
+    \item \textbf{M2D2}~\citep{reid-etal-2022-m2d2}, \textit{S2ORC subset}: papers from Semantic Scholar~\citep{lo-etal-2020-s2orc} grouped by hierarchical academic field categories.
+    \item \textbf{M2D2}~\citep{reid-etal-2022-m2d2}, \textit{Wiki subset}: Wikipedia articles grouped by hierarchical categories in the Wikipedia ontology
+    \item \textbf{C4 100 domains}~\citep{chronopoulou-etal-2022-efficient}: balanced samples of the top 100 domains in C4.
+    \item \textbf{Gab}~\citep{zannettou2018gab}: data from 2016-2018 from an alt-right, free-speech-oriented social media platform that has been shown to contain more hate speech than mainstream platforms. 
+    
+    \item \textbf{ICE}~\citep{greenbaum1991ice}: English from around the world curated by local experts, with subsets for Canada, East Africa, Hong Kong, India, Ireland, Jamaica, Philippines, Singapore, and the USA.
+
+    \item \textbf{Twitter AAE}~\citep{blodgett-etal-2016-demographic}: balanced sets of tweets labeled as African American or white-aligned English.
+    \item \textbf{Manosphere}~\citep{ribeiroevolution2021}: sample of 9 forums where a set of related masculinist ideologies developed over the past decade.
+    \item \textbf{4chan}~\citep{papasavva2020raiders}: data from 2016-2019 politics subsection of an anonymity-focused forum found shown to contain high rates of toxic content.
+    
+\end{itemize}
+
+We also curated held-out sets from other open language model corpora to augment Paloma:
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{\dolma}~(this work), \textit{uniform sample}: A sample 8,358 documents from the \dolma corpus across all of its subsets (13 from books, 1,642 from Common Crawl web pages, 4,545 Reddit submissions, 450 scientific articles, 1,708 Wikipedia and Wikibooks entries).
+    \item \textbf{RedPajama v1}~\citep{redpajama2}: 1 trillion tokens replication of the LLaMA 1~\citep{Touvron2023LLaMAOA} pretraining corpus.
+    \item \textbf{Falcon RefinedWeb}~\citep{Penedo2023TheRD}: A corpus of English sampled from all Common Crawl scrapes until June 2023, more aggressively filtered and deduplicated than C4 and mC4-en.
+    \item \textbf{Dolma 100 Subreddits}~(this work): Balanced samples of the top 100 subreddits by number of posts, sourced from the \dolma Reddit subset.
+    \item \textbf{Dolma 100 Programming Languages}~(this work): Balanced samples of the top 100 programming languages by number of tokens, sourced from the \dolma Stack subset.
+\end{itemize}
+
+\subsection{Downstream Evaluation Suite}
+\label{sec:setup:downstream}
+
+We primarily base our data ablation decisions on the performance of models on this evaluation suite:
+
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{AI2 Reasoning Challenge}~\citep{arc}: A science question-answering dataset broken into \emph{easy} and \emph{challenge} subsets. Only the easy subset was used in online evaluations. The challenge subset was, however,  included in offline evaluations.
+    \item \textbf{BoolQ}~\citep{clark2019boolq}: A reading comprehension dataset consisting of naturally occurring yes/no boolean questions and background contexts. 
+    \item \textbf{HellaSwag}~\citep{zellers2019hellaswag}: A multiple-choice question-answering dataset that tests situational understanding and commonsense. 
+    \item \textbf{OpenBookQA}~\citep{openbookQA}: A multiple-choice question-answering dataset modeled on open-book science exams.  
+    \item \textbf{Physical Interaction: Question Answering (PIQA)}~\citep{piqa}: A multiple-choice question-answering dataset that focuses on physical commonsense and naive physics.  
+    \item \textbf{SciQ}~\citep{sciq}: A crowdsourced multiple-choice question-answering dataset consisting of everyday questions about physics, chemistry and biology, among other areas of science.   
+    \item \textbf{WinoGrande}~\citep{winogrande}: A dataset of pronoun resolution problems involving various forms of commonsense. Modeled after the Winograd challenge from \citet{wsc}.  
+\end{itemize}
+
+\subsection{Training Setup for \OlmoTiny}
+\label{appendix:training-olmo-1b}
+
+For \OlmoTiny, we follow the experimental setup outlined for dataset ablation experiments in \autoref{sec:setup}, with the following differences:
+
+\begin{itemize}[leftmargin=1em]
+    \item We set the max number of steps to 739,328 (which is roughly 3.1T tokens).
+    \item We double the batch size to $2048$ and do so by scaling up to 256 compute units (double what we used for data ablations).
+    \item Due to instabilities we found in the LionW optimizer, we switched to using AdamW.
+\end{itemize}

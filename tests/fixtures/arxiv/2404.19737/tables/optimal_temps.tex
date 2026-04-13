@@ -1,0 +1,25 @@
+\begin{table*}[ht!]
+    \centering
+    \caption{\textbf{Optimal temperatures for all numbers in table ~\ref{tab:future_tokens_results}} }
+    \label{tab:optimal_temps}
+\begin{tabular}{cccccccccccc}
+\toprule
+  \multirow[c]{2}{*}{Training data} & \multirow[c]{2}{*}{Vocabulary} & \multirow[c]{2}{*}{n} & \multicolumn{3}{c}{MBPP} & \multicolumn{3}{c}{HumanEval} & \multicolumn{3}{c}{APPS/Intro} \\
+ \cmidrule(l){4-6}\cmidrule(l){7-9} \cmidrule(l){10-12}
+ &  &  & @1 & @10 & @100 & @1 & @10 & @100 & @1 & @10 & @100 \\
+\midrule
+\multirow[c]{4}{*}{\shortstack{313B bytes\\(0.5 epochs)}} & \multirow[c]{4}{*}{bytes} & 1 & 0.2 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.8 & 0.8 & 0.8 \\
+ &  & 8 & 0.1 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.4 & 0.4 & 0.4 \\
+ &  & 16 & 0.1 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.4 & 0.4 & 0.4 \\
+ &  & 32 & 0.1 & 0.4 & 0.8 & 0.1 & 0.4 & 0.8 & 0.1 & 0.4 & 0.4 \\
+ \multirow[c]{5}{*}{\shortstack{200B tokens\\(0.8 epochs)}} & \multirow[c]{5}{*}{32k tokens} & 1 & 0.1 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.1 & 0.4 & 0.8 \\
+ &  & 2 & 0.1 & 0.8 & 0.8 & 0.2 & 0.8 & 0.8 & 0.4 & 0.4 & 0.8 \\
+ &  & 4 & 0.1 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.2 & 0.8 & 0.8 \\
+ &  & 6 & 0.1 & 0.8 & 0.8 & 0.2 & 0.8 & 0.8 & 0.4 & 0.4 & 0.8 \\
+ &  & 8 & 0.1 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.2 & 0.4 & 0.8 \\
+\multirow[c]{2}{*}{\shortstack{1T tokens\\(4 epochs)}} & \multirow[c]{2}{*}{32k tokens} & 1 & 0.1 & 0.8 & 0.8 & 0.1 & 0.8 & 0.8 & 0.1 & 0.4 & 0.8 \\
+ &  & 4 & 0.1 & 0.8 & 0.8 & 0.2 & 0.8 & 0.8 & 0.4 & 0.8 & 0.8 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+

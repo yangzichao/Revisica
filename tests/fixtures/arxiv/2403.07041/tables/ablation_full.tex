@@ -1,0 +1,18 @@
+
+\begin{tabular}{lccccc}
+\toprule[1.0pt]
+\multicolumn{1}{c}{} & \multicolumn{2}{c}{TSP500} & \multicolumn{2}{c}{CVRP500} & \multicolumn{1}{c}{BPP120}
+\\
+\cmidrule[0.5pt](lr{0.2em}){2-3}
+\cmidrule[0.5pt](lr{0.2em}){4-5}
+\cmidrule[0.5pt](lr{0.2em}){6-6}
+Method & Obj. & Gap (\%) & Obj. & Gap (\%) & Obj. \\
+\midrule
+GFACS & \textbf{16.8042} $\pm$ 0.0043 & \textbf{1.56} & \textbf{64.1858} $\pm$ 0.0071 & \textbf{1.95} & \textbf{51.8428} $\pm$ 0.0706 \\
+\quad -- \textit{Off-policy Training} & 17.0861 $\pm$ 0.0028 & 3.26 & 64.4248 $\pm$ 0.0155 & 2.33 & 52.3158 $\pm$ 0.1171 \\
+\quad -- \textit{Energy Reshaping} & 16.8718 $\pm$ 0.0049 & 1.97 & 64.4121 $\pm$ 0.0069 & 2.31 & 52.0654 $\pm$ 0.0998 \\
+\quad -- \textit{Shared $\varepsilon$-norm} & 17.5209 $\pm$ 0.0062 & 5.87 & 65.5069 $\pm$ 0.0171 & 4.05 & 90.7332 $\pm$ 9.1649 \\
+\quad\quad + \textit{VarGrad} \cite{zhang2022robust} & 16.8570 $\pm$ 0.0086 & 1.88 & 64.2771 $\pm$ 0.0293 & 2.09 & 51.9504 $\pm$ 0.1222 \\
+\bottomrule[1.0pt]
+\end{tabular}
+

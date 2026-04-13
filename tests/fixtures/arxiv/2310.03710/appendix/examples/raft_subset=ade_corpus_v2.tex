@@ -1,0 +1,57 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand that this task is about classifying sentences related to medical scenarios. The sentences are from the 'raft' dataset, specifically the 'ade\_corpus\_v2' subset.
+
+2. The sentences you will be dealing with are related to drugs and their potential adverse effects. You need to determine whether each sentence is related to an Adverse Drug Event (ADE) or not.
+
+3. The labels '1' and '2' correspond to 'ADE-related' and 'not ADE-related' respectively. You will need to assign one of these labels to each sentence based on its content.
+
+4. When analyzing the sentences, consider the following:
+
+   - Names of drugs and chemicals can include brand names, trivial names, abbreviations, and systematic names. These should strictly be in a therapeutic context.
+
+   - Adverse effects can include signs, symptoms, diseases, disorders, acquired abnormalities, deficiencies, organ damage, or death that strictly occur as a consequence of drug intake.
+
+5. Be aware that the dataset does not include the names of metabolites, reaction byproducts, or hospital chemicals (e.g. surgical equipment disinfectants).
+
+6. Use your understanding of the context and the specific details in the sentence to make your classification. Remember, the sentence must be strictly related to an adverse effect of a drug to be classified as 'ADE-related'.
+7. Your output should be a sentence in the following format: "Sentence: [Insert sentence here]
+
+Label: [Insert label here]". Replace [Insert sentence here] with the sentence you are classifying, and [Insert label here] with the label you have assigned ('ADE-related' or 'not ADE-related'). 
+
+8. The dataset is in English and is monolingual. Ensure your responses align with this language requirement.
+
+9. The dataset was created and annotated by experts and crowdsourced contributors. This means the sentences and labels are reliable and should be treated as such.
+
+Sentence: Pulses have been given for periods up to three years without evident toxicity.
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The sentence "Pulses have been given for periods up to three years without evident toxicity" is related to the administration of drugs, specifically pulses, and their potential adverse effects. The sentence mentions that pulses have been given for extended periods of time without any evident toxicity, implying that the drug has been tested and proven to be safe for use.
+
+However, the sentence does not strictly relate to an adverse drug event (ADE) as it does not mention any specific adverse effects or negative reactions to the drug. Instead, it focuses on the drug's safety and lack of toxicity, which is not within the scope of ADEs.
+
+Therefore, the correct label for this sentence is "not ADE-related".
+
+Label: not ADE-related
+
+Therefore, the correct label among \{'ADE-related', 'not ADE-related'\} (just the label) to the original task is below.
+
+Label: not ADE-related
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (ADE Corpus v2).}
+\label{fig:raft_subset=ade_corpus_v2_example}
+\end{figure*}

@@ -1,0 +1,35 @@
+\section{Related Work}
+\label{sec:related-work}
+
+\paragraph{Closed data curation practices in language model pretraining research.} 
+Pretraining data practices for language model research have grown increasingly closed, both with respect to \textbf{access} to data as well as \textbf{documentation} of key details about the data itself or its curation practices that would enable reproduction efforts or further scientific study.
+Proprietary models (e.g., GPT-4, \citealp{OpenAI2023GPT4TR}; PaLM 2, \citealp{Anil2023PaLM2T}; Claude, \citealp{claude-announce}) disclose little to no information (not even corpus size, or data provenance), and do not share data artifacts.
+Despite increasing access to powerful open models, few are released alongside their training data; exceptions include T5 on C4~\citep{raffel2020exploring}, BLOOM~\citep{leong-etal-2022-bloom} on ROOTS~\citep{piktus-etal-2023-roots}, GPT-J~\citep{gpt-j}, GPT-NeoX~\citep{Black2022GPTNeoX20BAO}, Pythia~\citep{Biderman2023PythiaAS} on Pile~\citep{Gao2020ThePA}, and INCITE~\citep{together2023incite} on RedPajama v1~\citep{together2023redpajama}.
+The most powerful open models (e.g., Llama 2~\citep{Touvron2023Llama2O}, Mistral~\citep{mistral}, Yi~\citep{qwen}, Qwen~\citep{yi34b}) do not share their data nor provide sufficient details for reproduction.
+Among large-scale language model pretraining efforts, the ones accompanied with transparent data curation documentation include LLaMA~\citep{Touvron2023LLaMAOA} (\emph{released model, unreleased data}), Gopher~\citep{Rae2021ScalingLM} (\emph{unreleased model and data}), and Falcon~\citep{falcon40b} (\emph{released model, released partial data}).
+Appendix~\S\ref{sec:pretrain-data-llms} further illustrates the many unknowns of data curation practices of open and closed models, as well as recent trends away from open data practices that have motivated our work.
+
+
+\paragraph{Open corpora for language model pretraining.} 
+We recognize prior efforts to curate, document, and release open corpora to support language model pretraining research.
+However, limitations in these prior corpora have motivated us to curate a new dataset:
+\begin{itemize}[leftmargin=1em,topsep=1mm,itemsep=1mm]
+    \item C4~\citep{raffel2020exploring} (175B tokens) and Pile~\citep{Gao2020ThePA} (387B tokens) are high-quality datasets with demonstrated use in training language models, but are unfortunately \textbf{limited in scale}. 
+    ROOTS~\citep{piktus-etal-2023-roots} is large ($\approx$400B tokens) but given its multilingual focus, its English-only portion is only 30\% of the dataset and thus contributes too few tokens to train English-only models. We recognize that scale and English-only concentration do not imply a ``higher-quality'' dataset; rather, certain threads of research necessitate these foci, motivating our new corpus (see \autoref{sec:desiderata}).
+    \item While Falcon~\citep{falcon40b} (580B tokens) and RedPajama v2~\citep{redpajama2} (30T tokens) meet our scale criterion, they are entirely derived from Common Crawl web pages, and thus \textbf{lack source diversity} commonly targeted when curating data for the largest language models (e.g., scientific papers, code). We also note that RedPajama v2 is only \textbf{lightly-curated}, distributing content output by CCNet~\citep{wenzek-etal-2020-ccnet} mostly as-is,
+    thus placing the onus on model developers to decide their own filtering before training.
+    \item RedPajama v1~\citep{together2023redpajama} ($\approx$1.2T tokens) is most similar to our effort and a source of inspiration when designing \dolma. While RedPajama v1 was a \textbf{specific} reproduction of the LLaMA~\citep{Touvron2023LLaMAOA} training data, we have a \textbf{broader} reproduction target which required diving into data sources that RedPajama v1 did not pursue, including larger collections of scientific papers and social media forums like Reddit (see \autoref{sec:desiderata}).
+    Further, recent work has identified data quality issues suggesting significant additional cleanup of RedPajama v1 is recommended before costly language model training~\citep{cerebras2023slimpajama,wimbd}.
+\end{itemize}
+
+{\noindent While this manuscript was under review, several other open corpora for language modeling have been released, including FineWeb~\citep{fineweb}, Zyda~\citep{tokpanov2024zyda}, and the datasets used to train LLM360 Amber~\citep{liu2023llm360}, LLM360 K2~\citep{llm360K2}, and MAP-Neo~\citep{zhang2024mapneo} models.}
+
+
+
+
+
+
+
+
+
+

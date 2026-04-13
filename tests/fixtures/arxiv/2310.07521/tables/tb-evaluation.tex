@@ -1,0 +1,195 @@
+\begin{table*}[]\small
+\caption{Factuality Evaluation Studies of LLMs. This table shows studies focused on factuality evaluation, and those providing valuable insights into such evaluations. The column `Human Eval' denotes if the evaluation incorporated human evaluation. The `Granularity' column specifies the level of evaluation, with token-level (T) and sentence-level (S) distinctions.}
+\centering
+\label{tab:evaluation1}
+\vspace{-2mm}
+\begin{adjustbox}{max width=\textwidth}
+  \setlength{\tabcolsep}{0.9mm}
+  \renewcommand{\arraystretch}{1}
+{
+
+\begin{tabular}{llllclc}
+\toprule
+Reference & Task & Dataset & Metrics & \makecell[l]{Human\\Eval} & Evaluated LLMs & Granularity \\
+\midrule 
+\begin{tabular}[c]{@{}l@{}} 
+FActScore\\
+\citep{Min2023-FActScore} 
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}Biography\\Generation \end{tabular}&
+\begin{tabular}[c]{@{}l@{}}183 people\\entities \end{tabular}&
+F1&
+\checkmark 
+&
+\begin{tabular}[c]{@{}l@{}} 
+GPT-3.5\\
+ChatGPT...
+\end{tabular}
+&
+T
+\\
+\hline
+
+\begin{tabular}[c]{@{}l@{}} 
+SelfCheckGPT\\ \citep{SelfCheckGPT}
+\end{tabular}&
+Bio Generation&
+WikiBio&
+\begin{tabular}[c]{@{}l@{}}
+AUC-PR,\\
+Human Score
+\end{tabular}&
+\checkmark
+&
+\begin{tabular}[c]{@{}l@{}}
+GPT-3,\\
+LLaMA,\\
+OPT,\\
+GPT-J...
+\end{tabular}
+&
+S
+\\
+\hline
+
+\citet{wang2023evaluating} &
+Open QA &
+\begin{tabular}[c]{@{}l@{}}NQ, TQ  \\ \end{tabular}&
+\begin{tabular}[c]{@{}l@{}}ACC, \\ EM\end{tabular} &
+\checkmark &
+\begin{tabular}[c]{@{}l@{}}GPT-3.5\\ ChatGPT\\GPT-4\\Bing Chat\end{tabular}&
+S 
+\\
+\hline
+
+\citet{pezeshkpour2023measuring} &
+\begin{tabular}[c]{@{}l@{}}Knowledge \\Probing \end{tabular}&
+\begin{tabular}[c]{@{}l@{}}T-REx, \\LAMA\end{tabular}&
+ACC &
+&
+GPT3.5 &
+T 
+\\
+\hline
+    % \citet{borgeaud2022improving} &
+    % \begin{tabular}[c]{@{}l@{}} QA, \\Language\\Modeling\end{tabular} &
+    % \begin{tabular}[c]{@{}l@{}}
+    % MassiveText, \\
+    % C4, \\
+    % Curation Corpus, \\
+    % Wikitext103, \\
+    % Lambada, \\
+    % Pile, \\
+    % NaturalQA
+    % \end{tabular} &
+    % \begin{tabular}[c]{@{}l@{}} 
+    % PPL, \\ACC, \\Exact Match
+    % \end{tabular} &
+    %    \checkmark&
+    %    \begin{tabular}[c]{@{}l@{}} 
+    % Retro
+    % \end{tabular} &
+    % T 
+    % \\
+\citet{de-cao-etal-2021-editing} &
+\begin{tabular}[c]{@{}l@{}} 
+QA, \\
+Fact Checking \end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+KILT, \\FEVER, \\zsRE
+\end{tabular} &
+ACC &
+&
+\begin{tabular}[c]{@{}l@{}} GPT-3\\
+FLAN-T5\end{tabular} &
+\begin{tabular}[c]{@{}l@{}} S/
+T \end{tabular} 
+\\
+\hline
+
+ \citet{varshney2023stitch}&
+ \begin{tabular}[c]{@{}l@{}} Article\\Generation\end{tabular}&
+ \begin{tabular}[c]{@{}l@{}} Unnamed\\Dataset\end{tabular}&
+ \begin{tabular}[c]{@{}l@{}} 
+ ACC, \\AUC
+ \end{tabular}&
+ &
+ \begin{tabular}[c]{@{}l@{}} 
+ GPT3.5\\
+ Vicuna
+ \end{tabular} &
+ S 
+ \\
+ \hline
+
+\begin{tabular}[c]{@{}l@{}} 
+FactTool\\
+\citep{chern2023factool}
+\end{tabular}&
+KB-based QA&
+\begin{tabular}[c]{@{}l@{}} 
+RoSE
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}}
+ACC\\F1...
+\end{tabular}&
+&
+\begin{tabular}[c]{@{}l@{}} 
+GPT-4\\
+ChatGPT \\
+FLAN-T5
+\end{tabular}&
+S
+\\
+\hline
+
+\citet{kadavath2022language} &
+Self-evaluation &
+\begin{tabular}[c]{@{}l@{}} 
+BIG Bench,\\
+MMLU, 
+LogiQA,\\
+TruthfulQA,\\
+QuALITY\\
+TriviaQA\\
+Lambada
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+ACC, \\
+Brier Score, \\
+RMS\\Calibration\\Error...
+\end{tabular}&
+&
+Claude&
+T
+\\ \midrule
+\citet{chen2023beyond} &
+QA &
+\begin{tabular}[c]{@{}l@{}} 
+NQ,\\
+WoW
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+Factuality, \\Relevance,\\ Coherence,\\ Informativeness,\\ Helpfulness,\\ and Validity
+\end{tabular}&
+&
+LLaMA, FLAN-T5, ...&
+T
+\\
+\midrule
+RAGAS \citep{es2023ragas} &
+QA &
+\begin{tabular}[c]{@{}l@{}} 
+WikiEval
+\end{tabular}&
+\begin{tabular}[c]{@{}l@{}} 
+Faithfulness, \\Answer Relevance,\\ Context Relevance
+\end{tabular}&
+&
+ChatGPT&
+T
+\\
+\bottomrule
+\end{tabular}}
+\end{adjustbox}
+\end{table*}

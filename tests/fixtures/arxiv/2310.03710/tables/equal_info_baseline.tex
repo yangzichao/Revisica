@@ -1,0 +1,16 @@
+\begin{table}[h!]
+\caption{Comparison on Llama-2-70b-chat when providing the dataset information to zero-shot CoT.}
+\label{table:equal-info-baselines}
+\vskip 0.1in
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & AddSub & IMDB & NarrativeQA \\
+\midrule
+Zero-Shot CoT & 73.2 & 89.0 & 62.3 \\
+\hspace{-27pt}\makecell{Zero-Shot CoT + \\Data Information} & 71.6 & 90.5 & 58.2 \\
+\zeroshotcap\ \method & \textbf{79.5} & \textbf{94.0} & \textbf{65.0} \\
+\bottomrule
+\end{tabular}
+\end{table}

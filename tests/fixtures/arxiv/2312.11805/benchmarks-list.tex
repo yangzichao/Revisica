@@ -1,0 +1,69 @@
+\label{app:capabilities_tasks}
+We use more than 50 benchmarks as a holistic harness to evaluate the Gemini models across text, image, audio and video. We provide a detailed list of benchmarking tasks for six different capabilities in text understanding and generation: factuality, long context, math/science, reasoning, summarization, and multilinguality. We also enumerate the benchmarks used for image understanding, video understanding, and audio understanding tasks.
+
+\begin{itemize}
+    \item \textbf{Factuality}: We use 5 benchmarks: 
+        BoolQ \cite{clark-etal-2019-boolq}, 
+        NaturalQuestions-Closed \cite{kwiatkowski-etal-2019-natural}, NaturalQuestions-Retrieved \cite{kwiatkowski-etal-2019-natural},
+        RealtimeQA \cite{kasai2022realtimeqa}, 
+        TydiQA-noContext and TydiQA-goldP \cite{tydiqa}.
+    \item \textbf{Long Context}: We use 6 benchmarks: 
+        NarrativeQA \cite{kocisky-etal-2018-narrativeqa}, 
+        Scrolls-Qasper, Scrolls-Quality \cite{shaham-etal-2022-scrolls}, 
+        XLsum (En), XLSum (non-English languages) \cite{hasan-etal-2021-xl}, 
+        and one other internal benchmark.
+    \item \textbf{Math/Science}: We use 8 benchmarks: 
+        GSM8k (with CoT) \cite{cobbe2021training}, 
+        Hendryck’s MATH pass@1 \cite{hendrycks2021measuring}, 
+        MMLU \cite{mmlu}, 
+        Math-StackExchange, 
+        Math-AMC 2022-2023 problems, 
+        and three other internal benchmarks.
+    \item \textbf{Reasoning}: We use 7 benchmarks: 
+        BigBench Hard (with CoT) \cite{bigbench,suzgun2022challenging}, 
+        CLRS \cite{deepmind2022clrs}, 
+        ProofWriter \cite{Tafjord2020ProofWriterGI}, 
+        Reasoning-Fermi problems \cite{kalyan2021coffee}, 
+        Lambada \cite{paperno2016lambada}, 
+        HellaSwag \cite{zellers2019hellaswag}, 
+        DROP \cite{Dua2019DROP}.
+    \item \textbf{Summarization}: We use 5 benchmarks: 
+        XL Sum (English), XL Sum (non-English languages) \cite{hasan-etal-2021-xl}, 
+        WikiLingua (non-English languages), WikiLingua (English) \cite{ladhak2020wikilingua}, 
+        XSum \cite{narayan-etal-2018-dont}.
+    \item \textbf{Multilinguality}: We use 10 benchmarks: 
+        XLSum (Non-English languages) \cite{hasan-etal-2021-xl}, 
+        WMT22 \cite{wmt22}, 
+        WMT23 \cite{tom2023findings}, 
+        FRMT \cite{riley2023frmt}, 
+        WikiLingua (Non-English languages) \cite{ladhak2020wikilingua}, 
+        TydiQA (no context), TydiQA (GoldP) \cite{tydiqa}, 
+        MGSM \cite{mgsm}, 
+        translated MMLU \cite{mmlu}, 
+        NTREX \cite{federmann-etal-2022-ntrex}, 
+        FLORES-200 \cite{flores200}.
+    \item \textbf{Image and Video}: We use 9 benchmarks for image understanding:
+        MMMU  \cite{mmmu},
+        TextVQA \cite{textvqa},
+	    DocVQA \cite{docvqa},
+	    ChartQA \cite{chartqa},
+	    InfographicVQA \cite{infographicvqa},
+	    MathVista \cite{MathVista},
+	    AI2D \cite{ai2d},
+	    VQAv2 \cite{vqav2},
+	    XM3600 \cite{xm3600} for multi-lingual image understanding,
+	    and 6 benchmarks for video understanding: 
+	    VATEX \cite{vatex} for captioning in two different languages,
+	    YouCook2 \cite{youcook2},
+	    NextQA \cite{nextqa},
+	    ActivityNet-QA \cite{activitynetqa}, and 
+	    Perception Test MCQA \cite{puatruaucean2023perception}.
+    \item \textbf{Audio}:  We use 5 benchmarks including automatic speech recognition (ASR) tasks such as FLEURS~\cite{conneau2023fleurs}, VoxPopuli~\cite{wang2021voxpopuli}, Multi-lingual Librispeech~\cite{pratap2020mls}, and automatic speech translation task such as CoVoST 2~\cite{wang2020covost}.
+\end{itemize}
+
+
+
+
+
+
+

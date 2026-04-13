@@ -1,0 +1,18 @@
+\begin{tabular}{lcccc}
+\toprule[1.0pt]
+\multicolumn{1}{c}{} & \multicolumn{2}{c}{TSP500} & \multicolumn{2}{c}{CVRP500}\\
+\cmidrule(lr){2-3}
+\cmidrule(lr){4-5}
+% \cmidrule[0.5pt](lr{0.2em}){2-3}
+% \cmidrule[0.5pt](lr{0.2em}){4-5}
+% \cmidrule[0.5pt](lr{0.2em}){6-7}
+% \cmidrule[0.5pt](lr{0.2em}){8-9}
+\
+Method & Obj. & Gap (\%) & Obj. & Gap (\%) \\
+\midrule
+Concorde / PyVRP & 16.55 & - & 62.96 & - \\
+\midrule
+GFACS w/ \textit{VarGrad} ($T=10$) & 16.86 & 1.88 & 64.28 & 2.09 \\
+GFACS w/ \textit{Shared $\varepsilon$-norm} ($T=10$) & \textbf{16.80} & \textbf{1.56} & \textbf{64.19} & \textbf{1.95} \\
+\bottomrule
+\end{tabular}

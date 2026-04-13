@@ -1,0 +1,54 @@
+\section{Introduction}
+\label{sec:intro}
+
+
+Customized image generation related to humans~\cite{ju2023humansd, liu2023hyperhuman, ruiz2023hyperdreambooth} has received considerable attention, giving rise to numerous applications, such as personalized portrait photos~\cite{photoai}, image animation~\cite{zhang2023sadtalker}, and virtual try-on~\cite{wang2018toward}. Early methods~\cite{nitzan2022mystyle, melnik2022face}, limited by the capabilities of generative models (\textit{i.e.}, GANs~\cite{goodfellow2020generative, karras2019style}), could only customize the generation of the facial area, resulting in low diversity, scene richness, and controllability.
+Thanks to larger-scale text-image pair training datasets~\cite{schuhmann2022laion}, larger generation models~\cite{saharia2022photorealistic, podell2023sdxl}, and text/visual encoders~\cite{radford2021learning, raffel2020exploring} that can provide stronger semantic embeddings, diffusion-based text-to-image generation models have been continuously evolving recently.
+This evolution enables them to generate increasingly realistic facial details and rich scenes.
+The controllability has also greatly improved due to the existence of text prompts and structural guidance~\cite{zhang2023adding, mou2023t2i}
+
+Meanwhile, under the nurturing of powerful diffusion text-to-image models, many diffusion-based customized generation algorithms~\cite{ruiz2022dreambooth, gal2022image} have emerged to meet users' demand for high-quality customized results.
+The most widely used in both commercial and community applications are DreamBooth-based methods~\cite{ruiz2022dreambooth, db_lora}.
+Such applications require dozens of images of the same identity (ID) to fine-tune the model parameters.
+Although the results generated have high ID fidelity, there are two obvious drawbacks: one is that customized data used for fine-tuning each time requires manual collection and thus is very time-consuming and laborious; the other is that customizing each ID requires 10-30 minutes, consuming a large amount of computing resources, especially when the generation model becomes larger.
+Therefore, to simplify and accelerate the customized generation process, recent works, driven by existing human-centric datasets~\cite{liu2015faceattributes,karras2019style}, have trained visual encoders~\cite{xiao2023fastcomposer, chen2023photoverse} or hypernetworks~\cite{ruiz2023hyperdreambooth, arar2023domain} to represent the input ID images as embeddings or LoRA~\cite{hu2021lora} weights of the model.
+After training, users only need to provide an image of the ID to be customized, and personalized generation can be achieved through a few dozen steps of fine-tuning or even without any tuning process.
+However, the results customized by these methods cannot simultaneously possess ID fidelity and generation diversity like DreamBooth (see \figref{fig:comp_recontext}). This is because that: 1) during the training process, both the target image and the input ID image sample from the same image. The trained model easily remembers characteristics unrelated to the ID in the image, such as expressions and viewpoints, which leads to poor editability, and 2) relying solely on a single ID image to be customized makes it difficult for the model to discern the characteristics of the ID to be generated from its internal knowledge, resulting in unsatisfactory ID fidelity.
+
+Based on the above two points, and inspired by the success of DreamBooth, in this paper, we aim to:
+1) ensure that the ID image condition and the target image exhibit \textit{variations} in viewpoints, facial expressions, and accessories, so that the model does not memorize information that is irrelevant to the ID;
+2) provide the model with \textit{multiple different images} of the same ID during the training process to more comprehensively and accurately represent the characteristics of the customized ID.
+
+Therefore, we propose a simple yet effective feed-forward customized human generation framework that can receive multiple input ID images, termed as \textit{\methodname.} 
+To better represent the ID information of each input image, we stack the encodings of multiple input ID images at the semantic level, constructing a stacked ID embedding. 
+This embedding can be regarded as a unified representation of the ID to be generated, and each of its subparts corresponds to an input ID image.
+To better integrate this ID representation and the text embedding into the network, we replace the class word (\textit{e.g.}, man and woman) of the text embedding with the stacked ID embedding. 
+The result embedding simultaneously represents the ID to be customized and the contextual information to be generated.
+Through this design, without adding extra modules in the network, the cross-attention layer of the generation model itself can adaptively integrate the ID information contained in the stacked ID embedding.
+
+At the same time, the stacked ID embedding allows us to accept any number of ID images as input during inference while maintaining the efficiency of the generation like other tuning-free methods~\cite{shi2023instantbooth, xiao2023fastcomposer}. 
+Specifically, our method requires about 10 seconds to generate a customized human photo when receiving four ID images, which is about 130$\times$  faster than DreamBooth\footnote{Test on one NVIDIA Tesla V100}.
+Moreover, since our stacked ID embedding can represent the customized ID more comprehensively and accurately, our method can provide better ID fidelity and generation diversity compared to state-of-the-art tuning-free methods. 
+Compared to previous methods, our framework has also greatly improved in terms of controllability. 
+It can not only perform common recontextualization but also change the attributes of the input human image (\textit{e.g.}, accessories and expressions), generate a human photo with completely different viewpoints from the input ID, and even modify the input ID's gender and age (see \figref{fig:teaser}).
+
+It is worth noticing that our PhotoMaker 
+also unleashes a lot of possibilities for users to generate customized human photos. 
+Specifically, although the images that build the stacked ID embedding come from the same ID during training, we can use different ID images to form the stacked ID embedding during inference to merge and create a new customized ID. 
+The merged new ID can retain the characteristics of different input IDs. 
+For example, we can generate Scarlett Johansson that looks like  Elun Musk or a customized ID that mixes a person with a well-known IP character (see \figref{fig:teaser}(c)).
+At the same time, the merging ratio can be simply adjusted by prompt weighting~\cite{hertz2022prompt, prompt_weighting} or by changing the proportion of different ID images in the input image pool, demonstrating the flexibility of our framework.
+
+Our PhotoMaker necessitates the simultaneous input of multiple images with the same ID during the training process, thereby requiring the support of an ID-oriented human dataset.
+However, existing datasets either do not classify by IDs~\cite{karras2019style, schuhmann2022laion, zheng2022general, liu2023hyperhuman} or only focus on faces without including other contextual information~\cite{liu2015faceattributes, kaisiyuan2020mead, nitzan2022mystyle}.
+We therefore design an automated pipeline to construct an ID-related dataset to facilitate the training of our \methodname. 
+Through this pipeline, we can build a dataset that includes a large number of IDs, each with multiple images featuring diverse viewpoints, attributes, and scenarios. 
+Meanwhile, in this pipeline, we can automatically generate a caption for each image, marking out the corresponding class word~\cite{ruiz2022dreambooth}, to better adapt to the training needs of our framework.
+
+
+
+
+
+
+
+

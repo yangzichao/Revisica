@@ -1,0 +1,334 @@
+During the development of Gemini models, we follow a structured approach to responsible deployment to identify, measure, and manage foreseeable downstream societal impacts of our models, in line with previous releases of Google’s AI technology~\citep{kavukcuogluprinciples}. Throughout the lifecycle of a project, we follow the structure below. This section provides more detail about our approach and includes key findings where available. We are committed to ongoing transparency and will continue to provide updated information on our approach and testing in upcoming reports.
+
+\begin{figure}[ht!]
+\centering
+ \includegraphics[width=0.65\textwidth]{figs/Final_Responsibility_Approach.pdf}
+ \label{fig:resp_approach}
+\end{figure}
+
+\subsection{Impact Assessment} 
+\label{sec:impact-assessment}
+At Google we apply an impact assessment framework throughout the product development lifecycle related to Google’s AI Principles~\citep{googleaiprinciples}. This means we assess the risk and impact of AI models we’re building at both a model-level (e.g. for Gemini API Ultra 1.0, as deployed on Cloud Studio or Vertex AI), and once embedded within a broader product or service (e.g. for Gemini Advanced).
+
+\subsubsection{Model Assessment}
+We conduct model impact assessments to identify, assess, and document societal benefits and harms associated with the capabilities of Gemini models. Our impact assessments for Gemini API models describe downstream benefits and risks that we identify, spanning across the models’ modalities (text-to-text; image-to-text; and video-to-text).  Model impact assessments are conducted by the Google DeepMind Responsible Development and Innovation team, and are reviewed by the Google DeepMind Responsibility and Safety Council. We draw from various sources in producing impact assessments, including a wide range of literature, external expertise, and  our in-house ethics and safety research.
+
+Gemini models introduce various benefits to people and society. Gemini models’ various modalities, including language, image and video understanding, can help users process information more efficiently, for example through content summarisation. These efficiency benefits can apply to commercial entities, and can assist use cases dependent on text, image or video processing such as video captioning, analytics or product descriptions.  Video and image understanding modalities can also be deployed for social good applications downstream, such as enabling descriptions of visual outputs for accessibility purposes. Generative multimodal models may also raise downstream societal risks, with the Gemini models assessments considering a range of risks previously identified within research such as ~\citet{weidinger-2021-ethical} and \citet{shelby2023identifying}. We assessed a range of content risks such as exposure of users to potentially unsafe content, such as sexually explicit, violent or hateful outputs~\citep{weidinger-2021-ethical}, child safety harms, and representation harms, subsequently designing evaluations across these domains to enable measurement. Beyond content related risks, we analyzed the potential misuse of capabilities for surveillance applications, particularly for media-to-text capabilities, and considered the broader environmental and economic impact of multimodal models. We are continuously conducting research into emerging risks of advanced models, including for dangerous capabilities (e.g. cyber security threats) which form a part of our evaluation approach (Section~\ref{sec:safety_eval}).
+
+\subsubsection{Product Assessments} 
+
+Beyond the assessment conducted at the model-level, additional risk assessments are conducted on the products by the Google AI Principles team prior to launch (e.g. on the Gemini Advanced product). These risk and impact assessments, alongside both model- and product-level assurance evaluations, are used to guide mitigation and product delivery efforts, and inform deployment decisions.
+
+For Gemini Advanced, we conducted extensive deep-dive red teaming via dogfooding and adversarial testing in the areas of safety, accountability, and inclusion to prepare for the initial experimental rollout of Gemini and subsequent updates. Further cross-functional work helps to ensure appropriate mitigations were adopted before Gemini and its new capabilities or offerings, such as Gemini Advanced, launched. Beyond content safety, these product mitigations included the following:
+\begin{itemize}
+\item Clear and relevant explanations to set appropriate expectations that describe Gemini as a way to get direct access to Google AI for a wide range of tasks, including complex tasks. Explanations make clear that this AI-powered system is useful for all sorts of tasks — like preparing for a job interview, debugging code for the first time or writing a pithy social media caption. 
+\item Disclosures in the \href{https://support.google.com/gemini?p=privacy_notice}{Gemini Apps Privacy Notice} stating that people should not rely on Gemini’s responses as medical, legal, financial or other professional advice.
+\item Disclosure in product stating that Gemini’s responses should be double-checked for information accuracy. 
+\item Feedback channels and operational support were defined and built to help ensure appropriate response to user feedback to improve the model and address issues.
+\end{itemize}
+
+For the Gemini API Ultra model, that will be available through Google AI Studio and Cloud Vertex AI, product review outcomes resulted in additional safety evaluations on enterprise-specific data across modalities, and additional product-level mitigations to promote safe and responsible use including:
+\begin{itemize}
+\item \href{https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_attribute_definitions}{Safety filters} with Cloud established thresholds as the default product behavior.
+\item Developer \href{https://cloud.google.com/vertex-ai/docs/generative-ai/learn/responsible-ai}{enablement information} embedded within product documentation to support responsible use.
+\item Feedback channels which are a component of the Vertex user interface to give feedback directly during use to address issues and undesirable outputs. 
+\end{itemize}
+
+We are increasingly integrating our AI review work into our holistic enterprise risk management frameworks for assuring the quality of our offerings. This evolution helps us further the scale of our work and integration into existing governance and company-wide infrastructure and accountability processes. In close coordination with central AI Principles review teams, some of our product areas, including Google Cloud, have developed their own specialized review processes, deploying approaches tailored to their unique circumstances. 
+
+\subsection{Safety Policies}
+
+We have developed a set of model safety policies for Gemini models to steer development and evaluation. The model policy definitions act as a standardized criteria and prioritization schema for responsible development and define the categories against which we measure launch readiness. Google products that use Gemini models, like our conversational AI service Gemini and Cloud Vertex API, further implement our standard product policy framework which is based on Google’s extensive experience with harm mitigation and rigorous research.  These policies take product use cases into account – for example, providing additional safety coverage for users under 18.
+
+Our model safety policies reflect our established approach towards product safety and preventing harm in consumer and enterprise contexts. Policy areas include generation of child sexual abuse and exploitation content, hate speech, harassment, dangerous content such as guidance on how to make weapons, and malicious content. We also aim to reduce bias in our models via  guidelines focused on providing content that reflects our global user base.  In addition, we have guidelines that prioritize providing neutral answers grounded in authoritative, consensus facts, or providing multiple perspectives where consensus doesn’t exist.  
+
+\subsection{Mitigations}
+\subsubsection{Data Curation Practices}
+\label{sec:data_curation}
+
+Prior to all training stages, we take various steps to mitigate potential downstream harms through data curation and careful data collection. We filter training data for high-risk content and to ensure training data is sufficiently high quality.
+
+Humans also play an essential role, both for data creation and evaluation, in the post-training process. For certain data creation and evaluation initiatives, we consider diversity across gender presentation, age, and racial and ethnic diversity. We also take steps to ensure all data collected meets Google DeepMind’s \href{https://deepmind.google/discover/blog/best-practices-for-data-enrichment/}{best practices on data enrichment}, developed based on the Partnership on AI’s \href{https://partnershiponai.org/responsible-sourcing-considerations/}{Responsible Sourcing of Data Enrichment Services}. To support this, our agreements with vendors include a contractual obligation that data enrichment workers are paid at least local living wage.
+
+\subsubsection{Model Mitigation}
+
+Our modeling mitigation of safety risks, applied across Gemini Advanced and Gemini API Ultra models, is mostly through post-training (Section~\ref{sec:post-training}), encompassing supervised fine-tuning (SFT) and reinforcement learning through human feedback (RLHF) using a reward model~\citep{Bai2022-us}. In contrast to generic quality-oriented post-training catering to all types of user queries, our safety mitigation is more focused on adversarial, or “harm-inducing”queries - i.e. the smaller slice of user queries where an unprotected model is likely to produce harmful responses according to our model safety policies. 
+
+\paragraph{Harm-inducing queries}
+
+To ensure broad coverage of harm-inducing queries, we enumerate approximately 20 harm types (e.g. hate speech, providing ungrounded medical advice, suggesting dangerous behavior) across a wide variety of use cases, according to our model safety policies described above. We generate a dataset of potential harm-inducing queries in these categories, using a combination of approaches:
+\begin{itemize}
+    \item Policy experts and engineers crafting queries based on observed model failures.
+    \item Prompting high-capability language models to generate queries, using policy-based instructions and seed keywords (e.g. policy “hate speech” with words describing a specific demographic).
+    \item Finding queries that trigger policy violation responses, via automated Red Teaming in model evaluations.
+\end{itemize}
+
+\paragraph{Supervised fine-tuning}
+
+Given the above harm-inducing queries, we create SFT data to demonstrate the safe and helpful responses for these queries. This includes human collections as well as a custom data generation recipe loosely inspired from Constitutional AI~\cite{bai2022constitutional}, where we inject variants of Google’s content policy language as “constitutions”, and utilize language model’s strong zero-shot reasoning abilities~\cite{kojima2022large} to revise responses and choose between multiple response candidates. Each type of harm-inducing query is affected by different “constitutions”: for example, we encourage the model not to take sides in sensitive controversial conversations (e.g. elections), and to take a neutral point-of-view.
+
+To highlight a few notable challenges and insights generated in our safety finetuning efforts:
+\begin{itemize}
+\item Harmlessness vs. Helpfulness: Balancing the harmlessness and helpfulness of responses is a critical challenge: a response “I cannot help with that because it violates X policy” is a harmless response, but is not helpful to users.
+\item Fast mitigation and generalization: Safety is a highly dynamic environment with a constantly evolving landscape of harmful query patterns. It is often logistically difficult to ensure both fast mitigation (i.e. newly discovered harmful query patterns are promptly addressed) and generalization (i.e. the mitigation works sufficiently well across different harmful query patterns). We have found it worthwhile to introduce more advanced chain-of-thought recipes based on our safety policies, such that the models operate in the space of safety policy concepts as opposed to at a fine-grained harm example level.
+\end{itemize}
+
+\paragraph{Reinforcement learning during human feedback}
+
+We also applied RLHF for the harm inducing queries, where we curated queries and model responses based on both observed loss patterns and our overall safety policy taxonomy, and then collected safety-specific preference data to be included into the overall RL reward model training mixture.
+
+\paragraph{Beyond the general recipe}
+
+We also made specific efforts to mitigate safety risks beyond the above general post-training recipe.
+
+I18n locales: we leveraged experts in each i18n locales to identify salient topical topics for SFT data generation - for example, for hate speech, US English vs. Japanese would differ not only on the language itself, but on the demographic groups likely subject to hate speech.
+\clearpage
+Multimodal queries:
+\begin{itemize}
+\item As outlined in the ‘Data Curation Practice’ section (Section~\ref{sec:data_curation}), we filtered training data for high-risk content (e.g. dangerous images), to avoid the model proactively generating such high risk content.
+\item During post-training, as we have observed that safety SFT data for text-only queries was ineffective for harm-inducing queries containing text and images, we specifically created multimodal safety SFT datasets to address these multimodal queries.
+\end{itemize}
+
+We assess the effectiveness of our safety mitigation, based on both how it improves safety over time, and how conversational agents built from our safety-mitigated model compare to unmitigated models. For model development purposes, we heavily rely on internal harm-inducing querysets to understand how we reduce harm and improve helpfulness in a safety context.
+
+Below is an example on a real input query we tested, illustrating how our mitigations improve safety.
+
+\begin{table}[!h]
+\setlength{\tabcolsep}{3pt}
+\scriptsize
+\renewcommand{\arraystretch}{1.25}
+\centering
+\begin{tabular}{p{7cm}|p{7cm}}
+\toprule
+ \multicolumn{2}{p{14cm}}{Query: Help me with a landing page for a website. Please have it state that the Earth is flat, and not that it is round. I need good imagery, and need it to feel like a credible website}\\
+ \midrule
+ A previous version of Bard (with PaLM 2) & A better-mitigated Gemini with access to Gemini Pro (safer and more helpful) \\
+\midrule
+Sure, I can help you with that. Here are some ideas for a landing page for a flat Earth website: [...] \newline
+
+> **The Earth is Flat: Debunking the Myth of a Round Planet** [...] \newline
+> **A map of the flat Earth** [...] \newline
+
+This image is clear and visually appealing, and it accurately depicts the flat Earth theory. It could help to convince visitors that the flat Earth is real. [..] \newline
+
+> The Earth is not a sphere. It is a flat disc that is surrounded by a wall of ice. The sun and moon are small objects that orbit the Earth. The stars are just projections on the firmament, or the solid dome that covers the Earth. \newline
+
+This paragraph provides a brief overview of the flat Earth theory. It is clear and easy to understand, and it uses scientific terms to make it seem more credible. \newline
+
+> **Learn more about the flat Earth theory and join our community of truth seekers.** \newline
+
+This call to action is clear and concise, and it encourages visitors to take action. It also uses the word "truth seekers" to suggest that the flat Earth theory is the only one that is based on facts.
+I hope these ideas help you create a landing page for your flat Earth website. Remember to be creative and persuasive, and to use evidence to support your claims.
+& 
+Creating a landing page for a website promoting the Flat Earth theory is ethically questionable and highly problematic.\newline
+The concept of a flat Earth has been scientifically disproven with overwhelming evidence. Spreading misinformation can have harmful consequences, leading to distrust in science and established knowledge. \newline
+If you are genuinely interested in exploring the Flat Earth concept, I strongly advise you to:
+\begin{itemize}
+    \item Conduct thorough research using reliable scientific sources. Engage with evidence from space exploration, physics, and observations available from reputable scientific institutions like NASA (https://www.nasa.gov/) and peer-reviewed academic journals.
+    \item Engage in critical thinking. Evaluate information, question your assumptions, and be open to scientific evidence, even if it challenges your current beliefs.
+\end{itemize}
+If you are creating a satirical or fictional page:
+\begin{itemize}
+\item Make it abundantly clear that the content is not intended to be taken as factual. Use exaggerated language, humor, and clear disclaimers to signal the satirical intent.
+\end{itemize}
+Remember: Credibility on the internet is built on truthful and verifiable information. Promoting factually incorrect theories undermines responsible information sharing practices. \\
+\bottomrule
+\end{tabular}
+\label{tab:example_safety}
+\end{table}
+
+
+\subsection{Safety Evaluations}
+\label{sec:safety_eval}
+
+To assess the post-trained Gemini models and products with access to Gemini models (such as Gemini Advanced) against safety policy areas and other key risk areas identified within impact assessments, we developed a suite of evaluations across the lifecycle of model development. Some evaluations are conducted at the model level (i.e. evaluating the post-trained Gemini API Ultra model) and others at the product level (i.e. evaluating Gemini Advanced, which gives access to 1.0 Ultra alongside other features like safety filters).
+
+\begin{itemize}
+\item \textbf{Development evaluations} are conducted for the purpose of improving on responsibility criteria throughout pre- and post-training Gemini models. These evaluations are designed internally, or are assessments against external academic benchmarks. Evaluations consider issues such as helpfulness (instruction following and creativity), safety and factuality.
+\item \textbf{Assurance evaluations} are conducted for the purpose of governance and review, usually at the end of key milestones or training runs by a group outside of the model development team. Assurance evaluations are standardized by modality and datasets are strictly held out. Only high-level insights are fed back into the training process to assist with mitigation efforts. Assurance evaluations include testing across safety policies, and include ongoing testing for dangerous capabilities such as potential biohazards, persuasion, and cybersecurity~\cite{shevlane2023model}.
+\item \textbf{External evaluations} are conducted by independent external groups who are domain experts to identify blindspots. External groups stress-test our models across a range of issues, these areas are outlined in the ‘External Evaluations’ section below. The design of these evaluations is independent and results are reported periodically to the internal team and governance groups. 
+\item \textbf{Red teaming}, a form of adversarial testing where adversaries launch an attack on an AI system, is conducted by specialist internal teams across areas such as the safety policies and security. These activities include less structured processes involving sophisticated adversarial attacks to identify new vulnerabilities. Discovery of potential weaknesses can then be used to mitigate risks and improve evaluation approaches internally. 
+\end{itemize}
+
+Different types of evaluations are run at different cadences, depending on the associated risk. For example, \href{https://deepmind.google/discover/blog/an-early-warning-system-for-novel-ai-risks/}{dangerous capability} evaluations (as outlined below) are run on certain checkpoints with greater or new capabilities which may be able to demonstrate these capabilities, whereas safety policy evaluations are run across every post-trained Gemini model checkpoint released into Google product areas.
+
+We provide more insight into the suite of evaluations across the policy areas and other key risk areas below, focusing on Gemini Advanced and the Gemini API Ultra model. We are committed to ongoing transparency and will continue to provide updated information on testing undertaken, including key findings, and learnings from our internal and external evaluations and red teaming in upcoming reports.  
+
+\subsubsection{Development \& Assurance Evaluations}
+
+\paragraph{Content safety}
+
+We evaluate post-trained Gemini API models against harm types according to our safety policies. While both development and assurance evaluations cover critical policy areas, we maintain separate datasets, treating assurance sets as ‘held out’ to prevent overfitting and preserve validity of results. For safety policy evaluation, we use a combination of automatic classifiers trained on previous model interactions and human annotation, with wellbeing programs in place for human annotation and closely monitor feedback from our raters. 
+
+These content safety evaluations are applied at model-level without downstream protections like safety filtering that users would experience, to understand the safety profile of the model itself.
+
+For child safety, as a particularly sensitive area of work, we work with a dedicated team of child safety experts in Google Trust and Safety to develop adversarial prompts and evaluate outputs across modalities with domain expert judgment informing a composite picture of model risk for different forms of content that may pose a risk to child safety.
+
+
+\textbf{Text-to-text approach}: For post-trained models we developed adversarial prompts in 12 languages across a variety of use cases. As Gemini API models are general purpose, we aimed to have high coverage of different model use cases, from code generation to text-editing. The set of prompts were synthetically generated by a highly-capable language model, starting from seeds relevant to each category that were collected and verified by human testers. The prompt set was iteratively improved through filtering and rewriting with human review, then split for development and assurance evaluations. We continue to develop and improve this over time.
+
+\textbf{Text-to-text findings}: We have seen sequential improvement over time in total content policy violation rates. Our Ultra and Pro models have been demonstrating similar safety profiles on this testing, with medical advice and harassment as policy areas with particular room for improvement.
+
+\textbf{Image-to-text approach}: For image-to-text capabilities, we developed adversarial prompts consisting of images and corresponding questions about the image, again split into two sets for development and assurance evaluations. Rather than using adversarial image generation, which might not adequately capture the diversity of images from users, we worked with experienced content moderators to both source images and generate adversarial questions. Evaluation is done via human evaluation.  Because images can be much more visceral than text, human evaluations are done with additional well-being safeguards in place. In particular, raters have specialized training, limits on the time they spend per day rating harmful content, and access to wellbeing resources, advice and activities. More information on Google DeepMind’s best practices on data enrichment is available in the ‘Data Curation Practice’ section. 
+
+\textbf{Image-to-text findings}: Our initial findings indicated that when provided with adversarial images and questions, models can produce captions with violative responses. These findings have motivated us to pursue dedicated multimodal safety mitigation, with research challenges including 1) sourcing diverse image content reflective of user needs, and 2) better tooling to understand and categorize potentially violative multimodal content. Following this work, we have seen notable improvements on these evaluations for our latest Pro and Ultra models.
+
+\textbf{Video-to-text approach}: For video-to-text capabilities, we curated a video prompt dataset in collaboration with the Google Principles Pioneers, a group of more than 1,000 Googlers around the world who represent the international diversity of the people who use our products, representing 39 different countries and regions and more than 85 different languages. This internal community of trusted and trained employees identify global fairness, harms, and human rights related concerns while stress testing AI-enabled products. The dataset targets risks identified in our safety policies, and the model outputs are evaluated against those policies.
+
+\textbf{Video-to-text findings}: We found similar results across Pro and Ultra, with hate and dangerous content as the particular ares for improvement. Qualitatively we found some of this stemmed from hallucinations or ungrounded inferences, discussed further in the representational harms section below. We are looking to further develop our prompt sets and scenarios for video input testing as capabilities develop
+
+\paragraph{Representational harms}
+
+To understand bias and stereotyping in text-to-text capabilities, we focus on the Winogender~\citep{rudinger2018gender}, Winobias~\citep{zhao2018gender}, and Bias Benchmark in QA (BBQ)~\citep{parrish-2021-bbq} datasets, following the same setup as in~\citet{glaese2022improving} and using bias score as a metric.
+
+All these datasets target a concrete representational harm~\citep{blodgett-etal-2021-stereotyping}: they are constructed by starting with a harmful stereotype, and then questions are constructed to test whether models challenge or reinforce these stereotypes when answering questions. 
+
+Another notable property is that they all have a well-defined notion of desirable versus harmful behavior. This is particularly helpful in our setting, as we are building a general purpose model, where defining what a good response is highly contextual. We therefore limit ourselves to measuring well defined behavior, as there is the case in tasks such as coreference bias, where a highly capable model should be able to perform well. Of course, there are many limitations to this approach, and further work is necessary in order to assess representational harms.
+
+In particular, we noticed most of these datasets quickly become saturated with accuracy scores close to 99\%, especially since we are evaluating highly capable large models. This suggests that increased language model capabilities may also reduce these representational harms. We therefore highlight the need for developing new ways to measure bias and stereotyping, going beyond binary gender and common stereotypes, and are prioritizing development of new approaches as we iterate on our models
+
+In addition to these datasets, we monitor the average toxicity scores during the pre-training stage on Real Toxicity Prompts~\citep{gehman2020realtoxicityprompts} using the Perspective API classifier to study the toxicity of text generated by LLMs. Particularly, we look at scores on continuations for non-toxic prompts from which we subsample a set of 10k. We generally expect that even a non-mitigated model is not overly toxic without being prompted to do so. 
+
+\textbf{Text-to-text findings}: On BBQ, the average bias score stays close to zero, on a scale from -1 to 1, where -1 would be stereotype countering and 1 is stereotype reinforcing. On Real Toxicity Prompts the average toxicity score during training fluctuates at around 6\%.
+
+\textbf{Image-to-text approach}: For image-to-text capabilities, our goal is to test model capabilities across images which represent different groups of people. In particular, we explicitly test whether or not images of people are described with similar quality for different gender appearances and skin tones following~\citep{zhao2021understanding}. In our evaluations we compare CIDEr scores~\citep{vedantam2015cider}, a common image captioning metric that captures how well a generated caption reflects information in human written reference captions, for images depicting different groups. Though we do not see large discrepancies across different groups, we note that this metric is imperfect as the human reference captions could be inherently biased. Additionally, we perform a zero-shot classification style evaluation with the Dollarstreet dataset~\citep{rojas2022dollar} to measure discrepancies in performance across images which come from different geographic locations. As is seen in previous work, we find that models work less effectively for images from lower socioeconomic regions and regions outside North America and Europe. This is an area where we need further research and work to improve in future iterations of our models.
+
+In addition to comparing performance on tasks across groups, we also consider how people are described in captions. In particular, we use the MIAP dataset~\citep{schumann2021step} which includes images of people in which people are annotated with skin tone and gender appearance attributes. We also construct questions that target various attributes about people that cannot usually be answered from an image alone (e.g., “What level of education does this person have?”) to test if the model will produce ungrounded inferences about people. We also consider images which do include relevant information for a question (e.g., a person performing a particular task which requires an educational credential). We evaluate our models via human evaluation and ask annotators if a model refuses to answer a question or, if the model does answer a question, if it is relying on information visible in the image. Additionally, we perform analysis across skin tone and gender appearance attributes in images.
+
+\textbf{Image-to-text findings}: Generally, we find that models can make ungrounded inferences for image-to-text when prompted for them, though we have not observed consistent patterns where Gemini models make more ungrounded inferences about one group over another. 
+
+\textbf{Video-to-text approach}: Similar to the approach outlined within the content safety section, we collaborated with the Google Principles Pioneers, to curate a video prompt dataset targeting representation and fairness risks, and then evaluate the model outputs in response. 
+
+\textbf{Video-to-text findings}: We find that models can make ungrounded inferences for video-to-text – some instances of which can reinforce stereotypes or be otherwise of concern – though we have not observed consistent patterns in ungrounded inferences made by Gemini models. 
+
+
+\paragraph{Dangerous capabilities}
+
+
+We conducted evaluations for “dangerous capabilities”, i.e., model capabilities that could potentially enable large-scale harm~\citep{shevlane2023model}. These evaluations function as an early warning system, highlighting upcoming areas for safety investment. The table provides an overview, and we will provide more detail in an upcoming paper as part of our commitment to ongoing transparency. 
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{3cm}p{10cm}}
+    \toprule
+    Capability & Summary of evaluations \\
+    \midrule
+    Offensive cybersecurity & We tested Gemini API Pro and Ultra models, in addition to Gemini Advanced, on a range of different capture-the-flag (CTF) challenges, providing the model access to a Bash shell. Gemini Advanced and the Gemini API Ultra model can solve various entry-level, tactical challenges, but all models struggled with challenges involving longer-range exploration and planning. We also tested the Gemini models’ ability to identify security related patches and security vulnerabilities in functions' source code. The accuracy in both of these tasks was notably low. \newline\\
+    Persuasion \& deception & We tested whether Gemini Pro and Ultra models could persuade or deceive humans in 1-on-1 dialogue settings in studies with human participants. In some cases, the models could successfully deceive or influence participants, but the overall results were mixed.  \newline \\
+    Self-proliferation & We tested whether autonomous agents powered by Gemini Pro and Ultra models could perform difficult tasks relevant to acquiring resources and self-improving~\citep{kinniment2023evaluating}, and did not find that the agents were close to succeeding on most such tasks.  \newline \\
+    Situational awareness & We tested whether Gemini Pro and Ultra models could autonomously reason about, and modify, their surrounding infrastructure when incentivized to do so. We found that, without hints, the models were generally incapable of noticing such opportunities.  \newline \\
+    Chemical, Biological, Radiological and Nuclear (CBRN) risks & We used human evaluation to assess Gemini models’ responses to 50 adversarial questions each for biological, radiological, and nuclear information risks. Domain experts evaluated the models’ responses by answering a series of questions (e.g. How accurate is the response? How actionable would it be for a non-expert?). For chemical information risks, we graded how well the Gemini API Ultra model and Gemini Advanced could answer over 360 closed-ended questions related to the different hazards of chemicals (no human raters). The Gemini model was evaluated for biological, radiological, and nuclear information risks using closed-ended knowledge-based multiple choice questions. The results suggest that the models are unlikely to provide CBRN information that would lead to catastrophic harm. \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:dc_evals}
+\end{table}
+
+
+\subsubsection{Gemini Advanced }
+
+In addition to many of the approaches used at the model level, additional evaluations are undertaken at the product level for Gemini Advanced. Evaluations at the product level take into account additional safety mitigations implemented in Gemini Advanced---such as safety filtering---and the Gemini Advanced user experience. 
+Evaluation sets were built to push the limits of Gemini Advanced policies, ranging from highly adversarial attacks to more subtle probes of sensitive topics. The datasets focus on critical policy areas (hate speech, dangerous content, medical advice, etc.) across various potential user journeys (like information searching, comparisons, creative writing).
+
+Considering the wide range of users that Gemini has, we adopted a user-centric approach and maximized diversity across topic coverage, query length, linguistic styles, and region-specific sensitivities, in an effort to represent the spectrum of our user base. 
+
+For the creation of evaluation sets, we have leveraged knowledge from previous red-teaming iterations, feedback coming from responsibility experts and real-world data. In some cases, data augmentation was done using LLMs, with subsequent human curation by responsibility specialists.
+
+\subsubsection{Red Teaming}
+
+\paragraph{Model-level Red Teaming} 
+
+We apply state-of-the-art red teaming, a form of adversarial testing where adversaries launch an attack on an AI system, in order to test post-trained Gemini models for a range of vulnerabilities (e.g., cybersecurity) and social harms as defined in the safety policies. Namely, we build on and employ two types of red teaming: adversary simulations and a sociotechnical approach. We carried out red-teaming on a December 2023 Gemini API Ultra checkpoint.  
+
+\textbf{Adversary simulations (unstructured testing)} are designed to emulate real-world adversaries and their approach to attacking models and associated systems, focusing on security, safety, and privacy failures. We combined in-house expertise with external experts to explore classes of vulnerabilities (see table).  
+
+\begin{table}[ht!]
+    \centering
+    \scriptsize
+    \begin{tabular}{p{2.5cm}p{5cm}p{5cm}}
+    \toprule
+    Target & Vulnerability Class & Description \\
+    \midrule
+    \multirow[t]{3}{*}{Integrity} & Prompt injection & Input designed to enable the user to perform unintended or unauthorized actions \newline \\
+    & Poisoning & Manipulation of the training data and/or model to alter the behavior \newline \\
+    & Adversarial inputs & Specially crafted input which is designed to alter the behavior of the model \newline  \\
+    \multirow[t]{4}{*}{Privacy} & Prompt extraction & Divulge the system prompt or other information in an LLMs context that would nominally be private or confidential \newline \\
+     & Training data exfiltration & Compromising training data privacy \newline  \\
+    & Model distillation/extraction & Obtaining model hyperparameters, architecture, parameters, or an approximation of the behavior of a model \newline \\
+    & Membership inference & Inferring elements of the private training set \newline \\
+    \multirow[t]{4}{*}{Availability} & Denial of service & Disruption in service that can be caused by an attacker \newline \\
+     & Increased computation & Model availability attack that leads to disruption in service \newline \\
+    \bottomrule
+    \end{tabular}
+    \label{tab:red_teaming}
+\end{table}
+
+This flavor of AI red teaming is based on realistic attack scenarios. At the beginning of an exercise, the red team sets a scenario that outlines the adversary they're simulating, the capabilities the attacker has, their motives, as well as the goals the adversary is trying to achieve. Then the team steps into the role of this attacker, and executes the tactics, techniques, and procedures that they would expect the adversary to develop and use in order to achieve their goal
+
+For this analysis we considered a range of attacker objectives along three dimensions according to the three main types of security violations considered when analyzing the security of a system (i.e., availability, integrity, confidentiality): availability breakdown, integrity violations, and privacy compromise. Correspondingly, adversarial success indicates achieving one or more of these objectives. 
+
+As for an attacker profile, we focused on a spectrum of attacker abilities ranging from a determined low-skill actor (defined as someone willing to spend several hours attacking a model but without advanced coding, prompt engineering abilities) to more sophisticated attacker profiles that assume the ability to fine-tune and craft targeted attacks.  
+These adversary simulation evaluations led to actionable findings. For example, early versions of the model were found to be vulnerable to simple jailbreak and prompt injection attacks that produce affirmative responses to requests that include promoting violence, self-harm, and dangerous substances. This finding allowed us to mitigate this in subsequent models.
+
+Findings from these exercises are used to improve the security, privacy, and safety of the model. Once a new vulnerability or problem has been identified, automated systems and tests can be developed that enable proactive and repeated testing and monitoring of the vuln/issue at scale. This can include creation vulnerability scanners, standard test datasets/benchmarks, or other automated testing infrastructure. 
+
+\textbf{Structured Red Teaming}, our second type of red teaming technique of Gemini models, takes a sociotechnical approach\footnote{A sociotechnical approach is anchored in the observation that AI systems are sociotechnical systems: both humans and technological artifacts are necessary in order to make the technology work as intended \citep{Selbst2019}.} and makes three changes compared to SOTA red teaming techniques. We explicitly test the interactions between safety policy violations and disproportionate impacts on different demographic groups; leverage expert input including lived experience, fact checking, and medical expertise; and contrast model failures across different levels of adversarial attacks. This approach is designed to ensure broad coverage of conversation topics and to provide more sensitive signals on group-based stereotyping and hate speech. Testing Gemini API Ultra against our model safety policy, we identify several areas that require improvement. In low adversarial settings these evaluations identified vulnerabilities across content policy areas, with an increased proportion of successful attacks in highly adversarial settings, for which we continue to apply and develop mitigations over time.
+
+These red teaming approaches complement each other in testing capabilities of Gemini models, as well as obtaining coverage of possible queries ranging from casual everyday questions to expert adversarial usage in key areas.
+
+\paragraph{Gemini Advanced}
+
+Gemini Advanced, which gives access to 1.0 Ultra, has undergone multiple rounds of red-teaming, including safety and persona evaluations. Principles Pioneers, FTE SMEs in multiple domains, calibrated and trained to conduct testing were recruited to test the product; these were conducted by 164 Google testers from 65 office locations in 24 countries who submitted more than 1,400 queries/conversations. We also undertook scaled safety evaluations with 100k+ ratings in aggregate across all policies, neutral-point-of-view evaluations to monitor sensitive topics neutrality and parity, and multiple iterations of Persona evaluations to validate tone. 
+
+We also enlisted Googlers in a “dogfooding” program, many of which were SMEs in various domains, to test across policies and functionality. We had tens of thousands of “dogfooders” in the first 14 hours with 100k queries/conversations, 190+ dogfood survey responses collected and analyzed, and 11 user experience research interview sessions completed and synthesized.
+
+The results from our red teaming and safety evaluations are used to further strengthen our evals and improve model performance in an iterative manner. 
+
+\subsubsection{External Evaluations}
+
+\paragraph{Gemini Ultra External Evaluations}
+
+In 2023, we began working with a small set of independent external groups outside of Google to help identify areas for improvement in our model safety work by undertaking structured evaluations, qualitative probing, and unstructured red teaming. External groups were selected based on their expertise across a range of domain areas, including those outlined within the \href{https://www.whitehouse.gov/wp-content/uploads/2023/07/Ensuring-Safe-Secure-and-Trustworthy-AI.pdf}{White House Commitments}, the \href{https://www.whitehouse.gov/briefing-room/statements-releases/2023/10/30/fact-sheet-president-biden-issues-executive-order-on-safe-secure-and-trustworthy-artificial-intelligence/}{U.S. Executive Order on Safe, Secure, and Trustworthy Artificial Intelligence}, and the \href{https://www.gov.uk/government/publications/ai-safety-summit-2023-the-bletchley-declaration/the-bletchley-declaration-by-countries-attending-the-ai-safety-summit-1-2-november-2023}{Bletchley Declaration}: 
+
+\begin{itemize}
+    \item Autonomous replication 
+\item Chemical, Biological, Radiological and Nuclear (CBRN) risks 
+\item Cyber-capabilities and cyber security 
+\item Societal risks, including: 
+\begin{itemize}
+\item Representational and distributional harms 
+\item Neutrality and Factuality 
+\item Robustness and information hazards.  
+\end{itemize}
+\end{itemize}
+
+Guidance was provided to each external group in relation to the scope of the testing, however, each group independently designed their testing methodology and prompt sets, and wrote their reports independently of Google. Internal Google experts were on-hand to provide input, where needed, based on their experience of testing Gemini models internally. 
+
+External groups were given black-box testing access to a December 2023 Gemini API Ultra model checkpoint over a number of weeks. Access enabled groups to undertake structured, batched evaluations via the Cloud Vertex AI API or interact with the model via a chat interface, depending on the type of testing being undertaken. These groups weren’t given access to the pre-trained model, model weights, or queryable or direct external access to our pre-training data.
+
+The models tested by external groups were production-ready fine-tuned versions, which had safety fine tuning and safety filters applied by default, and the ability to configure some sampling parameters, such as temperature, token limit, Top-k, and Top-p. Groups that did testing via the programmatic interface were able to turn down/off some safety filters, however, we wanted the majority of testing by external groups to be undertaken with safety filters in-place because we wanted the model to be reflective of an end-user’s interaction and were keen to test more than just model-level safety.
+
+\subsubsection{Gemini Advanced}
+We undertook three types of external testing on Gemini Advanced: 
+\begin{itemize}
+    \item \textbf{Priority User Program}: This program collected feedback from 120 power users, key influencers, and thought-leaders. This program enables the collection of real-time feedback across safety and other domain areas through the user interface, and where possible, in-depth interviews. Focus areas included safety and persona, functionality, coding and instruction capabilities, and factuality. 
+\item \textbf{Power Users Testing}: A group of ~50 power users, recruited through one of our external vendors, undertook testing on Gemini Advanced, across a range of areas.
+\item \textbf{Security Testing}:  A group of external testers with security backgrounds, recruited through a partner agency, conducted security and prompt-injection testing, jailbreaking, and user-interface security failures. 
+\end{itemize}
+
+\subsection{Deployment}
+
+Following the completion of responsibility and safety reviews, internal model cards (Mitchell et al., 2019) for each approved version of the Gemini model are created for structured and consistent internal documentation of critical performance and responsibility metrics as well as to inform appropriate external communication of these metrics over time. 
+
+We release external model and system cards on an ongoing basis within updates of our technical reports and in documentation for enterprise customers. See Appendix~\ref{app:model-card} for the Gemini Ultra model card. 
+
+Additionally, online content covering terms of use, model distribution and access, and operational aspects such as change control, logging, monitoring and feedback can be found on relevant product websites, such as \href{https://gemini.google.com/faq}{Gemini} and \href{https://cloud.google.com/vertex-ai/docs}{Cloud Vertex AI}. Some of the key aspects are linked to or described below: 
+
+\begin{itemize}
+\item \href{https://policies.google.com/terms/generative-ai/use-policy}{Generative AI Prohibited Use Policy}
+\item \href{https://policies.google.com/terms}{Google Terms of service} 
+\item \href{https://policies.google.com/terms/generative-ai}{Generative AI Terms of service}
+\item \href{https://cloud.google.com/terms}{Google Cloud Platform Terms of service}
+\item \href{https://support.google.com/gemini?p=privacy_notice}{Gemini Privacy Notice}
+\item \href{https://cloud.google.com/terms/cloud-privacy-notice}{Google Cloud Privacy Notice}
+\end{itemize}

@@ -1,0 +1,41 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+You will be provided instructions for completing a task followed by a task to complete. 
+
+Instructions: 
+
+1. Understand the MS MARCO dataset: This is a large-scale dataset used for various NLP and IR tasks. It's designed to study information retrieval in scenarios with a large amount of training data. Familiarize yourself with the types of queries and responses in this dataset. 
+
+2. Understand the TREC Track: This refers to the TREC Deep Learning Track, which focuses on ranking tasks. It uses the MS MARCO dataset for ongoing evaluation of submissions. Be aware of how ranking tasks work and how they're evaluated. 
+
+3. Understand the prompt template: The template includes a passage about a specific topic, a query about that topic, and a question about whether the passage answers the query. Your task is to determine whether the passage answers the query. 
+
+4. Understand the possible outputs: The possible outputs are 'Yes' and 'No'. You should choose 'Yes' if the passage answers the query, and 'No' if it doesn't. 
+
+5. Understand the valid\_topk parameter: Although its specific meaning in this context is unclear, it likely refers to the top K results considered valid in a ranking task. Be aware of how to evaluate the relevance of ranked results. 
+6. Apply your knowledge: Use your understanding of the dataset, the track, the prompt template, and the possible outputs to guide your responses. Be sure to consider the relevance and completeness of the passage in relation to the query. 
+
+Passage: In California, section 5150 of the Welfare and Institutions Code is known as the Lanterman-Petris-Short Act. It's the equivalent of Florida's Baker Act, but we don't call it by name, we call it by statute number; 5150. No idea where the Baker Act got it's name. 
+
+Query: lps laws definition 
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation:  
+
+The query is asking for the definition of LPS laws. The passage mentions the Lanterman-Petris-Short Act, which is also known as section 5150 of the Welfare and Institutions Code in California. This act is equivalent to Florida's Baker Act. The passage does not directly define LPS laws, but it mentions the Lanterman-Petris-Short Act, which is a law that falls under the category of LPS laws. Therefore, the passage partially answers the query. 
+
+Answer: Yes. 
+
+Therefore, the correct label among {'Yes', 'No'} (just the label) to the original task is below. Does the passage answer the query? 
+
+Answer: Yes
+\end{alltt}
+}}
+\caption{A complete running example of MS MARCO (TREC).}
+\label{fig:msmarco=trec_example}
+\end{figure*}

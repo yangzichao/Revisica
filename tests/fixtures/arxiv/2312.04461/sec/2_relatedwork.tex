@@ -1,0 +1,27 @@
+\section{Related work}
+\paragraph{Text-to-Image Diffusion Models.}
+Diffusion models~\cite{ho2020denoising, song2020denoising} have made remarkable progress in text-conditioned image generation~\cite{ saharia2022photorealistic, rombach2022high, kawar2022imagic, ramesh2022hierarchical}, attracting widespread attention in recent years.
+The remarkable performance of these models can be attributable to  high-quality large-scale text-image datasets~\cite{changpinyo2021conceptual,schuhmann2021laion,schuhmann2022laion}, the continuous upgrades of foundational models~\cite{chen2023pixart, peebles2023scalable}, conditioning 
+encoders~\cite{radford2021learning,ilharco_gabriel_2021_5143773, raffel2020exploring}, and the improvement of controllability~\cite{li2023gligen, zhang2023adding, mou2023t2i, ye2023ip}. 
+Due to these advancements,  Podell~\etal~\cite{podell2023sdxl} developed the currently most powerful open-source generative model, SDXL.
+Given its impressive capabilities in generating human portraits, we build our PhotoMaker based on this model. 
+However, our method can also be extended to other text-to-image synthesis models.
+
+
+
+
+\paragraph{Personalization in Diffusion Models.}
+Owing to the powerful generative capabilities  of the diffusion models, more researchers try to explore personalized generation based on them.
+Currently, mainstream personalized synthesis methods can be mainly divided into two categories. One relies on additional optimization during the test phase, such as DreamBooth~\cite{ruiz2022dreambooth} and Textual Inversion~\cite{gal2022image}. 
+Given that both pioneer works require substantial time for fine-tuning, some studies have attempted to expedite the process of personalized customization by reducing the number of parameters needed for tuning~\cite{kumari2022multi, db_lora, han2023svdiff, yuan2023inserting} or by pre-training with large datasets~\cite{gal2023designing, ruiz2023hyperdreambooth}.
+ Despite these advances, they still require extensive fine-tuning of the pre-trained model for each new concept, making the process time-consuming and restricting its applications.
+ Recently, some studies~\cite{wei2023elite, ma2023unified, jia2023taming, chen2023subject, shi2023instantbooth, ma2023subject, chen2023anydoor} attempt to perform personalized generation using a single image with a single forward pass, significantly accelerating the personalization process.
+These methods either utilize personalization datasets~\cite{chen2023subject, sohn2023styledrop} for training~ or encode the images to be customized  in the semantic space~\cite{wei2023elite, ma2023unified, jia2023taming, 
+chen2023photoverse,
+shi2023instantbooth, xiao2023fastcomposer}.
+Our method focuses on the generation of human portraits based on both of the aforementioned technical approaches.
+Specifically,
+it not only relies on the construction of an ID-oriented personalization dataset, but also on obtaining the embedding that represents the person's ID in the semantic space.
+Unlike previous embedding-based methods, our PhotoMaker extracts a stacked ID embedding from multiple ID images. 
+While providing better ID representation, the proposed method can maintain the same high efficiency as previous embedding-based methods.
+

@@ -1,0 +1,640 @@
+% This must be in the first 5 lines to tell arXiv to use pdfLaTeX, which is strongly recommended.
+\pdfoutput=1
+% In particular, the hyperref package requires pdfLaTeX in order to break URLs across lines.
+
+\documentclass[11pt]{article}
+
+% Remove the "review" option to generate the final version.
+\usepackage[review]{acl}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{booktabs} % 用于更好的表格线
+\usepackage{amsmath} % 用于更好的数学公式处理
+\usepackage{amssymb}
+% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+% For Vietnamese characters
+% \usepackage[T5]{fontenc}
+% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
+
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+% If the title and author information does not fit in the area allocated, uncomment the following
+%
+%\setlength\titlebox{<dim>}
+%
+% and set <dim> to something 5cm or larger.
+
+\title{Brain-Inspired Two-Stage Approach: Enhancing Mathematical Reasoning by Imitating Human Thought Processes}
+
+% Author information can be set in various styles:
+% For several authors from the same institution:
+% \author{Author 1 \and ... \and Author n \\
+%         Address line \\ ... \\ Address line}
+% if the names do not fit well on one line use
+%         Author 1 \\ {\bf Author 2} \\ ... \\ {\bf Author n} \\
+% For authors from different institutions:
+% \author{Author 1 \\ Address line \\  ... \\ Address line
+%         \And  ... \And
+%         Author n \\ Address line \\ ... \\ Address line}
+% To start a seperate ``row'' of authors use \AND, as in
+% \author{Author 1 \\ Address line \\  ... \\ Address line
+%         \AND
+%         Author 2 \\ Address line \\ ... \\ Address line \And
+%         Author 3 \\ Address line \\ ... \\ Address line}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\author{
+    Yezeng Chen$^\Diamond$\textsuperscript{\rm 1,\rm2}, 
+    Zui Chen$^\Diamond$\textsuperscript{\rm 1,\rm2}, 
+    Yi Zhou$^\clubsuit$\textsuperscript{\rm 3} \\
+    \textsuperscript{\rm 1}School of Information Science and Technology, ShanghaiTech University \\
+    \textsuperscript{\rm 2}Shanghai Innovation Center for Processor Technologies \\
+    \textsuperscript{\rm 3}School of Information Science and Technology, University of Science and Technology of China  \\
+    \texttt{\{chenyz2022, chenzui2022\}@shanghaitech.edu.cn;} \\
+    \texttt{yi\_zhou@ustc.edu.cn} 
+}
+
+\begin{document}
+\maketitle
+
+\blfootnote{$^\Diamond$ Equal Contribution.}
+\blfootnote{$^\clubsuit$ Corresponding Authors.}
+
+\begin{abstract}
+
+% 1/4页
+% 虽然Large Language Models emergent abilities in Math Word Problem-solving 但是there is a challenging task in complex multi-step mathematical reasoning tasks。 为了提高model performance on mathematical reasoning tasks，先前的工作通过提高数据质量和数量的方式在open-source models上进行supervised fine-tuning。In this paper，我们提出了一种novel approach，Brain，去 imitating human thought processes来enhance mathematical reasoning的能力，用Frontal Lobe Model 去生成plan，再用Parietal Lobe Model去生成code并执行得到答案。首先，我们通过这种方法在Code LLaMA 7B based models的比较上，achieve SOTA performance。Secondly， 我们发现无论natural language，code，or formal language，都能从中显式的提取plan。
+
+Although large language models demonstrate emergent abilities in solving math word problems, there is a challenging task in complex multi-step mathematical reasoning tasks. To improve model performance on mathematical reasoning tasks, previous work has conducted supervised fine-tuning on open-source models by improving the quality and quantity of data. In this paper, we propose a novel approach, named Brain, to imitate human thought processes to enhance mathematical reasoning abilities, using the Frontal Lobe Model to generate plans, and then employing the Parietal Lobe Model to generate code and execute to obtain answers. First, we achieve SOTA performance in comparison with Code LLaMA 7B based models through this method. Secondly, we find that plans can be explicitly extracted from natural language, code, or formal language. Our code and data are publicly available at \url{https://github.com/cyzhh/Brain}.
+
+\end{abstract}
+
+\section{Introduction}
+
+% 1页半
+
+% 尽管大型语言模型（LLM）具有涌现能力，包括一定水平的数学推理中的数学问题解决能力，但无论是通过预训练, 提示的小样本学习，通过微调，验证，他们都缺乏强大的逻辑推理能力，面临着数学推理能力的挑战。 复杂的多步骤数学推理问题。
+Although Large Language Models (LLMs) possess emergent abilities, including a certain level of Math Word Problem-solving ability in mathematical reasoning, whether through pre-training \citep{touvronLLaMAOpenEfficient2023, roziereCodeLlamaOpen2023, openaiGPT4TechnicalReport2023, anilPaLMTechnicalReport2023}, few-shot learning with prompts \citep{zhangCR2023, zhengPHP2023, zhuRules2023, wangPlanandSolvePromptingImproving2023}, through fine-tuning \citep{wangMathCoderSeamlessCode2023,yuanSCALINGRELATIONSHIPLEARNING2023,luoWizardMath2023} or verification \citep{dengUnifiedViewAnswer2023, wuGetMathProgressive2023,wangMathShepherdLabelFreeStepbyStep2023,romera-paredesMathematicalDiscoveriesProgram2023}, they lack strong logical reasoning skills and face challenges in complex multi-step mathematical reasoning tasks.
+
+% 先前的研究已经探索了各种方法来扩展LLM在复杂的多步骤数学推理问题上的能力。 如果我们将LLM视为人脑，那么预训练就类似于增强整个大脑的一般认知能力。 微调和提示类似于优化海马体，强化知识输入和记忆的形式。 验证就像增强额叶和顶叶的能力，通过测试和纠错来巩固和提炼所学到的知识。
+Previous research has explored various methods to expand the abilities of LLMs in complex multi-step mathematical reasoning tasks. If we consider a LLM as a human brain, then pre-training is akin to enhancing the general cognitive abilities of the entire brain. Fine-tuning and prompting  are analogous to optimizing the hippocampus, reinforcing the forms of knowledge input and memory. Verification is like enhancing the ability of the frontal and parietal lobes, consolidating and refining learned knowledge through testing and error correction.
+
+% 尽管一些方法试图通过增加监督微调（SFT）训练数据的数量和质量来增强LLM在这方面的能力，但我们认为仅仅激活LLM的海马体是不够的。 需要激活每个脑区相应的能力。 具体来说，通过分别激活额叶和顶叶，我们可以相应激活理解问题解决策略和理解编码的能力，从而提高LLM在这方面的能力。
+Recent works \citep{yueMAmmoTHBuildingMath2023, gouToRAToolIntegratedReasoning2023, yuMetaMathBootstrapYour2023} attempt to enhance the ability of LLMs in complex multi-step mathematical reasoning tasks by increasing the amount and improving the quality of supervised fine-tuning (SFT) training data, we believe that simply activating the hippocampus of the LLMs is not enough. It is necessary to activate the corresponding ability in each brain region. Specifically, by activating the frontal and parietal lobes respectively, we can correspondingly activate the ability to understand problem-solving strategies and to understand coding, thereby improving the ability of LLMs in complex multi-step mathematical reasoning tasks.
+
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[page=1,width=0.97\linewidth,trim=0 0 0 0,clip]{img/Brain.png}
+  \caption{Brain, using a combined approach of the Frontal Lobe Model and the Parietal Lobe Model to simulate the human problem-solving thought process.}
+  \label{fig:Brain}
+\end{figure*}
+
+
+
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[page=1,width=0.97\linewidth,trim=0 0 0 0,clip]{img/Method.png}
+  \caption{The overview of our proposed method, Brain.}
+  \label{fig:method}
+\end{figure*}
+
+% 过程奖励模型（PRM）和上海人工智能实验室最近提出的Lean奖励模型（LRM）可以显着减少错误步骤的发生，从而提高LLM的表现。 PRM 逐步评估推理路径，而 LRM 使模型能够将其生成的思想链 (CoT) 流程转换为 Lean 格式，然后通过 Lean 计算结果评估流程的正确性。 PRM 所需的手动注释，尤其是复杂的多步骤推理任务，对注释者技能要求很高，而且成本高昂，LRM 更昂贵。 此外，这三种类型的验证模型都同时训练大型模型的“额叶”和“顶叶”区域，这意味着LLM无法同时有效地管理规划和推理计算。
+Process Reward Model (PRM) \citep{zhuSolvingMathWord2023, lightmanLetVerifyStep2023, wangMathShepherdLabelFreeStepbyStep2023} and Lean Reward Model (LRM) can significantly reduce the occurrence of erroneous steps and thus enhance the performance of LLMs. PRM evaluates the reasoning paths step-by-step, while LRM enables the model to transform its generated Chain of Thought (CoT) process into a Lean \footnote{https://lean-lang.org/} format, then assesses the correctness of the process through the Lean calculation results. The manual annotation required for PRM, especially for complex multi-step reasoning tasks, demands high annotator skills and is costly, with LRM being even more expensive. Additionally, these two types of validation models all train the "frontal lobe" and "parietal lobe" regions of LLMs simultaneously, meaning the LLM cannot concurrently have the abilities of both planning and reasoning calculation effectively.
+
+% 然而，我们认为大模型在数学推理的逻辑能力尚未得到充分的展现，大模型并不能同时兼顾规划和推理计算。In this paper，我们想要解决以下问题：
+% 1. 大模型输出中是否蕴含了plan？如果有，是否能够显式的提取出来？
+% 2. 如何利用plan去解决复杂的推理任务？
+% 3. 如何构造质量更高的plan？质量高的plan是否一定有用？
+However, we believe that the logical abilities of LLMs in mathematical reasoning have not been fully demonstrated, as LLMs cannot simultaneously manage both planning and reasoning calculation. In this paper, we aim to address the following research questions: \textbf{($\spadesuit$1)} Does the output of LLMs contain a plan? If so, can it be explicitly extracted? \textbf{($\spadesuit$2)} How can we use the plan to solve complex reasoning tasks? \textbf{($\spadesuit$3)} How can we construct higher-quality plans? Is a high-quality plan necessarily useful?
+
+% 为了解决这个问题，在本工作中，我们介绍了一种**two-stage（NL2Plan，Plan2Code）的技术**，称为Brain。它涉及构建一个的全新的step-level验证模型框架和一个通用的解决数理问题的方法来**模拟用人写代码解决实际问题的思维方式**：
+% 1. 受使用高级指令，元提示引导LM将复杂任务分解为更小、更易管理的子任务（Meta-Prompting）启发，我们将复杂的数学推理问题分解成两步骤：根据题目进行规划，根据规划进行代码生成。
+% 2. 将这两块任务分配给专门的前额叶模型（决策）和后顶叶模型（代码结构和逻辑流程）。我们DPO 优化两个模型去自动筛选出与Question更加align的Plan和与Plan更加align的Code。
+To address this challenge and overcome the limitation of LLMs' ability, in this paper, we propose a two-stage technique called \textbf{Brain}, whose overview is shown in Figure \ref{fig:Brain}. It involves constructing a novel step-level model framework for solving mathematical reasoning tasks to simulate the human approach to coding for solving real-world issues: 1) Inspired by the use of high-level directives and meta-prompting to guide the LM in breaking down complex tasks into smaller, more manageable sub-tasks \citep{hongMetaGPTMetaProgramming2023, suzgunMetaPromptingEnhancingLanguage2024}, we decompose complex mathematical reasoning problems into two steps using the same LLM: planning based on the question, followed by code generation based on the plan. 2) These two tasks are assigned to specialized models for the Frontal Lobe Model for decision-making and the Parietal Lobe Model for code structure and logical flow. We use Direct Preference Optimization (DPO) to optimize the Models to automatically select plans that align more closely with the question. 
+
+% Through this method, Brain can more effectively solve complex multi-step mathematical reasoning problems and achieve state-of-the-art performance in models of comparable size.
+
+% 需要补充
+Overall, in this paper, our contributions are as follows: 
+
+\begin{itemize}
+    \item We propose a novel approach Brain that imitate human brain thought processes to enhance mathematical reasoning ablilities.
+    \item Brain achieves SOTA performance in comparison with Code LLaMA 7B based models with zero-shot.
+    \item We find that plans can be explicitly extracted from natural language, code, or formal language.
+\end{itemize}
+
+
+\section{Related Work}
+
+% 在本节中，我们简要概述在数学推理任务上的进展，强调它们与我们工作的相关性和联系。
+
+In this section, we provide a brief overview of the progress made in mathematical reasoning tasks, emphasizing their relevance and connection to our work.
+
+% 半页~1页
+
+% Recent works 有采用自然语言形式，代码形式，Lean语言形式 来解决复杂的数学推理任务。** 用二阶段训练的方法证明了代码训练有利于程序辅助的数学推理，从而直接利用LLMs的语境学习能力生成更精确、更严谨的演绎推理
+\textbf{Reasoning Format.} 
+Recent works have utilized natural language \citep{yu2023outcomesupervised, zhangCR2023,zhuRules2023}, code \citep{wuGetMathProgressive2023, yueMAmmoTHBuildingMath2023,wangMathCoderSeamlessCode2023,gouToRAToolIntegratedReasoning2023}, and formal language \citep{gaoGLLaVASolvingGeometric2023, trinhSolvingOlympiadGeometry2024} to solve complex mathematical reasoning tasks. A two-stage training method \citep{shaoDeepSeekMathPushingLimits2024} has demonstrated that code-based training is beneficial for program-assisted mathematical reasoning, thereby directly leveraging the contextual learning abilities of LLMs to generate more precise and rigorous deductive reasoning.
+
+% 尽管通过适当的全局规划提示、逐步推理链的构建以及外部工具的使用，在增强LLM处理复杂推理任务的能力方面取得了重大进展，但这些方法仍然存在一些局限性。 最近的研究通过使用高级指令和元提示来指导 LM 将复杂的任务分解为更小、更易于管理的子任务，取得了长足的进步。 然而，这些方法不仅需要更多的资源和更大的时间复杂度，而且无法充分激活大模型的数学推理能力。
+\textbf{Planning.} Despite significant progress in enhancing the capability of LLMs to handle complex reasoning tasks through appropriate prompting for global planning \citep{yaoTreeThoughtsDeliberate2023}, construction of step-by-step reasoning chains \citep{wangMathShepherdLabelFreeStepbyStep2023,khotDecomposedPromptingModular2023}, and the use of external tools \citep{gouToRAToolIntegratedReasoning2023,yueMAmmoTHBuildingMath2023, shaoDeepSeekMathPushingLimits2024}, these methods still have some limitations. Recent research \citep{suzgunMetaPromptingEnhancingLanguage2024} has made strides by using high-level directives and meta-prompting to guide LMs in breaking down complex tasks into smaller, more manageable sub-tasks. However, these methods not only require more resources and greater time complexity but also cannot fully activate the large model's abilities in mathematical reasoning.
+
+% 通过答案进行校准不足以让LLM生成高质量的推理步骤和答案。 因此，我们需要注重细粒度的步骤级自我验证。 目前的研究重点是通过在推理路径中屏蔽数字来进行逆向验证，通过基于外部知识或工具的后期编辑推理链来增加预测的真实性，在没有外部反馈的情况下修改推理步骤以及分解推理步骤并自我纠正每个步骤。 此外，还进行了通过过程奖励模型（PRM）优化自我验证性能的研究，包括利用人类注释器、蒙特卡罗树搜索和 InternLM2-Math，其中引入了结果奖励模型（ORM）、过程奖励模型（PRM） ，同时采用精益奖励模型 (LRM)。 事实证明，更细粒度的内部和外部反馈可以显着提高模型输出的准确性、质量和稳定性。
+\textbf{Self-Verification.} Some methods \citep{yu2023outcomesupervised, dengUnifiedViewAnswer2023} calibrate through answers is insufficient for LLMs to generate high-quality reasoning steps and answers. Therefore, we need to focus on fine-grained step-level self-verification \citep{wuFineGrainedHumanFeedback2023}. Current research focuses on reverse verification by masking numbers in reasoning paths \citep{wuGetMathProgressive2023, liMakingLargeLanguage}, adding realism to predictions by post-editing reasoning chains based on external knowledge or tools \citep{zhaoVerifyandEditKnowledgeEnhancedChainofThought2023,sunAdaPlannerAdaptivePlanning2023}, modifying reasoning steps without external feedback \citep{hongCloserLookSelfVerification2023,huangLargeLanguageModels2023} and decomposing reasoning steps and self-correct each step \citep{paulREFINERReasoningFeedback2023, lingDeductiveVerificationChainofThought2023}. Also, research has been conducted to optimize self-verification performance through Process Reward Model (PRM), including utilizing human annotators \citep{zhuSolvingMathWord2023,lightmanLetVerifyStep2023}, Monte Carlo Tree Search \citep{wangMathShepherdLabelFreeStepbyStep2023,haoReasoningLanguageModel2023}, and InternLM2-Math \footnote{https://github.com/InternLM/InternLM-Math}, which introduces Outcome Reward Model (ORM), Process Reward Model (PRM), and Lean as Reward Model (LRM) simultaneously. It is demonstrated that more fine-grained internal and external feedback can significantly improve the accuracy, quality, and stability of model outputs.
+
+% Role-Playing in Language Models
+
+\section{Brain}
+% 2~3页
+
+\subsection{Overview}
+
+% Figure 1 shows the overview of Two-stage. In this section, 我们想要强调的关键点有三个：1) 利用Prompt从大模型中得到大量高质量的Plan数据集和偏好数据集(Section \ref{subsec:3.2}); 2) 训练前额叶模型，从而更好地从题目中生成高质量的Plan; 3) 训练后顶叶模型，来更好地从Plan中生成高质量的代码形式的推理路径，最终得到高准确率的答案。
+Figure \ref{fig:method} shows the overview of training Brain. In this section, we want to emphasize three key points: 
+\begin{itemize}
+    \item[1.] Utilizing prompts to obtain a large number of high-quality plan datasets and preference datasets from LLMs (\S \ref{subsec:3.2});
+    \item[2.] Training the frontal lobe model to better generate high-quality Plans from problems (\S \ref{subsec:3.3});
+    \item[3.] Training the parietal lobe model to better generate high-quality code-form reasoning paths from Plans, ultimately achieving highly accurate answers (\S \ref{subsec:3.4}).
+\end{itemize}
+
+% prompt C_plan
+\begin{figure*}[h]
+\centering
+\fbox{%
+  \begin{minipage}{0.9\textwidth}
+    \textcolor{gray}{\textbf{The few-shot prompt $C$ for GSM8K high-quality plan creating.}} \\
+    \textcolor{black}{\textbf{R:}} \textcolor{black}{Let's write a plan based on the python program for solving math problems.} \\
+    \textcolor{teal}{\textbf{Question:}} \\
+    \textcolor{teal}{Richard lives in an apartment building with 15 floors. Each floor contains 8 units, and 3/4 of the building is occupied. What's the total number of unoccupied units In the building?} \\
+    \textcolor{teal}{\textbf{Program:}} \\
+    \textcolor{teal}{\char39\char39\char39 python} \\
+    \textcolor{teal}{def solution():} \\
+    \textcolor{teal}{\qquad num\_floors = 15} \\
+    \textcolor{teal}{\qquad num\_units\_per\_floor = 8} \\
+    \textcolor{teal}{\qquad num\_total\_floors = num\_floors * num\_units\_per\_floor} \\
+    \textcolor{teal}{\qquad num\_units\_occupied = num\_floors * num\_units\_per\_floor * 0.75} \\
+    \textcolor{teal}{\qquad num\_units\_unoccupied = num\_total\_floors - num\_units\_occupied} \\
+    \textcolor{teal}{\qquad return num\_units\_unoccupied} \\
+    \textcolor{teal}{\char39\char39\char39 } \\
+    \textcolor{blue}{\textbf{Plan:}} \\
+    \textcolor{blue}{To solve the problem follow these steps:} \\
+    \textcolor{blue}{1. Determine the total number of units in the building. We can multiply the number of units per floor by the total number of floors.} \\
+    \textcolor{blue}{2. Determine the number of occupied units. We can multiply the total number of units by the fraction representing the occupied units.} \\
+    \textcolor{blue}{3. Determine the number of unoccupied units. We can subtract the number of occupied units from the total number of units.} \\
+    \textcolor{black}{...} 
+  \end{minipage}
+}
+\captionsetup{type=figure}
+\caption{The few-shot prompt $C$for GSM8K high-quality plan creating. The black color text is the requirement $R$. The teal and blue color text is the one of example pairs, which contains input $\overline{x_1}$ including example question and program and the output $\overline{y_1}$ including example plan.}
+\label{fig:C_plan}
+\end{figure*}
+
+
+
+
+
+\subsection{Prompting}
+\label{subsec:3.2}
+
+% 我们利用Prompt从大模型gpt-3.5-turbo-1106中得到大量高质量的Plan数据集和偏好数据集出于以下的观察：1. 为了模仿人类大脑解决问题的方式，我们需要大量的高质量的数据集去训练前额叶模型和后顶叶模型，gpt-3.5-turbo-1106可以在保证最小成本的同时，生成相当高质量的数据集。2. 让模型的输入和输出具有良好的结构，更容易地解析得到plan数据集以及偏好数据集中的得分。
+We obtained a large number of high-quality plan datasets and preference datasets from the large model \textit{gpt-3.5-turbo-1106} using prompts, based on the following observations:
+\begin{itemize}
+    \item To mimic the human brain's problem-solving approach, we require a substantial amount of high-quality datasets to supervised fine-tune and direct preference optimize the Frontal Lobe Model and the Parietal Lobe Model. Using the model \textit{gpt-3.5-turbo-1106} can generate datasets of fairly high quality while ensuring minimal costs;
+    \item Structuring the inputs and outputs of the Models facilitates easier parsing the plan datasets and the preference dataset that we create.
+\end{itemize}
+
+
+% 我们为各个步骤设计了不同的小样本提示，如图 \ref{fig:method} 所示。 Brain 中常用的提示如图 \ref{fig:C_plan} 和 \ref{fig:C_score} 所示，实验中使用的所有其他提示将在附录 \ref{prompt} 中介绍。我们提供提示 C 以及相应的任务输入 x，并从 GPT 生成输出 y:
+
+We design different few-shot prompts for various steps as outlined in Figure \ref{fig:method}. The prompts frequently used in Brain are shown in Figure \ref{fig:C_plan} and \ref{fig:C_score}, and all other prompts used in the experiments will be presented in the Appendix \ref{prompt}. 
+
+We provide prompt $C$, along with the corresponding task input $x$, and generate output $y$ from GPT:
+\begin{equation}
+    \mathcal{G}(y|C,x) = \prod_{t=1}^{|y|}\mathcal{G}_{gpt}(y_t|C,x,y_{<t}),
+\end{equation}
+
+% 其中 C 集成了三个完全不同的人工注释示例对 $\mathrm{Pair}_i$ 和定制要求 R：
+
+where $C$ integrates three completely different human-annotated example pairs $\mathrm{Pair}_i$ and the customized requirement $R$ for the tasks:
+\begin{equation}
+    \mathrm{Pair}_i = (\overline{x_i},\overline{y_i}),
+\end{equation}
+\begin{equation}
+    C = R \oplus \mathrm{Pair}_1 \oplus \mathrm{Pair}_2 \oplus \mathrm{Pair}_3, \\
+\end{equation}
+
+% C_{plan} C_{score} 根据两个不同的任务：生成高质量的plan数据集和高质量的偏好数据集，我们分别设计了两个不同的few-shot prompts。
+
+Based on two different tasks: generating high-quality plan datasets and high-quality preference datasets, we designed two different few-shot prompts $C$ shown in Figure \ref{fig:C_plan} and $C^{'}$ shown in Figure \ref{fig:C_score}. 
+% \begin{equation}
+%     \mathrm{Pair}^{'}_i = (\overline{x_i},\overline{z_i}),
+% \end{equation}
+% \begin{equation}
+%     C^{'} = R^{'} \oplus \mathrm{Pair}^{'}_1 \oplus \mathrm{Pair}^{'}_2 \oplus \mathrm{Pair}^{'}_3, \\
+% \end{equation}
+
+% 在C中，input x including question and solution， output y 代表着 plan，而在C中，input x including question and plan， output y 代表着 score
+
+In Prompt $C$, the input $x_i$ includes the question and solution, and the output $y_i$ represents the plan. Meanwhile, in prompt $C^{'}$, the input $x_i$ includes the question and plan, and the output $y_i$ represents the score and reasons.
+
+\begin{figure*}
+\centering
+\fbox{%
+  \begin{minipage}{0.9\textwidth}
+    \textcolor{gray}{\textbf{The few-shot prompt $C^{'}$ for GSM8K high-quality score dataset creating}} \\
+    \textcolor{black}{\textbf{R:}} \textcolor{black}{Review the following Question, Plan and the corresponding response Solution using the additive 3-pointscoring system described below. Points are accumulated based on the satisfaction of eachcriterion:} \\
+    \textcolor{black}{1. Points are awarded according to how well the logic of the Plan is aligned with the Question.} \\
+    \textcolor{black}{2. Points are awarded according to how the Plan is non-redundant and non-duplicate.} \\ 
+    \textcolor{black}{3. Points are awarded according to how the necessary steps and omit key details or steps.} \\
+    \textcolor{black}{Based on the given Question and Plan, briefly justify your total score. Conclude with the score using the format: Score: [<total points>].Remember to assess from the AI Assistant perspective, and evaluate the response in alignment with this additive scoring model, we'll systematically attribute points based on the outlined criteria.} \\
+    \textcolor{teal}{\textbf{Question:}} \\
+    \textcolor{teal}{Josh decides to try flipping a house.  He buys a house for \$80,000 and then puts in \$50,000 in repairs.  This increased the value of the house by 150\%.  How much profit did he make?} \\
+    \textcolor{teal}{\textbf{Plan:}} \\
+    \textcolor{teal}{1. Determine the value of the house before the repairs. We can subtract the cost of the repairs from the original price.} \\
+    \textcolor{teal}{2. Determine the value of the house after the repairs. We can multiply the value of the house before the repairs by 150\%.} \\
+    \textcolor{teal}{3. Determine the profit. We can subtract the cost of the repairs from the value of the house after the repairs.} \\
+    \textcolor{blue}{\textbf{Solution:}} \\
+    \textcolor{blue}{1. Alignment of Plan with the Question:} \\
+    \textcolor{blue}{The plan starts by determining the value of the house before the repairs, which is unnecessary since the question already states that Josh bought the house for \$80,000. This step does not align well with the question.} \\
+    \textcolor{blue}{The second step in the plan suggests multiplying the value of the house before the repairs by 150\%. This is a misinterpretation of the question. The question states that the value of the house increased by 150\% due to repairs, not that its final value is 150\% of the original price.}\\
+    \textcolor{blue}{The third step, determining the profit by subtracting the cost of repairs from the value of the house after repairs, aligns with the question's requirement but is based on an incorrectly calculated value of the house after repairs.} \\
+    \textcolor{blue}{Score for this criterion: 0} \\
+    \textcolor{blue}{2. Non-redundancy and Non-duplication:} \\
+    \textcolor{blue}{The first step in the plan is redundant as the initial value of the house is already given in the question.} \\
+    \textcolor{blue}{The other steps are not redundant but are based on an incorrect understanding of the question.} \\
+    \textcolor{blue}{Score for this criterion: 0.5} \\
+    \textcolor{blue}{3. Completeness and Detail:} \\
+    \textcolor{blue}{The plan fails to correctly outline the necessary steps for solving the problem. The misinterpretation of how the 150\% increase in value applies significantly impacss and accuracy of the plan.} \\
+    \textcolor{blue}{The plan does cover tts the completenehe concept of calculating profit, which is a required step, but it is based on incorrect prior steps.} \\
+    \textcolor{blue}{Score for this criterion: 0} \\
+    \textcolor{blue}{Based on these assessments, the total score is calculated as the sum of the points from each criterion. Score: [0 + 0.5 + 0] = [0.5]} \\
+    \textcolor{black}{...} 
+  \end{minipage}
+}
+\captionsetup{type=figure}
+\caption{The few-shot prompt $C^{'}$ for GSM8K high-quality score dataset creating. The black color text is the requirement $R$. The teal and blue color text is the one of example pairs, which contains input $\overline{x_1}$ including example question and example plan $\overline{z_1}$ and the output $\overline{y_1}$ including example reasons and score.}
+\label{fig:C_score}
+\end{figure*}
+
+\subsection{Frontal Lobe Model}
+\label{subsec:3.3}
+
+% This subsection 我们介绍了一种训练前额叶模型的方法，从而更好地从题目中生成高质量的Plan。以便于在后顶叶模型进行推理时，能够确保提高准确率。
+
+In this subsection, we introduce a method for training the Frontal Lobe Model, enabling it to better generate high-quality Plans from problems. This ensures an improvement in accuracy when the parietal lobe model performs reasoning.
+
+% 为了解决大模型在解决复杂的推理任务时生成Plan的质量不高  ，我们采用一种直接使用偏好进行策略优化的简单方法Direct Preference Optimization ，可以在没有强化学习训练循环的情况下以闭合形式提取其最优策略。
+
+To address the issue of LLMs generating Plans of low quality when solving complex reasoning tasks, we adopt a straightforward method to optimize fine-tuned model, known as Direct Preference Optimization (DPO) \citep{rafailovDirectPreferenceOptimization2023}, which allows for the extraction of its optimal policy in closed form without the need for a reinforcement learning training loop.
+
+% Dataset. 我们利用了ToRA系列的四个模型，ToRA-Code 7B, ToRA-Code 13B, ToRA-Code 34B以及ToRA 70B上对GSM8K训练集进行100次推理采样，得到400*7473条reasoning paths。然后我们将所有得到的reasoning paths 进行去重以及过滤，最终得到89530条不同且正确的推理路径。
+
+\textbf{Datasets.} We utilized four models from the ToRA series: ToRA-Code 7B, ToRA-Code 13B, ToRA-Code 34B, and ToRA 70B, to perform 100 inference samplings on the GSM8K train set, resulting in 3,000K reasoning paths. Then, we deduplicated and filtered all the obtained reasoning paths, ultimately obtaining 90K distinct and correct reasoning paths dataset $D$.
+
+% 为了提高模型的泛化能力和在领域内的性能，我们需要保证SFT的源数据和DPO的源数据时不相同的。我们从dataset D 7473个题目中提取了4973个题目的所有推理路径作为SFT数据集，和2500个题目的所有推理路径作为制作偏好数据集的源数据。
+
+To enhance the model's generalization ability and performance within the domain, it is crucial to ensure that the source dataset for SFT and DPO are different. From the dataset $D$ comprising 7.5K questions, we extracted all reasoning paths of 5K questions as the source dataset $D_{sft}$ for creating the SFT dataset and all reasoning paths of 2.5K questions as the source dataset $D_{dpo}$ for creating the preference dataset.
+
+% 为了得到高质量的plan，我们采用Prompt_{plan1} 使用GPT模型gpt-3.5-turbo-1106 在source data $D_{sft}$上进行1次推理生成plan数据集 $P_{sft}$. 随后我们将dataset $P_{sft}$ 在Code LLaMA 7B 进行SFT，训练得到 Frontal Lobe Model $FL$. 
+
+\textbf{Supervised Fine-Tuning.} To obtain high-quality plans, we utilize prompt $C$ with the GPT model \textit{gpt-3.5-turbo-1106} to perform one round of inference on the source data $D_{sft}$, generating the plan dataset $P_{sft}$. Subsequently, we conduct SFT on the dataset $P_{sft}$ using Code LLaMA 7B, resulting in the training of the Frontal Lobe Model $\mathcal{FL}_0$.
+
+% 基于$\mathcal{FL}_0$，我们进行了k次主动学习，当迭代后模型$\mathcal{FL}_i$在GSM8K测试集上的性能不再提高时停止，作为我们的初始学习 模型的版本$\mathcal{FL}$。我们用$\mathcal{FL}_i$生成的plan在 Parietal Lobe Model 进行推理which will be introduced in $\S \ref{subsec:3.4}$，从而来评估Frontal Lobe Model 的性能。
+
+Based on $\mathcal{FL}_0$, we conducted active learning for k times, stopping when the performance of the model $\mathcal{FL}_i$ on the GSM8K test set no longer improves after iterations, to serve as our initial version of the model $\mathcal{FL}$. We use the plans generated by $\mathcal{FL}_i$ for inference in the Parietal Lobe Model, which will be introduced in $\S \ref{subsec:3.4}$, to evaluate the performance of the Frontal Lobe Model.
+
+% 偏好数据集构建. 我们通过DPO来不用强化学习的方式去验证我们当前模型在生成plan该任务下的能力，并优化该模型。我们根据plan的逻辑与question是否一致，plan中的step是否重复，plan是否省略关键步骤作为打分的标准R^{'}，题目输入x_i与由前额叶模型FL生成的plan z_i组合成为新的Pair来作为我们的prompt C_{'} where 展示在Figure 2。 
+
+\textbf{Direct Preference Optimization.} We verify and optimize our current model's ability to generate plans without using reinforcement learning, by employing Directed Preference Optimization. We use whether the logic of the plan aligns with the question, whether steps in the plan are repeated, and whether the plan omits key steps as the scoring criteria $R^{'}$. The input $x_i$ includes the question and the plan $z_i$ generated by the Frontal Lobe Model $\mathcal{FL}$, and the manually annotated scores and reasons form a new Pair, which serves as our prompt $C^{'}$, as shown in Figure \ref{fig:C_score}. 
+\begin{equation}
+    C^{'} = R^{'} \oplus \mathrm{Pair}^{'}_1 \oplus \mathrm{Pair}^{'}_2 \oplus \mathrm{Pair}^{'}_3, \\
+\end{equation}
+
+% 我们在推理生成plan后，通过大模型生成得分，which means how plans align question：
+
+After generating plans $z$ through inference, we use the GPT to generate scores $s$, which means how well the plans align with the question:
+\begin{equation}
+    \mathcal{G}(y|C^{'},x) = \mathcal{G}_{\mathcal{FL}}(z|C,x) \cdot \mathcal{G}_{gpt}(y|C^{'},x,z),
+\end{equation}
+\begin{equation}
+    score = \mathcal{E}(y).
+\end{equation}
+
+% 我们使用prompt C_{score}在大模型 gpt3.5-turbo-1106 上 对生成的plan数据集 $P$ 进行偏好打分并给出理由，提取得分得到偏好数据集$Q$.
+
+We use prompt $C^{'}$ on the model \textit{gpt-3.5-turbo-1106} to score the preferences of the generated plan datasets and provide reasons, extracting the scores to obtain the preference dataset.
+
+% 然后我们通过数据集上述构造preference dataset Q 在初版frontal lobe model上进行DPO，得到优化后的模型$FL$.
+
+Then, we perform DPO on the initial version of the frontal lobe model using the constructed preference dataset , resulting in the optimized Frontal Lobe Model $\mathcal{FL}^{*}$.
+
+\subsection{Parietal Lobe Model}
+\label{subsec:3.4}
+
+% This subsection 我们介绍了一种训练后顶叶模型的方法，从而能够更好地从Plan中生成高质量的代码形式的推理路径，来达到更高准确率的目的。
+In this subsection, we introduce a method for training the parietal lobe model, enabling it to better generate high-quality code-form reasoning paths from Plans, with the aim of achieving higher accuracy.
+
+% Dataset. 我们采用model gpt-3.5-turbo-1106对Dataset D 进行推理生成的plan 和 question作为输入，代码形式的推理路径和答案作为output，来作为我们训练Parietal Lobe Model的 SFT 数据集 P。另外我们
+\textbf{Datasets.} We use the model \textit{gpt-3.5-turbo-1106} to perform inference on Dataset $D$, with the generated plans and questions as input and the code-form reasoning paths and answers as output, to serve as our SFT dataset $Q_0$ for training the Parietal Lobe Model. Otherwise, We performed 100 inference samplings on the GSM8K train set using model $\mathcal{PL}$ and processed the obtained reasoning paths to remove duplicates and filter out incorrect reasoning paths, resulting in dataset $Q_i$, where $i$ means iteration times.
+
+% Training. 我们基于Code LLaMA在得到的dataset P上进行有监督微调，得到第一版模型M_1。
+\textbf{Supervised Fine-Tuning.} We conducted supervised fine-tuning on the obtained Dataset $Q_0$ using Code LLaMA 7B, resulting in the first version of the Parietal Lobe Model, $\mathcal{PL}_0$.
+%（训练的参数在这里补充，还有一个rs=9的操作）
+% 迭代 active learning。 我们在 $\mathcal{M}_1$ 上对GSM8K 训练集同样进行100次推理采样，将得到的reasoning paths 进行去除重复和过滤错误的推理路径的操作，得到dataset D_i。并基于$\mathcal{M}_1$在进行active-learning k轮，直至GSM8K测试集在迭代后的模型$M_i$推理的performance不再提升时，停止active-learning。根据表1，我们在第6轮后，模型的性能不再提升，所以我们取M5作为我们最终的后顶叶模型。
+Based on $\mathcal{PL}_0$, we conducted active learning for k times, stopping when the performance of model $\mathcal{PL}_i$ on the GSM8K test set no longer improves after iterations, to serve as our initial version of the model $\mathcal{PL}$. 
+
+\section{Experiments}
+
+% 2~3页
+
+\subsection{Experiment Settings}
+
+% We use four ToRA language models: ToRA-CODE 7B/13B/34B and ToRA 70B with default parameters except a temperature of 0.9 in 100 sample times to create source reasoning paths dataset $D$. 
+% We use two OpenAI language models：gpt3.5-turbo-1106 和 gpt-4-1106-preview with default parameters in sampling。
+% We conducted SFT on Code LLaMA 7B with a learning rate of 2e-5 with a 3\% warm-up period for 1 epoch and a global batch size of 128 on NVIDIA A100 40G GPUs. 以及seed 0
+\textbf{Models.} We use four ToRA language models: ToRA-CODE 7B/13B/34B and ToRA 70B with default parameters except a temperature of 0.9 in 100 sample times to create source reasoning paths dataset $D$. We use two OpenAI language models: \textit{gpt-3.5-turbo-1106} and \textit{gpt-4-1106-preview} with default parameters in sampling for creating plan datasets and preference dataset. And We use Code LLaMA 7B to train our model Brain.
+
+\textbf{Datasets.} We conducted SFT with 55K data for $\mathcal{FL}$, 90K data for $\mathcal{PL}$, and 2.5K data for DPO. And we evaluated the models on GSM8K \citep{cobbeTrainingVerifiersSolve2021}. 
+
+
+
+\subsection{Main Results \& Analysis}
+
+% Table \ref{tab:result} shows the overall experiment results. 我们 mainly 与模型大小为7B，采用zero-shot进行推理的LLMs进行比较。 Experimental results 显示除了本身在非常好基底模型InternLM2-Base和DeepSeekMath-Base上进行训练的模型外，我们提出的novel method 所训练得到的模型的性能达到了SOTA。
+
+Table \ref{tab:result} shows the overall experiment results. We mainly compare our approach with LLMs of size 7B, using zero-shot inference. Experimental results show that, aside from models trained on exceptionally strong baseline models like InternLM2-Base and DeepSeekMath-Base, the performance of the model trained with our proposed novel method achieves SOTA performance in comparison with Code LLaMA 7B based models, with 74\% Accuracy.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{Model} & \textbf{Accuracy}  \\
+\midrule
+{\small\textit{Closed-Source Models}} & \\
+Minerva & 58.8\% \\
+PaLM-2 & 80.7\% \\
+GPT-3.5-turbo & 80.8\% \\
+GPT-4 & 92.0\%  \\
+\midrule
+{\small\textit{Open-Source Models without Code}} & \\
+LLaMA2 & 16.0 \% \\
+Llemma & 36.4\% \\
+InternLM2-Base & 36.5\% \\
+InternLM2-Math-Base & 49.2\% \\
+MAmmoTH & 53.6\% \\
+MetaMath & 66.5\% \\
+DeepSeekMath-Base & 64.2\% \\
+\midrule
+{\small\textit{Open-Source Models with Code}} & \\
+Code LLaMA & 20.8\% \\
+MAmmoTH-Coder & 59.4\% \\
+MathCoder-CL & 67.8\%  \\
+ToRA-Code & 72.6\% \\
+InternLM2-Math & 78.1\% \\
+DeepSeekMath-RL & 86.7\% \\
+\textbf{Brain} & \textbf{74\%} \\
+\bottomrule
+\end{tabular}
+\caption{Main Results on GSM8K. Comparison for Code LLaMA 7B based models with Zero-Shot.}
+\label{tab:result}
+\end{table}
+
+% plan12， plan14， plan20  73.7
+% 为了探索使用相同源数据所生成的plan数据集在Code LLaMA 7B上训练的效果最好，我们采用两种方法来生成plan。对于Question+Code，我们从先前生成的数据集P去除重复reasoning paths的过程中提取重复次数最多的路径作为数据集D_{'}，使用prompt C_{plan1}的 在大模型 gpt3.5-turbo-1106 上 分别对D和D^{'} 进行1次采样得到plan数据集P和P^{'}，然后在模型M上进行推理。此外使用prompt Cplan2 在大模型 gpt3.5-turbo-1106 上 对 GSM8K 训练集进行1次采样得到plan数据集$P_{D}$，同样也在模型M上进行推理。
+
+\textbf{Language Models can extract plan explicitly.} To explore the best training effects on Code LLaMA 7B using plan datasets generated from the same source data, we adopted two methods to generate plans. For using Question and Code to generate Plan, we extracted the most frequently repeated paths from the previously generated dataset $P$ during the process of removing duplicate reasoning paths to form dataset $D^{'}$. Using prompt $C$, we conducted one sampling on both $D$ and $D^{'}$ on the large model \textit{gpt-3.5-turbo-1106} to obtain plan datasets $P$ and $P^{'}$ , respectively, and then performed inference on model $\mathcal{PL}$. For using Question and Solution to generate Plan, using prompt $C^{''}$, we conducted one sampling on the GSM8K train set with the model \textit{gpt-3.5-turbo-1106} to obtain the plan dataset $P^{''}$ , and similarly performed inference on model $\mathcal{PL}$. 
+
+% 根据Table 2 的实验结果，揭示了大模型对于数学推理任务的输出无论是自然语言，代码，又或是formal language，其中都蕴含了plan，且我们通过不同但相似的prompt显式的提取出来，在相同数据规模的情况下，大模型的性能几乎在70\%左右浮动，并且是否过滤掉错误数据几乎没有影响。
+
+According to the experimental results in Table \ref{tab:Q+CvsQ+S}, it is revealed that the outputs of LLMs for mathematical reasoning tasks, whether in natural language, code, or formal language, all contain plans. We were able to explicitly extract these plans using different but similar prompts. Under the same data scale, the performance of LLMs fluctuates around 70\%, and filtering out incorrect data has almost no impact.
+
+
+% 与此同时可以得知 利用正确答案去让GPT生成plan，可以在相同数据量的情况下尽最大可能自动生成高质量的Plan数据集，但通过100次采样来扩展数据集的规模大小，能够使用相同源数据所生成的plan数据集质量最高。
+At the same time, it can be understood that using correct answers to prompt GPT to generate plans can maximize the automatic generation of high-quality plan datasets under the same data volume. However, expanding the dataset's size through 100 samplings enables the highest quality of plan datasets generated from the same source data.
+
+\begin{table}[h]
+\centering
+\small
+{%
+\begin{tabular}{ccc}
+\hline
+\textbf{Dataset} & \textbf{Wrong case} & \textbf{Accuracy} \\
+\hline
+$P$ & $\checkmark$ & 73.7 \\
+$P$ &  & 73.8 \\
+$P^{'}$ & $\checkmark$ &  69.7 \\
+$P^{'}$ &  &  70.1 \\
+$P^{''}$ & $\checkmark$  & 71.0 \\
+$P^{''}$ &  & 71.7 \\
+\hline
+\end{tabular}
+}
+\caption{Exploring the best training effects on Code LLaMA 7B using plan datasets generated from the same source data and compare for whether use wrong case }
+\label{tab:Q+CvsQ+S}
+\end{table}
+
+% 我们prompt C^{''} 用模型gpt-3.5-turbo-1106 来作为我们的前额叶模型，在GSM8K test set上推理生成plan，并在我们训练好的后顶叶模型PL来生成code并执行得到答案。
+% 根据Table 2的实验结果揭示了，Brain模拟人类解决问题的思维方式的二阶段框架是有效的，分别在Code LLaMA 7B和GPT上提升了2.2\%和1.0%并且在第一阶段生成的plan质量越高，解决复杂推理任务的准确率越高. 用模型gpt-3.5-turbo-1106作为Frontal Lobe Model相较于FL而言提升了7.5\%.
+% 根据 Table 3的 case study 我们发现gpt比FL对于plans align question的任务质量高，但是gpt和PL对于codes align plans的任务的准确率高达90\%. 
+\textbf{Better plan, better performance.} We use prompt $C^{''}$ with the model \textit{gpt-3.5-turbo-1106} as our Frontal Lobe Model to generate plans on the GSM8K test set, and then use our trained parietal lobe model $\mathcal{PL}$ to generate code and execute it to obtain answers. 
+
+According to the experimental results in Table \ref{tab:gptvspl}, it is revealed that the two-stage framework of Brain, which simulates the human approach to problem-solving, is effective, achieving improvements of 2.9\% (69.0\% $\rightarrow$ 71.9\%) on Code LLaMA 7B and 1.0\% (80.8\% $\rightarrow$ 81.8\%) on \textit{gpt-3.5-turbo-1106}. Moreover, the higher the quality of plans generated in the first stage, the higher the accuracy in solving complex reasoning tasks, using the model \textit{gpt-3.5-turbo-1106} as the Frontal Lobe Model resulted in a 7.5\% improvement compared to $\mathcal{FL}^{*}$.
+
+Based on the case study in Appendix \ref{casestudy}, we find that the accuracy of \textit{gpt-3.5-turbo-1106} and $\mathcal{PL}$ in tasks of aligning codes with plans is as high as 90\%. 
+
+\begin{table}[h]
+\centering
+\small
+{%
+\begin{tabular}{lc}
+\hline
+\textbf{Method} & \textbf{Accuracy} \\
+\hline
+\textit{one-stage} & \\
+SFT & 69.0\% \\
+GPT-3.5-turbo & 80.8\% \\
+\hline
+\textit{Brain(two-stage)} & \\
+$\mathcal{FL}$ + $\mathcal{PL}$ & 71.9\% \\
+$\mathcal{FL}^{*}$ + $\mathcal{PL}$ & 72.9\% \\
+$\mathcal{FL}^{*}_{all}$ + $\mathcal{PL}$ & 74.0\% \\
+\textit{gpt-3.5-turbo-1106} + $\mathcal{PL}$ & 80.4\% \\ 
+\textit{gpt-3.5-turbo-1106} + \textit{gpt-3.5-turbo-1106} & 81.8\% \\
+\hline
+\end{tabular}
+}
+\caption{Investigation of how two-stage method and how the quality plan affect model performance of complex math reasoning tasks.}
+\label{tab:gptvspl}
+\end{table}
+
+
+
+% 实验plan19 vs plan20
+%我们分别使用GPT模型gpt-3.5-turbo-1106和gpt-4-1106-preview在GSM8K 训练集上进行1次推理采样，得到的数据集分别在Code LLaMA 7B上进行有监督微调，训练的模型$CYZ_1$和$CYZ_2$,在GSM8K测试集上进行推理，得到数据集$Plan_1$和$Plan_2$。使用$Prompt_{Q+P}$在$M_5$上进行推理。根据Table 2，虽然gpt-4-1106-preview的表现略高于gpt-3.5-turbo-1106 1.6%，但是为了统一实验所使用的模型且后续实验需要大量依靠GPT，出于成本考虑我们还是选择gpt-3.5-turbo-1106。
+
+We conducted one inference sampling on the GSM8K train set using the GPT models \textit{gpt-3.5-turbo-1106} and \textit{gpt-4-1106-preview}, respectively. The datasets obtained were then fine-tuned on Code LLaMA 7B, training the models the first version of the model $\mathcal{FL}_{gpt3.5}$ and $\mathcal{FL}_{gpt4}$. Inference was performed on the GSM8K test set with these models, generating datasets $P_{gpt3.5}$ and $P_{gpt4}$ . Inference was carried out on $PL$.
+
+According to Table \ref{tab:gptvs}, although the performance of \textit{gpt-4-1106-preview} was slightly higher than that of \textit{gpt-3.5-turbo-1106} by 1.6\%, we chose to use \textit{gpt-3.5-turbo-1106} for the sake of consistency in the models used in our experiments and cost considerations, given the extensive reliance on GPT for subsequent experiments.
+
+\begin{table}[h]
+\centering
+\small
+{%
+\begin{tabular}{lc}
+\hline
+\textbf{Method} & \textbf{Accuracy} \\
+\hline
+$\mathcal{FL}_{gpt3.5}$ + $\mathcal{PL}$ & 69.7 \\
+$\mathcal{FL}_{gpt4}$ + $\mathcal{PL}$ & 71.5 \\
+\hline
+\end{tabular}
+}
+\caption{Investigating whether using GPT-4 to generate plan datasets will affect model performance of complex math reasoning tasks.}
+\label{tab:gptvs}
+\end{table}
+
+% 利用正确答案去让GPT生成plan，可以尽最大可能自动生成高质量的Plan数据集。数据量Less is more，利用推理得到的路径去生成plan的数据规模比利用正确答案的规模大，但是质量不高，且已经达到过拟合。
+
+% 这里我们不生成后顶叶模型的偏好数据集出于以下两个原因：1). 根据Case Study 我们发现在正确的
+
+% \begin{table}[h]
+% \centering
+% \small
+% {%
+% \begin{tabular}{ccccc}
+% \hline
+% \textbf{Rounds} & 0 & 1 & 2 & 3 \\
+% \hline
+% \textbf{Acc.} & & & & \\ 
+% \hline
+% \end{tabular}
+% }
+% \caption{Iterations}
+% \label{tab:iterations}
+% \end{table}
+
+\section{Conclusion}
+
+% 1/4页~1/2页
+
+% We present Brain, which 目前在GSM8K数据集上的表现相较其他open-source models有一定的竞争力。与此同时，我们尝试在GPT上使用Brain的框架，并且有可观的提升。我们广泛的消融实验表明，the outputs of LLMs for mathematical reasoning tasks, whether in natural language, code, or formal language, all contain plans；我们通过引入two-stage的框架，将复杂的推理任务分解成两个步骤，分别训练两个模型去模拟人类大脑的两个区域，从而来利用plan去解决复杂的推理任务；我们引入了DPO，它是一种直接使用偏好进行策略优化的简单方法，可以在没有强化学习训练循环的情况下以闭合形式提取其最优策略，从而生成高质量的plan，帮助LLMs推理更加准确的推理路径和答案；
+
+We present Brain, which currently shows competitive performance on the GSM8K dataset compared to other open-source models. At the same time, we attempted to use Brain's framework on GPT, resulting in a significant improvement. Our extensive ablation experiments indicate that the outputs of LLMs for mathematical reasoning tasks, whether in natural language, code, or formal language, all contain plans. By introducing a two-stage framework that breaks down complex reasoning tasks into two steps, we train two models to simulate two regions of the human brain, thereby using plans to solve complex reasoning tasks. We used Direct Preference Optimization, a simple method that optimizes strategy directly using preferences, allowing for the extraction of its optimal policy in a closed form without the need for a reinforcement learning training loop. This approach generates high-quality plans, aiding LLMs in producing more accurate reasoning paths and answers.
+
+% 此外我们发现plan对question的对齐程度与code对plan的对齐程度呈正相关，LLMs会根据plan对question的对齐程度进行隐式的打分，如果分数偏低，则不会给根据plan生成code而是重新生成code。在未来，我们会探索LLMs是如何遵循plan生成推理路径的，来解释LLMs的纠错能力。
+
+Furthermore, we discovered that the degree of alignment between the plan and the question positively correlates with the alignment between the code and the plan. LLMs implicitly score the alignment of the plan with the question. If the score is low, the model will not generate code based on the plan but will instead regenerate the code. In the future, we will explore how LLMs follow plans to generate reasoning paths, to explain the error correction abilities of LLMs.
+
+\newpage
+\section*{Limitations}
+
+% 本文的主要局限在于没有分析更多的方法在Brain上进行提升性能，如self-consistency，self-verification。此外，我们还可以将Brain框架应用在其他的open-source models上。我们还应该在更多的任务上进行评估复杂的数学推理任务，使得结果更具有说服力。
+
+The main limitation of this paper is that it does not analyze additional methods to enhance performance on Brain, such as self-consistency and self-verification. Furthermore, the Brain framework could also be applied to other open-source models. We should also evaluate complex mathematical reasoning tasks on a broader range of tasks to make the results more convincing.
+
+
+\section*{Ethical Statements}
+
+% 我们从以下几个方面进行免责声明：
+% 我们使用了open-source model CodeLLaMA 和开源数据集 GSM8K，并且严格遵守他们的License protocols。
+% 在论文写作中我们使用了gpt去翻译和修正语法错误，所有内容我们已经经过人为检查和重写保证没有ethical 问题。
+% 可能存在的风险：
+% 我们使用gpt生成plan datasets 和 preference datasets，我们只检查了采样的题目没有出现ethical 问题，不能保证所有的gpt生成的输出没有ethical risks。
+We claim from these aspects of ethical risks: 
+
+1) Our work leverages the open-source model CodeLLaMA and the GSM8K dataset. We have strictly followed their licensing protocols to ensure compliance with all usage terms and conditions.
+
+2) We utilized GPT4 for translation and grammatical corrections in our manuscript. All generated content has been thoroughly reviewed and revised by human authors to ensure it adheres to ethical guidelines and maintains the integrity of our research.
+
+3) Our research involves the generation of plan datasets and preference datasets using GPT. While we have conducted sample checks to identify any ethical issues and found none, we recognize the limitations of this approach. It is not feasible to guarantee that all outputs generated by GPT are free from ethical risks.
+
+% Entries for the entire Anthology, followed by custom entries
+\bibliography{anthology,custom}
+\bibliographystyle{acl_natbib}
+
+
+\appendix
+
+
+\onecolumn
+\section{Experiment Details}
+
+% 整个Brain流程的训练在NVIDIA A100 40G GPUs上一共花费了8个小时。SFT以及active learning都使用learning rate of 2e-5 with a 3\%  warm-up period for 1 epoch and a global batch size of 128. DPO除了learning rate为2e-6外其他都是默认参数。evaluate GSM8K每次平均3分钟。实验结果just a single run
+
+The entire training process of Brain on NVIDIA A100 40G GPUs took a total of 8 hours and we evaluating GSM8K test set took an average of 3 minutes each time. Both SFT and active learning used a learning rate of 2e-5 with a 3\% warm-up period for 1 epoch and a global batch size of 128. For DPO, aside from the learning rate being 2e-6, all other parameters were set to default. We trained all models with DeepSpeed ZeRO Stage3 and Flash-Attention 2. Additionally, GSM8K has 7473 train set and 1319 test set. The experimental results are based on just a single run.
+
+\section{Case Study}
+\label{casestudy}
+
+% For Plan Align Question，我们通过prompt中plan的打分规则给采样的10个例子打分，分数为每个步骤的平均分。For Code Align Plan, 按照是否完全符合步骤去生成代码的程度进行打分，分数为每个步骤的平均分。
+
+\begin{table*}[h]
+\centering
+\small
+{%
+\begin{tabular}{|l|cccccccccc|}
+\hline
+\textbf{id} & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+\hline
+Plan Align Question($\mathcal{FL}$) & 1 & 1 & 0 & 1 & 1 & 1 & 1 & 0.5 & 0.5 & 1 \\
+Code Align Plan($\mathcal{PL}$) & 1 & 1 & 0 & 1 & 1 & 1 & 1& 1 & 1 & 1 \\
+Code Align Plan(\textit{gpt-3.5-turbo-1106}) & 1 & 1 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\ 
+score & T & T & F & T & T & T & T & F & F & T \\
+\hline
+\end{tabular}
+}
+\caption{For the Plan Align Question, we score the 10 sampled examples based on the scoring rules for plans in the prompt, with the score being the average score for each step. For Code Align Plan, the scoring is based on the extent to which the generated code completely conforms to the steps, with the score being the average score for each step.}
+\label{tab:casestudy}
+\end{table*}
+
+
+\section{Prompt}
+\label{prompt}
+
+\begin{figure*}[h]
+\centering
+\fbox{%
+  \begin{minipage}{0.9\textwidth}
+    \textcolor{gray}{\textbf{The few-shot prompt $C^{''}$ for GSM8K high-quality plan creating.}} \\
+    \textcolor{black}{\textbf{R:}} \textcolor{black}{Let's write a plan based on the solution for solving math problems.} \\
+    \textcolor{black}{\textbf{Question:}} \\
+    \textcolor{black}{Richard lives in an apartment building with 15 floors. Each floor contains 8 units, and 3/4 of the building is occupied. What's the total number of unoccupied units In the building?} \\
+    \textcolor{teal}{\textbf{Solution:}} \\
+    \textcolor{teal}{1. The total number of units in the building will be 8 units/floor * 15 floors = <<8*15=120>>120 units.} \\
+    \textcolor{teal}{2. If 3/4 of the building is occupied, then the total number of occupied units is 3/4 * 120 units = <<3/4*120=90>>90 units.} \\
+    \textcolor{teal}{3. The total number of unoccupied units is 120 units - 90 units = <<120-90=30>>30 units.} \\
+    \textcolor{blue}{\textbf{Plan:}} \\
+    \textcolor{blue}{To solve the problem follow these steps:} \\
+    \textcolor{blue}{1. Determine the total number of units in the building. We can multiply the number of units per floor by the total number of floors.} \\
+    \textcolor{blue}{2. Determine the number of occupied units. We can multiply the total number of units by the fraction representing the occupied units.} \\
+    \textcolor{blue}{3. Determine the number of unoccupied units. We can subtract the number of occupied units from the total number of units.} \\
+    \textcolor{black}{...} 
+  \end{minipage}
+}
+\captionsetup{type=figure}
+\caption{The few-shot prompt $C^{''}$ for GSM8K high-quality plan creating. The black color text is the requirement $R$. The teal and blue color text is the one of example pairs, which contains input $\overline{x_1}$ including example question and solution and the output $\overline{y_1}$ including example plan.}
+\label{fig:C_p+s}
+\end{figure*}
+
+
+
+
+
+\end{document}

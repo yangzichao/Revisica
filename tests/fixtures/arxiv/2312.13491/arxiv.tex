@@ -1,0 +1,441 @@
+\documentclass[reprint,amsmath,amssymb,aps,prl,nobibnotes,superscriptaddress]{revtex4-1}
+\usepackage{graphicx}
+\usepackage{dcolumn}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{pgffor}
+\usepackage[normalem]{ulem}
+\usepackage{xcolor}
+\usepackage{BOONDOX-cal}
+\usepackage{braket}
+\usepackage{etaremune}
+\usepackage{pdfpages}
+\usepackage{BOONDOX-cal}
+
+\makeatletter
+
+\AtBeginDocument{\let\LS@rot\@undefined}
+\makeatother
+\def\supplementfilename{Supplemental.pdf}
+\newif\ifarXiv
+\arXivtrue 
+
+\begin{document}
+
+\title{Ultraclean two-dimensional hole systems with mobilities exceeding 10$^7$ cm$^2$/Vs}
+
+\author{Adbhut Gupta}
+\email{Corresponding author: adbhutg@princeton.edu}
+\affiliation{Department of Electrical and Computer Engineering, Princeton University, Princeton, NJ, USA}
+\author{C. Wang}
+\affiliation{Department of Electrical and Computer Engineering, Princeton University, Princeton, NJ, USA}
+\author{S.K. Singh}
+\affiliation{Department of Electrical and Computer Engineering, Princeton University, Princeton, NJ, USA}
+\author{K.W. Baldwin}
+\affiliation{Department of Electrical and Computer Engineering, Princeton University, Princeton, NJ, USA}
+\author{R. Winkler}
+\affiliation{Department of Physics, Northern Illinois University, DeKalb, Illinois, USA}
+\author{M. Shayegan}
+\affiliation{Department of Electrical and Computer Engineering, Princeton University, Princeton, NJ, USA}
+\author{L.N. Pfeiffer}
+ \affiliation{Department of Electrical and Computer Engineering, Princeton University, Princeton, NJ, USA} 
+\date{\today}
+\begin{abstract}
+
+Owing to their large effective mass, strong and tunable spin-orbit coupling, and complex band-structure, two-dimensional hole systems (2DHSs) in GaAs quantum wells provide rich platforms to probe exotic many-body physics, while also offering potential applications in ballistic and spintronics devices, and fault-tolerant topological quantum computing. We present here a systematic study of molecular-beam-epitaxy grown, modulation-doped, GaAs (001) 2DHSs where we explore the limits of low-temperature 2DHS mobility by optimizing two parameters, the GaAs quantum well width and the alloy fraction ($x$) of the flanking Al$_x$Ga$_{1-x}$As barriers. We obtain a breakthrough in 2DHS mobility, with a peak value $\simeq 18 \times 10^6$ cm$^2$/Vs at a density of 3.8 $\times$ 10$^{10}$ /cm$^{2}$, implying a mean-free-path of $\simeq 57 \mu$m. Using transport calculations tailored to our structures, we analyze the operating scattering mechanisms to explain the non-monotonic evolution of mobility with density. We find it imperative to include the dependence of effective mass on 2DHS density, well width, and $x$. We observe concomitant improvement in quality as evinced by the appearance of delicate fractional quantum Hall states at very low density.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+The invention of the modulation-doping technique \cite{Dingle1978} in GaAs/AlGaAs heterostructures stands as a pivotal breakthrough in the material science and physics of two-dimensional (2D) carrier systems. Exponentially suppressing the inimical Coulomb scattering from intentional dopants, it opened exciting avenues for exploring physics in semiconductor systems with low disorder. Forming nearly perfect crystals when grown using molecular beam eptaxy (MBE), these heterostructures boast exceptional quality, as evidenced by record 2D mobility values \cite{Chung2021elec,Chung2022elec, Kulah2021, Manfra2014}. 
+
+A key utilization of high-mobility GaAs 2D carrier systems is the investigation of exotic, many-body states arising from strong carrier-carrier interaction \cite{Shayegan2005, Halperin2020}. While 2D electron systems (2DESs) have long been at the forefront for exploration of interaction-driven phenomena, 2D \textit{hole} systems (2DHSs) offer an attractive alternative. At very low temperatures when the thermal energy is minimal, the strength of interaction is characterized by the relative strength of Coulomb energy ($E_C$) with respect to other energy scales such as Fermi ($E_F$) and cyclotron energies ($E_\textrm{cyc}$). At zero magnetic field ($B$), the relevant dimensionless parameter is $r_s = E_C/E_F$~$\propto$~$m^*/\sqrt{p}$  where $m^*$ is the effective mass and $p$ is the 2D density. At a given $p$, 2DHSs can have a much larger $m^*$ \cite{ Zhu2007, Watson2012} sometimes exceeding the free electron mass $m_e$, as compared to their electron counterparts ($m^*=0.067m_e$), enhancing the many-body effects. A notable example is the observation of a quantum Wigner crystal at zero $B$ in a dilute 2DHS \cite{Yoon1999}. At high $B$, the relevant interaction parameter is the Landau level (LL) mixing parameter, $\kappa=E_C/E_\textrm{cyc} \propto$~$m^*$ and leads to exotic phases such as Wigner crystal at relatively large LL filling factor $\nu$ \cite{Santos19921/3}, and even-denominator fractional quantum Hall states (FQHSs) \cite{Wang2022}. Very recently, numerous new even-denominator FQHSs were observed in high-mobility 2DHSs, for example at $\nu=$ 3/4, 3/8, 3/10 and 1/4 \cite{Wang2022, Wang2023A, Wang2023B}. Even-denominator FQHSs have garnered attention because they are expected to host quasiparticles obeying non-Abelian statistics \cite{Nayak2008}. This renders 2DHSs as possible contenders for fault-tolerant topological quantum computing. It is worth emphasizing that the above even-denominator FQHSs in the ultrahigh-quality 2DHSs are observed in the lowest ($N = 0$) LL ($\nu<1$), in contrast to the vast majority of even-denominator FQHSs in different materials which are reported in the excited ($N=1$) LL \cite{Nayak2008, Willett1987, Ki2014, Falson2015, Hossain2018, Shi2020, Dutta2022, KHuang2022}. Numerous other, strongly-correlated, many-body phases have also transpired in GaAs 2DHSs including bilayer FQHSs, bubble, and striped phases \cite{Manoharan1994signatures,Tutuc2004,Koduvayur2011,Kamburov2013,Liu2014,Liu2014even,Mueed2015,Liu2016,Jo2017,Ma2020,Ma2022,
+Wang2023anisotropic}.
+
+\begin{figure*}[!t]
+\begin{center}
+\includegraphics[width=1 \textwidth]{fig1.pdf}
+\caption{\label{fig:fig1}(a) Hole mobility ($\mu$) plotted as a function of 2D density ($p$) for $w=$ 20 nm and $x=$ 0.32, 0.08, 0.04, and $w=$ 30 nm, $x=$ 0.04. (b) Schematic of the valence band for the $x=$ 0.04 design; top and bottom panels depict the valence band before and after hole charge transfer, respectively. Starting from $x=$ 0.17 near the doping, $x$ is lowered in steps to 0.09, 0.06 and 0.04. The step thicknesses ($s_1$, $s_2$, $s_3$, $s_4$) are carefully chosen to avoid parallel channels to form near the steps. Table S1 provides values of thicknesses for selected samples \cite{Supp}. The densities are tuned by varying the total spacer thickness ($s=s_1+s_2+s_3+s_4$). (c) Layer structure for the $x=$ 0.04 design. Layer structures for  $x=$ 0.08 and 0.32 designs are shown in Fig.~S1 \cite{Supp}. (d) Calculated density-of-states (DOS) effective masses $m^*$ in units of free electron mass $m_e$, vs $p$ for cases presented in (a).}
+\end{center}
+\end{figure*}
+
+  
+ 
+ In addition, strong spin-orbit (SO) coupling and heavy-hole light-hole mixing in the valence band enrich the physics of 2DHSs \cite{Winkler2003} as they cause non-linear LLs with several crossings \cite{Liu2014even, Liu2016, Ma2022}. These crossings can lead to interesting physics and can be tuned to create novel many-body ground states \cite{Wang2023anisotropic, Liu2014even, Ma2022}. Moreover, the valence band in GaAs consists of p-like atomic orbitals which reduces the overlap between the hole wavefunction and the nuclei, weakening the hyperfine interaction. This, along with the strong SO coupling and anisotropic g-factor \cite{Winkler2000},  makes 2DHSs promising candidates for quantum information processing with long coherence times \cite{Brunner2009, Marton2023}. In sufficiently clean 2DHSs, the mean-free-paths can be quite long, enabling ballistic transport \cite{Heremans1992, Pfeiffer2005}. Combining ballistic transport with strong and tunable SO coupling can result in unique spin-dependent transport phenomena, with applications in spintronics \cite{Lu1998, Yau2002, Rokhinson2004, Habib2009, Nichele2015, Rendell2022, Rendell2023}.
+
+It is important to reemphasize that these observations have been enabled by decades of innovations in MBE growth techniques \cite{Pfeiffer2003, Manfra2014}. A recent example of MBE innovation is the breakthrough in mobility of GaAs 2D carrier systems following refinements in MBE growth chamber design, and purification of source materials \cite{Chung2021elec,Chung2022elec, Chung2022holes, Chung2018}. Exciting physics shortly followed these mobility breakthroughs, for instance, the appearance of new even-denominator FQHSs in $N=0$ LL of record-quality 2DHSs \cite{Wang2022}. The richness of 2DHSs and recent observations incentivise efforts to further enhance the 2DHS mobility. Given the already extreme levels of vacuum and source material purity in our MBE growth chamber, we present here an alternative approach to improve mobility by optimizing the sample structure design. By systematically growing 60 GaAs 2D hole samples, we find that optimizing two structural parameters, the alloy fraction $x$ of the Al$_x$Ga$_{1-x}$As barriers near the GaAs quantum well (QW), and the QW width $w$, is crucial for maximizing the mobility of 2DHSs. By adjusting these parameters, we obtain significant enhancements in mobility over a wide density range, with a new record value $\simeq$ 1 $\times$ 10$^7$ cm$^2$/Vs, measured at temperature $T=$ 300 mK (Fig.~\ref{fig:fig1}(a)). The improvement achieved at low densities is remarkable given that the previous record $\mu\simeq$ 6 $\times$ 10$^6$ cm$^2$/Vs was achieved at relatively higher density \cite{Chung2022holes}. Interestingly, we also find that at low densities, our 2DHSs display a strong enhancement in mobility as $T$ is lowered from 300 mK to 30 mK, with a record value $\mu\simeq$ 18 $\times$ 10$^6$ cm$^2$/Vs at $p\simeq$ 0.38 $\times$ 10$^{11}$  /cm$^{2}$. Mobilities $>$10$^7$ cm$^2$/Vs are the highest ever achieved for any 2DHS and are bound to unveil new interaction phenomena.
+
+\section{Experimental Methods}
+
+Our samples are grown on 2-inch-diameter GaAs (001) substrates at a growth temperature $T\simeq$ 640 \textdegree C. The ultrahigh vacuum in our growth chamber is achieved by four large (3000 l/s) cryopumps augmented by three auxiliary cryo-cooled ($\simeq$ 17 K) cold plates \cite{Chung2021elec}. The deposition rate is calibrated using refection high-energy electron diffraction oscillations by tuning the oven temperatures. Since our samples use various barrier alloy fractions in the same structure (Fig.~\ref{fig:fig1}(b)), we use two Ga and two Al ovens during each growth and tune the temperatures to obtain the desired alloy fractions. Carbon doping is performed using a doping well structure comprised of a 1.7 nm GaAs QW flanked by 1.13 nm AlAs barriers \cite{ChungDWS}. However, in contrast to 2DESs \cite{Chung2021elec}, the doping well structure does not provide a significant advantage over standard $\delta$-doping into AlGaAs barriers. Carbon doping is achieved using a filament of vitreous C generating a doping rate of $\simeq $10$^{10}$ carbon atoms  /cm$^{2}$s when heated through 6-mm-diameter Ta leads with a power of $\simeq$ 200 W. Typically, the samples are doped for 5 to 10 minutes (depending on the density) by opening a shutter to introduce C atoms and the substrate temperature is reduced to $\lesssim$ 500 \textdegree C. After the doping is completed, the C filament is turned down to a low power ($<$ 1 W) during the growth of undoped regions. 
+
+ On the flanks of GaAs QW, instead of using undoped Al$_x$Ga$_{1-x}$As barriers with constant $x$, we employ stepped barriers with varying $x$ and thicknesses to reduce $x$ near the QW (Fig.~\ref{fig:fig1}(b)). Within this framework, we compare three designs such that $x$ near the QW is 0.32, 0.08 or 0.04; we label the designs by the $x$ value near the QW. Figures~\ref{fig:fig1}(b) and (c) show schematic valence band diagram and a typical MBE structure, respectively, for the $x=$ 0.04 design. The thickness ($s_i$) of each spacer barrier layer is carefully chosen such that no parallel channel forms at any of the step interfaces. The density is tuned by varying the total spacer thickness $s$. The well width is fixed at $w=$ 20 nm for most of the samples, but augmented to $w=$ 30 nm for a study of well-width dependence for $x=$ 0.04.
+
+We characterize the transport properties on unpatterned pieces of the grown wafer, typically 4$\times$4 mm$^2$ in size in the van der Pauw geometry, using standard low-frequency lock-in techniques. The 2DHS is contacted using In:Zn contacts annealed at 450 \textdegree C for 4 minutes in a reducing forming gas  environment. We perform the mobility measurements in dark (without illumination) in a $^3$He cryostat with a base temperature of $\simeq$ 300 mK. Magnetoresistance measurements are then performed to deduce 2DHS density from quantum Hall features. The data presented in Figs.~\ref{fig:fig3} and \ref{fig:fig4} are measured in a dilution refrigerator with a base temperature of $\simeq$ 30 mK.
+
+ \section{Results and Discussion}
+
+Figure~\ref{fig:fig1}(a) shows mobility as a function of 2DHS density for various values of $x$ (closest to the QW) and $w$. Focusing on the $w=20$ nm data, for $p\leq$ 1 $\times$ 10$^{11}$ /cm$^{2}$, a factor of $\simeq$ 3 improvement is seen as $x$ is lowered from 0.32 to 0.08, and another factor of $\simeq$ 1.5 when lowered to 0.04. We conjecture that this dramatic improvement stems from two effects. First, the purity of the Al source even after sufficient cleaning is not as high as the Ga source \cite{Chung2018, Chung2021elec}. Additionally, Al atoms are much more chemically reactive than Ga atoms and can attract stray impurities from the imperfect vacuum environment more readily and incorporate them into the structure during growth. Using lower $x$ reduces the concentration of background impurities near and in the QW \cite{Chung2018, Chung2021elec}. Second, lower $x$ also leads to a smoother and more gradual potential profile at the barrier-QW interface. This gentle confinement of holes in the QW reduces sensitivity to small variations or imperfections at the interface, lowering the interface roughness. Additional evidence for reduction in interface roughness comes from the fact that when $w$ is increased to 30 nm for $x=$ 0.04, mobility improves further. Lowering $x$ or increasing $w$ further does not show more improvement, likely because of weaker confinement of the 2DHS in the GaAs QW \cite{Supp}.
+
+In Fig.~\ref{fig:fig1}(a), at high densities, mobility falls rapidly with increasing $p$, with $x=$ 0.04 data falling faster than either 0.08 or 0.32. At higher $p$, the penetration of the wavefunction into the barrier can lead to alloy-disorder scattering. The penetration increases with decreasing $x$ because of the lower potential barrier. The contribution of remote ionized impurities (the intentional impurities in the doping region), also increases at higher $p$ as the setback $s$ becomes smaller. This brings remote ionized impurities closer to the QW, increasingly degrading the mobility. 
+
+We now discuss in detail the various disorder effects that can account for Fig.~\ref{fig:fig1}(a) results. Qualitatively, we have identified that residual \textit{background impurities} (BIs) in the channel and barrier, \textit{interface roughness} (IR), \textit{remote ionized impurities} (RIs), and \textit{alloy disorder} (AD) are the main factors that limit the mobility in our 2DHSs. We analyze these scattering mechanisms quantitatively using transport models and obtain the dependence on $p$ for each scattering mechanism. In the simple Drude picture, the low-temperature mobility is defined as $\mu= e\tau/m^*$ where $e$ is the fundamental charge and $\tau$ is the total scattering lifetime. For each scattering mechanism, it is useful to define a characteristic lifetime $\tau_j$ where the subscript $j$ marks the scattering mechanism under consideration. Using Mathiessen’s rule, $\tau$ can then be evaluated as $\frac{1}{\tau}=\sum\limits_{j} \frac{1}{\tau_j}=\frac{1}{\tau_\textrm{BI}}+\frac{1}{\tau_\textrm{IR}}+\frac{1}{\tau_\textrm{RI}}+\frac{1}{\tau_\textrm{AD}}$.
+
+An important characteristic of 2DHSs is that $m^*$ has a strong dependence on $p$ (Fig.~\ref{fig:fig1}(d)) arising from non-parabolicity of the valence band due to mixing of the heavy-hole and light-hole bands \cite{Winkler2003, Zhu2007, Watson2012, Chung2022holes}. To take this into account, we calculate hole energy-band dispersions for each case in Fig.~\ref{fig:fig1}(a) and then determine the density-of-states (DOS) effective mass at the Fermi energy (Fig.~\ref{fig:fig1}(d)) which we use as $m^*$ in our transport models. Our self-consistent calculations are based on an 8$\times$8 Kane Hamiltonian with cubic anisotropy but no Dresselhaus term \cite{Winkler2003,footnote1}. A dependence of $m^*$ on $x$ and $w$ is also evident in Fig.~\ref{fig:fig1}(d).  The decline in mobility at higher $p$ in Fig.~\ref{fig:fig1}(a) appears to be correlated with the rise in $m^*$ in Fig.~\ref{fig:fig1}(d) which is expected from the Drude picture. More importantly, this strongly density-dependent $m^*$ can significantly affect the density dependence of scattering mechanisms and needs to be carefully incorporated into the transport models. 
+
+Following the Born approximation, the general form of $\tau_j$ can be written as \cite{Gold1989, Huang2022}:
+\begin{equation}
+\frac{1}{\tau_j} = \frac{m^*}{2\pi\hbar^3k_F^3}\int_0^{2k_F}dq\frac{q^2}{\sqrt{1-(\frac{q}{2k_F})^2}}\frac{\braket{|U_j(q)|^2}}{\epsilon_q^2},
+\label{eq:tau}
+\end{equation}  
+where integration is over the wavevector $q$, $k_F=\sqrt{2\pi p}$ is the Fermi wavevector, $\hbar$ is Planck's constant, $U_j(q)$ is the scattering potential for a given scattering mechanism, and $\epsilon_q$ is the dielectric screening function which, under the random phase approximation, is given by:
+\begin{equation}
+\epsilon_q = 1 + \frac{q_s}{q}F_c(q)[1-G(q)].
+\label{eq:epsilon}
+\end{equation}  
+Here $q_s$ is the screening wavevector which becomes $q_\textrm{TF}=\frac{m^*e^2}{2\pi\epsilon_b\epsilon_0\hbar^2}=\frac{2}{a^*_B}$ in the Thomas-Fermi approximation, $\epsilon_0$
+the vacuum permittivity, $\epsilon_b=$ 12.9 the dielectric constant of GaAs and $a^*_B$ the effective Bohr radius. The interaction effects in the 2DHS are accounted by a local-field correction term $G(q)=\frac{q}{2\sqrt{q^2+k_F^2}}$ within the Hubbard approximation, and a form factor $F_c(q)$ for hole-hole Coulomb interaction to take into account the finite confinement, given by \cite{Gold1989, Huang2022}:
+\begin{equation}
+F_c(q)=\int_{-\infty}^{+\infty}dz|\psi(z)|^2\int_{-\infty}^{+\infty}dz'|\psi(z')|^2e^{-q|z-z'|}.
+\label{eq:ff}
+\end{equation}
+We note that exchange-correlation effects can be more complex in 2DHSs as compared to 2DESs, for instance because of an anomalous-spin polarization in 2D holes \cite{Winkler2005}. Also, the hole wavefunctions are four-component spinors (representing the effective spin 3/2 of holes) for finite in-plane wavevector $k_{||}$ \cite{Winkler2003}. For simplicity, we evaluate the wavefunction $\psi(z)$  self-consistently at the subband edge ($k_{||}=$ 0) for each $x$ and $w$ in Fig.~\ref{fig:fig1}(a) at a given $p$. We now discuss each scattering mechanism separately and evaluate $\braket{|U_j(q)|^2}$.
+
+\textit{Residual background impurities, BIs}. Even if the MBE chamber is ultraclean, it is not completely devoid of impurities, and these could get incorporated in the structure during growth. If charged, they can scatter holes. The average potential for BIs is evaluated using Eqs.~\ref{eq:BI} and \ref{eq:ff2}. It is important to distinguish between BIs according to where they reside, in the GaAs QW or in the Al$_x$Ga$_{1-x}$As barrier, because concentration of BIs in the barrier ($N_{\textrm{BI.}s_i}$) can be significantly higher than in the QW ($N_{\textrm{BI.}w}$). Accordingly, we define BI density $N(z)$ as a function of distance $z$ in Eq.~\ref{eq:NBI}. The highest-mobility samples with $x=0.04$ design set the level of BIs, and we find $N_{\textrm{BI.}w}=$ 2 $\times$ 10$^{12}$ /cm$^{3}$ and $N_{\textrm{BI.}s_1}=$ 5 $\times$ 10$^{12}$ /cm$^{3}$. Considering higher concentration of BIs in the barriers with higher $x$ and concomitant surface segregation into the QWs \cite{Chung2018}, we find $N_{\textrm{BI.}w}$ and $N_{\textrm{BI.}s_i}$ for other designs (see Supplemental information for more details \cite{Supp}).
+
+\begin{figure}[!t]
+\begin{center}
+\includegraphics[width=0.5 \textwidth]{fig2.pdf}
+\caption{ Measured 2DHS mobility vs density in comparison with calculated mobility limited by the combined scattering mechanisms. The contributions of individual scattering mechanisms are shown in Fig. S2 \cite{Supp}. \label{fig:fig2}}
+\end{center}
+\end{figure}
+
+\textit{Interface Roughness, IR}. Scattering from IR results from layer variations at the GaAs/AlGaAs interface which cause fluctuations in QW width, ground-state energy, and local charge distribution, creating a scattering landscape for holes. We employ a model for finite QWs where the well width fluctuations are parameterized by two parameters, the average height of fluctuations and the correlation length over which the fluctuation spreads. The averaged random potential takes the form in Eq.~\ref{eq:IR}. It is worth noting that the density dependence of IR in our 2DHSs (positive slope) is in contrast to 2DESs (negative slope) reported recently \cite{Chung2022elec}. This is because IR is strongly dependent on $w$, and $w$ is fixed here for the entire range of density in 2DHSs while it was decreased with density in 2DESs \cite{Chung2022elec} (causing more scattering at higher densities). A combination of BI and IR gives a reasonable agreement with the experimental data at low densities \cite{Supp}.
+
+\begin{figure*}[!t]
+\begin{center}
+\includegraphics[width=1 \textwidth]{fig3.pdf}
+\caption{(a) Longitudinal resistance ($R_{xx}$) vs perpendicular magnetic field $B$ of our record-high-mobility sample at $p=$ 0.38$\times10^{11}$  /cm$^{2}$ with $x=$ 0.04 and $w=$ 30 nm at $T\simeq$ 30 mK. The magnetic field positions of several QHSs are marked in blue. The developing even-denominator FQHSs are highlighted in red. (b) $R_{xx}$ vs $B$ of a high-mobility ($\mu\simeq10\times10^6$ cm$^2$/Vs at 300 mK) 2D electron sample, with a density of $\simeq0.45\times10^{11}$, $w=40$ nm, at $T\simeq$ 30 mK. (c) $R_{xx}$ vs $B$ of an old 2D hole sample ($\mu\simeq1\times10^6$ cm$^2$/Vs at 300 mK) with $p\simeq0.48\times10^{11}$, $x=0.32$, and $w=30$ nm, at $T\simeq$ 40 mK. The magnetoresistance traces in (b) and (c) are shown in a narrow $B$ range between $\nu=1$ and $\nu=2/3$ to highlight the differences from (a). \label{fig:fig3}}
+\end{center}
+\end{figure*}
+
+
+\textit{Remote ionized impurities, RIs}. RI scattering is inevitable in a modulation-doped structure and comes from the long-range Coulomb interaction between the holes in the QW and their parent ions in the doping layers. In our calculations, we assume that the sheet density of RIs ($n_\textrm{RI}$) is equal to the 2DHS density in the QW, thus neglecting surface compensation contribution to $n_\textrm{RI}$. Similar to BIs, the random potential for RIs takes the form shown in Eq.~\ref{eq:RI}. While RI scattering shows the right trend vs density, it proves insufficient to explain the sharp decline in $\mu$ at higher densities.
+
+\textit{Alloy disorder, AD}. In the  Al$_x$Ga$_{1-x}$As barriers, the Al and Ga atoms are randomly distributed, which can cause localized potential fluctuations. The tails of the wavefunctions extending into the barrier can interact with these random potential fluctuations and cause scattering. Using virtual crystal approximation, the AD potential can be written as Eq.~\ref{eq:AD}. As expected, AD affects $x=0.04$ the most because of the maximum penetration into the barrier (see Supplemental material Figs. S2 and S4), and as a result mobility falls much faster for $x=0.04$ at higher $p$.
+
+
+
+Combining the contributions of the above scattering mechanisms, the resultant total mobility $\mu=$ e$\tau$/$m^*$ for each design, plotted in Fig.~\ref{fig:fig2}, is in reasonably good agreement with the experimental data. Our calculations capture the salient features of the experimental data - the non-monotonic dependence of mobility on density, and the crossings between mobilities of different designs at higher densities. 
+
+
+We acknowledge of course, the possibility of other scattering mechanisms such as intersubband scattering between electric subbands or between spin-split subbands. For narrow QWs ($w=20$ nm), our self-consistent calculations suggest that the second electric subband is not occupied throughout the density range considered. For wide wells ($w=30$ nm, $x=$ 0.04), there is a possibility of second subband occupation for $p\geq$ 1.5$\times10^{11}$  /cm$^{2}$, but we stay below that range in experiments. In principle, inter-spin-split-subband scattering in the presence of SO coupling can become relevant in 2DHSs \cite{Hwang2003}. However, under relevant measurement circumstances, this scattering is usually weak \cite{footnote2} and thus ignored in the transport calculations. Another mechanism which could become pertinent at very low densities is the density inhomogenity induced percolation. Indeed, our mobilities exhibit a faster decay at very low densities  ($p\lesssim$ 0.4$\times10^{11}$) which can be explained using percolation models \cite{Sojoto1990,Manfra2007}. Fitting our $w=30$ nm data for conductivity $\sigma$ at very low densities to $\sigma \sim (p - p_c)^{\delta}$, where $p_c$ is the critical percolation density and $\delta$ is the critical exponent \cite{Sojoto1990,Manfra2007}, we find reasonable values of $p_c\simeq$ 7$\times$ 10$^9$ /cm$^{2}$ and $\delta\simeq1.9$, suggesting mobilities at $p\lesssim3\times$ 10$^{10}$ /cm$^{2}$ may be incipiently affected by density inhomogeneities.
+
+
+As discussed earlier, one of the most important applications of high-mobility 2D carrier systems lies in probing many-body phenomena. Given the remarkable improvement in mobility, we studied the low-$T$ ($\simeq$ 30 mK) magnetotransport characteristics in our record high-mobility 2DHS at  $p=$ 3.8$\times10^{10}$ /cm$^{2}$ ($x=$ 0.04 and $w=$ 30 nm). Figure~\ref{fig:fig3}(a) shows $R_{xx}$ vs perpendicular magnetic field $B$, with several LL fillings marked. Clearly, the sample exhibits exceptional quality as evinced by numerous even- and odd-denominator FQHSs. Along with the even-denominator $\nu=$ 3/4 FQHS recently observed in ultraclean 2DHSs \cite{Wang2022}, several other delicate features are observed between $\nu=$ 1 and 2/3 at $\nu=$ 6/7, 4/5, 5/7 and 9/13, suggesting developing FQHSs at these fillings. Apart from $\nu=$ 3/4, $R_{xx}$ minima are observed at other even-denominator $\nu=$ 5/8 and 5/12. The trace in Fig.~\ref{fig:fig3} also shows numerous higher-order odd-denominator FQHSs near $\nu=$ 1/2 up to  $\nu=$ 9/19. Such higher-order FQHSs in a very low-density sample again attest to the quality of our 2DHS. In the Supplemental Figs.~ S3 and S4, we show more examples of traces taken at $T=$ 300 mK to corroborate that higher mobility samples indeed show more and better-defined FQHSs.
+
+In Figs. \ref{fig:fig3}(b) and (c), we compare magnetotranport data of Fig. \ref{fig:fig3}(a) with previously grown 2DES and 2DHS samples, respectively, between $\nu=1$ and 2/3, at a comparable density, QW width and temperature. The 2DES shows a reenterant integer QHS at $B\simeq2.1$ T,  and standard (Jain-sequence) odd-denominator FQHSs at $\nu=$ 4/5, 7/9 and 5/7, 8/11,... flanking a smooth $R_{xx}$ minimum at $\nu=$ 3/4. Clearly, these features are very different from our dilute high-mobility 2DHS (Fig. \ref{fig:fig3}(a)) which exhibits additional developing FQHSs at  $\nu=$ 6/7 and 9/13, and an even-denominator developing FQHS at $\nu=$ 3/4. The 2DHS in Fig. \ref{fig:fig3}(c) which has much lower mobility, shows essentially no FQHSs between $\nu=1$ and 2/3.
+
+\begin{figure}[!t]
+\begin{center}
+\includegraphics[width=0.5 \textwidth]{fig4.pdf}
+\caption{Measured mobility vs temperature in the sample with $x=0.04$, $w=$ 30 nm, and $p\simeq$ 0.38$\times10^{11}$  /cm$^{2}$. The temperature is varied from 30 mK to 300 mK. The enhancement of $\mu$ at lower $T$ indicates a metallic behavior. \label{fig:fig4}}
+\end{center}
+\end{figure}
+
+
+We finally discuss a rather dramatic enhancement in mobility of our record-high-mobility, dilute 2DHS as we lower the temperature (Fig.~\ref{fig:fig4}). In Fig.~\ref{fig:fig2}, the highest mobility at $T=$ 300 mK is $\simeq$ 10 $\times$ 10$^6$ cm$^2$/Vs at $p\simeq$ 0.38$\times10^{11}$ /cm$^{2}$ ($w=30$ nm, $x=$ 0.04). As we cool this sample, the mobility increases to $\simeq18\times$ 10$^6$ cm$^2$/Vs at $T\simeq$ 30 mK (an improvement by a factor of $\simeq$ 1.8). We note that similar behaviors have been observed in other dilute GaAs 2DHSs \cite{Hanein1998, Simmons1998, Watson2011}. In fact, at similar densities, Watson \textit{et al.} \cite{Watson2011} also report an increase in mobility by a factor $\simeq1.8$ when $T$ is lowered from 300 mK to 50 mK in their 2DHSs. This mobility increase in dilute carrier systems can stem from the temperature dependence of dielectric screening  \cite{ Sarma2015}. It is more pronounced in GaAs 2DHSs as compared to 2DESs because of the larger $m^*$, which enhances the dimensionless parameter $q_\textrm{TF}/2k_F$ ($\simeq$13 for the sample in Fig.~\ref{fig:fig4}), making screening more effective.
+
+While screening provides a possible explanation for the observed temperature dependence, for our sample parameters ($m^*$, $p$ and $T_F$), a factor of $\simeq$ 1.8 is too high to be attributed entirely to screening \cite{Sarma2015,footnote3}. We surmise that some other, yet unknown factors may be contributing to the temperature dependence in dilute 2DHSs, apart from screening \cite{footnote3}. More careful temperature-dependent mobility measurements at different densities may help illuminate the underlying mechanism. The temperature dependence of mobility can also affect the density dependence of mobility in Fig.~\ref{fig:fig1}(a), particularly at lower densities. Since background impurities mostly limit the mobility at lower densities (in particular for the case depicted in Fig.~\ref{fig:fig4} \cite{Supp}), that would imply our MBE-grown GaAs has an even lower concentration of background impurities ($N_{\textrm{BI.}w} \lesssim 1\times10^{12}$ /cm$^{3}$) than we estimated from Fig.~\ref{fig:fig2} fits.
+
+\section*{Acknowledgements}
+We acknowledge support by the National Science Foundation (NSF) Grants Nos. DMR 2104771 and ECCS 1906253) for measurements, the U.S. Department of Energy (DOE) Basic Energy Sciences Grant No. DEFG02-00-ER45841 for sample characterization, and the Eric and Wendy Schmidt Transformative Technology Fund and the Gordon and Betty Moore Foundation’s EPiQS Initiative (Grant No. GBMF9615 to L.N.P.) for sample fabrication. Our measurements were partly performed at the National High Magnetic Field Laboratory (NHMFL), which is supported by the NSF Cooperative Agreement No. DMR 2128556, by the State of Florida, and by the DOE. This research was funded in part by QuantEmX travel grant from Institute for Complex Adaptive Matter (ICAM) and the Gordon and Betty Moore Foundation through Grant GBMF9616 to A. G., C. W., S. K. S., and M. S.
+
+\appendix
+\section*{Appendix: Details of transport calculations}
+\setcounter{equation}{0}
+\renewcommand{\theequation}{A\arabic{equation}}
+In order to calculate $\tau_j$ for a given scattering source, we need to calculate the square of averaged random potential $\braket{|U_j(q)|^2}$.
+
+\textit{Background impurities (BIs)}. The potential for BIs averaged over impurity positions can be written as \cite{Gold1989, Huang2022}:
+\begin{equation}
+\braket{|U_{\textrm{BI}}(q)|^2}=\left(\frac{e^2}{2\epsilon_b\epsilon_0q}\right)^2\int_{-\infty}^{+\infty}dz N(z)F_{imp}^2(q,z).
+\label{eq:BI}
+\end{equation}
+Here, $N(z)$ is the three-dimensional impurity concentration at a distance $z$ from the center of the QW, and  $F_{imp}(q,z)$ is the form factor for hole-impurity interaction which takes into account the finite width of the QW and is given by:
+\begin{equation}
+F_{imp}(q,z)=\int_{-\infty}^{+\infty}dz'|\psi(z')|^2e^{-q|z-z'|}.
+\label{eq:ff2}
+\end{equation} 
+We note that for the barrier layers, BIs in the layers closest to the QW contribute the most to limit the mobility, and the contribution decreases exponentially for the subsequent layers. We take into account BIs in the first two Al$_x$Ga$_{1-x}$As layers (for example, $x=0.04$ and $x=0.06$ with thicknesses $s_1$ and $s_2$, respectively, in Fig.~\ref{fig:fig1}(b)). Assuming a homogeneous distribution of BIs, $N(z)$ can be defined as:
+
+\begin{equation}
+\
+N(z) =
+\begin{cases}
+    N_{\textrm{BI.}w} &  |z| < w/2, \\
+    N_{\textrm{BI.}s_1} &  w/2 \leq |z| < w/2+s_1, \\
+    N_{\textrm{BI.}s_2}&  w/2+s_1 \leq |z| < w/2+s_1+s_2.
+\end{cases}
+\
+\label{eq:NBI}
+\end{equation}
+
+\textit{Interface roughness (IR)}. The IR is characterized using an autocorrelation function $\braket{\Delta(r)\Delta(r')}=\Delta^2$exp($-|r-r'|^2/\Lambda^2$) which defines the correlation between fluctuations at different points along the interface;  $\Delta$ is the height of fluctuations and $\Lambda$ is the lateral size. The random potential for a finite barrier takes the form \cite{Li2005}:
+\begin{equation}
+\braket{|U_\textrm{IR}(q)|^2}=\pi\Lambda^2\Delta^2F_\textrm{IR}^2e^{-\frac{\Lambda^2q^2}{4}},
+\label{eq:IR}
+\end{equation}
+where $F_\textrm{IR}$ is the function characterizing the local change in ground state energy $E_0$ with respect to change in $w$, such that:
+\begin{equation}
+F_\textrm{IR}=\frac{\partial E_0}{\partial w}= -\frac{2E_0}{\sqrt{\frac{2\hbar^2}{m^*(V-E_0)}}+w}.
+\label{eq:FIR}
+\end{equation}
+We also assume that both interfaces contribute equally to total IR with same roughness parameters. We find $\Delta \lesssim$ 3.4 \AA~ and $\Lambda \simeq 25$ nm fits the data well for all the designs .
+
+\textit{Remote ionized impurities (RIs)}. Confined to a 2D plane at a distance s from the 2DHS, RIs lead to a random potential of the form:
+\begin{equation}
+\braket{|U_{\textrm{RI}}(q)|^2}=\left(\frac{e^2}{2\epsilon_b\epsilon_0q}\right)^2n_\textrm{RI}F_{imp}^2(q,s),
+\label{eq:RI}
+\end{equation}
+where $F_{imp}(q,s)$ is same as the form factor in Eq.~\ref{eq:ff2}, evaluated at $z=s$. In our calculations, we take the distance from the center of the QW such that $z=s+w/2$.
+
+\textit{Alloy disorder (AD)}. The random averaged potential for AD can be written using the virtual crystal approximation, as \cite{Ando1982}:
+\begin{equation}
+\braket{|U_\textrm{AD}(q)|^2}=V_\textrm{AD}^2\Omega x(1-x)F_\textrm{AD},
+\label{eq:AD}
+\end{equation}
+ where $V_\textrm{AD}$ characterizes the strength of AD \cite{Gold1989}; $\Omega= \frac{a^3}{4}$ is the volume element of the alloy unit cell with $a=$ 5.67~\AA~ the lattice constant in GaAs, and $F_\textrm{AD}$ is the form factor for AD given by \cite{Ando1982}:
+\begin{equation}
+F_\textrm{AD}=\int_{\textrm{barrier}}dz|\psi(z)|^4.
+\label{eq:ffAD}
+\end{equation}
+From fits to our data, we find that the parameter $V_\textrm{AD}$ = 0.65, 0.75, and 3.2 eV for $x=$ 0.04, 0.08 and 0.32, respectively \cite{Supp}. 
+
+\begin{thebibliography}{70}
+\section*{References}
+\renewcommand{\theenumiv}{\arabic{enumiv}} % Reset the counter
+
+\bibitem{Dingle1978} R. Dingle, H. L. Störmer, A. C. Gossard, and W. Wiegmann, Electron mobilities in modulation-doped semiconductor heterojunction superlattices. Appl. Phys. Lett. \textbf{33}, 665 (1978).
+
+\bibitem{Chung2021elec} Y. J. Chung, K. A. Villegas Rosales, K. W. Baldwin, P. T. Madathil, K. W. West, M. Shayegan, and L. N. Pfeiffer, Ultra-high-quality two-dimensional electron systems. Nat.
+Mater. \textbf{20}, 632 (2021).
+
+\bibitem{Chung2022elec} Y. J. Chung, A. Gupta, K. W. Baldwin, K. W. West, M. Shayegan, and L. N. Pfeiffer,  Understanding limits to mobility in ultrahigh-mobility GaAs two-dimensional electron systems: 100 million cm$^2$/Vs and beyond.
+Phys. Rev. B \textbf{106}, 075134 (2022).
+
+\bibitem{Kulah2021} E. Külah, C. Reichl, J. Scharnetzky, L. Alt, W. Dietsche, and
+W. Wegscheider, The improved inverted AlGaAs/GaAs interface: its relevance for high-mobility quantum wells and hybrid systems.  Semicond. Sci. Technol. \textbf{36}, 085013 (2021).
+
+\bibitem{Manfra2014} M. J. Manfra, Molecular beam epitaxy of ultra-high-quality AlGaAs/GaAs heterostructures: Enabling physics in low-dimensional electronic systems. Annu. Rev. Condens. Matt. Phys. \textbf{5}, 347 (2014).
+
+\bibitem{Shayegan2005}M. Shayegan, \textit{High Magnetic Fields: Science and
+Technology} edited
+by F. Herlach and N. Miura (World Scientific, Singapore,
+2006), Vol. 3, pp. 31-60.
+
+\bibitem{Halperin2020}  B. I. Halperin, and J. K. Jain, \textit{Fractional Quantum Hall Effects: New Developments} (World Scientific, 2020).
+
+\bibitem{Zhu2007} H. Zhu, K. Lai, D. C. Tsui, S. P. Bayrakci, N. P. Ong, M. Manfra, L. Pfeiffer, and K. West,  Density and well width dependences of the effective mass of two-dimensional holes
+in (100) GaAs quantum wells measured using cyclotron
+resonance at microwave frequencies. Solid State Commun.
+\textbf{141}, 510 (2007).
+
+\bibitem{Watson2012} J. D. Watson, S. Mondal, G. Gardner, G. Csáthy, and
+M. J. Manfra, Exploration of the limits to mobility in
+two-dimensional hole systems in GaAs/AlGaAs quantum
+wells. Phys. Rev. B \textbf{85}, 165301 (2012).
+
+\bibitem{Yoon1999} J. Yoon, C. C. Li, D. Shahar, D. C. Tsui, and M. Shayegan, Wigner crystallization and metal-insulator
+transition of two-dimensional holes in GaAs/AlGaAs at
+B = 0. \prl \ \textbf{82}, 1744 (1999).
+
+\bibitem{Santos19921/3} M. B. Santos, Y. W. Suen, M. Shayegan, Y. P. Li, L. W. Engel, and D. C. Tsui Observation of a reentrant
+insulating phase near the 1/3 fractional quantum Hall
+liquid in a two-dimensional hole system. Phys. Rev. Lett.
+\textbf{68}, 1188 (1992).
+
+\bibitem{Wang2022} C. Wang, A. Gupta, S.K. Singh, Y. J. Chung, L. N. Pfeiffer, K. W. West, K. W. Baldwin, R. Winkler, and M. Shayegan, Even-Denominator Fractional Quantum
+Hall State at Filling Factor $\nu=$ 3/4. Phys. Rev.
+Lett. \textbf{129}, 156801 (2022).
+
+\bibitem{Wang2023A} C. Wang, A. Gupta, P. T. Madathil, S.K. Singh, Y. J. Chung, L. N. Pfeiffer, K. W. Baldwin and M. Shayegan, Next-generation even-denominator fractional quantum Hall states of interacting composite fermions. Proc. Nat. Acad. Sci. \textbf{120}, e2314212120 (2023).
+
+\bibitem{Wang2023B} C. Wang, A. Gupta, S. K. Singh, P. T. Madathil, Y. J. Chung, L. N. Pfeiffer, K. W. Baldwin, R. Winkler, and M. Shayegan. Fractional Quantum Hall State at Filling Factor $\nu= 1/4$ in Ultra-High-Quality GaAs 2D Hole Systems. arXiv:2311.13689, Phys. Rev. Lett., in press.
+
+\bibitem{Nayak2008}C. Nayak, S. H. Simon, A. Stern, M. Freedman, and S. Das Sarma, Non-Abelian anyons
+and topological quantum computation. Rev. Mod. Phys.
+\textbf{80}, 1083 (2008).
+
+\bibitem{Willett1987}R. L. Willett, J. P. Eisenstein, H. L. Stormer, D. C. Tsui,
+A. C. Gossard, and J. H. English, Observation of an EvenDenominator Quantum Number in the Fractional Quantum
+Hall Effect. Phys. Rev. Lett. \textbf{59}, 1776 (1987).
+
+\bibitem{Ki2014} D.-K. Ki,  V. I. Fal’ko, D. A. Abanin, and A. F. Morpurgo. Observation of even denominator fractional quantum Hall effect in suspended bilayer graphene. Nano letters \textbf{14}, 2135 (2014).
+
+\bibitem{Falson2015} J. Falson, D. Maryenko, B. Friess, D. Zhang, Y. Kozuka, A. Tsukazaki, J. H. Smet, and M. Kawasaki. Even-denominator fractional quantum Hall physics in ZnO. Nat. Phys. \textbf{11}, 347 (2015).
+
+\bibitem{Hossain2018} Md. Shafayat Hossain, Meng K. Ma, Y. J. Chung, L. N. Pfeiffer, K. W. West, K. W. Baldwin, and M. Shayegan, Unconventional Anisotropic Even-Denominator Fractional
+Quantum Hall State in a System with Mass Anisotropy.
+Phys. Rev. Lett. \textbf{121}, 256601 (2018).
+
+\bibitem{Shi2020} Q. Shi, E.-M. Shih, M. V. Gustafsson, D. A. Rhodes, B. Kim, K. Watanabe, T. Taniguchi, Z. Papić, J. Hone, and C. R. Dean, Odd- and even-denominator fractional quantum Hall states in monolayer WSe$_2$. Nat. Nanotechnol. \textbf{15}, 569 (2020).
+
+\bibitem{Dutta2022}  B. Dutta, W. Yang, R. Melcer, H. K. Kundu, M. Heiblum, V.
+Umansky, Y. Oreg, A. Stern, and D. Mross, Distinguishing
+between Non-Abelian Topological Orders in a Quantum
+Hall System. Science \textbf{375}, 193 (2022).
+
+\bibitem{KHuang2022} K. Huang, H. Fu, D. R. Hickey, N. Alem, X. Lin, K.
+Watanabe, T. Taniguchi, and J. Zhu, Valley Isospin Controlled Fractional Quantum Hall States in Bilayer Graphene.
+Phys. Rev. X \textbf{12}, 031019 (2022). Erratum: Valley isospin controlled fractional quantum Hall states in bilayer graphene. Phys. Rev. X \textbf{12}, 049901 (2022).
+
+\bibitem{Manoharan1994signatures} H. C. Manoharan, M. Shayegan, and S. J. Klepper, Signatures of a novel Fermi liquid in a two-dimensional composite particle metal. Phys. Rev. Lett. \textbf{73}, 3270 (1994).
+
+\bibitem{Tutuc2004}E. Tutuc, M. Shayegan, and D. A. Huse, Counterflow
+measurements in strongly correlated GaAs hole bilayers:
+Evidence for electron-hole pairing. Phys. Rev. Lett. \textbf{93}, 036801 (2004).
+
+\bibitem{Koduvayur2011} S. P. Koduvayur, Y. Lyanda-Geller, S. Khlebnikov, G.
+Csathy, M. J. Manfra, L. N. Pfeiffer, K. W. West, and
+L. P. Rokhinson, Effect of strain on stripe phases in the quantum Hall regime. Phys. Rev. Lett. \textbf{106}, 016804
+(2011).
+
+\bibitem{Kamburov2013}D. Kamburov, Y. Liu, M. Shayegan, L. N. Pfeiffer, K.
+W. West, and K. W. Baldwin, Composite fermions with
+tunable Fermi contour anisotropy. Phys. Rev. Lett. \textbf{110}, 206801 (2013).
+
+\bibitem{Liu2014} Y. Liu, A. L. Graninger, S. Hasdemir, M. Shayegan, L.
+N. Pfeiffer, K. W. West, K. W. Baldwin, and R. Winkler, Fractional quantum Hall effect at $\nu=$ 1/2 in hole systems confined to GaAs quantum wells. Phys. Rev. Lett. \textbf{112}, 046804 (2014).
+
+\bibitem{Liu2014even} Y. Liu, S. Hasdemir, A. L. Graninger, D. Kamburov, M.
+Shayegan, L. N. Pfeiffer, K. W. West, K. W. Baldwin,
+and R. Winkler, Even-denominator fractional quantum
+Hall effect at a Landau level crossing. Phys. Rev. B \textbf{89},
+165313 (2014).
+
+\bibitem{Mueed2015} M. A. Mueed, D. Kamburov, Y. Liu, M. Shayegan, L. N.
+Pfeiffer, K. W. West, K. W. Baldwin, and R. Winkler, Composite fermions with a warped Fermi contour. Phys.
+Rev. Lett. \textbf{114}, 176805 (2015).
+
+\bibitem{Liu2016}Y. Liu, S. Hasdemir, L. N. Pfeiffer, K. W. West, K. W.
+Baldwin, and M. Shayegan, Observation of an anisotropic
+Wigner crystal. Phys. Rev. Lett. \textbf{117}, 106802 (2016).
+
+\bibitem{Jo2017} I. Jo, K. A. Villegas Rosales, M. A. Mueed, L. N. Pfeiffer,
+K. W. West, K. W. Baldwin, R. Winkler, M. Padmanabhan, and M. Shayegan, Transference of Fermi contour
+anisotropy to composite fermions. Phys. Rev. Lett. \textbf{119},
+016402 (2017).
+
+\bibitem{Ma2020} M. K. Ma, K. A. Villegas Rosales, H. Deng, Y. J. Chung,
+L. N. Pfeiffer, K. W. West, K. W. Baldwin, R. Winkler, and M. Shayegan, Thermal and quantum melting phase diagrams for a magnetic-field-induced Wigner solid. Phys. Rev. Lett. \textbf{125}, 036601 (2020).
+
+\bibitem{Ma2022}M. K. Ma, C. Wang, Y. J. Chung, L. N. Pfeiffer, K. W. West, K. W. Baldwin, R. Winkler, and M. Shayegan Robust Quantum Hall Ferromagnetism near a Gate-Tuned $\nu=$ 1 Landau Level Crossing. \prl \ \textbf{129}, 196801 (2022).
+
+\bibitem{Wang2023anisotropic} C. Wang, A. Gupta, Y. J. Chung, L. N. Pfeiffer, K. W. West, K. W. Baldwin, R. Winkler, and M. Shayegan, Highly-Anisotropic Even-Denominator Fractional Quantum Hall State in an Orbitally-Coupled Half-Filled Landau Level. \prl\ \ \textbf{131}, 056302 (2023).
+
+\bibitem{Winkler2003} R. Winkler, \textit{Spin-Orbit Coupling Effects in Two-Dimensional Electron and Hole Systems} Springer tracts
+in modern physics Vol. 191, (Springer-Verlag, Berlin,
+2003).
+
+\bibitem{Winkler2000} R. Winkler, S. J. Papadakis, E. P. De Poortere, and M. Shayegan. Highly anisotropic g-factor of two-dimensional hole systems. Phys. Rev. Lett. \textbf{85}, 4574 (2000).
+
+\bibitem{Brunner2009} D. Brunner, B. D. Gerardot, P. A. Dalgarno, G. Wüst, K. Karrai, N. G. Stoltz, P. M. Petroff, and R. J. Warburton. A
+coherent single-hole spin in a semiconductor. Science \textbf{325}, 70 (2009).
+
+\bibitem{Marton2023} V. Marton, A. Sachrajda, M. Korkusinski, A. Bogan, and S. Studenikin. Coherence Characteristics of a GaAs Single Heavy-Hole Spin Qubit Using a Modified Single-Shot Latching Readout Technique. Nanomaterials, \textbf{13}, 950 (2023). 
+
+\bibitem{Heremans1992} J. J. Heremans, M. B. Santos, and M. Shayegan, Observation of magnetic focusing in two-dimensional
+hole systems. \apl\ \ \textbf{61}, 1652 (1992).
+
+\bibitem{Pfeiffer2005} L. N. Pfeiffer, R. de Picciotto, K. W. West, K. W. Baldwin, and C. H. L.  Quay,  Ballistic hole transport in a quantum wire. \apl\ \ \textbf{87}, 073111 (2005).
+
+\bibitem{Lu1998} J. P. Lu, J. B. Yau, S. P. Shukla, M. Shayegan,
+L. Wissinger, U. R¨ossler, and R. Winkler, Tunable
+spin-splitting and spin-resolved ballistic transport in
+GaAs/AlGaAs two-dimensional holes. Phys. Rev. Lett.
+\textbf{81}, 1282 (1998).
+
+\bibitem{Yau2002} J. Yau, E. P. De Poortere, and M. Shayegan, Aharonov-Bohm oscillations with spin: Evidence for Berry’s Phase.
+Phys. Rev. Lett. \textbf{88}, 146801 (2002).
+
+\bibitem{Rokhinson2004} L. P. Rokhinson, V. Larkina, Y. B. Lyanda-Geller, L. N.
+Pfeiffer, and K. W. West, Spin separation in cyclotron
+motion. Phys. Rev. Lett. \textbf{93}, 146601 (2004).
+
+\bibitem{Habib2009}B. Habib, E. Tutuc, S. Melinte, M. Shayegan, D. Wasserman, S.A. Lyon, and R. Winkler, Semicond. Sci. Technol. \textbf{24}, 064002 (2009).
+
+\bibitem{Nichele2015} F. Nichele, S. Hennel, P. Pietsch, W. Wegscheider, P.
+Stano, P. Jacquod, T. Ihn, and K. Ensslin, Generation
+and detection of spin currents in semiconductor nanostructures with strong spin-orbit interaction. Phys. Rev. Lett. \textbf{114}, 206601 (2015).
+
+\bibitem{Rendell2022} M. J. Rendell, S. D. Liles, A. Srinivasan, O. Klochan, I. Farrer, D. A. Ritchie, and A. R. Hamilton, Gate voltage dependent Rashba spin splitting in hole transverse magnetic focusing. Phys. Rev. B \textbf{105} 245305 (2022).
+
+\bibitem{Rendell2023}  M. J. Rendell, S. D. Liles, S. Bladwell, A. Srinivasan, O. Klochan, I. Farrer, D. A. Ritchie, O. P. Sushkov, and A. R. Hamilton, Probing Fermi surface shifts with spin resolved transverse magnetic focussing. arXiv:2310.04005.
+
+\bibitem{Pfeiffer2003} L. N. Pfeiffer and K. W. West, The role of MBE in recent quantum Hall effect physics discoveries. J. Phys. E \textbf{20}, 57 (2003).
+
+\bibitem{Chung2022holes}Y. J. Chung, C. Wang, S. K. Singh, A. Gupta, K. W. Baldwin, K. W. West, M. Shayegan,
+L. N. Pfeiffer, and R. Winkler, Record-quality GaAs two-dimensional hole
+systems. Phy. Rev. Mat. \textbf{6}, 034005 (2022).
+
+\bibitem{Chung2018} Y. J. Chung, K. W. Baldwin, K. W. West, M. Shayegan, and L. N. Pfeiffer. Surface segregation and the Al problem in GaAs quantum wells. Phys. Rev. Mat. \textbf{2}, 034006 (2018).
+
+\bibitem{ChungDWS} Y. J. Chung, K. A. Villegas Rosales, K. W. Baldwin, K. W. West, Mansour Shayegan, and L. N. Pfeiffer, Working principles of doping-well structures for high-mobility two-dimensional electron systems. Phys. Rev. Mat. \textbf{4}, 044003 (2020).
+
+\bibitem{Supp} See Supplemental Material which includes Refs.~\cite{Chung2018, Gold2013,Mehrotra2011,Li2003} for additional mobility vs density data, details of the scattering mechanisms, and more magnetoresistance data at 0.3 K. 
+
+\bibitem{footnote1}The calculated $m^*$ is approximate because it assumes same mass for both spin-split subbands. Limited measurements of $m^*$ using low-field Shubnikov de Haas oscillations suggest that calculations overestimate m* by $\sim$30\%. However, this does not affect our mobility analysis (Fig.~\ref{fig:fig2}) significantly because $m^*$ also enters in Eq.~\ref{eq:tau} through dielectric screening (Eq.~\ref{eq:epsilon}), and therefore reduces the dependence of mobility on $m^*$.
+
+\bibitem{Gold2013}A. Gold, Alloy-disorder scattering of the interacting electron gas in quantum wells and heterostructures of Al$_x$Ga$_{1-x}$As. JETP Lett. \textbf{98}, 416 (2013).
+
+\bibitem{Mehrotra2011} S. R. Mehrotra, A. Paul, and G. Klimeck, Atomistic approach to alloy scattering in Si$_{1-x}$Ge$_x$. \apl\ \ \textbf{98}, 173503 (2011).
+
+\bibitem{Li2003} W. Li, G. A. Csathy, D. C. Tsui, L. N. Pfeiffer, and K. W. West, Direct observation of alloy scattering of two-dimensional electrons in Al$_x$Ga$_{1-x}$As. Appl. Phys. Lett. \textbf{83}, 2832 (2003).
+
+\bibitem{Gold1989} A. Gold, Barrier penetration effects for electrons in quantum wells: screening, mobility, and shallow impurity states, Z. Phys. \textbf{74}, 53 (1989).
+
+\bibitem{Huang2022} Y. Huang, B. I. Shklovskii, and M. A. Zudov, Scattering mechanisms in state-of-the-art GaAs/AlGaAs quantum wells, Phys. Rev. Mat. \textbf{6}, L061001 (2022).
+
+\bibitem{Winkler2005} R. Winkler, Tutuc, S. J. Papadakis, Sorin Melinte, M. Shayegan, D. Wasserman, and S. A. Lyon, Anomalous spin polarization of GaAs two-dimensional hole systems. Phys. Rev. B \textbf{72}, 195321 (2005).
+
+
+\bibitem{Hwang2003}E. H. Hwang, and S. Das Sarma, Temperature dependent resistivity of spin-split subbands in GaAs two-dimensional hole systems. Phys. Rev. B \textbf{67} 115316, (2003). 
+
+\bibitem{footnote2} For example, see S. J. Papadakis, E. P. De Poortere, H. C. Manoharan, M. Shayegan, and R. Winkler, The effect of spin splitting on the metallic behavior of a two-dimensional system. Science \textbf{283}, 2056 (1999), where the authors use front and back gates to tune the spin-subband population. Importantly, the effect on mobility due to the change in subband population was minimal (less than 5\%).
+
+\bibitem{Sojoto1990} T. Sajoto, Y. W. Suen, L. W. Engel, M. B. Santos, and M. Shayegan. Fractional quantum Hall effect in very-low-density GaAs/Al$_x$Ga$_{1-x}$As heterostructures. Phys. Rev. B \textbf{41}, 8449 (1990).
+
+\bibitem{Manfra2007} M. J. Manfra, E. H. Hwang, S. Das Sarma, L. N. Pfeiffer, K. W. West, and A. M. Sergent, Transport and percolation in a low-density high-mobility two-dimensional hole system. Phys. Rev. Lett. \textbf{99}, 236402 (2007). 
+
+\bibitem{Hanein1998}Y. Hanein, U. Meirav, D. Shahar, C. C. Li, D. C. Tsui, and H. Shtrikman, The metalliclike conductivity of a
+two-dimensional hole system. Phys. Rev. Lett. \textbf{80}, 1288
+(1998).
+
+\bibitem{Simmons1998} M. Y. Simmons, A. R. Hamilton, M. Pepper, E. H. Linfield, P. D. Rose, D. A. Ritchie, A. K. Savchenko, and T. G. Griffiths, Metal-Insulator Transition at B=0 in a Dilute Two Dimensional GaAs-AlGaAs Hole Gas. Phys. Rev. Lett. \textbf{80} 1292 (1998).
+
+\bibitem{Watson2011} J. D. Watson, S. Mondal, G. A. Cs´athy, M. J. Manfra, E. H. Hwang, S. Das Sarma, L. N. Pfeiffer, and K.
+W. West, Scattering mechanisms in a high-mobility lowdensity carbon-doped (100) GaAs two-dimensional hole
+system. Phys. Rev. B \textbf{83}, 241305(R) (2011).
+
+\bibitem{Sarma2015} S. Das Sarma, and E. H. Hwang, Screening and transport in 2D semiconductor systems at low temperatures. Sci. Reports \textbf{5}, 16655 (2015).
+
+\bibitem{footnote3} It is also possible that screening affects individual scattering mechanisms differently, which may further affect the temperature dependence of each scattering mechanism and the resultant temperature dependence of mobility. More theoretical work on this front could be useful for discerning individual contributions of scattering mechanisms to the temperature dependence of mobility.
+
+\bibitem{Li2005}  J. M. Li, J. J., Wu, X. X. Han, Y. W. Lu, X. L. Liu, Q. S.
+Zhu, and Z. G. Wang, A model for scattering due to interface roughness in finite quantum wells, Semicond. Sci. Technol. \textbf{20}, 1207 (2005).
+
+
+\bibitem{Ando1982} T. Ando, Self-Consistent results for a GaAs/Al$_x$Ga$_{1-x}$As heterojunciton. II. low temperature mobility. J. Phys. Soc. Jpn. \textbf{51}, 3900 (1982).
+
+
+\end{thebibliography}
+\foreach \x in {1,...,9}
+{
+\clearpage
+\includepdf[pages={\x,{}}]{Supplemental.pdf}
+}
+\end{document}
+

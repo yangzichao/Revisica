@@ -1,0 +1,575 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%missing16,17
+\noindent This section shows sample qualitative examples from prompting the Gemini Ultra model. 
+Some illustrative examples of multimodal reasoning for image understanding tasks over charts, natural images and memes are shown in Figures \ref{fig:demo_example1}, \ref{fig:demo_example3}, \ref{fig:demo_example5}, \ref{fig:demo_example8}, \ref{fig:demo_example9}, and \ref{fig:demo_example10}. Figure \ref{fig:demo_example4} shows an example of image generation capabilities of Gemini Ultra where the user generates an interleaved sequence of image and text to design a blog post. Beyond English, Figure \ref{fig:demo_example11} shows model's capability to understand images in a multilingual setting. Gemini models also show strong performance on multimodal image understanding and reasoning in mathematics, as shown in Figures \ref{fig:demo_example6}, \ref{fig:demo_example13} and \ref{fig:demo_example14}. Figure \ref{fig:demo_example15} is an example of complex multimodal reasoning demonstrating how the model composes complex image understanding, code generation, and instruction following capabilities for a given user task. In Figure \ref{fig:demo_example12}, we see another example of the model being able to generate working code and follow complex user instructions. Finally, Figure \ref{fig:demo_example16} shows an example of Gemini Ultra's capability of understanding video by reasoning over temporally connected set of frames.
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \definecolor{brand-gray}{rgb}{60/255, 64/255, 67/255}
+% \definecolor{brand-blue}{rgb}{26/255, 115/255, 232/255}
+\newcommand*{\fakebreak}{\par\vspace{\textheight minus \textheight}\pagebreak}
+
+\lstset{language=Rust, style=boxed}
+\subsubsection{Chart understanding and reasoning over data}
+\vspace{-5mm}
+
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.65\textwidth]{assets/demo_images/chart.pdf}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+Spot a data point that stands out in these charts and what that implicates. Then produce a detailed markdown table for all the data shown.
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response (rendered Markdown), colframe=darkgray, colback=white]
+The data point that stands out is the United States' landfilled plastic waste, which is 73\%. This is significantly higher than the other countries and regions shown. This implies that the United States is not doing as much to recycle or incinerate its plastic waste as other countries and regions.\\
+
+\vspace{0.2pt}
+\begin{tabular}{|p{2.7cm}|c|c|c|c|}
+\hline
+\scriptsize{\textbf{Country/Region}} & \scriptsize{\textbf{Landfilled (\%)}} & \scriptsize{\textbf{Mismanaged (\%)}} & \scriptsize{\textbf{Incinerated (\%)}} & \scriptsize{\textbf{Recycled (\%)}} \\ \hline
+\scriptsize{World} & \scriptsize{49} & \scriptsize{22} & \scriptsize{19} & \scriptsize{9} \\ \hline
+\scriptsize{United States} & \scriptsize{73} & \scriptsize{4} & \scriptsize{19} & \scriptsize{4} \\ \hline
+\scriptsize{Europe} & \scriptsize{44} & \scriptsize{6} & \scriptsize{38} & \scriptsize{12} \\ \hline
+\scriptsize{Asia (excl. China and India)} & \scriptsize{39} & \scriptsize{34} & \scriptsize{19} & \scriptsize{8} \\ \hline
+\end{tabular}
+\end{tcolorbox}
+\caption{Solving a problem requiring multimodal chart understanding.The model has to read the text, understand the connections between different data points and reason over them to recommend an interesting point and follow the instructions to generate a markdown table (shown correctly rendered). \newline Source: Our World In Data~\citep{owid-plastic-pollution}.}
+\label{fig:demo_example1}
+\end{figure}
+
+\fakebreak
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Multimodal question answering}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.4\textwidth]{assets/demo_images/plant.png}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+
+Do you know what it this plant? How do I best take care of it?
+
+\end{tcolorbox}
+\newline
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+This is a Persian shield plant. It is a tropical plant that is native to Southeast Asia. It is a popular houseplant because it is easy to care for and has beautiful purple leaves.\\
+
+Persian shield plants prefer bright, indirect light. They can tolerate some direct sunlight, but too much direct sunlight can scorch their leaves. They also prefer warm temperatures and high humidity.\\
+
+Persian shield plants need to be watered regularly, but they should not be allowed to sit in water. The soil should be kept moist but not soggy. They also benefit from being misted regularly.\\
+
+Persian shield plants can be fertilized every two weeks during the growing season. A balanced fertilizer is a good choice.\\
+
+Persian shield plants are susceptible to pests, such as mealybugs and spider mites. These pests can be controlled with insecticidal soap or neem oil.\\
+
+Persian shield plants can be propagated by stem cuttings. The cuttings should be taken in the spring or summer and should be rooted in water or a moist potting mix.\\
+
+\end{tcolorbox}
+% \end{tcolorbox}
+\caption{Answering a multimodal information-seeking query. The model is able to recognize the specific plant shown in the image and provide information about it. The model shows robustness to typos as it is able to understand the user question despite them. \newline Source: photo taken by an author from the Gemini team.}
+\label{fig:demo_example3}
+\end{figure}
+
+\fakebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Interleaved image and text generation}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+Please create a blog post about a trip to New York, where a dog and his owner had lots of fun. Include a few pictures of the dog posing happily at different landmarks.
+
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+Hi, I’m Cooper. I’m a 2 year old Goldendoodle who loves to travel. Last month, my family and I went to New York City. It was my first time in the Big Apple, and I had a blast!\\
+
+We stayed in a hotel near Times Square. It was so much fun to see all the bright lights and people. We went to see a Broadway show, and I even got to meet some of the actors.\\
+
+One of my favorite parts of New York City was Central Park. It was so big and beautiful. I loved running around and playing fetch. We also went to the Statue of Liberty and the Empire State Building. I was so excited to see all the famous landmarks.\\
+
+I had so much fun in New York City. It’s definitely one of my favorite places to travel. I can’t wait to go back someday!\\
+
+\vspace{0.2in}
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.3\textwidth]{assets/demo_images/dog_nyc_1.png}
+    \includegraphics[width=.3\textwidth]{assets/demo_images/dog_nyc_2.png}
+    \includegraphics[width=.3\textwidth]{assets/demo_images/dog_nyc_3.png}
+    \label{fig:sub-first}
+\end{subfigure}
+
+\end{tcolorbox}
+\caption{Generating interleaved text and images. The model is able to follow the instructions of generating a blog post with images closely related to the text and with dog images showing high levels of consistency across all images.}
+\label{fig:demo_example4}
+\end{figure}
+
+\fakebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Image understanding and reasoning}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, colframe=white, colback=white, left=1pt,right=1pt,top=1pt,bottom=1pt,middle=0.1pt]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.5\textwidth]{assets/demo_images/shape_sequence.jpg}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+
+Look at this sequence of three shapes. What shape should come as the fourth shape? Explain your reasoning with detailed descriptions of the first shapes.
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+The fourth shape should be a hexagon. The first shape is a triangle, the second shape is a square, and the third shape is a pentagon. The number of sides in each shape is increasing by one
+\end{tcolorbox}
+\end{tcolorbox}
+\caption{Solving a multimodal reasoning problem.The model is able to recognize shapes in the image, understand their properties and reason about the relationship between them to predict the next object. \newline Source: photo taken by an author from the Gemini team.}
+\label{fig:demo_example5}
+\end{figure}
+
+\fakebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Geometrical reasoning}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, colframe=white, colback=white, left=1pt,right=1pt,top=1pt,bottom=1pt,middle=0.1pt]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    % include first image
+    \includegraphics[width=.6\textwidth]{assets/demo_images/parallelogram.png}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+ Find the height of the parallelogram given its area with 100 square units.
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+The area of the parallelogram is equal to the product of the base and the height. Hence $100 = ( x + 15 ) x$. We get $x^2 + 15 x - 100 = 0$. The roots of this equation are
+$x_1 = 5$ and $x_2 = -20$. The second root is negative and is not acceptable. Final Answer: The final answer is $5$. I hope it is correct.
+\end{tcolorbox}
+\end{tcolorbox}
+\caption{Solving a geometrical reasoning task. The model shows good understanding of the task and is able to provide meaningful reasoning steps despite slightly unclear instructions. \newline Source: \citet{lu2021inter}.}
+\label{fig:demo_example6}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Information seeking about objects}
+\vspace{-5mm}
+
+\begin{figure}[!ht]
+ \noindent\begin{tcolorbox}[nobeforeafter, colframe=white, colback=white, left=1pt,right=1pt,top=1pt,bottom=1pt,middle=0.1pt]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    % include first image
+    \includegraphics[width=.25\textwidth]{assets/demo_images/Screenshot_2023_12_04.png}
+    \includegraphics[width=.45\textwidth]{assets/demo_images/golf_ball.png}
+    \label{fig:sub-first}
+\end{subfigure}
+
+\vspace{2pt}
+
+Find a connection between these. Hint: think about historical events.
+
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+The Moon is the only celestial body in which humans have played golf. In 1971, the Apollo 14 crew hit two golf balls on the lunar surface.
+\end{tcolorbox}
+\end{tcolorbox}
+\caption{Solving a puzzle using multimodal inputs. The model recognizes the objects in the images and identifies a commonality that connects the two objects. \newline Source: photo taken by an author from the Gemini team.}
+\label{fig:demo_example8}
+\end{figure}
+
+\fakebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Multimodal reasoning based on visual cues}
+\vspace{-5mm}
+
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, colframe=white, colback=white, left=1pt,right=1pt,top=1pt,bottom=1pt,middle=0.1pt]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.6\textwidth]{assets/demo_images/ny.png}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+
+Do you know the precise location where this image was taken?
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+This image was taken in New York City. The Empire State Building is visible in the background. The street in the foreground is 8th Avenue. The cross street is West 34th Street.
+\end{tcolorbox}
+\end{tcolorbox}
+
+\caption{Identifying the objects in the image (the Empire State Building) and recognizing what those are even with small levels of visual distortion in the image. Based on the image, the model is also able to correctly identify the precise location of the person taking the photo. \newline Source: photo taken by an author from the Gemini team.}
+\label{fig:demo_example9}
+\end{figure}
+
+\fakebreak
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Multimodal humor understanding}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, colframe=white, colback=white, left=1pt,right=1pt,top=1pt,bottom=1pt,middle=0.1pt]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    % include first image
+    \includegraphics[width=.6\textwidth]{assets/demo_images/meme.jpeg}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+
+Can you explain this meme? 
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+
+The meme is about a person who is playing a game at 300 FPS, but their monitor is only 75Hz. The person is trying to catch the game, but it is too fast for their monitor to display. The meme is funny because it is relatable to anyone who has ever played a game on a monitor that is not fast enough.
+
+\end{tcolorbox}
+\end{tcolorbox}
+
+\caption{Explanation of humor in a meme. The model is showing the ability to not only describe what is happening in the image but also what it means even though the cultural context is not mentioned explicitly in the image or the prompt. \newline Source: \citet{hwang2023memecap}.}
+\label{fig:demo_example10}
+\end{figure}
+
+\fakebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Commonsense reasoning in a multilingual setting}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, colframe=white, colback=white, left=1pt,right=1pt,top=1pt,bottom=1pt,middle=0.1pt]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.6\textwidth]{assets/demo_images/family.png}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+
+Explain what i should call my grandparents on each side of my family based on this chart
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+On your father's side, you would call your grandparents Yéye and Nǎinai. On your mother's side, you would call your grandparents Wàigōng and Wàipó.
+\end{tcolorbox}
+\end{tcolorbox}
+\caption{Common-sense reasoning in images. The model is able to understand the relationships represented in the graphs and reason about them in a multilingual setting. \newline Source: image created by an author from the Gemini team.}
+\label{fig:demo_example11}
+\end{figure}
+
+\fakebreak
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Reasoning and code generation}
+\vspace{-5mm}
+\begin{figure}[h!]
+\noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white, breakable]
+
+Create a web app called "Opossum Search":\\
+
+1. Every time you make a search query, it should redirect you to a google search with the same query, but the word opossum before it.\\
+2. It should be visually similar to Google search,\\
+3. Instead of the google logo, it should have a picture of an opossum from the internet. \\
+4. It should be a single html file, no separate js or css files.\\
+5. It should say "Powered by google search" in the footer.\\
+
+\end{tcolorbox}
+
+\setlength{\parindent}{0pt}
+\begin{tcolorbox}[nobeforeafter, title=Model Response (rendered code), colframe=darkgray, colback=white, breakable]
+Here is the code for Opossum Search:
+\begin{lstlisting}[language=HTML, basicstyle=\tiny, upquote=true]
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Opossum Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 50px;
+      margin-top: 1rem;
+    }
+
+    .search-input {
+      width: 50%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .search-button {
+      margin-left: 1rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 1rem 0;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Opossum Search</h1>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Didelphis_virginiana.jpg/
+    1200px-Didelphis_virginiana.jpg" alt="Opossum" width="100">
+  </header>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" placeholder="Search the web">
+    <button class="search-button">Search</button>
+  </div>
+\end{lstlisting}
+\end{tcolorbox}
+\ContinuedFloat
+\end{figure}
+\clearpage
+
+\begin{figure}
+\begin{tcolorbox}[nobeforeafter, colframe=darkgray, colback=white, breakable]
+\begin{lstlisting}[language=HTML, basicstyle=\tiny, upquote=true, firstnumber=62]
+  <footer>
+    Powered by Google Search
+  </footer>
+
+  <script>
+    const searchInput = document.querySelector('.search-input');
+    const searchButton = document.querySelector('.search-button');
+
+    searchButton.addEventListener('click', () => {
+      const query = searchInput.value;
+      if (query) {
+        window.location.href = `https://www.google.com/search?q=opossum+${query}`;
+      }
+    });
+  </script>
+</body>
+\end{lstlisting}
+
+This code creates a simple web app that looks similar to Google Search, but with an opossum logo. When you enter a search query and click the "Search" button, it will redirect you to a Google search with the word "opossum" added to the beginning of your query. The app is powered by Google Search, as indicated in the footer.
+
+\end{tcolorbox}
+
+
+\noindent\begin{tcolorbox}[nobeforeafter, title=Rendered Website, colframe=darkgray, colback=white]
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/demo_images/opossum.png}
+    \label{fig:sub-first}
+\end{subfigure}
+
+\end{tcolorbox}
+\caption{Writing code for a website based on user request. The model follows the instructions and requirements defined by the user and converts them to functioning code.}
+\label{fig:demo_example12}
+\end{figure}
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\subsubsection{Mathematics: Calculus}
+\vspace{-5mm}
+\begin{figure}[h!]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+Find the derivative of $\sinh{x} + \cosh{y} = x + y$.
+
+\end{tcolorbox}
+
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response (rendered latex), colframe=darkgray, colback=white]
+
+We have that $\frac{d}{dx}\sinh{x}=\cosh{x}$ and $\frac{d}{dx}\cosh{y}=\sinh{y}\frac{dy}{dx}$.  Therefore,
+
+$$\cosh{x}+\sinh{y}\frac{dy}{dx}=1+\frac{dy}{dx}.$$Solving for $\frac{dy}{dx}$, we find that
+
+$$\frac{dy}{dx}=\frac{1-\cosh{x}}{\sinh{y}-1}.$$
+Final Answer: The final answer is $\frac{1-\cosh{x}}{\sinh{y}-1}$.
+
+\end{tcolorbox}
+
+\caption{Solving a calculus problem. The model is able to get a solution to a calculus problem with step-by-step explanation and correctly defined LaTeX equations.  \newline Source: question is provided by Macmillan Learning.}
+\label{fig:demo_example13}
+\end{figure}
+
+\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Math
+\subsection{Multi-step reasoning and mathematics}
+\vspace{-5mm}
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+In the year 2018 factory A produced goods worth 500 million forints, while factory B produced goods worth 400 million forints. According to their long-term plans, factory A will increase production by 5\% each year, while factory B will increase production by 6\% per year.\\
+
+The above plans were published on an economy website. A debate started in the comment section of the article: one user claimed that the difference between the volumes of production between the two factories would get smaller and smaller in the next couple of years.\\
+
+Calculate the missing values of the table below and show that the above claim is not true.\\
+
+Header: | 2018 | 2019 | 2020 | 2021 |\\
+Production volume of factory A (mln) | 500 |   |   |   |\\
+Production volume of factory B (mln) | 400 |   |   |   |
+
+\end{tcolorbox}
+
+%\tcblower
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response (rendered Markdown), colframe=darkgray, colback=white]
+
+\begin{tabular}{|p{1.5cm}|p{4cm}|p{4cm}|p{2.5cm}|}
+\hline
+\textbf{Year} & \textbf{Production volume of factory A (mln)} & \textbf{Production volume of factory B (mln)} & \textbf{Difference (mln)} \\ \hline
+2018 & 500 & 400 & 100 \\ \hline
+2019 & 525 & 424 & 101 \\ \hline
+2020 & 551.25 & 449.44 & 101.81 \\ \hline
+2021 & 578.81 & 476.41 & 102.4 \\ \hline
+\end{tabular}\\
+
+The production volume of factory A in 2019 is 500 * 1.05 = 525 million forints.\\
+The production volume of factory B in 2019 is 400 * 1.06 = 424 million forints.\\
+The difference in production volume in 2019 is 525 - 424 = 101 million forints.\\
+
+The production volume of factory A in 2020 is 525 * 1.05 = 551.25 million forints.\\
+The production volume of factory B in 2020 is 424 * 1.06 = 449.44 million forints.\\
+The difference in production volume in 2020 is 551.25 - 449.44 = 101.81 million forints.\\
+
+The production volume of factory A in 2021 is 551.25 * 1.05 = 578.81 million forints.\\
+The production volume of factory B in 2021 is 449.44 * 1.06 = 476.41 million forints.\\
+The difference in production volume in 2021 is 578.81 - 476.41 = 102.4 million forints.\\
+
+As you can see, the difference in production volume between the two factories is actually increasing, not decreasing. Therefore, the claim that the difference between the volumes of production between the two factories would get smaller and smaller in the next couple of years is not true.
+
+\end{tcolorbox}
+
+\caption{Solving a multi-step math problem. The model is able to understand the task and generate a markdown table with correctly calculated values. It also explicitly follows the instructions to show where the numbers come from and answer the question given in the task. \newline Source: \citet[p.~20]{oktatasi2023matematika}}
+\label{fig:demo_example14}
+\end{figure}
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Complex image understanding, code generation, and instruction following}
+\vspace{-5mm}
+
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt, colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.5\textwidth]{assets/demo_images/full_graph.png}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+I want you to take the function depicted in the top left subplot, multiply it by 1000, and then add it to the function depicted in the bottom left subplot. Generate matplotlib code for the single resulting plot.
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response (rendered code), colframe=darkgray, colback=white]
+\setlength{\parindent}{0pt}
+\begin{lstlisting}[language=Python, basicstyle=\tiny, upquote=true]
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 10, 1000)
+y1 = np.sin(x)
+y2 = np.exp(x)
+
+plt.plot(x, 1000*y1 + y2)
+plt.show()
+\end{lstlisting}
+
+\end{tcolorbox}
+
+\noindent\begin{tcolorbox}[nobeforeafter, title=Rendered Graph, colframe=darkgray, colback=white]
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=0.4\textwidth]{assets/demo_images/post.png}
+    \label{fig:sub-first}
+\end{subfigure}
+
+ \end{tcolorbox}
+\caption{Multimodal reasoning capabilities applied to code generation. Gemini Ultra needs to perform inverse graphics task to infer the code that would have generated the plots, perform additional mathematical transformations, and generate relevant code. \newline Source: figure generated by an author from the Gemini team.}
+\label{fig:demo_example15}
+\end{figure}
+
+\clearpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Video understanding and reasoning}
+\vspace{-5mm}
+
+\begin{figure}[!h]
+ \noindent\begin{tcolorbox}[nobeforeafter, title=Prompt (video), colframe=darkgray, colback=white]
+
+\begin{subfigure}{1.0\textwidth}
+    \centering
+    \includegraphics[width=.4\textwidth]{assets/demo_images/s1.png}
+    \includegraphics[width=.4\textwidth]{assets/demo_images/s2.png}
+    \includegraphics[width=.4\textwidth]{assets/demo_images/s3.png}
+    \includegraphics[width=.4\textwidth]{assets/demo_images/s4.png}
+    \label{fig:sub-first}
+\end{subfigure}
+\vspace{0.2pt}
+
+How could this person improve their technique?
+\end{tcolorbox}
+\noindent\begin{tcolorbox}[nobeforeafter, title=Model Response, colframe=darkgray, colback=white]
+This soccer player needs to work on their ball-striking mechanics. Their foot is not making good contact with the ball, which is causing the ball to fly up and away from the goal. They also need to work on their body positioning. They should be leaning into the shot with their non-kicking leg in front of their kicking leg, and they should be following through with their kicking leg.
+
+\end{tcolorbox}
+
+\caption{Video understanding and reasoning over the situation presented in the video. Here, we provide a video as input to the model together with a text prompt (images are provided here only for visualization purposes). The model is able to analyze what happened in the video and provide recommendations on how the actions in the video could have been better. \newline Video source: "Football/Soccer Penalty Miss"\newline \url{https://www.youtube.com/watch?v=VmWxjmJ3mvs}}
+\label{fig:demo_example16}
+\end{figure}

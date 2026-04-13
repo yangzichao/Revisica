@@ -1,0 +1,15 @@
+\begin{table*}[]
+\centering
+\resizebox{0.75\textwidth}{!}{%
+\begin{tabular}{|c|c|cc|c|}
+%\small
+\hline
+\textbf{Use-Case} & \textbf{Objective(s)} & \multicolumn{2}{c|}{\textbf{\begin{tabular}[c]{@{}c@{}}Example\\ High / Low-Priority\end{tabular}}} & \textbf{Proposal(s)} \\ \hline
+Scheduling & \begin{tabular}[c]{@{}c@{}}Policy Specific\\ (e.g., Improved FCTs)\end{tabular} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Small \\ Flows\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Long \\ Flows\end{tabular} & \begin{tabular}[c]{@{}c@{}}PIAS\cite{pias}, Baraat\cite{baraat}, \\ DAS\cite{das}, pFabric\cite{pfabric}\end{tabular} \\ \hline
+\begin{tabular}[c]{@{}c@{}}Workload \\ Co-location\end{tabular} & \begin{tabular}[c]{@{}c@{}}Increased\\ Utilization\end{tabular} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Latency\\ Critical\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Batched \\ Workload\end{tabular} & \begin{tabular}[c]{@{}c@{}}perfIso\cite{perfIso}, Hercales\cite{heracles}, \\ Bistro\cite{bistro}, SmartHarvest\cite{smart-harvest}\end{tabular} \\ \hline
+\begin{tabular}[c]{@{}c@{}}Hybrid\\ Services\end{tabular} & \begin{tabular}[c]{@{}c@{}}High \\ Availability\end{tabular} & \multicolumn{1}{c|}{RDMA} & TCP & Pangu\cite{pangu} \\ \hline
+\end{tabular}%
+}
+\caption{ Synthesizes important use-cases of network prioritization and highlights that the performance of low-priority flows can be crucial in achieving a certain objective in a cloud system.}
+\label{tab:usecases}
+\end{table*}

@@ -1,0 +1,317 @@
+\documentclass[aps,prb,twocolumn,amsmath,amssymb,floatfix]{revtex4-2}
+\usepackage[english]{babel}
+\usepackage{blindtext}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{array} 
+\usepackage{bm}
+\usepackage{latexsym}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage{bbold}
+\usepackage{subfig}
+\usepackage{scalerel}
+\usepackage{appendix}
+\usepackage{physics,braket}
+\usepackage{ragged2e}
+\usepackage{mathtools}
+
+
+\usepackage[colorlinks = true,
+            linkcolor = blue,
+            urlcolor  = blue,
+            citecolor = blue,
+            anchorcolor = blue]{hyperref}
+\usepackage[usenames,dvipsnames]{color}
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\newcommand{\vebm}[1]{
+\ifcat\noexpand#1\relax
+    {\bm #1}
+\else
+    {\bf #1}
+\fi
+}
+\newsavebox{\@brx}
+\newcommand{\llangle}[1][]{\savebox{\@brx}{\(\m@th{#1\langle}\)}%
+  \mathopen{\copy\@brx\kern-0.5\wd\@brx\usebox{\@brx}}}
+\newcommand{\rrangle}[1][]{\savebox{\@brx}{\(\m@th{#1\rangle}\)}%
+  \mathclose{\copy\@brx\kern-0.5\wd\@brx\usebox{\@brx}}}
+\makeatother
+\begin{document}
+ 
+
+\title{Topological responses from gapped Weyl points in 2D altermagnets}
+
+\date{\today}
+
+ 
+
+\author{Kirill Parshukov}
+\email{k.parshukov@fkf.mpg.de}
+\thanks{Shared first author.}
+\affiliation{Max Planck Institute for Solid State Research, Heisenbergstrasse 1, D-70569 Stuttgart, Germany}
+
+
+\author{Raymond Wiedmann}
+\email{r.wiedmann@fkf.mpg.de}
+\thanks{Shared first author.}
+\affiliation{Max Planck Institute for Solid State Research, Heisenbergstrasse 1, D-70569 Stuttgart, Germany}
+
+\author{Andreas P. Schnyder}
+\email{a.schnyder@fkf.mpg.de}
+\affiliation{Max Planck Institute for Solid State Research, Heisenbergstrasse 1, D-70569 Stuttgart, Germany}
+
+ 
+
+\begin{abstract}
+
+We study the symmetry requirements for topologically protected spin-polarized Weyl points in 2D altermagnets. The topology is characterized by a quantized $\pi$-Berry phase and the degeneracy is protected by spin-space group symmetries. Gapped phases with finite Chern and/or spin/chirality Chern numbers emerge under different symmetry-breaking mass terms. We investigate the surface and transport properties of these gapped phases using representative electronic tight-binding and magnonic linear spin-wave models. 
+In particular, we calculate the electronic and magnonic Hall currents and discuss implications for experiments.
+\end{abstract}
+
+\maketitle
+\address{$^{\ast}$ These two authors contributed equally.}
+Two-dimensional (2D) materials have attracted much attention since the discovery of graphene, showcasing unique electronic, mechanical, and thermal properties~\cite{Geim2009Graphene, Mir2014AnAO}.
+Graphene is the prime example of a
+topological band structure in 2D,
+as it exhibits  protected Dirac point crossings
+between spin-degenerate bands.
+A different type of topological band crossings, Weyl points (WPs), can emerge by splitting the spin degeneracy, either with strong spin-orbit coupling, an applied magnetic field, or by ferro- or ferrimagnetic order.  
+Recently, a variety of 2D ferromagnetic Weyl semimetals has been found, which exhibit fully spin-split band structures~\cite{Niu_2019,Jeon2019FMWP,Shuyuan2020}. In antiferromagnetic materials, the bands are spin degenerate and WPs are generally not possible. 
+However, a newly established type of collinearly ordered magnetic system, altermagnets, exhibit compensated collinear magnetic order, as in antiferromagnets, with spin-split bands, as in ferromagnets, while having negligible spin-orbit coupling~\cite{Smejkal22Altermagnetism}. 
+In the last few years, there has been an increasing interest in altermagnetic materials
+both from the theoretical~\cite{Smejkal22Altermagnetism,Smejkal22Landscape,smejkal_nat_review_22,PhysRevX.12.040002,mcclarty2023landau,PhysRevB.105.064430,PhysRevB.102.144441,doi:10.7566/JPSJ.88.123702,PhysRevLett.132.056701}
+and the experimental side
+~\cite{zhu_nature_24,krempasky_jungwirth_nature_24,fedchenko_sci_advances_24,nag2023gdalsi,lin2024observation}.
+These phases are promising for spintronic applications~\cite{Smejkal22Landscape} due to large spin splitting and robustness against magnetic field perturbations, and give rise to several interesting phenomena in conjunction with superconductivity,
+including 
+unconventional Josephson effects~\cite{PhysRevLett.131.076003,PhysRevB.108.075425,Zhang2024},
+diode effects~\cite{banerjee2024altermagnetic}, Cooper-pair splitting~\cite{giil2024quasiclassical,nagae2024spinpolarized},
+and topological superconductivity~\cite{chakraborty2023zerofield,PhysRevB.108.224421,ghorashi2023altermagnetic,PhysRevB.108.205410,PhysRevB.108.184505}.
+
+In this work, we study the symmetries allowing for spin-polarized WP degeneracies in 2D altermagnets and 
+derive a classification of all spin-wallpaper groups
+that protect these WPs.
+We construct a representative electronic tight-binding and a magnon linear spin-wave model for one of the symmetry groups. 
+Considering different symmetry-breaking terms,
+a variety of different topological phases emerge, including
+Chern and quantum spin-Hall insulators.
+For each of these phases, we discuss topological responses in terms of anomalous electronic and thermal conductivities, including the spin Hall and spin Nernst effects~\cite{annurev-conmatphys-031620-104715,Matsumoto2011thermal,Cheng2016Nernst}. 
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{Figure1.png}
+   \caption{\justifying (a) Square lattice with collinear magnetic Néel order and four sites per unit cell (red area).
+   (b) Electronic bands of the altermagnetic tight-binding Hamiltonian~\eqref{TBelectronicmodel_main} with the spin quantum number indicated by the arrows and red/blue color. 
+   The inset shows the location of the
+   four WPs in the 2D BZ.
+  (c) Edge bandstructure
+  of the electronic states within the 10 outermost unit cells of 
+  a 30-cell ribbon terminated in the $x$-direction.
+  }
+    \label{fig:SWG6}
+\end{figure}
+
+\textit{Weyl points protected by altermagnetic symmetries.---}
+The symmetries of altermagnets are described by spin-space groups~\cite{https://doi.org/10.1002/pssb.2220100206,doi:10.1098/rspa.1966.0211,10.1063/1.1708514,LITVIN1974538,xiao2023spin,ren2023enumeration,jiang2023enumeration,chen2023spin,schiff2023spin}, for which the symmetry action on the lattice and the spin degrees of freedom are decoupled. A group element is denoted by $(s||g)$, where $s$ and $g$ act on the spin and the lattice, respectively. The collinear spin arrangement along the $z$-axis allows for the SO(2) spin rotation and the $(2_x \mathcal{T}||E)$ operation. The element $(2_x \mathcal{T}||E)$ flips the spin twice with the 2-fold spin rotation $2_x$ and time-reversal operator $\mathcal{T}$ that also acts on the lattice degrees of freedom as complex conjugation. The total magnetic moment is compensated due to a symmetry that acts non-trivially on spin and lattice, such as a mirror symmetry $(2_x||\mathcal{M})$. The mirror and SO(2) spin-rotational symmetries enforce a line degeneracy along the mirror line between bands with opposite spins. 
+However, a spin splitting is allowed at a general position (GP) in the Brillouin zone (BZ). 
+If two bands with the same spin come close to each other, they can form a WP crossing. In 2D systems, this point degeneracy must be protected by symmetries. Generally, space-time inversion $2_z\mathcal{T}$ and mirror symmetries quantize the Berry phase protecting WPs~\cite{chiu2018quantized}. These symmetries exist in altermagnets, however, they must not act on the spin to avoid enforced spin degeneracies. 
+In altermagnets with $(2_x\mathcal{T}||2_z)$ [or $(E||\mathcal{M})$] symmetry, we expect to observe protected WP degeneracies at GPs [or on mirror lines] between bands with the same spin. 
+The spin polarization of the 2D WPs in altermagnets
+allows for an interesting interplay of spin currents, topology, and magnetism.
+
+ 
+
+
+
+In Tab.~\ref{Weyl_point_classification_new} we list all altermagnetic spin-wallpaper groups (2D spin-space groups) that can protect the WPs. Group elements that flip the spin are denoted with $\overline{1}$. Information on the enumeration can be found in the 
+Supplemental Material (SM)~\cite{sm_note} and a list of the 17 wallpaper groups is found in Ref.~\cite{2016Itfc}. 
+The number of WPs is always a multiple of four due to symmetries that relate the point crossings. In the remainder of this paper, we consider the altermagnetic wallpaper group p$^{\overline{1}}$4$^{\overline{1}}$m$^1$m. 
+The lattice with a four-site unit cell is shown in Fig. \ref{fig:SWG6}(a). 
+Mirror symmetries $(2_x||\mathcal{M}_x)$ and $ (2_x||\mathcal{M}_y)$ relate sublattices with opposite magnetic moments, i.e., under these operations site A is mapped to sites B and C, respectively. The mirrors enforce spin degeneracies along the $k_{x,y}=0,\pi$ lines. 
+The spin degeneracy is lifted at GPs allowing for spin-polarized WPs protected by the $(2_x\mathcal{T}||2_z)$ symmetry. 
+\begin{table}[t!]
+\centering
+\renewcommand{\arraystretch}{1.5} 
+\begin{tabular}{ |c|cccc| } 
+ \hline
+ WP,  $(2_x\mathcal{T}||2_z)$ & p$^1$2$^{\overline{1}}$m$^{\overline{1}}$m, & p$^1$2$^{\overline{1}}$m$^{\overline{1}}$g, & p$^1$2$^{\overline{1}}$g$^{\overline{1}}$g, & c$^1$2$^{\overline{1}}$m$^{\overline{1}}$m,\\
+ &p$^{\overline{1}}$4, & p$^{\overline{1}}$4$^{\overline{1}}$m$^1$m, & p$^{\overline{1}}$4$^1$m$^{\overline{1}}$m, & p$^1$4$^{\overline{1}}$m$^{\overline{1}}$m,\\
+ &p$^{\overline{1}}$4$^{\overline{1}}$g$^1$m, & p$^{\overline{1}}$4$^1$g$^{\overline{1}}$m, & p$^1$4$^{\overline{1}}$g$^{\overline{1}}$m, &  p$^1$6$^{\overline{1}}$m$^{\overline{1}}$m \\
+ \hline
+ WP, $(E||\mathcal{M})$ & p$^{\overline{1}}$4$^{\overline{1}}$m$^1$m,&  p$^{\overline{1}}$4$^1$m$^{\overline{1}}$m, & p$^{\overline{1}}$4$^{\overline{1}}$g$^1$m, &  p$^{\overline{1}}$4$^1$g$^{\overline{1}}$m \\
+ \hline
+\end{tabular}
+\caption{\justifying Altermagnetic spin-wallpaper groups that protect WPs between bands with the same spin. }\label{Weyl_point_classification_new}
+\end{table}
+
+
+\textit{Electronic model.---}
+First, we consider an electronic tight-binding model with symmetries of the altermagnetic wallpaper group p$^{\overline{1}}$4$^{\overline{1}}$m$^1$m (for the symmetry representations see SM~\cite{sm_note}). 
+The Wyckoff positions $(\tfrac{1}{4},\tfrac{1}{4}, \uparrow)$, $(-\tfrac{1}{4},\tfrac{1}{4}, \downarrow)$, $(-\tfrac{1}{4},-\tfrac{1}{4}, \uparrow)$ and $(\tfrac{1}{4},-\tfrac{1}{4}, \downarrow)$ correspond to the sites A, B, C, and D. The alignment of the magnetic moments is along the $z$-axis, so that at A, C (B, D) sites they point in the same direction. The symmetric model in $k$-space is given by
+\begin{subequations}\label{TBelectronicmodel_main}
+\begin{align}
+    H(\mathbf{k}) &= \begin{pmatrix}
+        H_0(\mathbf{k}) + N \Sigma_z&0\\
+        0 & H_0(\mathbf{k}) - N \Sigma_z\\
+    \end{pmatrix},\\
+    H_0(\mathbf{k}) &=  \begin{pmatrix}
+        \epsilon&t_{\text{AB}}&t_{\text{AC}}&t_{\text{AD}}\\
+        t_{\text{AB}}^* & \epsilon&t_{\text{BC}}&t_{\text{BD}}\\
+        t_{\text{AC}}^* & t_{\text{BC}}^*&\epsilon&t_{\text{CD}}\\
+        t_{\text{AD}}^* & t_{\text{BD}}^*&t_{\text{CD}}^*&\epsilon\\
+    \end{pmatrix},
+\end{align}
+\end{subequations}
+where we take $\epsilon =0$, $t_{\text{AB}}=-t_{\text{CD}}=4i\sin\tfrac{k_x}{2}$, $t_{\text{AC}}=2(\cos\tfrac{k_x-k_y}{2} + \cos\tfrac{k_x+k_y}{2} - i \sin\tfrac{k_x+k_y}{2})$, $t_{\text{AD}}=t_{\text{BC}}=4i \sin\tfrac{k_y}{2}$, $t_{\text{BD}}=2(\cos\tfrac{k_x-k_y}{2} + \cos\tfrac{k_x+k_y}{2} + i \sin\tfrac{k_x-k_y}{2})$, and $N = 8$. The matrix $\Sigma_z = \text{diag} (+1, -1, +1, -1)$ describes an interaction with the staggered magnetic moments.
+The band structure shown in Fig.~\ref{fig:SWG6}(b) has enforced line spin degeneracies along the $k_x$ and $k_y$ mirror lines and the bands are spin split at GPs. Four spin-polarized WPs emerge along the $\Gamma$M lines and are related by the symmetries of the model [Fig.~\ref{fig:SWG6}(b)]. Every crossing carries a $\pi$-Berry phase and has a spin flavor. 
+The non-trivial Berry phase along a path through the whole BZ indicates,
+by the bulk-boundary correspondence, the emergence of edge states~\cite{chiu2018quantized,PhysRevB.95.035421}. As the Hilbert space contains two decoupled subspaces with well-defined spin, the Berry phase and bulk-boundary correspondence can be introduced for them separately. Two boundary states with opposite spin emerge at each of the two edges [see Fig.~\ref{fig:SWG6}(c)].
+ 
+\begin{figure*}[ht]
+    \includegraphics[width=\textwidth]{Figure2.png}
+    \caption{\justifying 
+    (a) Phase diagram of the electronic model as a function of the mass terms
+    $m(\mathbf{k})= m_1+m_2\sin k_x+m_3\sin k_y$ (with $m_1>0$), which gap out the 2D WPs.
+    (b)--(d) 
+    Edge band structure of the states
+    within the ten outermost unit cells 
+    of a 30 cell ribbon with mass terms~\eqref{eq:Massterm}
+    for the phase with $C=2$, $m_1=m_3=0$, $m_2=0.5$. (c) Quantum spin Hall state with $C_S=2$, $m_1=m_2=0$, $m_3=0.5$. (d) Quantum Hall state with spin-polarized current with $C=1$, $C_S=-1$, $m_1=0.4$, $m_2=0.5$, $m_3=-0.5$. In the insets we show the Berry curvature distribution and directions of the spin-polarized edge currents for a chemical potential within the bulk gap.}
+    \label{fig:el_phases}
+\end{figure*}
+
+To observe anomalous spin-polarized currents we gap out the WPs by breaking the $(2_x\mathcal{T}||2_z)$, $(E||\mathcal{M}_{xy})$ and $(E||\mathcal{M}_{x\overline{y}})$ symmetries. Since these symmetries relate sublattice A with C (B with D), we introduce mass terms in the form of staggered potentials and hoppings 
+\begin{equation}\label{eq:Massterm}
+    M(\mathbf{k})= m(\mathbf{k})\ \text{diag} (+1, +1, -1, -1) ,
+\end{equation}
+where $m(\mathbf{k})$ has a positive prefactor $+1$ for the A and B sublattices, and a negative  $-1$  for the C and D sublattices. 
+In particular, we consider a phase diagram for the three masses $m(\mathbf{k})= m_1+m_2\sin k_x+m_3\sin k_y$. These mass terms do not mix spin up and down allowing for  spin-polarized valleys.
+The onsite term $m_1$ can be implemented using a staggered sublattice potential \cite{doi:10.1126/science.1237240} that breaks inversion $(E||2_z)$, whereas the $k$-dependent terms also break the $(2_x\mathcal{T}||E)$ symmetry of the collinear order. Functionally similar terms can be realized in a quasistatic system with laser driving (see Ref.~\cite{PhysRevB.79.081406, PhysRevB.84.235108} and  SM~\cite{sm_note}), where the light intensity is a tuning parameter between distinct phases.
+
+In a system with a chemical potential near the degeneracies, the low-energy physics is governed by the four spin-polarized WPs. 
+We construct low-energy models for all four WPs/valleys (see SM~\cite{sm_note}). Each of the models can be described by the effective Hamiltonian
+\begin{equation}\label{Effective_LowEn}
+    H^{\text{eff}}_{\alpha}(\mathbf{q}) = \epsilon_{\alpha}(\mathbf{q}) \sigma_0 + \sum_{\mathclap{i,j\in\{x,y\}}} q_i (\mathcal{A}_{\alpha})_{ij}\sigma_j,
+\end{equation}
+where the WP in each of the four quarters of the BZ is labelled by $\alpha \in \{++,--,+-,-+\}$, 
+$\mathbf{q}$ is the displacement from the WP, 
+$\sigma_i$ are the Pauli matrices, 
+and $\mathcal{A}_{\alpha}$ is the coefficient matrix. The symmetries of the spin-wallpaper group relate the four matrices $\mathcal{A}_{\alpha}$ with each other. The term $\epsilon_{\alpha}(\mathbf{q})$ is a linear shift of the bands in energy.
+A mass term that opens a gap in Eq.~\eqref{Effective_LowEn} has the form $m_{\alpha}\sigma_z$. 
+Each valley contributes to the total (spin) Chern number of the split bands as
+\begin{align}
+    C^{\alpha} = \pm \tfrac{\text{sign} (m_{\alpha}\det \mathcal{A}_{\alpha})}{2}.\label{Chern_num}
+\end{align}
+We compute the phase diagram by calculating the Chern number and spin Chern number $C_S = C_{\downarrow} - C_{\uparrow}$ contribution from each of the crossings and summing them up [see Fig.~\ref{fig:el_phases}(a)]. For distinct phases, we show as insets in Fig.~\ref{fig:el_phases}(b)--(d) the Berry curvature distribution~\cite{PhysRevLett.117.052001}. Non-zero values of the (spin) Chern number imply the presence of topological boundary states for a model with edges. 
+We compute the band structure for ribbons with termination in the $x$-direction and 30 unit cells. 
+In Fig.~\ref{fig:el_phases}(b)--(d) we display the projection of the bands onto ten unit cells at the left edge. In addition, we show the spin character for the emerging edge states. In the phase with the bulk Chern number $C=2$ and $C_S=0$ we observe two boundary states with opposite spins and positive Fermi velocity for the chemical potential in the bulk gap. When $C=0$ and $C_S=2$ the states are spin-polarized and have opposite Fermi velocities. In the phase with $C=1$ and $C_S=-1$ there is a spin-up polarized edge state with positive Fermi velocity inside the bulk gap.
+
+
+\textit{Electronic transport.---}
+The model shows a topological response, as the non-trivial Chern number corresponds to a quantized transverse current.
+In the semiclassical limit the Hall current has the form~\cite{PhysRevLett.99.236809,RevModPhys.82.1959}
+\begin{equation}\label{semiclas_Hall_current}
+    \mathbf{j} = \frac{e^2}{\hbar} \int  \frac{\mathrm{d}^2 \mathbf{k}}{(2\pi)^2} f(\mathbf{k}) \mathbf{E} \times \mathbf{\Omega}(\mathbf{k}),
+\end{equation}
+where $f(\mathbf{k})$ is the Fermi-Dirac distribution, $\mathbf{E}$ is the electric field, $\mathbf{\Omega}(\mathbf{k})$ is the Berry curvature. We choose the chemical potential $\mu$ within the conduction band, above the gap energy $|m|$, i.e. $|m| < E < \mu$. 
+The total current contains contributions from four Fermi pockets, described by the spin-polarized low-energy models.
+Integrating the expression for each of the valleys in the limit of a small gap $|m| \ll \mu$ and temperature $T=0$, we obtain an analytical expression for the transverse (spin) conductivity
+\begin{align}
+    \sigma_{xy} &= \frac{e^2}{2h} \sum_{\alpha} \text{sign} (m_{\alpha} \det \mathcal{A}_{\alpha}) +O(m_{\alpha}/\mu),\\
+    \sigma_{xy}^S &= \frac{e}{8\pi} \sum_{\alpha} (-1)^{s(\alpha)}\text{sign} (m_{\alpha} \det \mathcal{A}_{\alpha})+ O(m_{\alpha}/\mu),
+\end{align}
+where we also consider the
+spin current $\mathbf{j}_S = (\hbar/2e)(\mathbf{j}_{\downarrow}-\mathbf{j}_{\uparrow})$. Here, $s(\alpha) = 0$ for the crossings $\alpha$ with spin down, and $s(\alpha) = 1$ for spin up. The main contribution to the conductivity is due to the quantized anomalous current if the gap is small $|m| \ll \mu$. 
+For the case when the chemical potential is
+inside the gap,
+we further compute the temperature dependence of the transverse (spin) conductivity using Eq.~\eqref{semiclas_Hall_current}. In the non-trivial phases, the conductivity reaches quantized values for small temperatures (see SM~\cite{sm_note}).
+
+
+
+\textit{Magnon model.---}
+We study the magnon band structure of a minimal model for the altermagnetic wallpaper group p$^{\overline{1}}$4$^{\overline{1}}$m$^1$m for the lattice shown in Fig.~\ref{fig:SWG6}(a). The four sites in the unit cell result in four magnon bands which inherit the altermagnetic spin-wallpaper group symmetries of the exchange interactions. 
+The spin interaction Hamiltonian for the localized magnetic moments reads
+\begin{align}
+    \mathcal{H} = J \sum_{\braket{ij}} \mathbf{S}_i \mathbf{S}_j + L^{\scriptscriptstyle(\scriptstyle\prime\scriptscriptstyle / \scriptstyle\prime\prime\scriptscriptstyle)} \sum_{\braket{\hspace{-.05cm}\braket{ij}\hspace{-.05cm}}} \mathbf{S}_i \mathbf{S}_j,
+\end{align}
+with $J$ the nearest-neighbor coupling strength between opposite-spin sublattices and $L^{\scriptscriptstyle(\scriptstyle\prime\scriptscriptstyle / \scriptstyle\prime\prime\scriptscriptstyle)}$ the next-nearest-neighbor coupling strengths between same-spin sublattices. 
+The couplings are shown in the lattice structure in the SM~\cite{sm_note}.
+Performing the standard linear spin-wave theory we obtain the magnon Hamiltonian in momentum space $\mathcal{H}_\mathrm{LSW} = \sum_\mathbf{k} \psi_\mathbf{k}^\dagger H_\mathbf{k}^{\vphantom{\dagger}} \psi_\mathbf{k}^{\vphantom{\dagger}} $ in terms of the bosonic operators $\psi_\mathbf{k} = (a_\mathbf{k}^{\vphantom{\dagger}},b_{-\mathbf{k}}^\dagger,c_\mathbf{k}^{\vphantom{\dagger}},d_{-\mathbf{k}}^\dagger)^{\text{T}}$ with
+\begin{align}\label{eq:LSWH}
+    H_\mathbf{k} = S \mqty(h_0 & \gamma_1 & \gamma_2 & \gamma_3 \\
+                         \gamma_1^* & h_0 & \gamma_3 & \gamma_4 \\
+                         \gamma_2^* & \gamma_3^* & h_0 & \gamma_1 \\
+                         \gamma_3^* & \gamma_4^* & \gamma_1^* & h_0 ),
+\end{align}
+where $h_0 = 4J-2L-L'-L''$, $\gamma_1 = 2J\cos\tfrac{k_x}{2}$, $\gamma_2 = 2L\cos\tfrac{-k_x+k_y}{2} + L'e^{i\tfrac{k_x+k_y}{2}} + L''e^{-i\tfrac{k_x+k_y}{2}}$, $\gamma_3 = 2J\cos\tfrac{k_y}{2}$, and $\gamma_4 = 2L\cos\tfrac{k_x+k_y}{2} + L'e^{i\tfrac{-k_x+k_y}{2}} + L''e^{i\tfrac{k_x-k_y}{2}}$. The Hamiltonian is diagonalized with a Bogoliubov transformation \cite{Colpa1978} and the resulting magnon spectrum is shown in Fig.~\ref{fig:MagnonBulkBands}(a). One finds that the magnon bands are pairwise degenerate along the mirror lines,
+but are in general split in the rest of the BZ. 
+A distinct chirality, corresponding to the direction of precession of the spin around the axis of the collinear magnetic order, can be assigned to the individual magnon bands. Since the collinear order in $z$-direction preserves the $z$-component of the total spin $S^z = \sum_{i} S^z_{i}$ with $i$ running over all sites, we use $\vartheta =\braket{S^z}/\hbar$ to specify the chirality of the bands \cite{Cheng2016Nernst}. In particular, we have $\vartheta=+1$ for right-handed and $\vartheta=-1$ for left-handed magnon modes and we indicate them with curved arrows \textcolor{red}{$\boldsymbol\circlearrowleft$} and \textcolor{blue}{$\boldsymbol\circlearrowright$}, respectively. 
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{Figure3.png}
+    \caption{\justifying (a) Magnon band structure of the Hamiltonian~\eqref{eq:LSWH} for the parameters $J=2$, $L=-3$, $L' = L/2$, $L'' = L/5$ with the chirality indicated in red (blue) for right-(left-)handedness.
+    The inset shows the BZ with the positions of the WPs. (b)--(d) Edge spectra on a ribbon geometry with 50 unit cells in $y$-direction projected onto ten unit cells at the lower ($y=0$) boundary where the colour indicates the localization on the edge. (c)--(d)  We consider gapped phases with (c) $C=2$, $C_\vartheta = 0$ with mass parameters $m_2 = 0.5$, $m_1 = m_3 = 0$ and (d) $C=0$, $C_\vartheta = 2$ with mass parameters $m_3 = 0.5$, $m_1 = m_2 = 0$. The insets show the transverse thermal conductivity $\kappa^{xy}$ $[k_\mathrm{B}^2/\hbar]$ and the magnon spin Nernst coefficient $\alpha^{xy}$ $[k_\mathrm{B}/\hbar]$ as a function of temperature $T$.}
+    \label{fig:MagnonBulkBands}
+\end{figure}
+The magnon bands exhibit four symmetry-related WPs formed by same-chirality bands, which are protected by the $(2_x\mathcal{T}||2_z)$ symmetry. For each of the crossings we find a $\pi-$Berry phase. 
+Calculating the magnon spectrum 
+on a ribbon of finite width in $y$-direction, we find topological edge states between the WPs. In the spectrum shown in Fig.~\ref{fig:MagnonBulkBands}(b), the bands are projected onto the lower ($y = 0$) edge. We find two degenerate bands of opposite chirality per edge. 
+
+
+
+Next, we study the properties of the gapped system obtained by introducing the mass term of Eq.~\eqref{eq:Massterm} with $m(\mathbf{k})= m_1+m_2\sin k_x +m_3\sin k_y$, which breaks the $(2_x\mathcal{T}||2_z)$, $(E||\mathcal{M}_{xy})$ and $(E||\mathcal{M}_{x\overline{y}})$ symmetries, thereby splitting the WPs. We obtain the phase diagram for the ratio of the mass parameters $m_2/m_1$ and $m_3/m_1$ by calculating the Chern number $C$ of the lower two bands.  
+Further, we calculate the magnon analog of the spin Chern number, the chirality Chern number $C_\vartheta = C_{+1} - C_{-1}$ with $C_{\pm1}$ the Chern number for the bands with chirality $\pm 1$. 
+The phase diagram we obtain is in full agreement with the one determined for the low-energy electron model shown in Fig.~\ref{fig:el_phases}(a) with $C_\vartheta = C_{S}$. Details on the calculation and the resulting phase diagram for the magnon model are described in the SM~\cite{sm_note}. In the topological phases, i.e., phases with finite (chirality) Chern number, we calculate the spectra on a ribbon of finite width in $y$-direction and show the projection onto the lower ($y=0$) edge in \mbox{Fig.~\ref{fig:MagnonBulkBands}(c)--(d)}. 
+For each edge we find two degenerate edge states of opposite chirality in the phase with $C=2$ and $C_\vartheta=0$ [Fig.~\ref{fig:MagnonBulkBands}(c)] and two counter-propagating edge states with opposite chirality for $C=0$ and $C_\vartheta=2$ [Fig.~\ref{fig:MagnonBulkBands}(d)].
+
+
+\textit{Thermal response.---}
+The non-trivial topology of gapped magnon bands can be studied experimentally via thermal transport measurements. 
+In the semiclassical limit, in systems with a gap with $C\neq 0$, the finite Berry curvature leads to a thermal Hall current $\mathbf{j} = \kappa^{xy} \hat{z}\times \nabla T$ when applying a longitudinal thermal gradient \cite{Matsumoto2011thermal}. In the case of $C_\vartheta \neq 0$, one finds the magnon spin Nernst effect with the chirality current $\mathbf{j}_\vartheta = \alpha^{xy} \hat{z}\times \nabla T$ as the analogue of the spin Hall effect \cite{Cheng2016Nernst}.
+The thermal Hall conductivity $\kappa^{xy}(T)$ and the magnon spin Nerst coefficient $\alpha^{xy}(T)$ for a 2D magnon system are given by \cite{Matsumoto2011thermal,Cheng2016Nernst}
+\begin{align}
+    \kappa^{xy}(T) &= -\frac{k_\mathrm{B}^2 T}{(2\pi)^2 \hbar} \sum_n \int \limits_\mathrm{BZ} \mathrm{d}^2 \mathbf{k} \, c_2(\varrho_n)\, \Omega_n (\mathbf{k}), \\
+    \alpha^{xy}(T) &= -\frac{k_\mathrm{B}}{(2\pi)^2 \hbar} \sum_n \int \limits_\mathrm{BZ} \mathrm{d}^2 \mathbf{k} \, c_1(\varrho_n)\, \vartheta_n \Omega_n (\mathbf{k}),
+\end{align}
+where $\varrho_n$ is the Bose-Einstein distribution function, $\Omega_n(\mathbf{k})$ the Berry curvature, and $\vartheta_n$ the chirality of band $n$. Further, $c_1(x) = (1+x)\ln (1+x) - x\ln x$,
+$c_2(x) = (1+x)(\ln \frac{1+x}{x})^2 - (\ln x)^2 - 2\mathrm{Li}_2(-x)$, and $\mathrm{Li}_2(x)$ is the dilogarithm (see SM \cite{sm_note}). 
+The insets in \mbox{Fig.~\ref{fig:MagnonBulkBands}(c)--(d)} show the thermal Hall conductivity and the magnon spin Nernst coefficient as a function of temperature for the discussed topological phases. 
+We find a finite thermal Hall effect in the phases with $C\neq 0$ and a finite magnon spin Nernst effect in the phases with $C_\vartheta\neq 0$. In the topologically trivial phase, both responses are zero. The response is not quantized and its strength depends on the parameters of the model and the mass term.
+
+
+
+
+
+
+
+
+\textit{Conclusion.---} 
+In this work we studied point degeneracies between bands of the same spin quantum number in 2D altermagnets. Similar types of degeneracies have recently been theoretically investigated for a mirror symmetric electronic model~\cite{antonenko2024mirror}, where the gapped phase is characterized by a mirror Chern number. Further, the quantum anomalous Hall effect was theoretically predicted in antiferromagnetic CrO~\cite{2023npjCM,10.1063/5.0147450}.
+We systematically extend the study of these novel WPs by providing a classification of the degeneracies based on symmetries for the spin-wallpaper groups which provides the basis for an extended search for candidate materials \cite{sodequist2024twodimensional}. 
+Additionally to an electronic model, we provide a first example of an altermagnetic magnon model exhibiting WPs involving bands of the same  chirality.
+Spin (chirality) polarization of the electronic (magnonic) states in the vicinity of the WPs together with the absence of the total magnetization of the altermagnet allows for unique topological responses. 
+Each WP exhibits a parity anomaly~\cite{PhysRevD.29.2366,semenoff_anomaly_PRL,wenbin_parity_anomaly_PRB} leading to topological currents (see SM~\cite{sm_note}) under symmetry-breaking mass terms. The currents give rise to the quantum Hall and quantum spin Hall effect for electrons, and the thermal Hall and spin Nernst effect for magnons.
+The mass terms can be controlled, for example, by light interacting with the electrons (magnons), allowing
+to drive the 2D altermagnet across different topological 
+phase transitions (see SM~\cite{sm_note}). 
+In addition, circularly polarized light can induce a valley Hall effect~\cite{PhysRevLett.99.236809},
+since right and left circularly polarized light couples differently to electrons from valleys with opposite  Berry curvature. 
+Similarly, a magnon valley thermal Hall effect is expected to arise in insulating 2D altermagnets~\cite{PhysRevB.102.075407}.
+
+
+\textit{Acknowledgments.---} 
+We wish to thank Moritz Hirschmann, Niclas Heinsdorf, and Paul McClarty for useful discussions.
+This work is funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – TRR 360 – 492547816.
+
+
+\bibliographystyle{apsrev4-1}
+\bibliography{bibliography.bib}
+
+
+
+\clearpage
+
+
+
+\end{document}

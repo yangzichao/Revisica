@@ -1,0 +1,163 @@
+\definecolor{light-gray}{gray}{0.92}
+\begin{table}[h!]
+    \setlength{\tabcolsep}{5.65pt}
+    \renewcommand{\arraystretch}{1.25}
+    \scriptsize
+    \begin{tabular}{p{2.3cm}p{1.25cm}p{1.25cm}|p{1.2cm}p{1.1cm}p{1.2cm}p{1.1cm}p{1.1cm}p{0.9cm}p{1.2cm}}
+    \toprule
+& Gemini \newline Ultra& Gemini \newline Pro& GPT-4 & GPT-3.5 & PaLM 2-L & Claude 2 & Inflect-\newline ion-2 &  Grok 1& LLAMA-2 \\
+\midrule
+\vspace{-2.4em}
+\begin{flushleft}
+\textbf{MMLU}\newline
+\tiny{Multiple-choice questions in 57 subjects (professional \& academic)}\newline\tiny{\cite{mmlu}}
+\vspace{-1.5em}
+\end{flushleft}
+& 
+{\sota{90.04\%}} \newline {{\tiny{CoT@32$^{*}$}}} \newline \newline \newline {83.7\%} \newline \tiny{5-shot}& %Gemini Ultra 
+{79.13\%} \newline {\tiny{CoT@8$^{*}$}} \newline \newline \newline {71.8\%} \tiny{5-shot} & % Gemini Pro
+87.29\% \tiny{CoT@32 \newline (via API$^{**}$)} \newline \newline
+\scriptsize{86.4\%} \newline \tiny{5-shot \newline (reported)} & % GPT-4 
+ 70\% \newline \tiny{5-shot} & % Gpt 3.5
+   78.4\% \newline \tiny{5-shot} & % PaLM 2 L 
+ 78.5\% \newline \tiny{5-shot CoT} & %  Claude 2
+79.6\% \newline \tiny{5-shot} & % Inflection 2
+ 73.0\% \newline \tiny{5-shot} & % Grok 1
+ 68.0\%$^{***}$\   %llama2\\
+ \\
+\hline
+\textbf{GSM8K} \newline
+\tiny{Grade-school math} 
+\newline \tiny{\cite{cobbe2021training}} &  
+\sota{94.4\%} \newline \tiny{{Maj1@32}} &%Gemini Ultra
+86.5\% \newline \tiny{Maj1@32} &  % Gemini Pro
+92.0\% \newline \tiny{SFT \&} \newline \tiny{5-shot CoT} &  % GPT-4 
+57.1\% \newline \tiny{5-shot} & % Gpt 3.5
+80.0\% \newline \tiny{5-shot} & % PaLM 2 L 
+88.0\% \newline \tiny{0-shot} & %  Claude 2
+81.4\% \newline \tiny{8-shot} & % Inflection 2
+62.9\% \newline \tiny{8-shot} & % Grok 1
+56.8\% \newline \tiny{5-shot} %llama2
+\\ 
+\hline
+\vspace{-2.1em}
+\begin{flushleft}
+\textbf{MATH} \newline
+\tiny{Math problems across 5~difficulty levels \& 7~subdisciplines}\newline
+\tiny{\cite{hendrycks2021measuring}} 
+\vspace{-1.5em}
+\end{flushleft}
+& 
+\sota{53.2\%} \newline \tiny{{4-shot}} &%Gemini Ultra
+32.6\% \newline \tiny{4-shot} & % Gemini Pro
+52.9\%  \newline \tiny{4-shot} \newline \tiny{(via API$^{**}$)} \newline \newline
+\scriptsize{50.3\%} \newline
+\tiny{\hypersetup{citecolor=black}{\citep{zheng2023progressivehint}}} & % GPT-4 
+34.1\% \newline \tiny{4-shot} \newline
+\tiny{(via API$^{**}$)} & % Gpt 3.5
+34.4\% \newline \tiny{4-shot} & % PaLM 2 L 
+--- & %  Claude 2
+34.8\% & % Inflection 2
+23.9\% \newline \tiny{4-shot} & % Grok 1
+13.5\% \newline \tiny{4-shot}  %llama2
+\\  
+\hline
+\textbf{BIG-Bench-Hard} \newline
+\tiny{{\raggedleft Subset of hard BIG-bench tasks written as CoT problems
+}} \newline
+\tiny{\cite{bigbench}} & 
+\sota{83.6\%}\newline \tiny{3-shot} &%Gemini Ultra
+75.0\% \newline \tiny{3-shot}& % Gemini Pro
+83.1\% \newline \tiny{3-shot} \newline \tiny{(via API$^{**}$)} & % GPT-4 
+66.6\%  \newline \tiny{3-shot}  \newline \tiny{(via API$^{**}$)}& % Gpt 3.5
+77.7\%  \newline \tiny{3-shot}& % PaLM 2 L 
+--- &  %  Claude 2
+--- & %Inflection 2
+--- & % Grok 1
+51.2\% \newline \tiny{3-shot} %llama2
+\\
+\hline
+\textbf{HumanEval} \newline
+\tiny{Python coding tasks} \newline \tiny{\cite{chen2021evaluating}} &
+\sota{74.4\%} \newline \tiny{{0-shot (PT$^{****}$)}} & %Gemini Ultra
+67.7\% \newline \tiny{{0-shot} (PT$^{****}$)} &  % Gemini Pro
+67.0\% \newline \tiny{0-shot} \newline
+\tiny{(reported)} & % GPT-4 
+48.1\% \newline \tiny{0-shot} & % Gpt 3.5
+---  &  % PaLM 2 L 
+70.0\% \newline \tiny{0-shot} & %  Claude 2
+44.5\% \newline \tiny{0-shot} & %Inflection 2
+63.2\% \newline \tiny{0-shot} & % Grok 1
+29.9\% \newline \tiny{0-shot} %llama2
+\\
+\hline
+\textbf{Natural2Code} \newline
+\tiny{Python code generation.} \newline \tiny{(New held-out set with no leakage on web)} &
+\sota{74.9\%} \newline \tiny{{0-shot}} & %Gemini Ultra
+69.6\% \newline \tiny{{0-shot}} &  % Gemini Pro
+73.9\% \newline \tiny{0-shot}\newline
+\tiny{(via API$^{**}$)} & % GPT-4 
+62.3\% \newline \tiny{{0-shot}}\newline
+\tiny{(via API$^{**}$)}  & % Gpt 3.5
+--- &  % PaLM 2 L 
+--- & %  Claude 2
+---  & %Inflection 2
+---  & % Grok 1
+---  %llama2
+\\
+\hline
+\textbf{DROP} \newline
+\tiny{Reading comprehension} \& arithmetic. \newline (metric: F1-score)\newline{\cite{Dua2019DROP}} & 
+\sota{82.4} \newline \tiny{Variable \newline shots} &% Gemini Ultra
+74.1 \newline \tiny{Variable \newline shots} & % Gemini Pro
+80.9 \newline \tiny{3-shot} \newline
+\tiny{(reported)} & % GPT-4
+64.1 \newline \tiny{3-shot} & % Gpt 3.5
+82.0 \newline \tiny{Variable shots} & % PaLM 2 L 
+--- & %  Claude 2
+--- & % Inflection 2
+--- & % Grok 1
+--- %llama2
+ \\
+\hline
+\textbf{HellaSwag}\newline
+\tiny{(validation set)}\newline 
+\tiny{Common-sense multiple choice questions}\newline
+\tiny{\cite{zellers2019hellaswag}} & 
+\scriptsize{87.8\%} \newline \tiny{10-shot} & % Gemini Ultra
+\scriptsize{84.7\%} \newline \tiny{10-shot} & % Gemini Pro
+\scriptsize{\sota{95.3\%}} \newline
+{\tiny{10-shot}} \newline
+\tiny{(reported)} & % GPT-4 
+85.5\% \newline \tiny{10-shot} & % Gpt 3.5
+86.8\% \newline \tiny{10-shot} & % PaLM 2 L 
+--- & %  Claude 2
+89.0\% \newline \tiny{10-shot} & % Inflection 2
+--- & % Grok 1
+80.0\%$^{***}$ %llama2
+\\
+\hline
+\textbf{WMT23} \newline
+\tiny{Machine translation (metric: BLEURT)} 
+\newline \tiny{\cite{tom2023findings}}
+& 
+\sota{74.4} \newline \tiny{{1-shot (PT$^{****}$)}} &% Gemini Ultra
+71.7 \newline \tiny{1-shot} & % Gemini Pro
+73.8 \newline \tiny{1-shot \newline (via API$^{**}$)} & % GPT-4 
+--- & % Gpt 3.5
+72.7 \newline \tiny{1-shot} & % PaLM 2 L
+--- & %  Claude 2
+--- & % Inflection 2
+--- & % Grok 1
+--- %llama2
+\\
+\bottomrule
+\end{tabular}
+\caption{Gemini performance on text benchmarks with external comparisons and PaLM 2-L. \newline
+\scriptsize{$^{*}$ The model produces a chain of thought with k = 8 or 32 samples, if there is a consensus above a threshold (chosen based on the validation split), it selects this answer, otherwise it reverts to a greedy sample. Further analysis in Appendix \ref{appendix:cot}.} \newline
+\scriptsize{$^{**}$ Results self-collected via the API in Nov, 2023.}  \newline
+\scriptsize{$^{***}$ Results shown use the decontaminated numbers from \citet{llama2} report as the most relevant comparison to Gemini models which have been decontaminated as well.)} \newline
+\scriptsize{$^{****}$ PT denotes a post-trained Gemini API model.}
+}
+\label{tab:text-results}
+\end{table}

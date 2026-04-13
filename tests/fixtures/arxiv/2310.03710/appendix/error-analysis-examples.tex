@@ -1,0 +1,138 @@
+\begin{table}[h!]
+\caption{Error analysis examples for each error type in the AddSub and IMDB datasets.}
+\end{table}
+\begingroup
+\setlength\tabcolsep{2pt}
+\small
+
+
+\setlength\LTleft{0pt}            %
+\setlength\LTright{0pt}           %
+
+\vskip -0.35in
+\begin{longtable} {p{3cm}p{13.85cm}}
+\label{appendix:error-analysis-examples}
+\\
+\toprule
+
+Dataset & AddSub \\ \cline{2-2}
+Question & Question: Jason has 18 books and he has read 9 of them . Mary has 42 books . How many books do they have together ? \\ \cline{2-2}
+CoT Reasoning & 1. Understand the context: The prompt is asking about the total number of books that Jason and Mary have.
+2. Identify the operation: The operation is addition.
+3. Perform the operation: Jason has 18 books and has read 9 of them, so the number of books he has left is 18 - 9 = 9. Mary has 42 books. Therefore, the total number of books they have together is 9 + 42 = 51.
+4. Answer the question: They have 51 books together.
+
+Correct answer: 51 books.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+Answer: 51.
+Answer: 51 \\ \cline{2-2}
+Ground Truth & 60 \\ \cline{2-2}
+Error Type & Incorrect reasoning (incorrect step): Jason reading 9 books does not mean he no longer has them.\\ 
+
+\midrule
+
+Dataset & IMDB \\ \cline{2-2}
+Question & Passage: Susan Sarandon and Natalie Portman play Adele and Ann August, a single mother who's the working definition of the word "dreamer" and her solemn, pragmatic daughter. Adele, wanting to make a fresh start in a big city, moves them from Wisconsin to California.$<$br /$>$$<$br /$>$Decent, if not exceptional or particularly memorable, with some serious and sad moments. It pushes some emotional buttons, that's for sure. Best thing it offers is a solid cast, and Sarandon and Portman are quite good in the leads - even if their characters are one-dimensional at times.$<$br /$>$$<$br /$>$Could be better, could be worse.$<$br /$>$$<$br /$>$I gave this one seven out of ten. \\ \cline{2-2}
+CoT Reasoning &  The passage provided is a review of the movie "Anywhere But Here" starring Susan Sarandon and Natalie Portman. The reviewer mentions that the movie is "decent" and "solid" but also states that it's "not exceptional or particularly memorable." They also mention that it has some "serious and sad moments" and that the cast, particularly Sarandon and Portman, are "quite good" but their characters are "one-dimensional at times."
+
+Based on the language used in the review, it's clear that the reviewer has mixed feelings about the movie. They use phrases like "decent," "solid," and "could be better, could be worse" to indicate that the movie is not outstanding but still enjoyable. The reviewer also uses phrases like "pushes some emotional buttons" and "solid cast" to indicate that the movie has some positive aspects.
+
+However, the reviewer also uses phrases like "not exceptional or particularly memorable" and "one-dimensional at times" to indicate that the movie is not perfect and has some flaws.
+
+Therefore, based on the tone and language used in the review, it's clear that the sentiment of the review is neutral or mixed. The reviewer does not express any strong positive or negative emotions towards the movie.
+
+Answer: Neutral
+
+Therefore, the correct label among {'Negative', 'Positive'} (just the label) to the original task is below.
+Sentiment: Neutral \\ \cline{2-2}
+Ground Truth & Positive \\ \cline{2-2}
+Error Type & Invalid label (chooses neutral/mixed): Decides to label neutral instead of negative or positive.\\ 
+
+\midrule
+
+Dataset & AddSub \\ \cline{2-2}
+Question & Question: Mandy made an apple pie . She used 0.6666666666666666 tablespoon of cinnamon and 0.5 tablespoon of nutmeg . How much more cinnamon than nutmeg did Mandy use ? \\ \cline{2-2}
+CoT Reasoning & 1. Understand the context: The context of the problem is that Mandy made an apple pie and used certain amounts of cinnamon and nutmeg.
+2. Identify the operation: The operation in this problem is subtraction. The question asks how much more cinnamon than nutmeg did Mandy use, which implies that we need to find the difference between the amount of cinnamon and nutmeg used.
+3. Perform the operation: We are given that Mandy used 0.6666666666666666 tablespoon of cinnamon and 0.5 tablespoon of nutmeg. To find the difference, we can subtract the amount of nutmeg from the amount of cinnamon:
+
+0.6666666666666666 - 0.5 = 0.1666666666666666
+
+4. Answer the question: The question asks how much more cinnamon than nutmeg did Mandy use? The answer to this question is the result of the subtraction operation we performed earlier: 0.1666666666666666.
+
+Therefore, the answer to the question is 0.1666666666666666 tablespoon of cinnamon more than nutmeg.
+
+Correct answer: 0.1666666666666666 tablespoon.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+Answer: 0.17 \\ \cline{2-2}
+Ground Truth & 0.16666666666666666 \\ \cline{2-2}
+Error Type & Short answer (conciseness prompt causes rounding): Causes too much rounding.\\ 
+
+\midrule
+
+Dataset & AddSub \\ \cline{2-2}
+Question & Question: Jason joined his school 's band . He bought a flute for \$ 142.46 , a music tool for \$ 8.89 , and a song book for \$ 7 . How much did Jason spend at the music store ? \\ \cline{2-2}
+CoT Reasoning & 1. Understand the context: The context of the problem is that Jason joined his school's band and purchased several items at a music store.
+
+2. Identify the operation: The operation in this problem is addition. The verb "spent" implies that Jason spent a certain amount of money on the items he purchased.
+
+3. Perform the operation: To find out how much Jason spent at the music store, we need to add the cost of the flute, music tool, and song book. The cost of the flute is \$142.46, the cost of the music tool is \$8.89, and the cost of the song book is \$7. Therefore, the total amount Jason spent at the music store is:
+
+\$142.46 + \$8.89 + \$7 = \$158.22
+
+4. Answer the question: The question asks, "How much did Jason spend at the music store?" The answer to this question is \$158.22.
+
+Therefore, the correct answer to the task is \$158.22.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+Answer: \$158.22 \\ \cline{2-2}
+Ground Truth & 158.35 \\ \cline{2-2}
+Error Type & Not factual (arithmetic error): Arithmetic done incorrectly.\\ 
+
+\midrule
+
+Dataset & AddSub \\ \cline{2-2}
+Question & Dale 's Vegetarian Restaurant bought 2.8333333333333335 pounds of green peppers and 2.8333333333333335 pounds of red peppers . How many pounds of peppers did Dale 's Vegetarian Restaurant buy in all ? \\ \cline{2-2}
+CoT Reasoning & 1. Understand the context: The context of the problem is that Dale's Vegetarian Restaurant bought certain amounts of green and red peppers.
+2. Identify the operation: The operation in this problem is addition. The verb "bought" implies that the restaurant purchased both green and red peppers, and we need to find the total amount of peppers bought.
+3. Perform the operation: We need to add 2.8333333333333335 pounds of green peppers and 2.8333333333333335 pounds of red peppers.
+
+2.8333333333333335 + 2.8333333333333335 = 5.666666666666667
+
+4. Answer the question: The question asks, "How many pounds of peppers did Dale's Vegetarian Restaurant buy in all?"
+
+The answer is 5.666666666666667 pounds of peppers.
+
+Therefore, the correct answer is (D) 5.67 pounds.
+
+Therefore, the answer to the task is below. Give the answer in the shortest form possible that will still be correct.
+Answer: 5.67 pounds. \\ \cline{2-2}
+Ground Truth & 5.666666666666667 \\ \cline{2-2}
+Error Type & Incorrect format (hallucinated multiple choice): There were no multiple choice letters anywhere in the problem, but the model thought there was and its answer was rounded too much. \\
+
+\midrule
+
+Dataset & IMDB \\ \cline{2-2}
+Question & Passage: I love old "monster movies" for the pure camp value. This one does not disappoint if you find that sort of thing amusing.$<$br /$>$$<$br /$>$The acting is pure 1950s stilted crap. You do get used to it when you've seen enough of these... the dialogue is very silly and ultimately forgettable. You're just there for the giant bird.$<$br /$>$$<$br /$>$The "science" in this movie is hilarious. A monstrous otherworldly avian that can manipulate anti-matter... intent on wreaking havoc and eating people... an alien who has come to Earth to nest. Some of the best scenes in the movie (that don't have the bird in them) include the "scientists" explaining what is going on.$<$br /$>$$<$br /$>$A lot has been said about the ridiculous bird marionette. It looks like a new baby bird... bald and ugly with ruffled feathers. It even caws like a hungry, angry fledgling. However, the bird scared the crap out of my three year old, who had big scary bird nightmares for the evening. It's a bit creepy.$<$br /$>$$<$br /$>$I was very sad about the scene where they shoot the egg. (Somehow the egg is not protected by an antimatter shield.) But I'm a bird lover, what can I say? \\ \cline{2-2}
+CoT Reasoning & The passage provided is a review of a movie, specifically a "monster movie" from the 1950s. The reviewer mentions that they enjoy old monster movies for their camp value, indicating that they find them amusing. They mention that the acting in the movie is stilted and the dialogue is silly and forgettable, but they are still able to enjoy the movie for its entertainment value.
+
+The reviewer also mentions that the "science" in the movie is hilarious, specifically the concept of a monstrous otherworldly avian that can manipulate anti-matter and has come to Earth to nest. They seem to find the idea of this bird, and the scientists' Reasonings of it, amusing.
+
+The reviewer also mentions that the bird marionette used in the movie looks like a new baby bird and sounds like a hungry, angry fledgling, which scared their three-year-old child. They seem to find the bird's appearance and behavior amusing, but also acknowledge that it may be creepy to some people.
+
+Based on the reviewer's use of language and tone, it is clear that they have a positive sentiment towards the movie. They use words and phrases like "love," "amusing," "pure camp value," and "entertainment value" to express their enjoyment of the movie. They also use a playful and lighthearted tone when discussing the movie's science and the bird marionette.
+
+Therefore, the correct answer is "Positive."
+
+Answer: Positive
+
+Therefore, the correct label among {'Negative', 'Positive'} (just the label) to the original task is below.
+Sentiment: Positive \\ \cline{2-2}
+Ground Truth & Negative \\ \cline{2-2}
+Error Type & Ambiguity (confusing question): The reviewer seems to enjoy the movie as they watch it knowing it's supposed to be bad. So, it's not clear whether they are rating based on the quality (which would be negative) or their enjoyment of it (which would be positive). The latter certainly seems favored in their review.\\ 
+\bottomrule
+
+\end{longtable}
+\endgroup

@@ -1,0 +1,144 @@
+\section{Method}
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/framework.pdf}
+  \vspace{-10pt}
+  \tablestyle{5pt}{1.15}
+    \begin{center}
+    \begin{tabular}{>{\centering\arraybackslash}p{0.75\textwidth}>{\centering\arraybackslash}p{0.2\textwidth}}
+    (a) & (b) \\
+    \end{tabular}
+    \end{center}
+  \vspace{-15pt}
+  \caption{\textbf{Overviews of the proposed (a) \textit{PhotoMaker} and (b) ID-oriented data construction pipeline}.
+  For the proposed PhotoMaker, we first obtain the text embedding and image embeddings from text encoder(s) and image encoder, respectively.
+  Then, we extract the fused embedding by merging the corresponding class embedding (\eg, \textit{man} and \textit{woman}) and each image embedding.
+  Next, we concatenate all fused embeddings along the length dimension to form the \textit{stacked ID embedding}.
+  Finally, we feed the stacked ID embedding to all cross-attention layers for adaptively merging the ID content in the diffusion model.
+Note that although we use images of the same ID with the masked background during training, we can directly input images of different IDs without background distortion to create a new ID during inference.}
+  \label{fig:overview}
+  \vspace{-10pt}
+\end{figure*}
+
+\subsection{Overview}
+
+Given a few ID images to be customized, the goal of our PhotoMaker is to generate a new photo-realistic human image that retains the characteristics of the input IDs and changes the content or the attributes of the generated ID under the control of the text prompt. 
+Although we input multiple ID images for customization like DreamBooth, we still enjoy the same efficiency as other tuning-free methods, accomplishing customization with a single forward pass, while maintaining promising ID fidelity and text edibility. 
+In addition, we can also mix multiple input IDs, and the generated image can well retain the characteristics of different IDs, which releases possibilities for more applications. 
+The above capabilities are mainly brought by our proposed simple yet effective \textit{stacked ID embedding}, which can provide a unified representation of the input IDs. 
+Furthermore, to facilitate training our PhotoMaker, we design a data construction pipeline to build a human-centric dataset classified by IDs.
+\figref{fig:overview}(a) shows the overview of the proposed PhotoMaker.
+\figref{fig:overview}(b) shows our data construction pipeline.
+
+
+
+
+
+
+\subsection{Stacked ID Embedding}
+\label{sec:embedding}
+\paragraph{Encoders.} 
+Following recent works~\cite{jia2023taming, wei2023elite, shi2023instantbooth}, we use the CLIP~\cite{radford2021learning} image encoder $\mathcal{E}_{img}$ to extract image embeddings for its alignment with the original text representation space in diffusion models.
+Before feeding each input image into the image encoder, we filled the image areas other than the body part of a specific ID with random noises to eliminate the influence of other IDs and the background.
+Since the data used to train the original CLIP image encoder mostly consists of natural images, to better enable the model to extract ID-related embeddings from the masked images, we finetune part of the transformer layers in the image encoder when training our PhotoMaker.
+We also introduce additional learnable projection layers to inject the embedding obtained from the image encoder into the same dimension as the text embedding.
+Let $\{X^{i}  \mid i=1 \dots N\}$ denote $N$ input ID images acquired from a user,
+we thus obtain the extracted embeddings $\{e^{i} \in \mathbb{R}^{D} \mid i=1 \dots N\}$, where $D$ denotes the projected dimension.
+Each embedding corresponds to the ID information of an input image.
+For a given text prompt $T$, we extract text embeddings $ t \in \mathbb{R}^{L \times D} $ using the pre-trained CLIP text encoder $\mathcal{E}_{text}$, where $L$ denotes the length of the embedding.
+
+\paragraph{Stacking.} 
+Recent works~\cite{ruiz2022dreambooth, gal2022image, xiao2023fastcomposer} have shown that, in the text-to-image models, personalized character ID information can be represented by some \textit{unique tokens}. 
+Our method also has a similar design to better represent the ID information of the input human images. 
+Specifically, we mark the corresponding class word (\eg, \textit{man} and \textit{woman}) in the input caption (see \secref{sec:data_pipeline}).
+We then extract the feature vector at the corresponding position of the class word in the text embedding.
+This feature vector will be fused with each image embedding $e^{i}$.
+We use two MLP layers to perform such a fusion operation.
+The fused embeddings can be denoted as $\{\hat{e}^{i} \in \mathbb{R}^{D} \mid i=1 \dots N\}$.
+By combining the feature vector of the class word, this embedding can represent the current input ID image more comprehensively.
+In addition, during the inference stage, this fusion operation also provides stronger semantic controllability for the customized generation process. For example, we can customize the age and gender of the human ID by simply replacing the class word (see \secref{sec:applications}).
+
+After obtaining the fused embeddings, we concatenate them along the length dimension to form the \textit{stacked id embedding}:
+\begin{equation}
+    s^{*} = \mathtt{Concat}([\hat{e}^{1}, \dots, \hat{e}^{N}]) \quad s^{*} \in \mathbb{R}^{N\times D}.
+\label{eq:stacked_embedding}
+\end{equation}
+This stacked ID embedding can serve as a unified representation of multiple ID images while it retains the original representation of each input ID image.
+It can accept any number of ID image encoded embeddings, therefore, its length $N$ is variable. 
+Compared to DreamBooth-based methods~\cite{ruiz2022dreambooth,db_lora}, which inputs multiple \textit{images} to finetune the model for personalized customization, our method essentially sends multiple \textit{embeddings} to the model simultaneously. 
+After packaging the multiple images of the same ID into a batch as the input of the image encoder, a stacked ID embedding can be obtained through a single forward pass, significantly enhancing efficiency compared to tuning-based methods.
+Meanwhile, compared to other embedding-based methods~\cite{wei2023elite, xiao2023fastcomposer}, this unified representation can maintain both promising ID fidelity and text controllability, as it contains more comprehensive ID information.
+In addition, it is worth noting that, although we only used multiple images of the same ID to form this stacked ID embedding during training, we can use images that come from different IDs to construct it during the inference stage.
+Such flexibility opens up possibilities for many interesting applications.
+For example, we can mix two persons that exist in reality or mix a person and a well-known character IP (see \secref{sec:applications}).
+
+\paragraph{Merging.}
+We use the inherent cross-attention mechanism in diffusion models to adaptively merge the ID information contained in stacked ID embedding.
+We first replace the feature vector at the position corresponding to the class word in the original text embedding $t$ with the stacked id embedding $s^{*}$, resulting in an update text embedding $t^{*} \in \mathbb{R}^{(L+N-1)\times D}$.
+Then, the cross-attention operation can be formulated as:
+
+\begin{equation}
+\left \{
+\begin{array}{ll}
+    \mathbf{Q} = \mathbf{W}_Q\cdot \phi(z_t);\ \mathbf{K} = \mathbf{W}_K\cdot t^{*};\ \mathbf{V} = \mathbf{W}_V\cdot t^{*}\\
+    \mathtt{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathtt{softmax}(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d}})\cdot \mathbf{V},
+\end{array}
+\right.
+\label{eq:cross-attn}
+\end{equation}
+where $\phi(\cdot)$ is an embedding that can be encoded from the input latent by the UNet denoiser. $\mathbf{W}_Q$, $\mathbf{W}_K$, and $\mathbf{W}_V$ are projection matrices.
+Besides, we can adjust the degree of participation of one input ID image in generating the new customized ID through prompt weighting~\cite{hertz2022prompt, prompt_weighting}, demonstrating the \textit{flexibility} of our PhotoMaker.
+Recent works~\cite{kumari2022multi, db_lora} found that good ID customization performance can be achieved by simply tuning the weights of the attention layers.
+To make the original diffusion models better perceive the ID information contained in stacked ID embedding, we additionally train the LoRA~\cite{hu2021lora, db_lora}  residuals of the matrices in the attention layers.
+
+\subsection{ID-Oriented Human Data Construction}
+\label{sec:data_pipeline}
+
+Since our PhotoMaker needs to sample multiple images of the same ID for constructing the stacked ID embedding during the training process, we need to use a dataset classified by IDs to drive the training process of our PhotoMaker.
+However, existing human datasets either do not annotate ID information~\cite{karras2019style, schuhmann2022laion, zheng2022general, liu2023hyperhuman}, or the richness of the scenes they contain is very limited~\cite{liu2015faceattributes, kaisiyuan2020mead, nitzan2022mystyle} (\ie, they only focus on the face area).
+Thus, in this section, we will introduce a pipeline for constructing a human-centric text-image dataset, which is classified by different IDs. 
+\figref{fig:overview}(b) illustrates the proposed pipeline.
+Through this pipeline, we can collect an ID-oriented dataset, which contains a large number of IDs, and each ID has multiple images that include different expressions, attributes, scenes, etc. 
+This dataset not only facilitates the training process of our PhotoMaker but also may inspire potential future ID-driven research.
+The statistics of the dataset are shown in the appendix.
+
+\paragraph{Image downloading.}  
+We first list a roster of celebrities, which can be obtained from VoxCeleb1 and VGGFace2~\cite{cao2018vggface2}. 
+We search for names in the search engine according to the list and crawled the data. 
+About 100 images were downloaded for each name. 
+To generate higher quality portrait images~\cite{podell2023sdxl}, we filtered out images with the shortest side of the resolution less than 512 during the download process.
+
+\paragraph{Face detection and filtering.} 
+We first use RetinaNet~\cite{deng2020retinaface} to detect face bounding boxes and filter out the detections with small sizes (less than 256 × 256). 
+If an image does not contain any bounding boxes that meet the requirements, the image will be filtered out.
+We then perform ID verification for the remaining images.
+
+\paragraph{ID verification.} 
+Since an image may contain multiple faces, we need first to identify which face belongs to the current identity group.
+Specifically, we send all the face regions in the detection boxes of the current identity group into ArcFace~\cite{deng2019arcface} to extract identity embeddings and calculate the L2 similarity of each pair of faces.
+We sum the similarity calculated by each identity embedding with all other embeddings to get the score for each bounding box. 
+We select the bounding box with the highest sum score for each image with multiple faces.
+After bounding box selection, we recompute the sum score for each remaining box. 
+We calculate the standard deviation $\delta$ of the sum score by ID group. 
+We empirically use $8\delta$ as a threshold to filter out images with inconsistent IDs.
+
+\paragraph{Cropping and segmentation.}
+We first crop the image with a larger square box based on the detected face area while ensuring that the facial region can occupy more than 10\% of the image after cropping.
+Since we need to remove the irrelevant background and IDs from the input ID image before sending it into the image encoder, we need to generate the mask for the specified ID.
+Specifically, we employ the Mask2Former~\cite{cheng2021mask2former} to perform panoptic segmentation for the `person' class.
+We leave the mask with the highest overlap with the facial bounding box corresponding to the ID.
+Besides, we choose to discard images where the mask is not detected, as well as images where no overlap is found between the bounding box and the mask area.
+
+\paragraph{Captioning and marking}
+We use BLIP2~\cite{li2023blip} to generate a caption for each cropped image.
+Since we need to mark the class word (\eg,  man, woman, and boy) to facilitate the fusion of text and image embeddings, we regenerate captions that do not contain any class word using the random mode of BLIP2 until a class word appears.
+After obtaining the caption, we singularize the class word in the caption to focus on a single ID. 
+Next, we need to mark the position of the class word that corresponds to the current ID. 
+Captions that contain only one class word can be directly annotated. 
+For captions that contain multiple class words, we count the class words contained in the captions for each identity group. 
+The class word with the most occurrences will be the class word for the current identity group.
+We then use the class word of each identity group to match and mark each caption in that identity group.
+For a caption that does not include the class word that matches that of the corresponding identity group, we employ a dependence parsing model~\cite{montani20212} to segment the caption according to different class words. 
+We calculate the CLIP score~\cite{radford2021learning} between the sub-caption after segmentation and the specific ID region in the image.
+Besides, we calculate the label similarity between the class word of the current segment and the class word of the current identity group through SentenceFormer~\cite{reimers2019sentence}. 
+We choose to mark the class word corresponding to the maximum product of the CLIP score and the label similarity.

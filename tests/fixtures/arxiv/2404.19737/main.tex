@@ -1,0 +1,200 @@
+\documentclass{article}
+
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs} %
+
+\usepackage{hyperref}
+
+\usepackage{mathtools}
+
+\DeclarePairedDelimiterX{\KLbase}[2]{(}{)}{%
+  #1\;\delimsize\|\;#2%
+}
+\newcommand{\KL}{D\KLbase}
+
+
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+
+\newcommand{\fg}[1]{\textcolor{red}{fg: #1}}
+\newcommand{\gab}[1]{\textcolor{green}{gab: #1}}
+\newcommand{\broz}[1]{\textcolor{blue}{broz: #1}}
+\newcommand{\badr}[1]{\textcolor{purple}{badr: #1}}
+
+\usepackage[accepted]{icml2024}
+
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\usepackage[textsize=tiny]{todonotes}
+
+
+\newcommand{\supertitle}{Better \& Faster Large Language Models via Multi-token Prediction}
+\icmltitlerunning{\supertitle{}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\usepackage[utf8]{inputenc} %
+\usepackage[T1]{fontenc}    %
+\usepackage{hyperref}       %
+\usepackage{url}            %
+\usepackage{booktabs}       %
+\usepackage{amsfonts}       %
+\usepackage{nicefrac}       %
+\usepackage{microtype}      %
+\usepackage{xcolor}         %
+\usepackage{multirow}
+
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{bbm}    %
+\usepackage{todonotes}
+
+\long\def\intodo#1{\todo[inline]{#1}}
+
+\newcommand{\point}[1]{{\noindent \color{purple} \scriptsize $\blacktriangleright$ #1}\par}
+\newcommand{\todos}[1]{\noindent {{\colorbox{purple}{\color{white} \texttt{\textbf{TODO}}}} \color{purple} #1}}
+
+
+
+
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\id}{id}
+\DeclareMathOperator*{\Var}{Var}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\del}{\partial}
+\newcommand{\iso}{\xrightarrow{\sim}}
+\newcommand{\test}{\text{test}}
+\newcommand{\val}{\text{val}}
+\newcommand{\train}{\text{train}}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{\supertitle{}}
+
+
+
+\icmlsetsymbol{equal}{*}
+\icmlsetsymbol{adv}{+}
+
+\begin{icmlauthorlist}
+\icmlauthor{Fabian Gloeckle}{equal,fair,ponts}
+\icmlauthor{Badr Youbi Idrissi}{equal,fair,upsaclay}
+\icmlauthor{Baptiste Rozière}{fair}
+\icmlauthor{David Lopez-Paz}{adv,fair}
+\icmlauthor{Gabriel Synnaeve}{adv,fair}
+\end{icmlauthorlist}
+
+\icmlaffiliation{fair}{FAIR at Meta}
+\icmlaffiliation{ponts}{CERMICS Ecole des Ponts ParisTech}
+\icmlaffiliation{upsaclay}{LISN Université Paris-Saclay}
+
+\icmlcorrespondingauthor{Fabian Gloeckle}{fgloeckle@meta.com}
+\icmlcorrespondingauthor{Badr Youbi Idrissi}{byoubi@meta.com}
+
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{\icmlEqualContribution} %
+
+
+
+
+
+
+\begin{abstract}
+Large language models such as GPT and Llama are trained with a next-token prediction loss.
+In this work, we suggest that training language models to predict \emph{multiple} future tokens at once results in higher sample efficiency.
+More specifically, at each position in the training corpus, we ask the model to predict the following $n$ tokens using $n$ independent output heads, operating on top of a shared model trunk. 
+Considering multi-token prediction as an auxiliary training task, we measure improved downstream capabilities with no overhead in training time for both code and natural language models.
+The method is increasingly useful for larger model sizes, and keeps its appeal when training for multiple epochs. Gains are especially pronounced on \emph{generative} benchmarks like coding, where our models consistently outperform strong baselines by several percentage points. Our 13B parameter models solves 12~\% more problems on HumanEval and 17~\% more on MBPP than comparable next-token models. Experiments on small algorithmic tasks demonstrate that multi-token prediction is favorable for the development of induction heads and algorithmic reasoning capabilities.
+As an additional benefit, models trained with 4-token prediction are up to $3\times$ faster at inference, even with large batch sizes.
+\end{abstract}
+
+\section{Introduction}
+\input{intro}
+
+\section{Method}
+\input{method}
+
+\section{Experiments on real data}
+\input{results}
+
+\section{Ablations on synthetic data}
+\input{analysis}
+
+\section{Why does it work? Some speculation}
+\input{discussion}
+
+\section{Related work}
+\input{related}
+
+\section{Conclusion}
+\input{conclusion}
+
+\section*{Impact statement}
+\input{impact}
+
+\section*{Environmental impact}
+\input{carbon}
+
+\section*{Acknowledgements}
+\input{acks}
+
+\clearpage
+
+
+
+\bibliography{main}
+\bibliographystyle{plainnat}
+
+\clearpage
+\newpage
+\include{appendix}
+
+\end{document}

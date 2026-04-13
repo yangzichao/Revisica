@@ -1,0 +1,44 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Read the tweet carefully. Understand the context and the sentiment expressed in the tweet.
+
+2. Hate speech is any communication that disparages a person or a group on the basis of some characteristic such as race, color, ethnicity, gender, sexual orientation, nationality, religion, or other characteristics. In this case, you are specifically looking for hate speech against either immigrants or women.
+
+3. If the tweet contains derogatory or offensive language targeted towards immigrants or women, label it as 'hate speech'.
+
+4. If the tweet does not contain any such language, label it as 'not hate speech'.
+
+5. Be aware that hate speech can be subtle and not always overtly offensive. It can be disguised as a joke or a casual comment. Look for such nuances in the tweet.
+
+6. Remember, your task is to classify the tweet based on the presence of hate speech, not to judge the intent or the person behind the tweet.
+
+7. Always respect the privacy and sensitivity of the content in the tweet. Your task is to classify, not to comment or engage with the content.
+
+Tweet: Dont worry @user you are and will always be the most hysterical woman.
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The tweet "Dont worry @user you are and will always be the most hysterical woman" contains language that is potentially derogatory towards women. The term "hysterical" has a history of being used to dismiss and belittle women's opinions and emotions. In this context, the use of the word "hysterical" can be seen as demeaning and disrespectful towards women. Therefore, this tweet can be classified as hate speech.
+
+Answer: Hate speech.
+
+Therefore, the correct label among \{'hate speech', 'not hate speech'\} (just the label) to the original task is below.
+
+Label: Hate speech
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Tweet Eval Hate).}
+\label{fig:raft_subset=tweet_eval_hate_example}
+\end{figure*}

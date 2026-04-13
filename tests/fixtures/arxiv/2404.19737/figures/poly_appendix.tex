@@ -1,0 +1,19 @@
+\begin{figure*}[b!]
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics{img/poly_100M_pause_5_app.pdf}
+        \label{fig:poly_5}
+        \caption{5 pause tokens}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics{img/poly_100M_pause_10_app.pdf}
+        \label{fig:poly_10}
+        \caption{10 pause tokens}
+    \end{subfigure}
+
+    \caption{\textbf{Accuracy on a polynomial arithmetic task with varying number of operations per expression and pause tokens.} We train and evaluate models on the polynomial arithmetic task described in Section~\ref{sect:algorithmic}, modified by the addition of \emph{pause tokens} \citep{goyal2023think}: between the question and the equality sign that indicates the beginning of the answer, we add a constant number of pause tokens both in training and evaluation. For both a variant with five and with ten pause tokens, respectively, we observe comparable improvements from using multi-token prediction to the ones obtained in the case without pause tokens (Figure~\ref{fig:poly_0}).
+    }
+    \label{fig:poly_pause}
+\end{figure*}

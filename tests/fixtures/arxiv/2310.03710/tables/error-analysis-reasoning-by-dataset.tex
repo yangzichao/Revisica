@@ -1,0 +1,41 @@
+\begin{table*}[ht!]
+\caption{Error analysis results for Llama-2-70b-chat on AddSub, IMDB, and NewsQA, each with 25 samples whose final prediction with \zeroshotmid\ \method\ was incorrect.
+}
+\label{table:error-analysis-reasoning-by-dataset}
+\vskip 0.1in
+\centering
+\large
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llllc@{}}
+\toprule
+Dataset &
+  &
+  Error Type &
+  Further Description of Error &
+  Percentage \\ \toprule
+AddSub & Reasoning    & Incorrect reasoning           & Wrong operation                                    & 24.0 \\
+       &              & Incorrect reasoning           & Incorrect step                                     & 20.0 \\
+       &              & Incorrect reasoning           & Missed a step                                      & 8.0  \\
+       &              & Not factual                & Arithmetic error                                   & 12.0 \\
+       & Answer       & Short answer               & Conciseness prompt causes rounding                 & 24.0 \\
+       &  & Incorrect format & Hallucinated multiple choice                       & 8.0  \\
+       &         & Ambiguity         & Confusing question                                 & 4.0  \\ \midrule
+IMDB   & Reasoning    & Incorrect reasoning           & Misreads sentiment due to language used            & 36.0 \\
+       & Answer       & Invalid label              & Chooses neutral/mixed                              & 32.0 \\       
+       &        & Ambiguity         & Confusing question                                 & 20.0 \\ 
+       &  & Not factual               & Answer before explanation                          & 12.0 \\ 
+       \midrule
+NewsQA & Reasoning    & Not factual                & Tried to infer answer not in passage               & 12.0 \\
+       &              & Incorrect reasoning           & Didn't understand question                         & 8.0  \\
+       & Answer & Ambiguity            & Answer mostly correct                              & 32.0 \\
+       &        & Ambiguity         & No real question to answer                         & 8.0  \\
+       &              & Ambiguity         & Answer seems right but should be no answer         & 4.0  \\ 
+       &        & Incorrect format              & Answer seems right but not from continuous stretch & 12.0 \\
+      &       & Incorrect format               & Answer in explanation but not provided at the end  & 4.0  \\ 
+       &              & Invalid label              & Says there is no answer but not the recognized no answer label  & 8.0  \\
+       &              & Invalid label              & Empty answer                                       & 4.0  \\
+       &              & Short answer               & Conciseness prompt shortens answer too much                                       & 8.0  \\       
+       \bottomrule
+\end{tabular}
+}
+\end{table*}

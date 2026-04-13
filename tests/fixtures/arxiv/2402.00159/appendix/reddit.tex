@@ -1,0 +1,22 @@
+\section{Construction of Conversational Threads in Forums Data} 
+\label{sec:how-to-thread}
+
+
+Content comes from Reddit's data API in two separate but linked forms: \textit{submissions} and \textit{comments}. \textit{Submissions} are either "link posts" to external content (e.g. news articles, blogs, or even multimedia content) or "self posts" (submissions written by the poster meant to initiate a discussion thread on a topic). \textit{Comments} are user replies to either the initiating post (top level comments) or to another user's comment. Posts, top-level comments, and replies to comments form a nested conversational thread with a submission post at it's root and comments branching out into multiple possible dialogue trees. 
+
+
+
+
+
+The tree-like structure of Reddit threads allows for multiple possible data formats depending on how the various components of a thread are combined. 
+We investigate three formats for their potential as LM pretraining data:
+\begin{itemize}[leftmargin=1em]
+    \item \textbf{Atomic content}. This simple format treats all comments and submissions as independent documents without any structure or connection to the thread they appear in.
+    \item \textbf{Partial threads}. This format assembles comments from the same thread into a structured, multi-round dialogue between users. Submissions are left as separate documents. Assembled dialogues are limited to a maximum parent depth, and the resulting documents are only snippets of a their originating thread (which are spread across several documents).
+    \item \textbf{Full threads}. This complex format combines a given submission and all of its child comments into a single document encompassing an entire thread. Code-like indentation is used to indicate the depth of a comment in the thread's hierarchy.
+\end{itemize}
+
+
+We experimentally evaluated these strategies for assembling documents in \autoref{fig:abl_reddit}. We found that, for language modeling purposes, treating comments and submissions as atomic units leads to better downstream performance compared to partial and full threads. 
+We hypothesize that the more complex formatting required to handle dialogues might introduce undesirable content for language modeling, such as short and repeated comments. 
+We leave the study of better formatting for forum content for language modeling to future work.

@@ -1,0 +1,269 @@
+\section{Experiments}
+
+\subsection{Setup}
+
+\paragraph{Implementation details.}
+To generate more photo-realistic human portraits, we employ SDXL model~\cite{podell2023sdxl}  \texttt{stable-diffusion-xl-base-1.0} as our text-to-image synthesis model.
+Correspondingly, the resolution of training data is resized to $1024 \times 1024$.
+We employ CLIP ViT-L/14~\cite{radford2021learning} and an additional projection layer to obtain the initial image embeddings $e^{i}$.
+For text embeddings, we keep the original two text encoders in SDXL for extraction.
+The overall framework is optimized with Adam~\cite{kingma2014adam}  on 8 NVIDIA A100 GPUs for two weeks 
+with a batch size of 48. 
+We set the learning rate as $1e-4$ for LoRA weights, and $1e-5$ for other trainable modules.
+During training, we randomly sample 1-4  images with the same ID as the current target ID image to form a stacked ID embedding.
+Besides, to improve the generation performance by using classifier-free guidance, we have a 10\% chance of using null-text embedding to replace the original updated text embedding $t^{*}$.
+We also use masked diffusion loss~\cite{avrahami2023break} with a probability of 50\% to encourage the model to generate more faithful ID-related areas.
+During the inference stage, we use delayed subject conditioning~\cite{xiao2023fastcomposer} to solve the conflicts between text and ID conditions.
+We use 50 steps of DDIM sampler~\cite{song2020denoising}.
+The scale of classifier-free guidance is set to 5.
+
+
+\paragraph{Evaluation metrics.}
+Following DreamBooth~\cite{ruiz2022dreambooth},
+we use DINO~\cite{caron2021emerging} and CLIP-I~\cite{gal2022image} metrics to measure the ID fidelity and use CLIP-T~\cite{radford2021learning} metric to measure the prompt fidelity.
+For a more comprehensive evaluation,
+we also compute the face similarity by detecting and cropping the facial regions between the generated image and the real image with the same ID.
+We use RetinaFace~\cite{deng2020retinaface} as the detection model.
+Face embedding is extracted by FaceNet~\cite{schroff2015facenet}.
+To evaluate the quality of the generation, we employ the FID metric~\cite{heusel2017gans, parmar2021cleanfid}.
+Importantly, as most embedding-based methods tend to incorporate facial pose and expression into the representation, the generated images often lack variation in the facial region.
+Thus, we propose a metric, named \textit{Face Diversity}, to measure the diversity of the generated facial regions.
+Specifically, we first detect and crop the face region in each generated image.
+Next, we calculate the LPIPS~\cite{zhang2018perceptual} scores between each pair of facial areas for all generated images and take the average. 
+The larger this value, the higher the diversity of the generated facial area.
+
+\paragraph{Evaluation dataset.}
+Our evaluation dataset includes 25 IDs, which consist of 9 IDs from Mystyle~\cite{nitzan2022mystyle} and an additional 16 IDs that we collected by ourselves.
+Note that these IDs do not appear in the training set, serving to evaluate the generalization ability of the model.
+To conduct a more comprehensive evaluation, we also prepare 40 prompts, which cover a variety of expressions, attributes, decorations, actions, and backgrounds.
+For each prompt of each ID, we generate 4 images for evaluation.
+More details are listed in the appendix.
+
+\begin{figure*}[t]
+  \centering
+\includegraphics[width=0.95\textwidth]{figures/comparison_recontext.pdf}
+\vspace{-5pt}
+  \caption{\textbf{Qualitative comparison on universal recontextualization samples}. We compare our method with DreamBooth~\cite{ruiz2022dreambooth}, Textual Inversion~\cite{gal2022image}, FastComposer~\cite{xiao2023fastcomposer}, and IPAdapter~\cite{ye2023ip} for five different identities and corresponding prompts. 
+  We observe that our method generally achieves high-quality generation, promising editability, and strong identity fidelity. (\textit{Zoom-in for the best view})}
+  \label{fig:comp_recontext}
+\vspace{-5pt}
+\end{figure*}
+
+
+\begin{table*}
+    \tablestyle{5pt}{1.15}
+    \centering
+    \begin{tabular}{lccccccc} 
+        \toprule
+         &  CLIP-T$\uparrow$ (\%)&  CLIP-I$\uparrow$ (\%)&  DINO$\uparrow$ (\%)&  Face Sim.$\uparrow$ (\%)&  Face Div.$\uparrow$ (\%)&  FID$\downarrow$&  Speed$\downarrow$ (s)\\ 
+        \midrule
+         DreamBooth~\cite{ruiz2022dreambooth}&  \sota{29.8}&  62.8&  
+39.8&  49.8&  49.1&   374.5& 1284\\ 
+         Textual Inversion~\cite{gal2022image}&  24.0&  70.9&  39.3&  54.3&  \sota{59.3}&   \sota{363.5}&  2400\\ 
+         FastComposer~\cite{xiao2023fastcomposer}&  \subsota{28.7}&  66.8&  40.2&  61.0&   45.4&   375.1& 8\\ 
+         IPAdapter~\cite{ye2023ip}&  25.1&  \subsota{71.2}&  \subsota{46.2}&  \sota{67.1}&  52.4&   375.2& 12\\ 
+         PhotoMaker (Ours)&  26.1&  \sota{73.6}&  \sota{51.5}&  \subsota{61.8}&  \subsota{57.7}&   \subsota{370.3}& 10\\ 
+        \bottomrule
+    \end{tabular}
+    \caption{
+    \textbf{Quantitative comparison on the universal recontextualization setting}.
+    The metrics used for benchmarking cover the ability to preserve ID information (\ie, CLIP-I, DINO, and Face Similarity), text consistency (\ie, CLIP-T), diversity of generated faces (\ie, Face Diversity), and generation quality (\ie, FID).
+    Besides, we define personalized speed as the time it takes to obtain the final personalized image after feeding the ID condition(s).
+We measure personalized time on a single NVIDIA Tesla V100 GPU.
+The best result is shown in \sota{bold}, and the second best is \subsota{underlined}.
+}
+    \label{tab:comp_recontext}
+\vspace{-10pt}
+\end{table*}
+
+
+\begin{figure*}[t]
+  \centering  \includegraphics[width=0.95\textwidth]{figures/comparison_old_age.pdf}
+  \vspace{-10pt}
+  \tablestyle{5pt}{1.15}
+    \begin{center}
+    \begin{tabular}{>{\centering\arraybackslash}p{0.45\textwidth}>{\centering\arraybackslash}p{0.45\textwidth}}
+    (a) & \quad (b) \\
+    \end{tabular}
+    \end{center}
+  \vspace{-17pt}
+  \caption{\textbf{Applications on (a) artwork and old photo, and (b) changing age or gender.}
+  We are able to bring the past people back to real life or change the age and gender of the input ID.
+  For the first application,
+  we prepare a prompt template \texttt{A photo of <original prompt>, photo-realistic} for DreamBooth and SDXL. 
+  Correspondingly, we change the class word to the celebrity name in the original prompt. 
+  For the second one, 
+   we replace the class word to  \texttt{<class word> <name>, (at the age of 12)} for them.}
+  \label{fig:comp_old_age}
+  \vspace{-10pt}
+\end{figure*}
+
+
+\subsection{Applications}
+\label{sec:applications}
+
+In this section, we will elaborate on the applications that our PhotoMaker can empower.
+For each application, we choose the comparison methods which may be most suitable for the corresponding setting.
+The comparison method will be chosen from DreamBooth~\cite{ruiz2022dreambooth}, Textual Inversion~\cite{gal2022image}, FastComposer~\cite{xiao2023fastcomposer}, and IPAdapter~\cite{ye2023ip}.
+We prioritize using the official model provided by each method.
+For DreamBooth and IPAdapter, we use their SDXL versions for a fair comparison.
+For all applications, we have chosen four input ID images to form the stacked ID embedding in our PhotoMaker.
+We also fairly use four images to train the methods that need test-time optimization.
+We provide more samples in the appendix for each application.
+
+\paragraph{Recontextualization}
+We first show results with simple context changes such as modified hair color and clothing, or generate backgrounds based on basic prompt control. 
+Since all methods can adapt to this application, we conduct quantitative and qualitative comparisons of the generated results (see~\tabref{tab:comp_recontext} and  \figref{fig:comp_recontext}). The results show that our method can well satisfy the ability to generate high-quality images, while ensuring high ID fidelity (with the largest CLIP-T and DINO scores, and the second best Face Similarity). 
+Compared to most methods, our method generates images of higher quality, and the generated facial regions exhibit greater diversity.
+At the same time, 
+our method can maintain a high efficiency consistent with embedding-based methods.
+For a more comprehensive comparison, we show the user study results in \secref{sec:user_study} in the appendix.
+
+\paragraph{Bringing person in artwork/old photo into reality.} 
+By taking artistic paintings, sculptures, or old photos of a person as input, our PhotoMaker can bring a person from the last century or even ancient times to the present century to ``take" photos for them.
+\figref{fig:comp_old_age}(a) illustrate the results.
+Compared to our method, both Dreambooth and SDXL have difficulty generating realistic human images that have not appeared in real photos.
+In addition, due to the excessive reliance of DreamBooth on the quality and resolution of customized images, it is difficult for DreamBooth to generate high-quality results when using old photos for customized generation.
+
+
+\paragraph{Changing age or gender.} 
+By simply replacing class words (\eg man and woman), our method can achieve changes in gender and age.
+\figref{fig:comp_old_age}(b) shows the results.
+Although SDXL and DreamBooth can also achieve the corresponding effects after prompt engineering, our method can more easily capture the characteristic information of the characters due to the role of the stacked ID embedding. 
+Therefore, our results show a higher ID fidelity.
+
+\paragraph{Identity mixing.} 
+If the users provide images of different IDs as input, our PhotoMaker can well integrate the characteristics of different IDs to form a new ID.
+From \figref{fig:comp_mixing}, we can see that neither DreamBooth nor SDXL can achieve identity mixing.
+In contrast,
+our method can retain the characteristics of different IDs well on the generated new ID, regardless of whether the input is an anime IP or a real person, and regardless of gender.
+Besides, we can control the proportion of this ID in the new generated ID  by controlling the corresponding ID input quantity or prompt weighting. 
+We show this ability in \figref{fig:idmix_image}-\ref{fig:idmix_promptweight} in the appendix.
+
+\paragraph{Stylization.} 
+In \figref{fig:stylization_main}, we demonstrate the stylization capabilities of our method. 
+We can see that, in the generated images, our PhotoMaker not only maintains good ID fidelity but also effectively exhibits the style information of the input prompt. 
+This reveals the potential for our method to drive more applications.
+Additional results are shown in the \figref{fig:stylization} within the appendix.
+
+
+
+
+
+
+
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.45\textwidth]{figures/comparison_mixing.pdf}
+  \caption{\textbf{Identity mixing}. We are able to generate the image with a new ID while preserving input identity characteristics. 
+  We prepare a prompt template \texttt{<original prompt>, with a face blended with <name:A> and <name:B>} for SDXL. (\textit{Zoom-in for the best view})}
+  \label{fig:comp_mixing}
+  \vspace{-10pt}
+\end{figure}
+
+\begin{figure}
+  \centering  \includegraphics[width=0.48\textwidth]{figures/stylization_arxiv_main.pdf}
+  \caption{\textbf{The stylization results of our PhotoMaker.}
+  The symbol \textbf{{\color{blue} \texttt{<class>}}} denotes it will be replaced by \texttt{man} or \texttt{woman} accordingly.
+ \textit{(Zoom-in for the best view)}}
+  \label{fig:stylization_main}
+\vspace{-10pt}
+\end{figure}
+
+
+\begin{figure*}
+  \centering  \includegraphics[width=1.0\textwidth]{figures/ablation_num_stacked.pdf}
+  \vspace{-30pt}
+  \tablestyle{5pt}{1.15}
+    \begin{center}
+    \begin{tabular}{>{\centering\arraybackslash}p{0.26\textwidth}>{\centering\arraybackslash}p{0.21\textwidth}>{\centering\arraybackslash}p{0.24\textwidth}>{\centering\arraybackslash}p{0.22\textwidth}}
+    (a) & (b) & (c) & (d) \\
+    \end{tabular}
+    \end{center}
+  \vspace{-15pt}
+  \caption{\textbf{The impact of the number of input ID images on (a) CLIP-I, (b) DINO, (c) CLIP-T, and (d) Face Similarity, respectively.}}
+  \label{fig:ablation_num_stacked}
+  
+\end{figure*}
+
+  
+
+\begin{table*}
+    \centering
+    \tablestyle{5pt}{1.15}
+    \begin{subtable}[h]{0.48\linewidth}
+    \centering
+    \begin{tabular}{lcccc}
+    \toprule
+         & CLIP-T$\uparrow$& DINO$\uparrow$&  Face Sim.$\uparrow$  &Face Div.$\uparrow$\\
+    \midrule
+         Average& \sota{28.7}& 47.0& 48.8 & \sota{56.3}\\
+         Linear& 28.6 & 47.3& 48.1 &54.6\\
+         Stacked& 28.0 & \sota{49.5}& \sota{53.6} &55.0\\
+    \bottomrule
+    \end{tabular}
+    \caption{\textbf{Embedding composing choices}.}
+    \label{tab:ablation_embed}
+     \end{subtable}
+     \begin{subtable}[h]{0.48\linewidth}
+     \tablestyle{5pt}{1.15}
+    \begin{tabular}{lcccc}
+    \toprule
+         & CLIP-T$\uparrow$&  DINO$\uparrow$&  Face Sim.$\uparrow$&  Face Div.$\uparrow$ \\
+    \midrule
+         Single embed& 27.9& 50.3& 50.5& \sota{56.1}\\
+         Single image& 27.3& \sota{50.3}& \sota{60.4}& 51.7\\
+         Ours& \sota{28.0}& 49.5& 53.6& 55.0\\
+    \bottomrule
+    \end{tabular}
+    
+    \caption{\textbf{Training data sampling strategy.}}
+    \label{tab:ablation_training}
+     \end{subtable}
+    \vspace{-6pt}
+     \caption{\textbf{Ablation studies for the proposed PhotoMaker.} The best results are marked in \sota{bold}.
+}
+\vspace{-12pt}
+\end{table*}
+
+\subsection{Ablation study}
+We shortened the total number of training iterations by eight times to conduct ablation studies for each variant.
+
+\paragraph{The influence about the number of input ID images.}
+We explore the impact that forming the proposed stacked ID embedding through feeding different numbers of ID images.
+In \figref{fig:ablation_num_stacked}, we visualize this impact across different metrics.
+We conclude that using more images to form a stacked ID embedding can improve the metrics related to ID fidelity. 
+This improvement is particularly noticeable when the number of input images is increased from one to two.
+Upon the input of an increasing number of ID images, the growth rate of the values in the ID-related metrics significantly decelerates.
+Additionally, we observe a linear decline on the CLIP-T metric.
+This indicates there may exist a trade-off between text controllability and ID fidelity.
+From \figref{fig:num_input_main}, we see that increasing the number of input images enhances the similarity of the ID.
+Therefore, the more ID images to form the stacked ID embedding can help the model perceive more comprehensive ID information, and then more accurately represent the ID to generate images.
+Besides, as shown by the Dwayne Johnson example, the gender editing capability decreases, and the model is more prone to generate images of the original ID's gender.
+
+\begin{figure}
+  \centering  \includegraphics[width=0.48\textwidth]{figures/num_input_main.pdf}
+  \caption{\textbf{The impact of varying the quantity of input images on the generation results.}
+ It can be observed that the fidelity of the ID increases with the quantity of input images.}
+  \label{fig:num_input_main}
+  
+\end{figure}
+
+\paragraph{The choices of composing multiple embeddings.}
+We explore three ways to compose the ID embedding, including averaging the image embeddings, adaptively projecting embeddings through a linear layer, and our stacking way.
+From \tabref{tab:ablation_embed}, we see the stacking way has the highest ID fidelity while ensuring a diversity of generated faces, demonstrating its effectiveness.
+Besides, such a way offers greater flexibility than others, including accepting any number of images and better controlling the mixing process of different IDs.
+
+\paragraph{The benefits from multiple embeddings during training.}
+We explore two other training data sampling strategies to demonstrate that it is necessary to input multiple images with variations during training.
+The first is to choose only one image, which can be different from the target image, to form the ID embedding (see ``single embed" in \tabref{tab:ablation_training}). 
+Our multiple embedding way has advantages in ID fidelity.
+The second sampling strategy is to regard the target image as the input ID image (to simulate the training way of most embedding-based methods). 
+We generate multiple images based on this image with different data augmentation methods and extract corresponding multiple embeddings. 
+In \tabref{tab:ablation_training}, as the model can easily remember other irrelevant characteristics of the input image, the generated facial area lacks sufficient changes (low diversity).
+
+
+
+
+

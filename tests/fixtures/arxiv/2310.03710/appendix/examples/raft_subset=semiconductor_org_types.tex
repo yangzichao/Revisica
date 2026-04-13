@@ -1,0 +1,48 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the context: The dataset contains information about institutions that have contributed papers to semiconductor conferences in the last 25 years. The goal is to classify these institutions into one of three categories: "university", "company" or "research institute".
+
+2. Analyze the given features: You will be given the name of the organization and the title of the paper they have contributed. Use this information to infer the type of organization. 
+
+3. Understand the labels: The labels represent the type of organization. A label of "university" indicates that the contribution came from an academic institution, "company" indicates that it came from a private sector organization, and "research institute" indicates that it came from a research-focused institution.
+
+4. Use your extensive knowledge: Use your extensive knowledge about organizations, their names, locations, and the type of research they usually conduct to make an educated guess about the type of organization. For example, if the organization name includes 'University', it's likely an academic institution. Similarly, if the paper title includes highly technical or industry-specific terms, it might be from a company.
+
+5. Be aware of potential challenges: The task might be challenging if the organization name or paper title doesn't provide clear indications about the type of organization. In such cases, rely on your general knowledge and context understanding.
+
+6. Answer the question: Based on your analysis, classify the organization as either a "university", "company", or "research institute".
+
+Organization name: National NanoFab Center, Daejeon, South Korea
+
+Paper title: 3-terminal nanoelectromechanical switching device in insulating liquid media for low voltage operation and reliability improvement
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The organization name "National NanoFab Center" suggests that it is a research-focused institution, as the name includes the term "NanoFab" which is a common term used in the field of nanotechnology. Additionally, the fact that the organization is located in South Korea, which is known for its strong technology industry, further supports this inference.
+
+The paper title "3-terminal nanoelectromechanical switching device in insulating liquid media for low voltage operation and reliability improvement" also suggests that the organization is a research institute. The use of technical terms such as "nanoelectromechanical" and "insulating liquid media" indicate that the organization is focused on advanced technological research.
+
+Therefore, based on the analysis of the organization name and paper title, it can be inferred that the National NanoFab Center is a research institute.
+
+Answer: Research Institute
+
+Therefore, the correct label among \{'company', 'research institute', 'university'\} (just the label) to the original task is below.
+
+Label: research institute
+\end{alltt}
+}}
+\caption{A complete running example of RAFT (Semiconductor Org Types).}
+\label{fig:raft_subset=semiconductor_org_types_example}
+\end{figure*}

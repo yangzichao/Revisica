@@ -1,0 +1,67 @@
+\section{Strategies for Subsets Mixing and Upsampling with \dolma}
+\label{sec:mixtures}
+
+
+Like the pretraining corpora of nearly every large-scale language model, \dolma is a multi-source dataset. 
+Training on \dolma thus requires a mixing strategy that determines how much data from each source to include, and potentially which sources to upsample. 
+Like other multi-source corpora (e.g., ROOTS~\citep{Laurenccon2023TheBR}, the Pile~\citep{Gao2020ThePA}, RedPajama v1~\citep{together2023redpajama}),\footnote{RedPajama v1 was a reproduction of the multi-source corpus used in LLaMA~\citep{Touvron2023LLaMAOA}. RedPajama v2~\citep{redpajama2} focuses solely on Common Crawl and is thus single-source.} \dolma does not prescribe a single mixing strategy. 
+We refer the reader to \citet{Rae2021ScalingLM} for an example of how one might programmatically search over mixing configurations to maximize performance. 
+Here, we perform mixing experiments as an opportunity to answer some research questions about how different data sources interact. 
+We use the same ablation setup described in \autoref{sec:creation}.
+
+
+
+\paragraph{How much code is important for pretraining?} It is common practice for language models to be pretrained on some amount of code, even if code generation is not the intended task.
+Some research has suggested that mixing code into training over plain text documents improves performance on reasoning tasks~\citep{madaan-etal-2022-language}.
+We investigate whether this observation holds for models trained on \dolma, and if so, how much code is needed?
+
+\input{tables/code-reasoning}
+
+
+We create three mixtures from the C4 and Stack subsets containing 0\%, 5\% and 15\% of code data.
+On each, we train a 1B model. 
+We evaluate these models on three different reasoning tasks: bAbI~\citep{Weston2015TowardsAQ}, WebNLG \cite{gardent-etal-2017-creating} and GSM8k \cite{Cobbe2021TrainingVT}. For the first two tasks, we follow the experimental setup of \citet{muennighoff2023scaling} and evaluate each model in an ICL setup with a changing number of demonstrations (0-5) across 5 random seeds. \citet{muennighoff2023scaling} show that adding code to pre-training data improves ICL performance on bAbI and WebNLG and they suggest that code improves long-range state-tracking capabilities. Our experiments, as shown in Table~\ref{tab:code-reasoning}, corroborate these findings: while the C4-only model fails on all bAbI tasks, adding code improves performance, with a similar trend for WebNLG. 
+
+On the more difficult GSM8k benchmark, all models failed to get any correct answer in an ICL setup, and even when fine-tuning the models on the entire training set. However, we find that by fine-tuning on program-aided output, where questions are solved by writing Python snippets as described in \cite{gao2022pal}, code models outperform the C4-only model. These results show that models pre-trained on code can leverage code generation to answer challenging reasoning tasks even when the original task does not directly involve code.
+
+
+\paragraph{Evaluating mixing strategies for pretraining on \dolma}
+While \dolma does not prescribe a specific source mixture, we analyze some commonly used strategies\footnote{
+    We did not include any social data in these mixes as it was not ready at the time of this experiment.
+} and compare their effect using the Paloma evaluation suite~\citep{paloma}.
+Specifically, we present and evaluate four possible data mixtures in \autoref{table:mix}. 
+
+\input{tables/mix}
+
+\begin{figure*}[h]
+    \centering
+    \begin{subfigure}{.31\textwidth}
+    \includegraphics[width=\linewidth]{experiments/ablations_dolma_mix/ppl/c4_100_domains.pdf}
+    
+    \label{fig:dolma_mix:c4_100}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}{.31\textwidth}
+    \includegraphics[width=\linewidth]{experiments/ablations_dolma_mix/code/humaneval.pdf}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}{.31\textwidth}
+    \includegraphics[width=\linewidth]{experiments/ablations_dolma_mix/ppl/m2d2_s2orc.pdf}
+    \end{subfigure}
+    \caption{
+    1B model ablations for different proportions of \dolma data. All mixture perform similarly on web data (left), while excluding code increases perplexity on code datasets (center). 
+    Finally, increasing reference material by upsampling papers and Wikipedia yields lower perplexity on S2ORC (right). 
+    Overall, source distribution is linked to downstream capabilities; thus, \dolma users should sample subsets according to their needs.
+}%
+    \label{fig:dolma_mix}
+\end{figure*}
+
+We show results of mixtures in \autoref{fig:dolma_mix}. 
+Overall, we observe that the different mixtures have an effect on the ability of resulting models to capture specific subdomains. 
+All mixtures show similar perplexity scores on pages sampled from 100 domains from C4 (\autoref{fig:dolma_mix}, left), indicating their general effectiveness at modeling web documents.  
+On the other hand, we note how models struggle to model specialized domains unless they are exposed to them. 
+As an example, a model trained on the \textit{Web-only} mix struggles to represent data in the code domain (\autoref{fig:dolma_mix}, center, HumanEval).
+Finally, we use results on the S2ORC subset of M2D2, which consists of academic papers, to illustrate how different data mixtures affect perplexity. 
+As is it the case with code, \textit{Web-only} model exhibits higer perplexity due to domain mismatch. 
+On the other hand, models trained on \textit{Reference+} and \textit{Gopher-like} mixes achieve lower perplexity than the model trained on the \textit{Na\"ive} mix, due to more in-domain content. 
+However, we note that, despite significant differences in the amount of academic papers between \textit{Reference+} and \textit{Gopher-like} (4.9\% vs 24.2\%), they achieve nearly identical results, suggesting that even a relatively small percentage of in-domain data is sufficient to achieve good domain fit. 

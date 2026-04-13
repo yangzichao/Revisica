@@ -1,0 +1,58 @@
+\begin{figure*}[t]
+\centering
+\scriptsize
+\setlength{\fboxsep}{1em}
+\setlength{\fboxrule}{1pt}
+\fcolorbox{black}{white}{
+\parbox{0.955\textwidth}{
+\begin{alltt}
+
+
+You will be provided instructions for completing a task followed by a task to complete.
+
+Instructions:
+
+1. Understand the question: The question will be about a grounded situation, either from the domain of activitynet or wikihow. It will ask what might happen next in the scene.
+
+2. Analyze the answer choices: There will be four answer choices. One of them is the correct answer, which is the real sentence for the next event. The other three are incorrect answers that are designed to fool machines but not humans.
+
+3. Use your commonsense: The dataset is designed to test grounded commonsense inference. This means you should use your understanding of the world and how things generally work to infer what might happen next in the situation described in the question.
+
+4. Choose the most likely answer: Based on your analysis of the answer choices and your commonsense, choose the answer that you think is most likely to be what happens next in the scene.
+
+5. Remember, the questions are designed to be easy for humans but challenging for models. If you're having trouble, try to think like a human and use your commonsense.
+
+Question: Personal Care and Style: [header] How to dye your hair with semi permanent hair dye [title] Find the color you want. [step] There are many popular brands and hundreds of different colors to choose from. Semi-permanent dyes can be found in a variety of places, ranging from grocery stores to specialized fashion shops, with the biggest selection at beauty supply stores. 
+
+A. It is important to select the color that represents your hair type when you register your hair color. [substeps] Traditional semi-permanent dyes will generally not be available for hair color, like blow-dryers, curling irons, and appliances.
+
+B. If you're not planning on dying your hair, there are other coloration measures you can take to dye your hair. [step] Photoshop hd darkers work well, but don't lack the style that can be coupled with it.
+
+C. Pick the color that's your favorite, matches your wardrobe best, and/or is most flattering for your eye color and skin tone. Semi-permanent dyes work on all hair colors, but show up brightest on light hair.
+
+D. However, you can also take your color, added color, and texture into account when deciding what to dye, and what you will use it for. [substeps] Consider adding your hair dye to your hair if you have it long or curly.
+
+Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. [/INST] Explanation: 
+
+The question is asking what might happen next in the scene, specifically in the context of dyeing hair with semi-permanent hair dye. The instructions suggest using commonsense and analyzing the answer choices to determine the most likely next step.
+
+Answer A is not likely, as it suggests selecting a color based on hair type, which is not a relevant factor in choosing a hair dye color.
+
+Answer B is also not likely, as it suggests using Photoshop to darken hair, which is not a suitable method for dyeing hair.
+
+Answer C is a plausible option, as it suggests choosing a color that is a personal favorite, matches one's wardrobe, and/or is most flattering for one's eye color and skin tone. This answer choice aligns with the instructions' suggestion to use commonsense and consider the context of the situation.
+
+Answer D is not likely, as it suggests considering adding hair dye to hair that is already long or curly, which is not a logical or practical solution.
+
+Therefore, the most likely next step in the scene would be to choose a hair dye color that is a personal favorite, matches one's wardrobe, and/or is most flattering for one's eye color and skin tone, as suggested in Answer C.
+
+Correct answer: C. Pick the color that's your favorite, matches your wardrobe best, and/or is most flattering for your eye color and skin tone. Semi-permanent dyes work on all hair colors, but show up brightest on light hair.
+
+Therefore, the correct multiple choice label (just the letter) to the task is below.
+
+Answer: C
+\end{alltt}
+}}
+\caption{A complete running example of HellaSwag.}
+\label{fig:commonsense_dataset=hellaswag_example}
+\end{figure*}

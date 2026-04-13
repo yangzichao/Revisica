@@ -1,0 +1,76 @@
+% CVPR 2024 Paper Template; see https://github.com/cvpr-org/author-kit
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+% \usepackage{cvpr}              % To produce the CAMERA-READY version
+% \usepackage[review]{cvpr}      % To produce the REVIEW version
+\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Import additional packages in the preamble file, before hyperref
+\input{preamble}
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, 
+% e.g. with the file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete *.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you should be clear).
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,citecolor=cvprblue]{hyperref}
+
+\newcommand*{\affaddr}[1]{#1} 
+\newcommand*{\affmark}[1][*]{\textsuperscript{#1}}
+\newcommand*{\email}[1]{\texttt{#1}}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\usepackage{lipsum}
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\paperID{*****} 
+\def\confName{CVPR}
+\def\confYear{2024}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{DynamiCrafter: Animating Open-domain Images with Video Diffusion Priors}
+
+%%%%%%%%% AUTHORS - PLEASE UPDATE
+\author{%
+Jinbo Xing\affmark[1]~~~ 
+Menghan Xia\affmark[2,]$^*$~~~
+% Menghan Xia\affmark[2,]\footnote[1]{~Corresponding Author.}~
+Yong Zhang\affmark[2]~~~
+Haoxin Chen\affmark[2]~~~
+Wangbo Yu\affmark[3]~~~\\
+Hanyuan Liu\affmark[1]~~~
+Xintao Wang\affmark[2]~~~
+Tien-Tsin Wong\affmark[1,]$^*$~~~
+Ying Shan\affmark[2]\\
+\affaddr{\affmark[1]The Chinese University of Hong Kong~~~~~~~~~~}
+\affaddr{\affmark[2]Tencent AI Lab~~~~~~~~~~}
+\affaddr{\affmark[3]Peking University~~~~~~~~~~}\\
+\small\email{Project page: \url{https://doubiiu.github.io/projects/DynamiCrafter}}
+}
+
+\begin{document}
+\maketitle
+\addtocontents{toc}{\setcounter{tocdepth}{0}}
+\input{tex/0_abstract} 
+\footnotetext[1]{~Corresponding Authors.}
+\input{tex/1_introduction}
+\input{tex/2_relatedwork}
+\input{tex/3_method}
+\input{tex/4_experiment}
+\input{tex/5_discussion}
+\input{tex/6_application}
+\input{tex/8_conclusion}
+\clearpage
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{main}
+}
+
+% WARNING: do not forget to delete the supplementary pages from your submission 
+\input{X_suppl}
+
+\end{document}

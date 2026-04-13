@@ -1,0 +1,126 @@
+
+% \subsection{Standalone LLM Setting}
+% \wjd{At the start of this section, write something to introduce the purpose and overview of this section.}
+
+
+In the previous Section \ref{sec:evalution}, we provide quantitative statistics related to evaluating factuality. In this section, we delve deeper, exploring the underlying mechanisms that influence factuality in large language models.
+\subsection{Analysis of Factuality}
+\label{sec:factuality_analysis}
+This subsection delves into intriguing analyses concerning the factuality of LLMs, focusing on aspects that aren't directly tied to evaluation, or enhancement. Specifically, we explore the mechanisms through which LLMs process, interpret, and produce factual content. The subsequent sections offer an in-depth examination of different dimensions of factuality in LLMs, ranging from their knowledge storage, and awareness to their approach to managing conflicting data. 
+\footnote{
+While some research \citep{wang-etal-2021-generative,neeman-etal-2023-disentqa} applies some similar analyses to Pretrained Language Models. This review excludes them as they are not typically considered Large Language Models.}
+
+% \wjd{There should be a figure or table to list the key information of this section. R: I am writing it in the tree.}
+
+\subsubsection{Knowledge Storage}
+\label{sec:analy_store}
+The language model serves as a repository of knowledge, storing a multitude of information about the world within its parameters ~\cite{petroni-etal-2019-language}. However, the organization of this knowledge within LLMs remains largely mysterious.
+\cite{meng2022locating} introduce a methodology called causal tracing to measure the indirect impact of hidden states or activations. This technique was employed to illustrate that factual knowledge is primarily stored in the early-layer feed-forward networks (FFNs) of such models. 
+Similarly, \citet{geva-etal-2021-transformer} also suggests that a substantial portion of factual information is encoded within the FFN layers. They conceptualize the input of the FFN as a query, the first layer as keys, and the second layer as values. Consequently, the intermediate hidden dimension of the FFN can be interpreted as the number of memories within the layer, and the intermediate hidden state represents a vector comprising activation values for each memory. As a result, the final output of the FFN can be understood as the weighted sum of activated values. The authors further demonstrate that the value vectors often encapsulate human-interpretable concepts and knowledge~\cite{geva-etal-2022-transformer,DBLP:journals/corr/abs-2304-14767}.
+In addition, \citet{chen2023journey} have made an intriguing finding that the language model contains language-independent neurons that express multilingual knowledge and degenerate neurons that convey redundant information by applying the integrated gradients method~\cite{lundstrom2022rigorous}.
+Nevertheless, it is important to note that the aforementioned studies primarily focus on the representation of individual facts, and the comprehensive understanding of how factual knowledge is precisely organized and interconnected within these models remains an ongoing challenge.
+
+\subsubsection{Knowledge Completeness and Awareness}
+\label{sec:analy_aware}
+
+This subsubsection delves into the intriguing realm of LLMs' self-awareness, their capacity to discern their knowledge gaps, and the balance between their internally generated knowledge and externally retrieved information. We delve into the dichotomy between parametric knowledge and retrieved knowledge, exploring the promises and challenges these models bring to the forefront of knowledge-intensive tasks.
+
+
+\paragraph{Knowledge Awareness}
+Several studies have investigated the knowledge awareness of Large Language Models, specifically assessing whether LLMs can accurately estimate the correctness of their own responses. Most of these studies treat LLMs as "black boxes," prompting the models to report their confidence levels or calculating the perplexity of the model's output as an indicator of response likelihood. \citet{gou2023critic} explore the model's ability to validate and iteratively refine its outputs, akin to how humans interact with tools. The authors find that solely relying on self-correction without external feedback can lead to marginal improvements or even diminished performance. \cite{ren2023investigating} experiment with settings either augmented or not with external document retrieval to determine whether models recognize their own knowledge boundaries. Their findings indicate that LLMs possess an inaccurate perception of their factual knowledge boundaries and tend to be overly confident about their responses. LLMs often fail to fully harness the knowledge they possess; however, retrieval enhancement can somewhat compensate for this shortcoming. \citet{yin-etal-2023-large} introduce a dataset named ``SelfAware" to test if models recognize what they don't know, encompassing both answerable and unanswerable questions. The experiment suggests that models do possess some capacity to discern their own knowledge gaps, but they are still far from human levels. GPT-4 outperforms other models, instructions and In-Context-Learning \cite{ICL} can enhance a model's discriminatory ability. \citet{kadavath2022language} focus on LLM self-assessment based on Language Model calibration using multiple-choice questions. Their findings revealed that the "none of the above" option decreased accuracy, larger models showed better calibration, and RLHF hindered model calibration levels. However, simply adjusting the temperature parameter can rectify this issue.  \citet{azaria2023internal} assess the truthfulness of statements generated by LLMs, by using the model's internal state and hidden layer activations. The authors, employing a feedforward neural network, can classify if the model is misleading by utilizing the hidden output states.
+
+\paragraph{Parametric Knowledge vs Retrieved Knowledge}
+\citet{yu2023generate} explore whether the internal knowledge of LLMs can replace the retrieved documents on knowledge-intensive tasks. They ask LLMs, such as InstructGPT, to directly generate contexts given a question rather than retrieving them from the database. They find the generated documents contain the golden answers more often than the top retrieved documents. Then they feed the generated docs and retrieved docs to the Fusion-in-Decoder model \citep{Fusion-in-Decoder} for knowledge-intensive tasks such as Open-domain QA \citep{NQ} and find the generated docs are more effective than the retrieved docs, suggesting that the LLMs contain enough knowledge for knowledge-intensive tasks.
+
+
+On the contrary, these observations have been contested in subsequent investigations. \citet{kandpal2023large} underscore the dependency of LLMs on the number of associated documents seen during pre-training. They argue that the success in answering fact-based questions is highly linked to the number of documents containing the topic of the question that were encountered in pre-training. The study further posited the necessity of scaling models extensively to achieve competitive performance for questions with minimum representation in the training data.
+Adding to these concerns, \citet{sun2023head} critically evaluate the factual knowledge base of LLMs, using a specifically designed Head-to-Tail benchmark comprised of 18K question-answer pairs. The results show that the understanding of factual knowledge, particularly related to torso-to-tail entities, by currently available LLMs is suboptimal.
+
+
+In summary, while LLMs show promise in handling knowledge-intensive tasks, their dependency on pre-training information and limitations in factual accuracy remain significant hurdles. It underscores the need for further advancements in the field and the importance of incorporating complementary methods, such as retrieval augmentation, to enhance the learning of long-tail knowledge in LLMs.
+
+ % To shed light on these features, the Head-to-Tail benchmark was established, comprising 18K question-answer pairs relating to head, torso, and tail facts with varying popularity.
+
+ 
+% \subsection{\textbf{Errors/Hallucination Snowballing:}}
+% \label{sec:snowballing}
+% As illustrated in Sec \ref{}
+
+
+\subsubsection{Contextual Influence and Knowledge Conflict}
+\label{sec:analy_confict}
+
+This sub-subsection examines the interplay between an LLM's inherent parametric knowledge and the provided contextual knowledge, exploring both the model's capacity to utilize context and its behavior when confronted with conflicting information.
+
+\paragraph{Contextual Influence on Generation}
+Some works explore the model's capacity to utilize context, for example, \citet{li-etal-2023-large} observe that larger models tend to rely on their parametric knowledge, even when faced with counterfactual contexts. This suggests that as models increase in size, they might grow more confident in their internal knowledge, potentially sidelining external context. However, the introduction of irrelevant contexts can still influence their outputs. The balance between controllability (relying on relevant context) and robustness (resisting irrelevant context) emerges as a challenge in LLM training. The study indicates that reducing context noise improves controllability, but the effect on robustness remains to be seen.
+In contrast, \citet{zhou2023context} propose prompt templates to guide LLMs towards more faithful text generation. Among these, opinion-based prompts prove most effective, indicating that when LLMs are queried about opinions, they adhere more closely to the context. Interestingly, the study finds that using counterfactual context enhances the model's faithfulness, while original context, sourced from platforms like Wikipedia, might induce a simplicity bias, leading LLMs to answer questions without heavily relying on the context.
+\citet{chen2023benchmarking} conduct a comprehensive evaluation of LLMs' ability to effectively utilize retrieved information. The study reveals that while retrieved documents can boost LLM performance, the presence of noise in these documents can hinder it.
+\citet{yue2023automatic} investigate the nature of LLM-generated content in relation to provided references. They categorize the generated content as attributable, contradictory, or extrapolatory to the reference. Both fine-tuned models and instruction-based LLMs struggle to accurately evaluate the alignment between generated content and references, underscoring the challenge of ensuring that LLMs produce content consistent with the provided context.
+% Distracting info
+\citet{shi2023large} study the distractability of LLMs on the GSM-IC dataset derived from GSM8K \citep{cobbe2021training}. They discover that all the prompting techniques are responsive to irrelevant information in the problem definition. They identify various factors of irrelevant information that impact the model's sensitivity to irrelevant context. Moreover, they find that self-consistency prompting and incorporating irrelevant information into the exemplars can enhance models' performance, enabling them to learn to disregard irrelevant information.
+
+
+\paragraph{Handling Knowledge Conflicts}
+A series of studies are interested in LLMs' behavior when confronted with conflicting information. \citet{longpre2021entity} introduce the concept of knowledge conflicts, where the provided context contradicts the model's learned information. Their findings suggest that such conflicts lead to increased prediction uncertainty, especially for in-domain examples. Observations across models, ranging from T5-60M to 11B, indicate that larger models tend to default to their parametric knowledge. Moreover, there's an inverse relationship between retrieval quality and the tendency to rely on internal knowledge: the more irrelevant the evidence, the more the model defaults to its parametric knowledge.
+\cite{chen2022rich} conduct experiments on typical ODQA models, including FiD and RAG. Their results show that FiD models rarely resort to memorization (less than 3.6\% for NQ) compared to RAG models. Instead, FiD primarily grounds its answers in the provided evidence. Interestingly, when confronted with conflicting retrieved passages, models tend to fall back on their parametric knowledge.
+\cite{xie2023adaptive} explore the behavior of recent LLMs, including ChatGPT and GPT-4. Contrary to findings on smaller LMs, they discover that LLMs can be highly receptive to external evidence, even if it contradicts their parametric memory, provided the external evidence is coherent and convincing. Additionally, LLMs exhibit a strong confirmation bias, especially when presented with evidence that aligns with their parametric memory. This bias becomes even more pronounced for widely accepted knowledge. In scenarios where no relevant evidence is provided, LLMs tend to express uncertainty. However, when presented with both relevant and irrelevant evidence, they demonstrate an ability to filter out irrelevant information.
+\citet{wang2023resolving} argue that LLMs should not rely solely on either parametric or non-parametric information, but grant LLM users the agency to make informed decisions. They introduce a framework including three tasks ((1) Contextual knowledge conflict detection; (2) QA-span knowledge conflict detection; (3) Distinct answers generation) to simulate knowledge conflicts and evaluate whether LLMs' behaviors align with the goal. 
+
+In conclusion, while studies like \citet{li-etal-2023-large} and \citet{zhou2023context} emphasize the challenges and potential solutions in making LLMs more context-aware, others like \citet{yue2023automatic} and \citet{xie2023adaptive} highlight the inherent biases and limitations of LLMs. The overarching theme is the need for a balanced approach, where LLMs effectively leverage both their internal knowledge and external context to produce accurate and coherent outputs.
+
+
+
+\subsection{Causes of Factual Errors}
+\label{sec:causes}
+Understanding the root causes of these factual inaccuracies is crucial for refining these models and ensuring their reliable application in real-world scenarios. In this subsection, we delve into the multifaceted origins of these errors, categorizing them based on the stages of model operation: Model Level, Retrieval Level, Generation Level, and other miscellaneous causes. Table~\ref{tab:causes} shows examples of factuality errors caused by different factors.
+
+
+\subsubsection{Model-level Causes}
+\label{sec:model-causes}
+This subsection delves into the intrinsic factors within large language models that contribute to factual errors, originating from their inherent knowledge and capabilities. 
+
+\paragraph{Domain Knowledge Deficit} The model may lack comprehensive expertise in specific domains, leading to inaccuracies. Every LLM has its limitations based on the data it was trained on. If an LLM hasn't been exposed to comprehensive data in a specific domain during its training, it's likely to produce inaccurate or generalized outputs when queried about that domain. For instance, while an LLM might be adept at answering general science questions, it might falter when asked about niche scientific subfields \citep{ScienceQA}.
+
+\paragraph{Outdated Information} The model's dependence on older datasets can make it unaware of recent developments or changes. LLMs are trained on datasets that, at some point, become outdated. This means that any events, discoveries, or changes post-dating the last training update won't be known to the model. For example, ChatGPT and GPT-4 are both trained on data up to 2021.09 might not be aware of events or advancements after then.
+
+\paragraph{Immemorization} The model does not always retain knowledge from its training corpus. While it's a misconception that LLMs ``memorize" data, they do form representations of knowledge based on their training. However, they might not always recall specific, less-emphasized details from their training parameters, especially if such details were rare or not reinforced through multiple examples. For example, ChatGPT has pretrained with Wikipedia, but it still fail in answering some questions from NaturalQuestions \citep{NQ} and TriviaQA \citep{TQ}, which are constructed from Wikipedia \citep{wang2023evaluating}.
+
+\paragraph{Forgetting} The model might not retain knowledge from its training phase or could forget prior knowledge as it undergoes further training. As models are further fine-tuned or trained on new data, there's a risk of ``catastrophic forgetting" ~\citep{goodfellow2015empirical, wang2022preserving, chen2020recall, zhai2023investigating} where they might lose certain knowledge they were previously know. This is a well-known challenge in neural network training, where networks forget previously learned information when exposed to new data, which also happens in large language models \citep{luo2023empirical}.
+
+\paragraph{Reasoning Failure} While the model might possess relevant knowledge, it can sometimes fail to reason with it effectively to answer queries. Even if an LLM has the requisite knowledge to answer a question, it might fail to connect the dots or reason logically. For instance, ambiguity in the input~\citep{liu2023we} can potentially lead to a failure in understanding by LLMs, consequently resulting in reasoning errors. In addition, \citet{berglund2023reversal} find the LLM traps in the reversal curse, for example, it knows that A is B's mother but fail to answer who is B's son. This is especially evident in complex multi-step reasoning tasks or when the model needs to infer based on a combination of facts \citep{tan2023chatgpt,kotha2023understanding}. 
+
+% For instance, while it 
+
+% Multi-modal Deficit: Challenges emerge when the model must process multiple types of data, such as text and images, and struggles to integrate them cohesively. Most LLMs are designed to process textual information. When faced with tasks that require understanding or generating content across multiple modalities (like visual and textual), they might struggle \citep{}. For instance, spatial reasoning or interpreting visual cues alongside text can be challenging for models that aren't specifically trained on multi-modal data.
+
+
+\subsubsection{Retrieval-level Causes}
+\label{sec:retrieval-causes}
+The retrieval process plays a pivotal role in determining the accuracy of LLMs' responses, especially in retrieval-augmented settings. Several factors at this level can lead to factual errors:
+
+\paragraph{Insufficient Information}
+If the retrieved data doesn't provide enough context or details, the LLM might struggle to generate a factual response. This can result in generic or even incorrect outputs due to the lack of comprehensive evidence.
+
+\paragraph{Misinformation Not Recognized by LLMs}
+LLMs can sometimes accept and propagate misinformation present in the retrieved data. This is especially concerning when the model encounters knowledge conflicts, where the retrieved information contradicts its pre-trained knowledge, or multiple retrieved documents contradict each other~\cite{TruthDiscovery}. For instance, \cite{longpre2021entity} observed that the more irrelevant the evidence, the more likely the model is to rely on its intrinsic knowledge. Recent studies, such as \cite{pan2023risk}, have also shown that LLMs are susceptible to misinformation attacks within the retrieval process.
+
+\paragraph{Distracting Information}
+LLMs can be misled by irrelevant or distracting information in the retrieved data. For example, if the evidence mentions a "Russian movie" and "Directors", the LLM might incorrectly infer that "The director is Russian". \cite{luo2023sail} highlighted this vulnerability, noting that LLMs can be significantly impacted by distracting retrieval results. They further proposed instruction tuning as a potential solution to enhance the model's ability to sift through and leverage retrieval results more effectively.
+
+
+Additionally, when dealing with long retrieval inputs, the models tend to show their best performance when processing information given at the beginning or end of the input context, according to \citet{liu2023lost}. In contrast, the models are likely to experience a significant decrease in performance when they are required to extract relevant data from the middle of these extensive contexts.
+% find that performance tends to be at its peak when relevant information is located at the beginning or end of the input context. Conversely, it experiences a notable decline when models are required to retrieve pertinent information from the middle of lengthy contexts. 
+
+\paragraph{Misinterpretation of Related Information}
+Even when the retrieved information is closely related to the query, LLMs can sometimes misunderstand or misinterpret it. While this might be less frequent when the retrieval process is optimized, it remains a potential source of error. For instance, in the ReAct study \citep{yao2023react}, the rate of errors dropped significantly when the retrieval process was improved.
+
+\subsubsection{Inference-level Causes}
+\label{sec:inference-causes}
+\paragraph{Snowballing} During the generation process, a minor error or deviation at the beginning can compound as the model continues to generate content. %This phenomenon, akin to a snowball growing in size as it rolls downhill, can result in outputs that are not only factually incorrect but also contextually incoherent. 
+For instance, if an LLM misinterprets a prompt or starts with an inaccurate premise, the subsequent content can veer further from the truth \citep{Snowball,varshney2023stitch}.
+
+\paragraph{Erroneous Decoding} The decoding phase is crucial for translating the model's internal representations into human-readable content~\citep{chuang2023dola, massarelli2020decoding}. Mistakes during this phase, whether due to issues like beam search errors or suboptimal sampling strategies, can lead to outputs that misrepresent the model's actual "knowledge" or intention. This can manifest as inaccuracies, contradictions, or even nonsensical statements.
+
+\paragraph{Exposure Bias}
+LLMs are a product of their training data. If they've been exposed more frequently to certain types of content or phrasing, they might have a bias toward generating similar content, even when it's not the most factual or relevant. This bias can be especially pronounced if the training data has imbalances or if certain factual scenarios are underrepresented~\citep{felkner2023winoqueer, gallegos2023bias}. The model's outputs, in such cases, reflect its training exposure rather than objective factuality. For example, research by ~\cite{hossain-etal-2023-misgendered} suggests that LLMs can correctly identify the gender of individuals who conform to the binary gender system, but they perform poorly when determining non-binary or neutral genders.

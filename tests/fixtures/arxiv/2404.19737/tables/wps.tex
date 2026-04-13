@@ -1,0 +1,17 @@
+\begin{table}[!h]
+    \centering
+        \caption{\textbf{Training time relative to next-token prediction training.} The slight overhead when using multi-token prediction here is explained by a suboptimal use of Fully Sharded Data Parallel. In our implementation, when doing separate backward passes for each head, we lose the overlap of layer weight communication and computation, therefore it incurs a very slight overhead that can be removed if reimplemented correctly.}
+    \label{tab:wps}
+    \begin{tabular}{lrrr}
+        \toprule
+        Model & n=1 & n=2 & n=4 \\
+        \midrule
+        0.3B & 1.00 & 1.07 & 1.22 \\
+        0.6B & 1.00 & 1.05 & 1.13 \\
+        1.3B & 1.00 & 1.04 & 1.12 \\
+        3B & 1.00 & 1.02 & 1.07 \\
+        6.7B & 1.00 & 1.02 & 1.07 \\
+        13B & 1.00 & 1.04 & 1.09 \\
+        \bottomrule
+    \end{tabular}
+\end{table}

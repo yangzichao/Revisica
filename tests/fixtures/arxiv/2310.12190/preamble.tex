@@ -1,0 +1,36 @@
+%
+% --- inline annotations
+%
+\usepackage[dvipsnames]{xcolor}
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\todo}[1]{{\color{red}#1}}
+\newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+
+%%%% Table
+\newcommand\Tstrut{\rule{0pt}{2.6ex}}         % = `top' strut
+\newcommand\Bstrut{\rule[-0.9ex]{0pt}{0pt}}   % = `bottom' strut
+\usepackage{multirow}
+
+\newcommand{\best}[1]{\textbf{#1}}
+\newcommand{\seco}[1]{\underline{#1}}
+\definecolor{Gray}{gray}{0.95}
+\usepackage{colortbl}
+\newcolumntype{a}{>{\columncolor{Gray}}c}
+\newcommand{\mc}[2]{\multicolumn{#1}{c}{#2}}
+%%%% formula
+\usepackage{bm}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%%% special symbols
+\usepackage{pifont}   %cross and tick mark
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\usepackage{caption}
+\usepackage{wrapfig}
+% --- disable by uncommenting  
+% \renewcommand{\TODO}[1]{}
+% \renewcommand{\todo}[1]{#1}
+
+\usepackage{etoc}
+

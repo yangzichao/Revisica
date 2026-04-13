@@ -1,0 +1,15 @@
+\begin{figure}[h!]
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.95\linewidth]{img/throughput.pdf}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\linewidth}
+        \centering
+        \includegraphics[width=0.95\linewidth]{img/latency.pdf}
+    \end{subfigure}
+
+    \caption{\textbf{Decoding speeds and latencies with self-speculative decoding relative to standard autoregressive decoding.} We use $k$ heads of a 4-token prediction model and evaluate decoding speeds of a code model as explained in Table~\ref{tab:decoding}. All numbers are relative to the autoregressive ($k = 1$) baseline with the same batch size.
+    }
+    \label{fig:decoding}
+\end{figure}

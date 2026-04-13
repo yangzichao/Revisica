@@ -1,0 +1,14 @@
+\begin{tabular}{lcccc}
+\toprule[1.0pt]
+\multicolumn{1}{c}{} & \multicolumn{2}{c}{TSP200} & \multicolumn{2}{c}{CVRP200}\\
+\cmidrule[0.5pt](lr{0.2em}){2-3}
+\cmidrule[0.5pt](lr{0.2em}){4-5}
+Method & Obj. & Gap (\%) & Obj. & Gap (\%) \\
+\midrule
+Concorde / PyVRP & 10.72 & 0.00 & 27.93 & 0.00 \\
+\midrule
+% \quad -- \textit{On-policy RL AS} & 10.76 & 0.40 & 28.38 & 1.62 \\
+RL prior + AS & 10.79  \footnotesize{$\pm$ 0.00} & 0.65 & 28.43 \footnotesize{$\pm$ 0.02} & 1.79 \\
+GFlowNet prior + AS & \textbf{10.75}  \footnotesize{$\pm$ 0.00} & \textbf{0.29} & \textbf{28.34} \footnotesize{$\pm$ 0.01} & \textbf{1.47} \\
+\bottomrule
+\end{tabular}

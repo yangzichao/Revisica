@@ -1,0 +1,47 @@
+\section{Test Set Contamination in \dolma}
+\label{appendix:sec:decontam-dolma-perplexity-paloma}
+
+
+
+
+\paragraph{Decontamination for perplexity evaluation.}
+Using the paragraph deduplication tools described in \S\ref{sub:web:dedup}, 
+we mark any paragraph in \dolma as contaminated if (\textit{i}) it is longer than 13 Unicode-segmented tokens\footnote{Like in \citet{wimbd}, we only consider paragraphs of sufficient length to avoid false positive matches.} and (\textit{ii}) it appears in any of the documents in Paloma.
+
+To train \OlmoTiny, we remove any document with at least one paragraph marked as contaminated. 
+This approach, while prone to false positives, has a negligible  impact on the final removal rate ($\leq 0.001\%$ characters in \dolma contaminated, $\leq 0.02\%$ of documents removed.), and reduces likelihood of false negatives.
+
+
+
+
+
+
+
+
+\paragraph{Decontamination of downstream tasks.} 
+Using WIMBD~\cite{wimbd}, we analyze test set contamination in \dolma.
+We find contamination of entire datasets from popular benchmarks like 
+GLUE~\citep{wang-etal-2018-glue} and SuperGLUE~\citep{wang2019superglue}, and evaluation datasets like SNLI~\citep{bowman-etal-2015-large} and the Winograd Schema Challenge~\citep{wsc}.
+Further analysis reveals that many of these sets are contaminated in our code subset, as public repositories in GitHub often contains copies of these datasets.
+We report the top contaminated datasets in Figure \ref{fig:wimbd-contamination}.
+
+\begin{figure*}[h]
+    \centering
+\subfloat{{\includegraphics[width=.9\linewidth]{figures/wimbd/contamination.pdf} }}%
+    \caption{Contamination percentages of datasets from PromptSource~\citep{bach2022promptsource}.}%
+    \label{fig:wimbd-contamination}%
+\end{figure*}
+
+Results indicate that portion of datasets in Promptsource appear in \dolma. 
+Six datasets are completely contaminated (100\%): the Winograd Schema Challenge \citep{wsc}, 
+Sick \citep{marelli-etal-2014-sick}, 
+AX from GLUE \citep{wang-etal-2018-glue}, 
+SemEval (specifically, Task 1 from 2014), 
+COPA from SuperGLUE \citep{roemmele2011choice}, 
+and AX$_b$ (the diagnostic task) from SuperGLUE \citep{wang2019superglue}.
+In addition, other datasets are mostly contaminated, with over 90\% of their test sets appearing in Dolma documents: OpenAI HumanEval \citep{chen2021evaluating}, WIC from SuperGLUE \citep{pilehvar2019wic}, ESNLI \citep{esnli}, and SNLI \citep{snli}.
+We note that the contaminated datasets have been excluded from the downstream tasks we use for model evaluation (\textit{c.r.f.} \autoref{sec:setup}).
+
+
+
+

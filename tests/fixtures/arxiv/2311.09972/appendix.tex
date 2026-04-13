@@ -1,0 +1,1510 @@
+\section{Supplementary Appendix}\label{sec:appendix}
+
+The appendix is organized as follows. Section \ref{sec:appendix-fp} provides additional analysis of the first-price auctions. Section \ref{sec:appendix-proof} collects all of the proofs omitted from the main text. Section \ref{sec:appendix-aux} gives intermediate results. Section \ref{sec:appendix-computation} provides computational details omitted from the main text. Section \ref{sec:simulation-fp} presents additional Monte Carlo simulations, focusing on first-price auctions. Finally, Section \ref{sec:appendix-MC} provides auxiliary derivations related to the Monte Carlo simulations.
+
+\subsection{Additional details about first-price auctions}\label{sec:appendix-fp}
+
+Section \ref{sec:fp} derives the limiting behavior of the transaction price $P_j$. Analogously to the second-price auctions, we now construct inference methods about the winner's expected utility, seller's expected revenue, and the tail index itself in the subsequent subsections.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Inference about the winner's expected utility}\label{sec:fp-supplus}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Our goal is to conduct inference on the average of the winner's expected utility using the transaction prices. Since bidders act according to \eqref{eq:bid_first}, the auction is won by the bidder with the highest valuation. From here, we conclude that the winner's expected utility in auction $j=1,\dots,n$ is $E[V_{(1),j}-P_{j}]$, whose average is
+\begin{equation}
+\mu _{K}~{=}~\frac{1}{n}\sum_{j=1}^{n}E\Big[\frac{ \int_{-\infty}^{V_{(1),j}}{F_{V}(u)^{K_{j}-1}}du}{F_{V}(V_{(1),j})^{K_{j}-1}}\Big] .
+\label{eq:fp_muK_as_fn_ofV}
+\end{equation}
+By the Revenue Equivalence Theorem (e.g., \citet[Section 3]{krishna2009book}), $\mu _{K}$ coincides with the average of the winner's expected utility in second-price auctions.
+
+The construction of the CI for $\mu _{K}$ closely follows the arguments and derivations presented in Section \ref{sec:sp-supplus}. In particular, we propose a CI for $\mu _{K}$ given by
+\begin{equation}
+U(\mathbf{P})~=~(P_{(n)}-P_{(1)})\times \bigg\{y\in \mathbb{R}:\int_{\xi \in \Xi }\kappa _{\xi} (\mathbf{\tilde{P}})f_{\tilde{\mathbf{X}}|\xi }(\mathbf{ \tilde{P}})dW(\xi )\leq \int_{\xi \in \Xi }f_{(Y_{\mu},\tilde{\mathbf{X}})|\xi }(y,\mathbf{\tilde{P}})d\Lambda (\xi )\bigg\},  \label{eq:CI_muK_defn2_fp}
+\end{equation}
+where $\mathbf{\tilde{P}}=\{\tilde{P}_{j}:j=1,\dots ,N\}$ with $\tilde{P}_{j}$ as in \eqref{eq:P*fp}, $\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\}$ as in \eqref{eq:Xtilde}, $\kappa _{\xi }(h)=E[ X_{( n) }-X_{( 1) }|\mathbf{\tilde{X}}=h] $, and $Y_{\mu }=E[ \int\nolimits_{-\infty }^{X_{1,j}}{G}_{\xi }{(u)}du/G_{\xi }( X_{1,j}) ]/(X_{( n) }-X_{( 1) }) $. By repeating arguments in Section \ref{sec:sp-revenue}, \eqref{eq:CI_muK_defn2_fp} belongs to the class of asymptotically-valid CIs and minimizes the asymptotic expected length within this class. See Theorem \ref{thm:CI_K_fp} in the appendix for a statement of this result.
+
+Unfortunately, implementing the CI in \eqref{eq:CI_muK_defn2_fp} is considerably more challenging than in the case of second-price auctions. The main reason is that there is no closed-form expression for the PDF of $\mathbf{\tilde{X}}$ available for first-price auctions. 
+% This situation sharply contrasts the situation in the second-price auction, where the corresponding closed-form expression was provided in Lemma \ref{lem:densitySecond}. 
+Without these, we cannot easily compute $\kappa _{\xi} (h)f_{\tilde{\mathbf{X}}|\xi }(h)$ and $f_{(Y_{\mu},\tilde{\mathbf{X}})|\xi }(y,h)$ for $(y,h) \in \mathbb{R} \times \Sigma$. To sidestep this issue, we use a numerical approximation to the problem based on a Taylor series expansion. See Section \ref{sec:appendix-computation} for a detailed explanation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Inference about the seller's expected revenue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We now conduct inference on the average of the seller's expected revenue using transaction prices. Since bidders act according to \eqref{eq:bid_first} and the transaction price equals the highest bid, the average of the seller's expected revenue is given by
+\begin{equation}
+\pi _{K}~= 
+%~\frac{1}{n}\sum_{j=1}^{n}E[P_{j}~{=}
+~\frac{1}{n}\sum_{j=1}^{n}E\Big[V_{(1),j}-\frac{\int_{-\infty }^{V_{(1),j}}{F_{V}(u)^{K_{j}-1}}du}{F_{V}(V_{(1),j})^{K_{j}-1}}\Big].  \label{eq:seller2}
+\end{equation}
+% Our objective is to conduct inference on $\pi _{K}$ based only on the transaction prices for each auction.
+
+Reiterating arguments in Section \ref{sec:sp-revenue}, we propose a CI for $\mu _{K}$ given by
+\begin{align}
+U(\mathbf{P})~=~& P_{(1)} + ( P_{(n)}-P_{(1)}) \notag \\ 
+\times& \bigg\{ y \in \mathbb{R} : \int_{\xi \in \Xi} \kappa_{\xi}(\mathbf{\tilde{P}}) f_{\tilde{\mathbf{X}}|\xi}(\mathbf{\tilde{P}}) dW(\xi) \leq \int_{\xi \in \Xi} f_{(Y_{\pi},\tilde{\mathbf{X}})|\xi}(y,\mathbf{\tilde{P}}) d\Lambda(\xi) \bigg\} , \label{eq:CI_piK_defn2_fp}
+\end{align}
+where $Y_{\pi }=E[ X_{1,j} -{\int_{-\infty }^{X_{1,j} }G_{\xi }( h) dh}/{G_{\xi }( X_{1,j} ) }]/( X_{( n) }-X_{( 1) }) $ and the rest of the objects are as in Section \ref{sec:fp-supplus}.
+% $\mathbf{\tilde{P}}=\{\tilde{P}_{j}:j=1,\dots ,N\}$ with $\tilde{P}_{j}$ as in \eqref{eq:P*fp}, $\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\}$ as in \eqref{eq:Xtilde}, $\kappa _{\xi }(h)=E[ X_{( n) }-X_{( 1) }|\mathbf{\tilde{X}}=h] $, and $Y_{\pi }=E[ X_{1,j} -{\int_{-\infty }^{X_{1,j} }G_{\xi }( h) dh}/{G_{\xi }( X_{1,j} ) }]/( X_{( n) }-X_{( 1) }) $. 
+By the same arguments in Section \ref{sec:sp-revenue}, \eqref{eq:CI_muK_defn2_fp} belongs to the class of asymptotically valid CIs and minimizes the asymptotic expected length within this class. See Theorem \ref{thm:CI_pi_K_fp} in the appendix for a statement of this result.
+
+Implementing the CI in \eqref{eq:CI_piK_defn2_fp} suffers from the computational issues elaborated in Section \ref{sec:fp-supplus}, which we avoid via numerical approximations. Once again, see Section \ref{sec:appendix-computation} for details.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Inference about the tail index}\label{sec:HypApplication-fp}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Finally, we consider the problem of inference about the tail index using transaction prices from first-price auctions. As in Section \ref{sec:sp-index}, we are interested in the following hypothesis test:
+\begin{equation}
+H_{0}:\xi \in \xi _{0}~~~\text{v.s.}~~~H_{1}:\xi \in \Xi _{1},
+\label{eq:HT0_fp}
+\end{equation}
+where $\xi _{0}$ is a fixed parameter value in $\Xi $ and $\Xi _{1}=\Xi \backslash \{ \xi _{0}\}$. For brevity, we only focus on the case when the alternative hypothesis in \eqref{eq:HT0_fp} is composite. By our previous arguments, we propose using the feasible version of the generalized likelihood ratio test in the limiting problem, i.e.,
+\begin{equation}
+\varphi _{K}^{\ast }( \mathbf{P}) ~\equiv ~1\bigg[ {\int_{\Xi _{1}}f_{\mathbf{\tilde{X}}|\xi }( \mathbf{\tilde{P}}) dW( \xi ) }/{f_{\mathbf{\tilde{X}}|\xi _{0}}( \mathbf{\tilde{P}}) }>q( \xi _{0},W,\alpha ) \bigg] ,  \label{eq:compTest_fp}
+\end{equation}
+where $\mathbf{\tilde{P}}$, $\mathbf{\tilde{X}}$, and $\kappa _{\xi }(h)$ are as in Section \ref{sec:fp-supplus},
+% $\mathbf{\tilde{P}}=\{\tilde{P}_{j}:j=1,\dots ,N\}$ with $\tilde{P}_{j}$ as in \eqref{eq:P*fp}, $\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\}$ as in \eqref{eq:Xtilde}, $\kappa _{\xi }(h)=E[ X_{( n) }-X_{( 1) }|\mathbf{\tilde{X}}=h] $, 
+$W$ is the user-defined weight function on $\Xi _{1}$, and $q( \xi _{0},W,\alpha ) $ is the critical value of the likelihood ratio test in \eqref{eq:HT0_fp}, i.e.,
+\begin{equation*}
+q( \xi _{0},W,\alpha ) ~\equiv ~( 1-\alpha ) \text{-quantile of }{\int_{\Xi _{1}}f_{\mathbf{\tilde{X}}|\xi _{0}}(  \mathbf{\tilde{X}}_{0}) dW( \xi ) }/{f_{\mathbf{\tilde{X}}|\xi _{0}}( \mathbf{\tilde{X}}_{0}) }.
+\end{equation*}
+and $\mathbf{\tilde{X}}_{0}$ is a random vector with PDF $f_{\mathbf{\tilde{X}}|\xi _{0}}$. By our previous arguments, it follows that \eqref{eq:compTest_fp} is asymptotically valid and asymptotically level $\alpha $, and efficient in the sense of maximizing the asymptotic weighted average power criterion in the class of asymptotically valid and equivariant tests. See Theorem \ref{thm:compTest_fp} in the appendix for a statement of this result. The implementation of the hypothesis test in \eqref{eq:compTest_fp} suffers from the aforementioned computational issues, and is addressed by the approximation described in Section \ref{sec:appendix-computation}. 
+
+To conclude, we note that the arguments presented in Section \ref{sec:HypApplication} indicate that the hypothesis test in \eqref{eq:HT0_fp} can be applied to test the standard regularity conditions in the auctions literature. This can be achieved by conducting the hypothesis test in \eqref{eq:HT0_fp} with $\xi _{0}=-1$ and $\Xi _{1} = (-1,0.5]$.
+
+
+% Given the asymptotic observation \eqref{eq:aux_RV}, the inference about $\xi$ and other tail features follow analogously as in Sections \ref{sec:sp-index} to \ref{sec:sp-revenue}.  We only highlight the difference here. 
+% We start with testing $\xi = -1$. 
+% In this case, $G_{\xi}(h)$ is simplified as $\exp(h-1)$ and then \eqref{eq:aux_RV} becomes that $X_j = H_{-1}(E_{1,j})-1$. 
+% By construction, the normalized prices $P^{\ast}_j$ is invariant to the constant shift by $-1$ and hence we can replace the joint density of $P^{\ast}_j:j=1,\dots,n^{\ast}$ with that of $Z^{\ast}_j:j=1,\dots,n^{\ast}$. 
+% See Appendix \ref{sec:appendix-computation} for the expression of $f_{\mathbf{Z}^{\ast}|\xi}$. 
+% Then the same test as in \eqref{eq:compTest} is applicable and controls size asymptotically under the null hypothesis.
+
+
+
+\subsection{Proofs of results in the main text}\label{sec:appendix-proof}
+
+
+\begin{proof}[Proof of Lemma \ref{lem:joint}]
+By independence across auctions, it suffices to prove that for any auction $j=1,\ldots n$ and as $K\to\infty$,
+\begin{align}
+ \big( \tfrac{V_{(1),j}-b_{K}}{a_{K}},\dots ,~\tfrac{V_{(d),j}-b_{K}}{a_{K}}\big) ~\overset{d}{\to }~  \big( H_{\xi }(E_{1,j}),\dots ,~H_{\xi }\big( \sum\nolimits_{s=1}^{d}E_{s,j}\big) \big),\label{eq:joint_1}
+\end{align}
+where $\{E_{s,j}:s=1,\dots ,d\}$ are i.i.d.\ standard exponential random variables. 
+%We fix $j=1,\ldots n$ for the remainder of the proof.
+
+Let $x$ be any continuity point of $G_{\xi }$. Since $K_{j}\to \infty $ as $K\to \infty $, \eqref{eq:DomainOfAttraction} implies that there is a sequence of constants $\{(a_{K_{j}},b_{K_{j}})\in \mathbb{R} _{++}\times \mathbb{R}:K_{j}\in \mathbb{N}\}$ such that
+\begin{equation}
+\lim_{K \to \infty} F( a_{K_{j}}x+b_{K_{j}}) ^{K_{j}}~=~ G_{\xi }( x)~\text{ as }K\to \infty. \label{eq:joint_2}
+\end{equation}
+Under \eqref{eq:joint_2}, \citet[Theorem 2.1.1]{dehaan2006book}, %\citet[Section 10.6]{david/nagaraja:2003} and 
+implies that as $K\to\infty$,
+\begin{align}
+\Psi_{j} \equiv\big( \tfrac{V_{(1),j}-b_{K_{j}}}{a_{K_{j}}},\dots ,~\tfrac{V_{(d),j}-b_{K_{j}}}{a_{K_{j}}}\big) ~\overset{d }{\to }~ \big( H_{\xi }(E_{1,j}),\dots ,~H_{\xi }\big( \sum\nolimits_{s=1}^{d}E_{s,j}\big) \big). \label{eq:joint_3} 
+\end{align}
+Note that
+\begin{align}
+\big( \tfrac{V_{(1),j}-b_{K}}{a_{K}},\dots ,\tfrac{V_{(d),j}-b_{K}}{a_{K}}\big)
+&~=~ 
+%\big( \tfrac{V_{(1),j}-b_{K_{j}}}{a_{K_{j}}},\dots ,\tfrac{V_{(d),j}-b_{K_{j}}}{a_{K_{j}}}\big) 
+\Psi_{j} \tfrac{ a_{K_{j}}}{a_{K}} ~+~\big( \tfrac{b_{K}-b_{K_{j}}}{a_{K}},\dots ,\tfrac{b_{K}-b_{K_{j}}}{a_{K}}\big). \label{eq:joint_4}
+\end{align}
+By \eqref{eq:joint_3} and \eqref{eq:joint_4}, \eqref{eq:joint_1} follows from showing that
+\begin{equation}
+\lim_{K \to \infty} \big( \tfrac{a_{K_{j}}}{a_{K}},~\tfrac{b_{K_{j}}-b_{K}}{a_{K}}\big) ~=~ ( 1,~0) . \label{eq:joint_5}
+\end{equation}
+We devote the remainder of this proof to establish \eqref{eq:joint_5}.
+
+Let $x$ be any continuity point of $G_{\xi }$. By \eqref{eq:joint_2} and $K_{j}/K\to 1$ as $K\to \infty$,
+\begin{equation}
+\lim_{K \to \infty} F( a_{K_{j}}x+b_{K_{j}}) ^{K}~=~ G_{\xi }( x) ~\text{ as }K\to \infty . \label{eq:joint_6}
+\end{equation}
+% Note that $ \{ ( F( \cdot ) ) ^{K}:K\in \mathbb{N}\} $ represents a sequence of CDFs. 
+Under \eqref{eq:DomainOfAttraction} and \eqref{eq:joint_6}, \citet[Lemma 1]{dehaan1976} implies that for all $ y\in \mathbb{R}$,
+% for some $( \pi _{j},\lambda _{j}) \in \mathbb{R}_{++}\times \mathbb{R}$ and all $y\in \mathbb{R}$,
+% \begin{eqnarray*}
+% ( \tfrac{a_{K_{j}}}{a_{K}},\tfrac{b_{K_{j}}-b_{K}}{a_{K}}) &\to &( \pi _{j},\lambda _{j}) \text{ as }K\to \infty , \\
+% G_{\xi }( \pi _{j}y+\lambda _{j}) &=&G_{\xi }( y) .
+% \end{eqnarray*}
+% In other words, for all $y\in \mathbb{R}$, 
+\begin{equation}
+G_{\xi }\big( \lim_{K\to \infty }\big( \tfrac{a_{K_{j}}}{a_{K}}y+ \tfrac{b_{K_{j}}-b_{K}}{a_{K}}\big) \big) ~=~G_{\xi }( y) . \label{eq:joint_7}
+\end{equation}
+% \citet[Theorem 10.5.1]{david2004book} or 
+%By \citet[Theorem 1.1.3]{dehaan2006book}, there are three possible specifications for $ G_{\xi }$. If $\xi =0$, $G_{\xi }( y) =\exp ( -\exp ( -y) ) $, which is strictly increasing. If $\xi >0$, $G_{\xi }( y) =\exp ( -( 1+\xi y) ^{-1/\xi }) 1 [ 1+\xi y>0] $, which is strictly increasing for $y>-1/\xi $. Finally, if $\xi <0$, $G_{\xi }( y) =\exp ( -( 1+\xi y) ^{-1/\xi }) 1[ 1+\xi y> 0] +1[ 1+\xi y \leq 0 ] $, which is strictly increasing for $y<-1/\xi $. Thus, in all three cases, there is a continuum of values of $y$, which we can denote by $S_{\xi }$, such that  $G_{\xi }$ is strictly increasing and, therefore, invertible. Then, \eqref{eq:joint_7} implies that for all $y\in S_{\xi }$,
+Regardless of $\xi$, there is a continuum of values for which $G_{\xi }$ is strictly increasing and, thus, invertible. For any $y$ in this continuum, \eqref{eq:joint_7} implies that%If $\xi =0$, $G_{\xi }( y) =\exp ( -\exp ( -y) ) $, which is strictly increasing. If $\xi >0$, $G_{\xi }( y) =\exp ( -( 1+\xi y) ^{-1/\xi }) 1 [ 1+\xi y>0] $, which is strictly increasing for $y>-1/\xi $. Finally, if $\xi <0$, $G_{\xi }( y) =\exp ( -( 1+\xi y) ^{-1/\xi }) 1[ 1+\xi y> 0] +1[ 1+\xi y \leq 0 ] $, which is strictly increasing for $y<-1/\xi $. Thus, in all three cases, there is a continuum of values of $y$, which we can denote by $S_{\xi }$, such that  $G_{\xi }$ is strictly increasing and, therefore, invertible. Then, \eqref{eq:joint_7} implies that for all $y\in S_{\xi }$,
+\begin{equation}
+\lim_{K \to \infty}  \tfrac{a_{K_{j}}}{a_{K}}y+\tfrac{ b_{K_{j}}-b_{K}}{a_{K}} ~=~y . \label{eq:joint_8}
+\end{equation}
+From this observation, \eqref{eq:joint_5} follows.
+\end{proof}
+
+\begin{proof}[Proof of Lemma \ref{lem:densitySecond}]
+This result follows from Lemma \ref{lem:joint}, Lemma \ref{lem:cts}, and the continuous mapping theorem.
+% For any $ j=1,\ldots ,n$, Lemma \ref{lem:joint} implies that the PDF of $Z_{j}=H_{\xi }(E_{1,j}+E_{2,j})$ is
+% \begin{equation}
+% f_{Z_{j}}( z) ~=~\bigg\{
+% \begin{array}{ll}
+% ( 1+\xi z) ^{-\tfrac{2+\xi }{\xi }}\exp ( -( 1+\xi z) ^{-1/\xi })  1[1+\xi z \geq 0] & \text{ if }\xi \neq 0 \\
+% \exp ( -2z) \exp ( -\exp ( -z) ) & \text{ if }\xi =0,
+% \end{array} \label{eq:marginalZ}
+% \end{equation}
+% Since $\{ Z_{j}:j=1,\dots ,n\} $ are i.i.d., the PDF of $ \{ Z_{j}:j=1,\dots ,n\} $ is $\prod_{j=1}^{n}f_{Z_{j}}( z_{j}) $. By standard arguments, the PDF of $\{ Z_{(1)},Z_{(2)},\dots ,Z_{(n)}\} $ is
+% \begin{equation}
+% f_{Z_{(1)},Z_{(2)},\dots ,Z_{(n)}}( z_{1},z_{2},\ldots ,z_{n}) ~=~n!
+% \prod_{j=1}^{n}f_{Z_{j}}( z_{j}) \times 1[ z_{1}\leq z_{2}\leq \ldots \leq z_{n}] . \label{eq:jointZordered}
+% \end{equation}
+% To conclude, note that \eqref{eq:densitySecond} follows from \eqref{eq:jointZordered}, Lemma \ref{lem:cts}, and the continuous mapping theorem.
+\end{proof}
+
+
+%\begin{proof}[Proof of Lemma \ref{lem:bdd}]
+%By \citet[][Theorem 1.2.1]{dehaan2006book}, it suffices to establish that 
+%\begin{equation*}
+%\lim_{t\downarrow 0}\tfrac{1-F_{V}(v_H-tx)}{1-F_{V}(v_H-t)}=x
+%\end{equation*}
+%for all $x>0$. Condition (iii) allows us to use L'Hospital rule to obtain that
+%\begin{equation*}
+%\lim_{t\downarrow 0}\tfrac{1-F_{V}(v_H-tx)}{1-F_{V}(v_H-t)}%
+%=\lim_{t\downarrow 0}\tfrac{f_{V}(\dot{v}-tx)}{f_{V}(\ddot{v}-t)}x
+%\end{equation*}
+%where $\dot{v}$ and $\ddot{v}$ are both in the $\varepsilon $-neighborhood of $v_H$ if $t$ is small enough. Then by the continuous mapping theorem and Conditions (ii) and (iii), we have $\lim_{t\downarrow 0}\tfrac{ f_{V}(\dot{v})}{f_{V}(\ddot{v})}=1$, which yields the result. 
+%\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% This lemma is for optimal reserve price, which we don't present in the paper  
+% \begin{proof}[Proof of Lemma \ref{lem:sp-rp}] 
+% Recall that we impose $\xi<1$. We divide the rest of the argument depending on the sign of $\xi$. 
+% We introduce the short-hand notation that $H_{1} = H_{\xi}(E_{1,j})$ and $H_{2} = H_{\xi}(E_{1,j}+E_{2,j})$. 
+
+%  \underline{Case 1:} $\xi \in (0,1)$. In that case,
+%  \begin{align}
+%  1+\xi \pi( \gamma) & \overset{(1)}{=}( 1+\xi \gamma) \mathbb{P}( H_{2}\leq \gamma\leq H_{1}) +\mathbb{E}[ 1+\xi H_{2}|\gamma\leq H_{2}] \mathbb{P}(\gamma\leq H_{2})+ (1+\xi v_0)\mathbb{P}( H_{1}<\gamma) \notag \\
+% & \overset{(2)}{=}\tilde{\gamma}P( \tilde{H}_{2}\leq \tilde{\gamma}\leq \tilde{H} _{1}) +\mathbb{E}[ \tilde{H}_{2}|\tilde{\gamma}\leq \tilde{H}_{2}] P( \tilde{\gamma}\leq \tilde{H}_{2})+ \tilde{v}_0 \mathbb{P}( \tilde{H}_{1}<\tilde{\gamma} ) \notag \\
+%& \overset{(3)}{=}\exp ( -\tilde{r}^{-1/\xi }) \tilde{r}^{1-1/\xi }+\Gamma ( 2-\xi ) -\Gamma ( 2-\xi ,\tilde{r}^{-1/\xi }) +\tilde{v}_{0}\exp ( -\tilde{r}^{-1/\xi }) \notag \\
+% & \overset{(3)}{=}\exp ( -\tilde{\gamma}^{-1/\xi }) \tilde{\gamma}^{1-1/\xi }+
+% \int_{0}^{\tilde{\gamma}^{-1/\xi }}t^{1-\xi}\exp ( -t) dt
+%\Gamma ( 2-\xi ) -\Gamma ( 2-\xi ,\tilde{r}^{-1/\xi }) 
+% +  \tilde{v}_0\exp ( -\tilde{\gamma}^{-1/\xi }) \notag \\
+%& \overset{(4)}{=}\exp ( -( 1+\xi r) ^{-1/\xi }) ( 1+\xi r) ^{1-1/\xi }+\Gamma ( 2-\xi ) -\Gamma ( 2-\xi ,( 1+\xi r) ^{-1/\xi }) +( 1+\xi v_{0}) \exp ( -( 1+\xi r) ^{-1/\xi }) ,\label{eq:L32_1}
+% & \overset{(4)}{=}\exp ( -( 1+\xi \gamma) ^{-1/\xi }) ( 1+\xi \gamma) ^{1-1/\xi }+
+% \int_{0}^{(1+\xi \gamma)^{-1/\xi }}t^{1-\xi}\exp ( -t) dt+ (1+\xi v_0) \exp ( -( 1+\xi \gamma) ^{-1/\xi }) ,\label{eq:L32_1}
+% \end{align}
+% where (1) holds by definition of $\pi(\gamma) $, (2) holds by using $ \tilde{\gamma}=1+\xi \gamma$, $\tilde{v}_0 = (1+\xi v_0)$ and $\tilde{H}_{j}=1+\xi H_{j}$ for $j=1,2$, (3) holds by computation from \eqref{eq:pdf_e1e2},
+%and uses $ \Gamma ( a,x) \equiv \int_{x}^{\infty }t^{a-1}\exp ( -t) dt$ to denote the incomplete Gamma function and $\Gamma ( a) =\Gamma ( a,0) $ to denote the complete gamma function, 
+% and (4) holds by replacing back $\tilde{\gamma}=1+\xi \gamma$. The computation that delivers (3) is greatly simplified by the transformation of the random variables $\tilde{H}_{j}=1+\xi H_{j}$ for $j=1,2$, whose joint and marginal PDFs are
+% \begin{align*}
+% f_{\tilde{H}_{1},\tilde{H}_{2}}( x_{1},x_{2}) &=x_{1}^{-1/\xi -1}x_{2}^{-1/\xi -1}\exp ( -x_{2}^{-1/\xi }) \xi ^{-2}1[ x_{1}\geq x_{2}\geq 0] , \\
+% f_{\tilde{H}_{j}}( x) &=x^{-j/\xi -1}\exp ( -x^{-1/\xi }) \xi ^{-1}1[ x\geq 0] ~~~~~\text{for}~ j=1,2.
+% \end{align*}
+
+% Since $\xi>0$, maximizing $\pi(\gamma)$ is equivalent to maximizing $1+\xi \pi(\gamma)$. The corresponding first and second order conditions imply Lemma \ref{lem:sp-rp}.
+
+
+% \underline{Case 2:} $\xi <0$. Despite the change in sign, an analogous derivation shows that \eqref{eq:L32_1} also holds. Since $\xi<0$, maximizing $\pi(\gamma)$ is equivalent to minimizing $1+\xi \pi(\gamma)$. The corresponding first and second order conditions then imply Lemma \ref{lem:sp-rp}.
+
+% \underline{Case 3:} $\xi =0$. In that case, 
+% \begin{align*}
+% \pi( \gamma) & \overset{(1)}{=}\gamma \mathbb{P}( H_{2}\leq \gamma\leq H_{1}) +\mathbb{E} [ H_{2}|\gamma\leq H_{2}] \mathbb{P}(\gamma\leq H_{2}) \\
+% & \overset{(2)}{=}\gamma\exp ( -\gamma) \exp ( -\exp ( -\gamma) ) +\int_{\gamma}^{\infty }t\exp ( -2t) \exp ( -\exp ( -t) ) dt ,
+% \end{align*}
+% where (1) holds by definition of $\pi( \gamma) $ and (2) holds by computation from \eqref{eq:pdf_e1e2}. From here, the first and second order conditions imply Lemma \ref{lem:sp-rp}. 
+% \end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{proof}[Proof of Theorem \ref{thm:CI_K}]
+\underline{Part 1}. By \eqref{eq:secondprice} and Lemma \ref{lem:joint}, as $K\to \infty$,
+% By \eqref{eq:secondprice},
+% \begin{equation}
+% \big\{\big(\tfrac{V_{(1),j}-P_{j}}{a_{K}},\tfrac{P_{j}-b_{K}}{a_{K}}\big) :j=1,\ldots ,N\big\}~=~\big\{\big(\tfrac{V_{(1),j}-V_{(2),j}}{a_{K}},\tfrac{ V_{(2),j}-b_{K}}{a_{K}}\big):j=1,\ldots ,N\big\}. \label{eq:CI_muK1}
+% \end{equation}
+% By \eqref{eq:CI_muK1} and Lemma \ref{lem:joint}, as $K\to \infty $,
+\begin{equation}
+\big\{\big(\tfrac{V_{(1),j}-P_{j}}{a_{K}},\tfrac{P_{j}-b_{K}}{a_{K}}\big) :j=1,\ldots ,N\big\}~\overset{d}{\to } ~\{(Z_{1,j}-Z_{2,j},Z_{2,j}):j=1,\ldots ,N\} . \label{eq:CI_muK2}
+\end{equation}
+Let $\delta >0$ and $\bar{K} \in \mathbb{N}$ be as in Lemma \ref{lem:finite_muK2}. Then, for all $j =1,\dots,N$ and $K>\bar{K}$,
+\begin{equation}
+E\big[ | \tfrac{V_{(1),j}-P_{j}}{a_{K}}| ^{1+\delta }\big] ~\overset{(1)}{=}~
+E\big[ |\tfrac{V_{( 1) ,j}-V_{(2) ,j}}{a_{K}}| ^{1+\delta }\big]~\leq~ 2^{\delta }\big( E\big[ | \tfrac{V_{( 1) ,j}-b_{K}}{a_{K}}| ^{1+\delta } +  | \tfrac{V_{( 2) ,j}-b_{K}}{a_{K}}|^{1+\delta }\big] \big)~\overset{(2)}{<}~\infty ,  \label{eq:CI_muK2p5}
+\end{equation}
+where (1) holds by \eqref{eq:bidSecond} and \eqref{eq:secondprice}, and (2) by Lemma \ref{lem:finite_muK2}. By \eqref{eq:winner1}, \eqref{eq:CI_muK2}, and \eqref{eq:CI_muK2p5}, as $K\to \infty$,
+%By \eqref{eq:CI_muK2} and Lemma \ref{lem:finite_muK1}, as $K\to \infty $,
+\begin{equation}
+\big\{ \tfrac{\mu _{K}}{a_{K}},\big\{\big( \tfrac{P_{j}-b_{K}}{a_{K}} \big) :j=1,\ldots ,N \big\} \big\}~
+\overset{d}{\to }~ \{ E [Z_{1,1} - Z_{2,1}], \{ Z_{2,j} : j=1,\ldots ,N \} \},\label{eq:CI_muK3}
+\end{equation}
+where we have used that $Z_{1,1}-Z_{2,1}\overset{d}{=}Z_{1,j}-Z_{2,j}$ for all $j=1,\ldots ,n$. Define
+\begin{equation}
+R_{K}~\equiv ~\bigg\{ 
+\begin{array}{cc}
+\tfrac{\mu _{K}}{P_{(n)}-P_{(1)}} & \text{if }P_{(n)}\not=P_{(1)}, \\ 
+0 & \text{if }P_{(n)}=P_{(1)}.
+\end{array}
+  \label{eq:CI_muK3b}
+\end{equation}
+By \eqref{eq:CI_muK3}, \eqref{eq:CI_muK3b}, Lemma \ref{lem:cts}, and the continuous mapping theorem, we have that, as $K\to \infty $,
+\begin{equation}
+\{R_{K},\mathbf{\tilde{P}}\}~\overset{d}{\to }~\{Y_{\mu },\mathbf{ \tilde{Z}}\}. \label{eq:CI_muK4}
+\end{equation}
+
+Next, consider the following derivation as $K\to \infty $.
+\begin{align*}
+P(\mu _{K}\in U(\mathbf{P}))
+& ~=~P(\{ \mu _{K}\in U(\mathbf{P})\} \cap \{ P_{(n)}\not=P_{(1)}\} )+P(\{ \mu _{K}\in U(\mathbf{P} )\} \cap \{ P_{(n)}=P_{(1)}\} ) \\
+& ~\overset{(1)}{=}~P(\{ \mu _{K}\in ( P_{(n)}-P_{(1)}) \times \tilde{U}(\mathbf{\tilde{P}})\} \cap \{ P_{(n)}\not=P_{(1)}\} )+o(1) \\
+& ~\overset{(2)}{=}~P(\{R_{K}\in \tilde{U}(\mathbf{\tilde{P}})\}\cap \{P_{(n)}\not=P_{(1)}\})+o(1) \\
+& ~\overset{(3)}{=}~P(R_{K}\in \tilde{U}(\mathbf{\tilde{P}}))+o(1) \\
+& ~=~P(\{R_{K},\mathbf{\tilde{P}}\}\in \{(y,h)\in \mathbb{R}\times \Sigma:y\in \tilde{U}(h)\})+o(1) \\
+& ~\overset{(4)}{\to }~P(\{Y_{\mu },\mathbf{\tilde{Z}}\}\in \{(y,h)\in \mathbb{R}\times \Sigma:y\in \tilde{U}(h)\}) \\
+& ~=~P(Y_{\mu }\in \tilde{U}(\mathbf{\tilde{Z}})),
+\end{align*}
+as desired, where (1) holds by \eqref{eq:CI_muK_defn} and Lemma \ref{lem:cts}, (2) holds because \eqref{eq:CI_muK3b} implies that $\{ \mu _{K}\in ( P_{(n)}-P_{(1)}) \times \tilde{U}(\mathbf{\tilde{P}})\} =\{R_{K}\in \tilde{U}(\mathbf{\tilde{P}})\}$ under $P_{(n)}\not=P_{(1)}$, (3) by Lemma \ref{lem:cts}, and (4) by \eqref{eq:CI_muK4}, Assumption (a), and the Portmanteau Theorem.
+
+\underline{Part 2}. By similar arguments as those used in the proof of Lemma \ref{lem:densitySecond}, we have that, as $K\to \infty $,
+% By \eqref{eq:secondprice},
+% \begin{equation}
+% \big\{\tfrac{P_{j}-b_{K}}{a_{K}}:j=1,\ldots ,n\big\}~=~\big\{\tfrac{ V_{(2),j}-b_{K}}{a_{K}}:j=1,\ldots ,n\big\}. \label{eq:CI_muK6}
+% \end{equation}
+% By similar arguments as those used in the proof of Lemma \ref{lem:densitySecond}, we have that, as $K\to \infty $,
+\begin{equation}
+\{{(P_{(n)}-P_{(1)})}/{a_{K}},\mathbf{\tilde{P}}\}~\overset{d}{ \to }~\{Z_{(n)}-Z_{(1)},\mathbf{\tilde{Z}}\}. \label{eq:CI_muK7}
+\end{equation}
+By \eqref{eq:CI_muK7}, Assumption (c), and the continuous mapping theorem, we have that, as $K\to \infty $, 
+\begin{equation}
+{((P_{(n)}-P_{(1)})}/{a_{K}}) \times \lg (\tilde{U}(\mathbf{\tilde{P}}))~\overset{d}{ \to }~(Z_{(n)}-Z_{(1)})\times\lg (\tilde{U}(\mathbf{\tilde{Z}})).  \label{eq:CI_muK8}
+\end{equation}
+
+Let $\delta >0$ and $\bar{K}\in \mathbb{N}$ be as in Lemma \ref{lem:finite_muK2}. Then,
+\begin{align}
+|P_{(n)}-P_{(1)}|^{1+\delta }~&\leq~(\sum_{l,m=1}^{n}|P_{l}-P_{m}|)^{1+\delta }\notag\\
+~&\overset{(1)}{=}~(\sum_{l,m=1}^{n}|V_{(2),l}-V_{(2),m}|)^{1+\delta }\notag\\
+~&{\leq }~(2n)^{1+\delta}\sum_{l=1}^{n}|V_{(2),l}-b_{K}|^{1+\delta },  \label{eq:CI_muK9}
+\end{align}
+where (1) holds by \eqref{eq:secondprice}. Then, for all $K>\bar{K}$, 
+\begin{align}
+E[ |\tfrac{(P_{(n)}-P_{(1)})}{a_{K}} \lg (\tilde{U}(\mathbf{\tilde{P}}))|^{1+\delta }] ~\overset{(1)}{\leq }~
+(2n)^{1+\delta }\sum_{l=1}^{n}E\big[|\tfrac{V_{(2),l}-b_{K}}{a_{K}}|^{1+\delta } |\lg (\tilde{U}(\mathbf{\tilde{P}}))|^{1+\delta }\big] 
+%\overset{(2)}{\leq } (2n)^{1+\delta }C^{1+\delta }\sum_{l=1}^{n}E\big[|\tfrac{V_{(2),l}-b_{K}}{a_{K}}|^{1+\delta }\big] 
+~\overset{(2)}{<}~\infty ,\label{eq:CI_muK10} 
+\end{align}%
+where (1) holds by \eqref{eq:CI_muK9}, and (2) by Assumption (b), $\lg (\tilde{U}(h))\geq 0$ for all $h \in \Sigma$, and Lemma \ref{lem:finite_muK2}.
+
+% Next, note that
+%\begin{equation}
+%0~\overset{(1)}{\leq }~E[({(P_{(n)}-P_{(1)})}/{a_{K}})~\lg (\tilde{U}(\mathbf{ \tilde{Z}}))]~\overset{(2)}{<}~\infty , \label{eq:CI_muK9}
+%\end{equation}
+%where (1) holds by $P_{(n)}\geq P_{(1)}$ and $\lg (\tilde{U}(\mathbf{\tilde{P}} ))\geq 0$, and (2) by Assumption (b) and $E[(P_{(n)}-P_{(1)})/a_{K}]< \infty $, the latter of which is established in Lemma \ref{lem:finite_muK2}. 
+Then, consider the following derivation as $K\to \infty $.
+\begin{align*}
+E[\lg (U(\mathbf{P}))/a_{K}]~&\overset{(1)}{=}~
+%E[\lg (( P_{(n)}-P_{(1)}) \times \tilde{U}(\mathbf{\tilde{P}}))/a_{K}] \\
+%~&~{=}~~
+E[(( P_{(n)}-P_{(1)}) /a_{K})\times \lg ( \tilde{U}(\mathbf{\tilde{P}}))] \\
+~&\overset{(2)}{\to }~E[(Z_{(n)}-Z_{(1)})\times\lg (\tilde{U}(\mathbf{\tilde{Z}} ))]\\
+~&=~E_{\xi }[\kappa _{\xi }(\mathbf{\tilde{Z}})\times\lg (\tilde{U}( \mathbf{\tilde{Z}}))],
+\end{align*}
+as desired, where (1) holds by \eqref{eq:CI_muK_defn}, and (2) by \eqref{eq:CI_muK8} and \eqref{eq:CI_muK10}.
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{proof}[Proof of Theorem \ref{thm:CI_pi_K}]
+This proof follows from the same arguments as in Theorem \ref{thm:CI_K}. The main difference between the proofs is that the vector $\{ (V_{(1),j}-P_{j}):j=1,\ldots ,N\} $ 
+% or, equivalently, $\{ (V_{(1),j}-V_{(2),j}):j=1,\ldots ,N\} $, 
+is replaced by $\{ (P_{j}-b_{K}):j=1,\ldots ,N\} $,
+% or, equivalently, $\{ ( V_{(2),j}-b_{K}) :j=1,\ldots ,N\} $.
+which then implies that $( \pi _{K}-b_{K}) $ and $Y_{\mu }$ are replaced by $\mu _{K}$ and $Y_{\pi }$, respectively. With these changes in place, the desired result follows from repeating the steps used to prove Theorem \ref{thm:CI_K}.
+% %FOR OUR RECORDS IN CASE IT IS NEEDED:
+% \underline{Part 1}. By repeating arguments used to derive \eqref{eq:winner1}%
+% , we have 
+% \begin{equation}
+% \bigg\{\bigg(\tfrac{P_{j}-b_{K}}{a_{K}}\bigg):j=1,\ldots ,N\bigg\}~=~\bigg\{%
+% \bigg(\tfrac{V_{(2),j}-b_{K}}{a_{K}}\bigg):j=1,\ldots ,N\bigg\}.
+% \label{eq:CI_piK1}
+% \end{equation}%
+% By \eqref{eq:CI_piK1} and Lemma \ref{lem:joint}, as $K\to \infty $, 
+% \begin{equation}
+% \bigg\{\bigg(\tfrac{P_{j}-b_{K}}{a_{K}}\bigg):j=1,\ldots ,N\bigg\}~\overset{d%
+% }{\to }~\{Z_{2,j}:j=1,\ldots ,N\}.  \label{eq:CI_piK2}
+% \end{equation}%
+% Let $\delta >0$ and $\bar{K}\in \mathbb{N}$ be as in Lemma \ref%
+% {lem:finite_muK2}. Then, for all $K>\bar{K}$,%
+% \begin{equation}
+% E\big[\big(\tfrac{P_{j}-b_{K}}{a_{K}}\big)^{1+\delta }\big]~\overset{(1)}{=}%
+% ~E\big[(\tfrac{V_{(2),j}-b_{K}}{a_{K}})^{1+\delta }\big]~\overset{(2)}{<}%
+% ~\infty ,  \label{eq:CI_piK2p5}
+% \end{equation}%
+% where (1) holds by \eqref{eq:secondprice}, and (2) by Lemma \ref%
+% {lem:finite_muK2}. By \eqref{eq:seller1}, \eqref{eq:CI_muK2}, and %
+% \eqref{eq:CI_piK2p5}, as $K\to \infty $, 
+% \begin{equation}
+% \bigg\{\tfrac{\pi _{K}-b_{K}}{a_{K}},\bigg\{\bigg(\tfrac{P_{j}-b_{K}}{a_{K}}%
+% \bigg):j=1,\ldots ,N\bigg\}\bigg\}~\overset{d}{\to }%
+% ~\{E[Z_{2,1}],\{Z_{2,j}:j=1,\ldots ,N\}\},  \label{eq:CI_piK3}
+% \end{equation}%
+% where we have used that $Z_{2,1}\overset{d}{=}Z_{2,j}$ for all $j=1,\ldots
+% ,n $. Define 
+% \begin{equation}
+% R_{K}~\equiv ~\bigg\{%
+% \begin{array}{cc}
+% \tfrac{\pi _{K}-P_{(1)}}{P_{(n)}-P_{(1)}} & \text{if }P_{(n)}\not=P_{(1)},
+% \\ 
+% 0 & \text{if }P_{(n)}=P_{(1)}.%
+% \end{array}
+% \label{eq:CI_piK3b}
+% \end{equation}%
+% By \eqref{eq:CI_piK3}, $P(Z_{1,1}-Z_{2,1}>0)=1$, and the continuous mapping theorem, we have that,
+% as $K\to \infty $, 
+% \begin{equation}
+% \{R_{K},\mathbf{\tilde{P}}\}~\overset{d}{\to }~\{Y_{\pi },\mathbf{%
+% \tilde{Z}}\}.  \label{eq:CI_piK4}
+% \end{equation}
+%
+% Next, consider the following derivation. 
+% \begin{align*}
+% P(\pi _{K}\in U(\mathbf{P}))& ~\overset{(1)}{=}~P(\{\pi _{K}\in
+% (P_{(n)}-P_{(1)})\times \tilde{U}(\mathbf{\tilde{P}})+P_{(1)}\}\cap
+% \{P_{(n)}\not=P_{(1)}\})+o(1) \\
+% & ~\overset{(2)}{=}~P(\{R_{K}\in \tilde{U}(\mathbf{\tilde{P}})\}\cap
+% \{P_{(n)}\not=P_{(1)}\})+o(1) \\
+% & ~\overset{(3)}{=}~P(R_{K}\in \tilde{U}(\mathbf{\tilde{P}}))+o(1) \\
+% & ~\overset{(4)}{\to }~P(\{Y_{\pi },\mathbf{\tilde{Z}}\}\in
+% \{(y,h)\in \mathbb{R}\times \Sigma :y\in \tilde{U}(h)\}) \\
+% & ~=~P(Y_{\pi }\in \tilde{U}(\mathbf{\tilde{Z}})),
+% \end{align*}%
+% as desired, where the term $o(1)$ converges to zero as $K\to \infty $%
+% , (1) holds by \eqref{eq:CI_piK_defn} and Lemma \ref{lem:cts}, (2) holds
+% because \eqref{eq:CI_piK3b} implies that $\{\pi _{K}\in
+% (P_{(n)}-P_{(1)})\times \tilde{U}(\mathbf{\tilde{P}})+P_{(1)}\}=\{R_{K}\in 
+% \tilde{U}(\mathbf{\tilde{P}})\}$ under $P_{(n)}\not=P_{(1)}$, (3) holds by
+% Lemma \ref{lem:cts}, (4) holds by \eqref{eq:CI_piK4}, Assumption (a), and
+% the Portmanteau Theorem.
+%
+% \underline{Part 2}. By repeating arguments used to derive \eqref{eq:winner1}%
+% , we have 
+% \begin{equation}
+% \bigg\{\tfrac{P_{j}-b_{K}}{a_{K}}:j=1,\ldots ,n\bigg\}~=~\bigg\{\tfrac{%
+% V_{(2),j}-b_{K}}{a_{K}}:j=1,\ldots ,n\bigg\}.  \label{eq:CI_piK6}
+% \end{equation}%
+% By \eqref{eq:CI_piK6}, $P(Z_{1,1}-Z_{2,1}>0)=1$, Lemma \ref{lem:joint}, and
+% the continuous mapping theorem we have that, as $K\to \infty $, 
+% \begin{equation}
+% \{{(P_{(n)}-P_{(1)})}/{a_{K}},\mathbf{\tilde{P}}\}~\overset{d}{\to }%
+% ~\{Z_{(n)}-Z_{(1)},\mathbf{\tilde{Z}}\}.  \label{eq:CI_piK7}
+% \end{equation}%
+% By \eqref{eq:CI_piK7}, Assumption (c), and the continuous mapping theorem, as $K\to \infty $%
+% , 
+% \begin{equation}
+% {((P_{(n)}-P_{(1)})}/{a_{K}})\times \lg (\tilde{U}(\mathbf{\tilde{P}}))~%
+% \overset{d}{\to }~(Z_{(n)}-Z_{(1)})\times \lg (\tilde{U}(\mathbf{%
+% \tilde{Z}})).  \label{eq:CI_piK8}
+% \end{equation}
+%
+% Let $\delta >0$ and $\bar{K}\in \mathbb{N}$ be as in Lemma \ref%
+% {lem:finite_muK2}. 
+% \begin{equation}
+% |P_{(n)}-P_{(1)}|^{1+\delta }~\leq
+% ~(\sum_{l,m=1}^{n}|P_{l}-P_{m}|)^{1+\delta }~\overset{(1)}{=}%
+% ~(\sum_{l,m=1}^{n}|V_{(2),l}-V_{(2),m}|)^{1+\delta }~{\leq }~(2n)^{1+\delta
+% }\sum_{l=1}^{n}|V_{(2),l}-b_{K}|^{1+\delta },  \label{eq:CI_piK9}
+% \end{equation}%
+% where (1) holds by \eqref{eq:secondprice}. Then, for all $K>\bar{K}$, 
+% \begin{equation}
+% E\left[ |{((P_{(n)}-P_{(1)})}/{a_{K}})\times \lg (\tilde{U}(\mathbf{\tilde{P}%
+% }))|^{1+\delta }\right] ~\overset{(1)}{\leq }~(2n)^{1+\delta }\sum_{l=1}^{n}E%
+% \big[|\tfrac{V_{(2),l}-b_{K}}{a_{K}}|^{1+\delta }|\lg (\tilde{U}(\mathbf{%
+% \tilde{P}}))|^{1+\delta }\big]~\overset{(2)}{<}~\infty ,  \label{eq:CI_piK10}
+% \end{equation}%
+% where (1) holds by \eqref{eq:CI_muK9}, and (2) by Assumption (b) and Lemma %
+% \ref{lem:finite_muK2}.
+%
+% Then, as $K\to \infty $, 
+% \begin{equation*}
+% E[\lg (U(\mathbf{P}))/a_{K}]~\overset{(1)}{=}~E[((P_{(n)}-P_{(1)})/a_{K})~%
+% \lg (\tilde{U}(\mathbf{\tilde{P}}))]~\overset{(2)}{\to }%
+% ~E[(Z_{(n)}-Z_{(1)})~\lg (\tilde{U}(\mathbf{\tilde{Z}}))]~\overset{(3)}{=}%
+% ~E_{\xi }[\kappa _{\xi }(\mathbf{\tilde{Z}})~\lg (\tilde{U}(\mathbf{\tilde{Z}%
+% }))],
+% \end{equation*}%
+% as desired, where (1) holds by \eqref{eq:CI_piK_defn}, (2) holds by %
+% \eqref{eq:CI_piK8}, $\lg (\tilde{U}\left( h\right) )\geq 0$ for all $h\in
+% \Sigma $, and \eqref{eq:CI_piK9}, and (3) holds by the LIE.
+\end{proof}
+
+
+
+\begin{proof}[Proof of Theorem \ref{thm:simpleTest}]
+This proof follows from applying \citet[Theorem 1]{muller:2011} based on the convergence result in Lemma \ref{lem:densitySecond}. To apply these results in that paper, we specify the connection between our object and the relevant objects in that paper: the class of DGPs satisfying \eqref{eq:DomainOfAttraction} take the role of $\mathcal{M}$, $K\to \infty$ takes the role of $T\to \infty$, $j=1,\ldots ,n$ the role of $ i=1,\ldots ,n$, $\{ \xi _{0}\} $ the role of $\Theta _{0}$, $ \{ \xi _{1}\} $ the role of $\Theta _{1}$, $\mathbf{{P}}$ the role of $Y_{T}$, $\mathbf{\tilde{P}}$ the role of $X_{T}$, $\Sigma $ the role of $S$, the self-normalizing transformation $\{( P_{j}-P_{( 1) })/( P_{( n) }-P_{( 1) })\}_{j=1}^{N}:\mathbf{P} \to \Sigma$ the role of $h_{T}$, $\mathbf{\tilde{Z}}$ the role of $X$, $\tilde{\varphi}^{\ast }(\mathbf{\tilde{Z}}) \equiv {\varphi}^{\ast }(\mathbf{{Z}}) $ the role of $\varphi _{S}( Y) $, $\varphi _{K}^{\ast }( \mathbf{P}) $ the role of $\hat{\varphi}_{T}^{\ast }( \mathbf{P}) $, $\varphi _{K}( \mathbf{P}) $ the role of $\varphi _{T}(\mathbf{P}) $, and $f_{\mathbf{\tilde{Z}}|\xi _{0}}$ the role of $\mu _{P}$. Moreover, we set $\mathcal{F}_s$ equal to the set with the zero function and $\pi_0=0$, which effectively trivializes \citet[Equations (5)-(6) and (10)-(11)]{muller:2011}.
+
+By definition, $\tilde{\varphi}^{\ast }(\mathbf{\tilde{Z}}):\Sigma \to [ 0,1]$ is a level-$\alpha $ test in the limiting problem, i.e., \eqref{eq:sizeAlpha} holds. According to the Neyman-Pearson Lemma, it maximizes power in the limiting problem. Finally, note that $\tilde{\varphi}^{\ast }$ is continuous except for a set of zero $f_{\mathbf{\tilde{Z}}|\xi _{0}}$-measure. These conditions align with the requirements in \citet[Theorem 1]{muller:2011}, and so our desired results follow immediately from its application.
+%with singleton model $\mathcal{M}$, singleton $\mathcal{F}_s$ only containing the zero function, and $\pi_0=0$.  The second result holds by \cite[part (ii) in Theorem 1]{muller:2011} with the aforementioned $\mathcal{M}$, $\mathcal{F}_s$, and $\pi_0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem \ref{thm:compTest}]
+This proof follows from the same arguments as in Theorem \ref{thm:simpleTest}.
+%with singleton model $\mathcal{M}$, singleton $\mathcal{F}_s$ only containing the zero function, and $\pi_0=0$.  The second result holds by \cite[part (ii) in Theorem 1]{muller2011} with the aforementioned $\mathcal{M}$, $\mathcal{F}_s$, and $\pi_0$.
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%
+\begin{proof}[Proof of Lemma \ref{lem:psiOne}]
+Fix $x>0$ arbitrarily. By $v_H<\infty $ and \citet[Theorem 1.2.1]{dehaan2006book}, it suffices show that 
+\begin{equation*}
+\lim_{t\downarrow 0}\tfrac{1-F_{V}(v_H-tx)}{1-F_{V}(v_H-t)}=x.
+\end{equation*}%
+To this end, consider the following derivation.
+\begin{equation*}
+\lim_{t\downarrow 0}\tfrac{1-F_{V}(v_H-tx)}{1-F_{V}(v_H-t)}%
+~\overset{(1)}{=}~\lim_{t\downarrow 0}\tfrac{xf_{V}(v_H-tx)}{f_{V}(v_H-t)}%
+~\overset{(2)}{=}~x,
+\end{equation*}%
+as desired, where (1) holds by L'H\^{o}pital rule and (2) by $f_{V}( v) \to f_{V}( v_H)>0 $ as $v\uparrow v_H$.
+\end{proof}
+
+
+\begin{proof}[Proof of Lemma \ref{lem:densityFirst}]
+This result follows from Lemma \ref{lem:cts}, Lemma \ref{lem:joint_first}, and the continuous mapping theorem.
+\end{proof}
+
+\subsection{Auxiliary results}\label{sec:appendix-aux}
+
+\begin{lemma}\label{lem:cts}
+For any $n>1$ and for first-price or second-price auctions, 
+\begin{equation*}
+P(P_{(n)}=P_{(1)})~=~0.
+\end{equation*}
+\end{lemma}
+%%%%%%%%%%%%%%%%
+\begin{proof}
+Note that 
+\begin{equation}
+\{ P_{(n)}=P_{(1)}\} ~\overset{(1)}{\subseteq }~\underset{l,m=1,\ldots,n,l\neq  m}{\bigcap}~\underset{i_{l}=1,\ldots ,K_{l},i_{m}=1,\ldots ,K_{m}}{\bigcup}\{V_{i_{l},l}=V_{i_{m},m}\} ,  \label{eq:cts}
+\end{equation}%
+where (1) holds by \eqref{eq:secondprice} and \eqref{eq:bid_first} for second-price and first-price auctions, respectively. Then, 
+\begin{equation*}
+P(P_{(n)}=P_{(1)})~\overset{(1)}{\leq }~\min_{l,m=1,\ldots,n,l\neq m}~\sum_{i_{l}=1,\ldots ,K_{l},i_{m}=1,\ldots ,K_{m}}P(V_{i_{l},l}=V_{i_{m},m}) ~\overset{(2)}{=}~0,
+\end{equation*}%
+as desired, where (1) holds by \eqref{eq:cts} and (2) by the fact that valuations are continuously distributed and $l,m$ refer to different and, thus, independent, auctions.
+\end{proof}
+
+\begin{lemma}\label{lem:finite_muK2}
+Assume \eqref{eq:DomainOfAttraction} holds. For some $\varepsilon>0$ with $(1+\varepsilon)\xi<1$, assume that $E[ |V_{i,j}|^{1+\varepsilon}] <\infty $ for all $i=1\dots,K_j$ in auction $j=1,\dots,N$. Then, $\exists \bar{K} \in \mathbb{N}$ such that for $\delta = \varepsilon/2$ and $K \geq \bar{K}$,
+\begin{align}
+E[ \vert \tfrac{V_{(1),j}-b_{K}}{a_{K}} \vert^{1+\delta} ] ~<~\infty~~~~\text{and}~~~~
+E[ \vert \tfrac{V_{(2),j}-b_{K}}{a_{K}} \vert^{1+\delta} ] ~<~\infty .  \label{eq:integrab0}
+\end{align}
+\end{lemma}
+\begin{proof}
+The first result in \eqref{eq:integrab0} is a corollary of \citet[Theorem 5.3.1]{dehaan2006book}. Thus, we focus the rest of this proof on the second result in \eqref{eq:integrab0}.
+
+It is convenient to introduce the following notation. For any $\tilde{K}\in \mathbb{N} $, let $U({\tilde{K}})$ distributed according to $\max\{V_{i,j}:j=1,\dots,\tilde{K}\}$. For any $x\in [ v_{L},v_{H}] $, the CDF and PDF of $U({\tilde{K}})$ are
+\begin{equation}
+F_{U{(\tilde{K})}}( x) ~=~F_{V}(x) ^{ \tilde{K}}~~~~\text{and}~~~~f_{U({\tilde{K}})}( x) ~=~ \tilde{K}( F_{V}(x)) ^{\tilde{K}-1}f_{V}( x) . \label{eq:integrab1}
+\end{equation}
+
+Conditional on $V_{(1),j}=x\in [ v_{L},v_{H}] $, $V_{(2),j}$ is the highest valuation among the remaining $K_{j}-1$ bidders. Thus, for any $ t\leq x$ with $x,t\in [ v_{L},v_{H}] $, $P( V_{(2),j}\leq t|V_{(1),j}=x) =( F_{V}(t)/F_{V}(x)) ^{K_{j}-1}$. By setting $\tilde{t}=( t-b_{K}) /a_{K}$ and $\tilde{x}=( x-b_{K}) /a_{K}$ for any $x,t\in [ v_{L},v_{H}] $ with $t\leq x$,
+\begin{equation*}
+P\Big( \tfrac{V_{(2),j}-b_{K}}{a_{K}}\leq \tilde{t}\Big|\tfrac{V_{(1),j}-b_{K}}{ a_{K}}=\tilde{x}\Big) ~=~\Big( \tfrac{F_{V}(\tilde{t}a_{K}+b_{K})}{F_{V}( \tilde{x}a_{K}+b_{K})}\Big) ^{K_{j}-1}
+\end{equation*}
+and, so, the conditional PDF is
+\begin{equation}
+f_{\Big(\tfrac{V_{(2),j}-b_{K}}{a_{K}}\Big|\tfrac{V_{(1),j}-b_{K}}{a_{K}}=\tilde{x}\Big)}( \tilde{t})~=~\tfrac{( K_{j}-1) ( F_{V}(\tilde{t} a_{K}+b_{K})) ^{K_{j}-2}f_{V}(\tilde{t}a_{K}+b_{K})a_{K}}{F_{V}( \tilde{x}a_{K}+b_{K}) ^{K_{j}-1}}~=~\tfrac{f_{U(K_{j}-1)}( \tilde{t}a_{K}+b_{K}) a_{K}}{F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) }. \label{eq:integrab2}
+\end{equation}
+For any $x\in [ v_{L},v_{H}] $, we have $P( ({V_{(1),j}-b_{K}})/{a_{K}}\leq \tilde{x}) =( F_{V}( \tilde{x}a_{K}+b_{K})) ^{K_{j}}$ and, so,
+\begin{equation}
+f_{\tfrac{V_{(1),j}-b_{K}}{a_{K}}}( \tilde{x}) ~=~K_{j}( F_{V}( \tilde{x}a_{K}+b_{K})) ^{K_{j}-1}f_{V}(\tilde{x} a_{K}+b_{K})a_{K}~=~f_{U(K_{j})}( \tilde{x} a_{K}+b_{K}) a_{K}. \label{eq:integrab3}
+\end{equation}
+
+Consider the following derivation:
+\begin{align}
+&E\big[ \big\vert \tfrac{V_{(2),j}-b_{K}}{a_{K}}\big\vert ^{1+\delta } \big] \notag\\
+&=~E\big[  E\big[ \big\vert \tfrac{V_{(2),j}-b_{K}}{a_{K}} \big\vert ^{1+\delta }\big\vert \tfrac{V_{(1),j}-b_{K}}{a_{K}}\big] \big] \notag\\
+%& ~=~\int_{\tilde{x}=\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tilde{x}=\tfrac{v_{H}-b_{K}}{ a_{K}}}\bigg( \int_{\tilde{t}=\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tilde{t}=\tilde{x} }\vert \tilde{t}\vert ^{1+\delta }f_{\Big(\tfrac{V_{(2),j}-b_{K}}{a_{K}}\Big|\tfrac{V_{(1),j}-b_{K}}{a_{K}}=\tilde{x}\Big)}(\tilde{t})d\tilde{t} \bigg) f_{ \tfrac{V_{(1),j}-b_{K}}{a_{K}}}( \tilde{x}) d\tilde{x} \nonumber \\
+& \overset{(1)}{=}~\int_{\tilde{x}=\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tilde{x}= \tfrac{v_{H}-b_{K}}{a_{K}}}\Big( \int_{\tilde{t}=\tfrac{v_{L}-b_{K}}{a_{K}}}^{ \tilde{t}=\tilde{x}}\vert \tilde{t}\vert ^{1+\delta }\tfrac{ f_{U(K_{j}-1)}( \tilde{t}a_{K}+b_{K}) a_{K}}{ F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) }d\tilde{t }\Big) f_{U(K_{j})}( \tilde{x}a_{K}+b_{K}) a_{K}d\tilde{x} \nonumber \\
+& \overset{(2)}{=}~
+%\int_{\tilde{x}=\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tilde{x}= \tfrac{v_{H}-b_{K}}{a_{K}}}\Big( \int_{t=v_{L}}^{t=\tilde{x} a_{K}+b_{K}}\big\vert \tfrac{t-b_{K}}{a_{K}}\big\vert ^{1+\delta }\tfrac{ f_{U(K_{j}-1)}( t) }{F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) }dt\Big) f_{U(K_{j})}( \tilde{x}a_{K}+b_{K}) a_{K}d\tilde{x} \nonumber \\
+%&=~
+\int_{\tilde{x}=\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tilde{x}=\tfrac{v_{H}-b_{K}}{ a_{K}}}\Big( E\big[ \big\vert \tfrac{U(K_{j}-1)-b_{K}}{ a_{K}}\big\vert ^{1+\delta }1[ U(K_{j}-1)\leq \tilde{x}a_{K}+b_{K}] \big] \Big) \tfrac{f_{U(K_{j})}( \tilde{x}a_{K}+b_{K}) }{F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) }a_{K}d\tilde{x}, \label{eq:integrab4}
+\end{align}
+where (1) holds by \eqref{eq:integrab2} and \eqref{eq:integrab3} and (2) by the change of variables $t=\tilde{t}a_{K}+b_{K}$.
+
+For any $p,q>1$ with $1/p+1/q=1$, we have
+\begin{align}
+&E\big[ \big\vert \tfrac{U(K_{j}-1)-b_{K}}{ a_{K}}\big\vert ^{1+\delta }1[ U(K_{j}-1)\leq \tilde{x}a_{K}+b_{K}] \big] \notag \\
+&\overset{(1)}{\leq }~E\big[ \big\vert \tfrac{U(K_{j}-1)-b_{K_{j}-1}}{a_{K_{j}-1}}\tfrac{a_{K_{j}-1}}{a_{K}}+\tfrac{ b_{K_{j}-1}-b_{K}}{a_{K}}\big\vert ^{( 1+\delta ) p}\big] ^{1/p}F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) ^{1/q} \nonumber \\
+&\overset{(2)}{\leq }~
+\Bigg\{\begin{array}{c}
+2^{\tfrac{( 1+\delta ) p-1}{p}}\Big[ E\big[ \big\vert \tfrac{U(K_{j}-1)-b_{K_{j}-1}}{ a_{K_{j}-1}}\big\vert ^{( 1+\delta ) p}\big] \big\vert \tfrac{ a_{K_{j}-1}}{a_{K}}\big\vert ^{( 1+\delta ) p}+\big\vert \tfrac{ b_{K_{j}-1}-b_{K}}{a_{K}}\big\vert ^{( 1+\delta ) p}\Big] ^{1/p}\\
+\times F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) ^{1/q}
+\end{array}\Bigg\}, \label{eq:integrab5}
+\end{align}
+where (1) holds by H\"{o}lder's inequality and (2) by Minkowski's inequality. Next, let $C>2^{{(( 1+\delta ) p-1)}/{p}}[ E( \vert Z_{\xi}\vert ^{( 1+\delta ) p}) ] ^{1/p}$ where $Z_{\xi}$ has CDF $G_{\xi }$, and $p= ( 1+\varepsilon ) /( 1+\delta ) =( 2+2\varepsilon ) /( 2+\varepsilon )>1 $ (since $\delta =\varepsilon /2$). Under these conditions, we have that
+\begin{equation}
+\lim_{K\to \infty }\Big[ E\big[ \big\vert \tfrac{U(K_{j}-1)-b_{K_{j}-1}}{ a_{K_{j}-1}}\big\vert ^{( 1+\delta ) p}\big] \big\vert \tfrac{ a_{K_{j}-1}}{a_{K}}\big\vert ^{( 1+\delta ) p}+\big\vert \tfrac{ b_{K_{j}-1}-b_{K}}{a_{K}}\big\vert ^{( 1+\delta ) p}\Big] ^{1/p}~<~C. \label{eq:integrab6}
+\end{equation}
+This result is a corollary of two observations. First, we note that \eqref{eq:joint_5} implies that $\lim_{K \to \infty}(a_{K_{j}-1}/a_{K},( b_{K_{j}-1}-b_{K}) /a_{K}) = (1,0)$. Second, under $p= ( 1+\varepsilon ) /( 1+\delta )$, $(1+\varepsilon )\xi <1$, and $E[ \vert V_{i,j}\vert ^{1+\varepsilon }] <\infty $,  \citet[Theorem 5.3.1]{dehaan2006book} implies that
+\begin{equation*}
+ \lim_{K \to \infty} E( \vert \tfrac{U(K_{j}-1)-b_{K_{j}-1}}{ a_{K_{j}-1}}\vert ^{( 1+\delta ) p}) ~=~ \lim_{K \to \infty} E( \vert \tfrac{U(K_{j}-1)-b_{K_{j}-1}}{ a_{K_{j}-1}}\vert ^{1+\varepsilon}) ~=~ E[ \vert Z_{\xi}\vert ^{1+\varepsilon }] ~<~\infty .
+\end{equation*}
+Note that \eqref{eq:integrab5} and \eqref{eq:integrab6} imply that $\exists \bar{K}\in \mathbb{N} $ such that for all $K>\bar{K}$,
+\begin{equation}
+E\big[ \big\vert \tfrac{U(K_{j}-1)-b_{K}}{ a_{K}}\big\vert ^{1+\delta }1[ U(K_{j}-1)\leq \tilde{x}a_{K}+b_{K}] \big] ~\leq~ C \times F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) ^{1/q}. \label{eq:integrab7}
+\end{equation}
+
+To complete the proof, consider the following argument for all $K>\max\{\bar{K},2\}$,
+\begin{align*}
+&E[ \vert \tfrac{V_{(2),j}-b_{K}}{a_{K}}\vert ^{1+\delta } ] \notag\\
+&\overset{(1)}{\leq }~C\int_{\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tfrac{ v_{H}-b_{K}}{a_{K}}}F_{U(K_{j}-1)}( \tilde{x} a_{K}+b_{K}) ^{1/q-1}f_{U(K_{j})}( \tilde{x} a_{K}+b_{K}) a_{K}d\tilde{x} \\
+&\overset{(2)}{=}~C\int_{\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tfrac{v_{H}-b_{K}}{a_{K}}}F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K})^{1/q-1}K_{j}( F_{V}(\tilde{x}a_{K}+b_{K})) ^{K_{j}-1}f_{V}( \tilde{x}a_{K}+b_{K}) a_{K}d\tilde{x} \\
+% &=\tfrac{K_{j}}{( K_{j}-1) }C\int_{\tfrac{v_{L}-b_{K}}{a_{K}}}^{ \tfrac{v_{H}-b_{K}}{a_{K}}}F_{U(K_{j}-1)}( \tilde{x} a_{K}+b_{K}) ^{1/q-1}( K_{j}-1) F_{V}(\tilde{x} a_{K}+b_{K})( F_{V}(\tilde{x}a_{K}+b_{K})) ^{K_{j}-2}f_{V}( \tilde{x}a_{K}+b_{K}) a_{K}d\tilde{x} \\
+&\overset{(3)}{\leq }2C\int_{\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tfrac{v_{H}-b_{K}}{ a_{K}}}F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) ^{1/q-1}( K_{j}-1) ( F_{V}(\tilde{x}a_{K}+b_{K})) ^{K_{j}-2}f_{V}( \tilde{x}a_{K}+b_{K}) a_{K}d\tilde{x} \\
+&\overset{(4)}{=}2C\int_{\tfrac{v_{L}-b_{K}}{a_{K}}}^{\tfrac{v_{H}-b_{K}}{ a_{K}}}F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) ^{1/q-1}f_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) a_{K}d\tilde{x} \\
+&\overset{(5)}{=}2C\int_{0}^{1}y^{1/q-1}dy ~=~2C ~<~ \infty,
+\end{align*}
+as desired, where (1) holds by \eqref{eq:integrab4} and \eqref{eq:integrab7}, (2) and (4) by \eqref{eq:integrab1}, (3) by $F_{V}(\tilde{x}a_{K}+b_{K})\leq 1$ and $K_{j}\geq K \geq 2$, and (5) by the change of variables $y=F_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) $.
+%and so $ dy=f_{U(K_{j}-1)}( \tilde{x}a_{K}+b_{K}) a_{K}d \tilde{x}$.
+\end{proof}
+
+\begin{lemma}\label{lem:interval1}
+For any $h\in \Sigma $, assume that
+\begin{equation}
+\Big\{ y\in \mathbb{R}:\int_{\Xi }\kappa _{\xi }(h)f_{\tilde{\mathbf{Z}} |\xi }(h)dW(\xi )\leq \int_{\Xi }f_{(Y_{\mu },\tilde{\mathbf{Z}})|\xi }(y,h)d\Lambda (\xi )\Big\}~ =~[ A( h) ,B( h)] ,
+\label{eq:interval1}
+\end{equation}
+where $B( h) -A( h) :\Sigma \to \mathbb{R} _{+}$ is continuous. Then,
+\begin{equation*}
+\tilde{U}( h) ~=~\Big\{ y\in \mathbb{R}:\int_{\Xi }\kappa _{\xi }(h)f_{\tilde{\mathbf{Z}}|\xi }(h)dW(\xi )\leq \int_{\Xi }f_{(Y_{\mu }, \tilde{\mathbf{Z}})|\xi }(y,h)d\Lambda (\xi )\Big\} .
+\end{equation*}
+\end{lemma}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{proof}
+It suffices to show that $[ A( h) ,B( h) ] $ satisfies conditions (a)-(c) of Theorem \ref{thm:CI_K}.
+
+\underline{Part (a)}. Consider the following derivation.
+\begin{align*}
+P( \partial \{(y,h)\in \mathbb{R}\times \Sigma :y\in \tilde{U} (h)\}) &~\overset{(1)}{\leq} ~
+% ~P( ( Y_{\mu },\tilde{\mathbf{Z}}) \in \{ (A( h) ,h),(B( h) ,h):h\in \Sigma \} ) \\&~\leq~ 
+\int  P_{\xi }( Y_{\mu } \in \{A( h),B(h)\} \vert \mathbf{\tilde{Z}}=h) f_{\tilde{\mathbf{Z}}|\xi }(h)dh ~\overset{(2)}{=}~0,
+\end{align*}
+where (1) holds by \eqref{eq:interval1}, which implies that $\partial \{(y,h) \in \mathbb{R}\times \Sigma :y\in \tilde{U}(h)\}
+%~=~\partial \{(y,h)\in \mathbb{R}\times \Sigma :y\in [ A( h) ,B( h) ] \} 
+~\subseteq~ \{ (A( h) ,h),(B( h) ,h):h\in \Sigma\}$, and (2) because $\{ Y_{\mu }|\mathbf{ \tilde{Z}}=h;\xi \} $ is continuously distributed.
+
+\underline{Part (b)}. Fix $h\in \Sigma $ arbitrarily. Since 
+\begin{equation*}
+\lim_{\vert y\vert \to \infty }\int_{\Xi }f_{(Y_{\mu },\tilde{\mathbf{Z}} )|\xi }(y,h)d\Lambda (\xi )=0<\int_{\Xi }\kappa _{\xi }(h)f_{\tilde{\mathbf{Z }}|\xi }(h)dW(\xi ), 
+\end{equation*}
+$\exists y( h) \in ( 0,\infty ) $ such that  $\max \{ \vert B( h) \vert ,\vert A( h) \vert \} \leq y( h) $ for all $ \vert y\vert >y( h) $. Then, $[ A( h) ,B( h) ] \subseteq [ -y( h) ,y( h) ] ,$ and so $\lg ([ A( h) ,B( h) ] )\leq 2y( h) <\infty $.
+
+\underline{Part (c)}. Under \eqref{eq:interval1}, $\lg ([ A( h) ,B( h) ] )=B( h) -A( h) $ which is assumed continuous.
+\end{proof}
+
+\begin{lemma}\label{lem:sp-surplus}
+Assume that $\xi<1$. Let $Z_1 = H_{\xi} (E_{1}) $ and $Z_2=H_{\xi }( E_{1}+E_{2}) $ with $E_{1},E_{2}$ i.i.d.\ standard exponential random variables and $H_{\xi }$ as in \eqref{eq:H_function}. Then,
+\begin{equation*}
+    E[Z_1 - Z_2] ~=~\Gamma (1-\xi ),
+\end{equation*}
+where $\Gamma$ is the standard Gamma function.
+\end{lemma}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{proof}
+The support of $(Z_{1},Z_{2})$ is $S_{\xi }=\{(x_{1},x_{2}):x_{1}\geq x_{2},~\xi x_{1}\geq -1,~\xi x_{2}\geq -1\}$. For any $(x_{1},x_{2}) \in S_{\xi}$, the PDF of $(Z_{1},Z_{2})$ is 
+\begin{equation*}
+f_{Z_{1},Z_{2}|\xi }(x_{1},x_{2})~=~
+%1[(x_{1},x_{2})\in S_{\xi }]\times
+\left\{ 
+\begin{array}{lc}
+(1+\xi x_{1})^{-1/\xi -1}(1+\xi x_{2})^{-1/\xi -1}\exp ( -( 1+\xi x_{2}) ^{-1/\xi })  & \text{if }\xi \neq 0, \\ 
+\exp({-x_{1}})\exp({-x_{2}})\exp({-\exp({-x_{2})})} & \text{if }\xi =0,%
+\end{array}%
+\right. 
+%\label{eq:JointPDF12}
+\end{equation*}%
+The desired result follows from this formula. We only show the result for $\xi <0$, as the result for the other two cases is analogous. 
+\begin{align*}
+&E[ Z_{1}-Z_{2}] \\
+&=~\int_{-\infty }^{-1/\xi}\int_{x_{2}}^{-1/\xi }( x_{1}-x_{2}) (1+\xi x_{1})^{-1/\xi-1}(1+\xi x_{2})^{-1/\xi -1}\exp ( -( 1+\xi x_{2}) ^{-1/\xi}) dx_{1}dx_{2} \\
+&\overset{(1)}{=}~\frac{1}{\xi ^{3}}\int_{\infty }^{0}\int_{t_{2}}^{0}(t_{1}-t_{2}) t_{1}^{-1/\xi -1}t_{2}^{-1/\xi -1}\exp (-t_{2}^{-1/\xi }) dt_{1}dt_{2} \\
+%&=\frac{1}{\xi ^{3}}\int_{\infty }^{0}\left( \left\vert \frac{t_{1}^{-1/\xi+1}}{-1/\xi +1}-t_{2}\frac{t_{1}^{-1/\xi }}{-1/\xi }\right\vert_{t_{2}}^{0}\right) t_{2}^{-1/\xi -1}\exp \left( -t_{2}^{-1/\xi }\right)dt_{2} \\
+%&=\frac{-1}{\xi ^{3}}\int_{\infty }^{0}\left( \frac{t_{2}^{-1/\xi +1}}{-1/\xi +1}-t_{2}\frac{t_{2}^{-1/\xi }}{-1/\xi }\right) t_{2}^{-1/\xi -1}\exp\left( -t_{2}^{-1/\xi }\right) dt_{2} \\
+%&=\frac{-1}{\xi ^{3}}\int_{\infty }^{0}\left( \frac{1}{-1/\xi +1}-\frac{1}{-1/\xi }\right) t_{2}^{-1/\xi +1}t_{2}^{-1/\xi -1}\exp \left( -t_{2}^{-1/\xi}\right) dt_{2} \\
+%&=\int_{\infty }^{0}\left( \frac{1}{\xi \left( 1-\xi \right) }\right)t_{2}^{-2/\xi }\exp \left( -t_{2}^{-1/\xi }\right) dt_{2} \\
+&\overset{(2)}{=}~\int_{0}^{\infty }( \frac{1}{( 1-\xi ) }) \exp ( -v) v^{-\xi +1}dv \\
+%&=\left( \frac{1}{\left( 1-\xi \right) }\right) \int_{0}^{\infty }\exp\left( -v\right) v^{1-\xi }dv \\
+%&=\left( \frac{1}{\left( 1-\xi \right) }\right) \Gamma \left( 2-\xi \right) \\
+&\overset{(3)}{=}~\Gamma ( 1-\xi ) ,
+\end{align*}%
+as desired, where (1) holds by the change of variables $t_{1}=1+\xi x_{1}$ and $t_{2}=1+\xi x_{2}$, (2) by the change of variables $v=t_{2}^{-1/\xi }$, and (3) by $( 1-\xi ) \Gamma ( 1-\xi ) =\Gamma ( 2-\xi ) $.
+% %%FOR OUR RECORDS:
+% When $\xi >0$, we have that 
+% \begin{align*}
+%  E\left[ Z_{1}-Z_{2}\right] 
+% \overset{(1)}{=}~& \xi ^{-3}\int_{0}^{\infty }\int_{t_{2}}^{\infty }\left(t_{1}-t_{2}\right) t_{1}^{-1/\xi -1}t_{2}^{-1/\xi -1}e^{-t_{2}^{-1/\xi}}dt_{1}dt_{2} \\
+% \overset{(2)}{=}~& \frac{1}{\xi \left( 1-\xi \right) }\int_{0}^{\infty }t_{2}^{-2/\xi }e^{-t_{2}^{-1/\xi} }dt_{2} \\
+% \overset{(3)}{=}~&\frac{1}{\xi \left( 1-\xi \right) }\int_{0}^{\infty}v^{1-\xi } e^{-v}dv \\
+% \overset{(4)}{=}~&\frac{\Gamma \left( 2-\xi \right) }{\xi \left( 1-\xi\right) }\overset{(5)}{=}\Gamma \left( 1-\xi \right) ,
+% \end{align*}
+% where (1) is from the change of variables $t_{1}=1+\xi x_{1}$ and $t_{2}=1+\xi x_{2}$, (2) is by direct calculation, (3) is by the change of variable $v=t_{2}^{-\xi }$, (4)
+% is by the definition of $\Gamma(z)$, and (5) is by $\Gamma \left( 1+z\right) =z\Gamma \left(z\right) $.
+% The proof for $\xi<0$ is very similar and hence omitted. 
+% When $\xi =0$, we have that
+% \begin{align*}
+% E\left[ Z_{1}-Z_{2}\right] 
+% =&\int_{-\infty }^{\infty }\int_{t_{2}}^{\infty }\left( t_{1}-t_{2}\right)e^{-t_{1}}e^{-t_{2}}e^{-e^{-t_{2}}}dt_{1}dt_{2} \\
+% \overset{(1)}{=}~&\int_{0}^{\infty }e^{-2t_{2}}e^{-e^{-t_{2}}}dt_{2} \\
+% \overset{(2)}{=}~&\int_{0}^{\infty }ve^{-v}dv=\Gamma \left( 2\right) =\Gamma \left(1\right),
+% \end{align*}
+% where (1) is by direct calculation and (2) is by the change of variable $v=e^{-t_2}$. 
+\end{proof}
+
+\begin{lemma}\label{lem:sp-revenue}
+Assume that $\xi<1$. Let $Z=H_{\xi }( E_{1}+E_{2}) $ with $E_{1},E_{2}$ i.i.d.\ standard exponential random variables and $H_{\xi }$ as in \eqref{eq:H_function}. Then, 
+\begin{equation*}
+    E[ Z] ~=~\bigg\{ 
+\begin{array}{ll}
+(\Gamma (2-\xi )-1)/\xi  & \text{if }\xi \not=0 \\ 
+\bar{\gamma}-1 & \text{if }\xi =0
+\end{array}
+\end{equation*}
+where $\Gamma $ is the Gamma function and $\bar{\gamma}\approx 0.577$ is the Euler constant.
+\end{lemma}
+%%%%
+\begin{proof}
+Note that the PDF of $Z$ is
+\begin{equation*}
+f_{Z|\xi}( z)~=~\bigg\{ 
+\begin{array}{ll}
+( 1+\xi z) ^{-{(2+\xi) }/{\xi }}\exp ( -( 1+\xi z) ^{-1/\xi }) 1[ 1+\xi z\geq 0]  & \text{if }\xi \neq 0 \\ 
+\exp ( -2z) \exp ( -\exp ( -z) )  & \text{if }\xi =0.
+\end{array}
+\end{equation*}
+We only show the result for $\xi  \not=0$, as the result for $\xi =0$ is analogous.
+\begin{align*}
+E[ Z]  &~=~\int_{-\infty }^{\infty }z( 1+\xi z) ^{-\tfrac{2+\xi }{\xi }}\exp ( -( 1+\xi z) ^{-1/\xi }) 1[ 1+\xi z\geq 0] dz \\
+%&\overset{(1)}{=}( \int_{0}^{\infty }( u^{-\tfrac{2}{\xi }}-u^{-\tfrac{2}{\xi }-1}) \exp ( -u^{-1/\xi }) du) /\xi \vert \xi \vert  \\
+&~\overset{(1)}{=}~\big( \int_{0}^{\infty }( t^{1-\xi }-t) \exp ( -t) dt\big) /\xi  \\
+%&~=~\big( \Gamma ( 2-\xi ) \int_{0}^{\infty }\tfrac{t^{2-\xi -1}\exp ( -t) }{\Gamma ( 2-\xi ) }dt-\Gamma ( 2) \int_{0}^{\infty }\tfrac{t^{2-1}\exp ( -t) }{\Gamma ( 2) }dt\big) /\xi  \\
+&~\overset{(2)}{=}~( \Gamma ( 2-\xi ) -1) /\xi ,
+\end{align*}
+where (1) holds by the change of variables $u=( 1+\xi z) ^{-1/\xi }$ and (2) by $\Gamma(0)=1$. 
+%We can also derive the result for $\xi =0$ by taking limits to the previous result.%, applying L'H\^{o}pital rule, and using properties of the standard Gamma function.
+%, the result follows from taking limits based on the result with $\xi \not=0$, L'H\^{o}pital rule, and properties of the standard Gamma function.
+\end{proof}
+
+
+% EXTENDED continuous mapping theorem VDV THOREM 1.11.1 PAGE 67.
+% \textcolor{magenta}{WE HAD ONE LEMMA WITH LABEL THAT WAS NEVER USED!!! WE CITE AN EQUATION ON THAT LEMMA \eqref{eq:LKdefn}, BUT NOT THE RESULT ITSELF!!}
+ \begin{lemma}\label{lem:integralConv}
+ Assume \eqref{eq:DomainOfAttraction} holds. Also, assume that $\xi<1$ and $E[|V|^{1+\varepsilon}]<\infty$ for some $\varepsilon>0$. For any sequence $\{ x_{K}:K\in \mathbb{N} \} $ with $x_{K}\to x\in \bar{S}_{\xi} \equiv \{ s:G_{\xi }(s) >0\} $, $\lim_{K \to \infty} L_{K}( x_{K}) = L( x)$, where
+ %the sequence of functions $\{L_{K}:K\in \mathbb{N}\}$ and the function $L$ are defined as follows
+ \begin{align}
+ L_{K}( x) ~\equiv~ x - \tfrac{\int_{{(v_L-b_K)/a_K} }^{x}{F_{V}(ha_{K}+b_{K})^{K}}dh}{F_{V}( xa_{K}+b_{K}) ^{K}}~~~\text{and}~~~L( x) ~\equiv~ x -\tfrac{\int_{-\infty }^{x}G_{\xi }(h) dh}{G_{\xi }( x) }.\label{eq:LKdefn}
+\end{align}
+\end{lemma}
+%%%%%%%
+\begin{proof}
+Throughout this proof, it is relevant to note that ${F_{V}(ha_{K}+b_{K})^{K}}$ is the CDF of $(V_{(1)}-b_{K})/a_{K}$ and $G_{\xi }$ is the CDF of $H_{\xi }(E_{1})$, where $V_{(1)}$ denotes the sample maximum of $K$ random draws from $F_{V}$, $H_{\xi }$ and $E_{1}$ are as in Lemma \ref{lem:joint}. 
+
+As a preliminary step, we show that for any $x\in \mathbb{R}$, 
+\begin{equation}
+\lim_{K \to \infty} \int_{-\infty }^{x}({F_{V}(ha_{K}+b_{K})^{K}}-G_{\xi }(h))dh~= ~0 .  \label{eq:L0}
+\end{equation}
+To this end, consider the following argument for any $K$.
+\begin{align}
+&\int_{-\infty }^{x}({F_{V}(ha_{K}+b_{K})^{K}}-G_{\xi }(h))dh~  \notag \\
+&\overset{(1)}{=} 
+\bigg[\begin{array}{c}
+x({F_{V}(xa_{K}+b_{K})^{K}}-G_{\xi }(x))+\\
+{{E[H_{\xi }(E_{1})1}[ {H_{\xi }(E_{1})\leq x}] ]}-{{E[\tfrac{V_{(1)}-b_{K}}{a_{K}}1}[\tfrac{V_{(1)}-b_{K}}{a_{K}}\leq x] ]}
+\end{array}\bigg].  \label{eq:L2}
+\end{align}%
+where (1) holds by $\lim_{h \to -\infty}{F_{V}(ha_{K}+b_{K})^{K}}=\lim_{h \to -\infty}G_{\xi }(h)=0$ and integration by parts.
+
+Lemma \ref{lem:joint} implies that as $K\to \infty $, 
+\begin{equation}
+\tfrac{{V_{(1)}-b_{K}}}{{a_{K}}}~\overset{d}{\to }~H_{\xi }(E_{1}).
+\label{eq:L2p2}
+\end{equation}
+Since $H_{\xi }(E_{1})$ is continuously distributed, \eqref{eq:L2p2} implies that
+\begin{equation}
+\lim_{K\to \infty }x({F_{V}(xa_{K}+b_{K})^{K}}-G_{\xi }(x))=0
+\label{eq:L2p3}
+\end{equation}
+Also, note that \eqref{eq:L2p2} and the continuous mapping theorem imply that as $K\to \infty $, 
+\begin{equation}
+{\tfrac{V_{(1)}-b_{K}}{a_{K}}1}[ \tfrac{V_{(1)}-b_{K}}{a_{K}}\leq x] ~\overset{d}{\to }~{H_{\xi }(E_{1})1}[ {H_{\xi
+}(E_{1})\leq x}] .  \label{eq:L2p5}
+\end{equation}
+Let $\delta >0$ and $\bar{K}\in \mathbb{N}$ be as in Lemma \ref{lem:finite_muK2}. Then, for all $K\geq \bar{K}$, 
+\begin{equation}
+E[|{\tfrac{V_{(1)}-b_{K}}{a_{K}}1}[ \tfrac{V_{(1)}-b_{K}}{a_{K}}\leq x] |^{1+\delta }]~\leq ~E[|\tfrac{{V_{(1)}-b_{K}}}{{a_{K}}}|^{1+\delta }]~<~\infty .  \label{eq:L2p8}
+\end{equation}
+Then, \eqref{eq:L2p5} and \eqref{eq:L2p8} imply that 
+\begin{equation}
+\lim_{K\to \infty }{E[\tfrac{V_{(1)}-b_{K}}{a_{K}}1}[ \tfrac{V_{(1)}-b_{K}}{a_{K}}\leq x]] ~=~{E[H_{\xi }(E_{1})1}[ {H_{\xi}(E_{1})\leq x}]].  \label{eq:L3}
+\end{equation}
+Finally, note that \eqref{eq:L0} follows from \eqref{eq:L2}, \eqref{eq:L2p3}, and \eqref{eq:L3}.
+
+As a second preliminary step, we note that
+\begin{equation}
+\int_{-\infty }^{x}G_{\xi }(h) dh~ \overset{(1)}{=}~
+xG_{\xi }( x) -\int_{-\infty }^{x}hg_{\xi }(h) dh~\leq~ xG_{\xi }( x) +E[ \vert H_{\xi }(E_{1})\vert ] ~ \overset{(2)}{<}~\infty ,
+\label{eq:L4}
+\end{equation}
+where (1) holds by integration by parts and $\lim_{x\to -\infty }xG_{\xi }( x) =0$, and (2) by $\xi <1$.
+
+We are now ready to show the desired results. For any $x\in \bar{S}_{\xi}$, consider the following argument:
+\begin{align}
+\vert L_{K}( x_{K}) -L( x) \vert 
+%~&=~\bigg\vert \tfrac{\int_{{(v_L-b_K)/a_K} }^{x_{K}}{F_{V}(ha_{K}+b_{K})^{K}}dh}{ F_{V}( x_{K}a_{K}+b_{K}) ^{K}}-\tfrac{\int_{-\infty }^{x}G_{\xi }(h) dh}{G_{\xi }( x) }\bigg\vert \notag \\
+&\overset{(1)}{=}~\bigg\vert \tfrac{\int_{-\infty }^{x_{K}}{F_{V}(ha_{K}+b_{K})^{K}}dh}{ F_{V}( x_{K}a_{K}+b_{K}) ^{K}}-\tfrac{\int_{-\infty }^{x}G_{\xi }(h) dh}{G_{\xi }( x) }\bigg\vert \notag \\
+% &=~\tfrac{\vert 
+% \begin{array}{c}
+% G_{\xi }( x) ( \int_{-\infty }^{x_{K}}{ F_{V}(ha_{K}+b_{K})^{K}}dh-\int_{-\infty }^{x}{F_{V}(ha_{K}+b_{K})^{K}} dh) \\
+% G_{\xi }( x) ( \int_{-\infty }^{x}{F_{V}(ha_{K}+b_{K})^{K}} dh-\int_{-\infty }^{x}G_{\xi }(h) dh) \\
+% -( \int_{-\infty }^{x}G_{\xi }(h) dh) ( F_{V}( x_{K}a_{K}+b_{K}) ^{K}-G_{\xi }( x_{K}) ) \\
+% -( \int_{-\infty }^{x}G_{\xi }(h) dh) ( G_{\xi }( x_{K}) -G_{\xi }( x) )
+% \end{array}
+% \vert }{G_{\xi }( x) [ ( F_{V}( x_{K}a_{K}+b_{K}) ^{K}-G_{\xi }( x_{K}) ) +( G_{\xi }( x_{K}) -G_{\xi }( x) ) +G_{\xi }( x) ] } \nonumber \\
+%&\overset{(1)}{\leq}\tfrac{\vert 
+%\begin{array}{c}
+%G_{\xi }( x) \vert x_{K}-x\vert \sup_{y\in \mathbb{R}}{F_{V}(ya_{K}+b_{K})^{K}} \\ 
+%+G_{\xi }( x) \vert \int_{-\infty }^{x}( {%
+%F_{V}(ha_{K}+b_{K})^{K}}dh-G_{\xi }(h) ) dh\vert  \\ 
+%+( \int_{-\infty }^{x}G_{\xi }(h) dh) \sup_{y\in \mathbb{R}
+%}\vert F_{V}( ya_{K}+b_{K}) ^{K}-G_{\xi }( y)
+%\vert  \\ 
+%+( \int_{-\infty }^{x}G_{\xi }(h) dh) \vertG_{\xi }( x_{K}) -G_{\xi }( x) \vert \end{array}%
+%\vert }{G_{\xi }( x) -\sup_{y\in \mathbb{R}}\vert F_{V}( ya_{K}+b_{K}) ^{K}-G_{\xi }( y)\vert -\vert G_{\xi }( x_{K}) -G_{\xi }( x)\vert },\label{eq:L5}
+&\overset{(2)}{\leq}~\tfrac{\Bigg\vert 
+\begin{array}{c}
+ \vert x_{K}-x\vert +\vert \int_{-\infty }^{x}( {F_{V}(ha_{K}+b_{K})^{K}}-G_{\xi }(h) ) dh\vert  \\ 
++( \int_{-\infty }^{x}G_{\xi }(h) dh) \sup_{y\in \mathbb{R}}\vert F_{V}( ya_{K}+b_{K}) ^{K}-G_{\xi }( y)\vert  \\ 
++( \int_{-\infty }^{x}G_{\xi }(h) dh) \vert G_{\xi }( x_{K})-G_{\xi }( x) \vert 
+\end{array}
+\Bigg\vert }{
+G_{\xi }( x)[ G_{\xi }( x)-\sup_{y\in \mathbb{R}}\vert F_{V}( ya_{K}+b_{K}) ^{K}-G_{\xi }( y)\vert -\vert G_{\xi }( x_{K}) -G_{\xi }( x)\vert] },\label{eq:L5}
+\end{align}
+where (1) holds because $F_V(v)=0$ for $v<v_L$, 
+%or, equivalently, $F_V(h a_K + b_K)=0$ for $h<(v_L-b_K)/a_K$, 
+and (2) by $\sup_{y\in \mathbb{R} }{F_{V}(ya_{K}+b_{K})^{K}\leq 1}$ and $G_{\xi }( x) \leq 1$. As $K\to \infty$, we can show that the numerator and the denominator of the right-hand side of \eqref{eq:L5} converge to zero and $G_{\xi }( x)^2 >0$, respectively. This conclusion relies on $x \in \bar{S}_{\xi}$ (and so $G_{\xi }( x)^2 >0$), $x_{K}\to x\in \bar{S}_{\xi}$ as $K\to \infty$, the continuity of $G_{\xi }$, \eqref{eq:L0}, \eqref{eq:L4}, and \citet[Lemma 2.11]{vandervaart:1998}. %Lemma \ref{lem:uniform}. 
+From this and \eqref{eq:L5}, the desired result follows.
+\end{proof}
+
+\begin{lemma}\label{lem:joint_first}
+Assume \eqref{eq:DomainOfAttraction} holds. Assume that $\xi<1$ and that $E[ |V_{i,j}|^{1+\varepsilon}] <\infty $ for all $i=1\dots,K_j$ in auction $j=1,\dots,N$ for some $\varepsilon >0$. For any $n\in \mathbb{N}$ and as $K\to \infty$,
+\begin{equation*}
+\big\{\tfrac{P_{j}-b_{K}}{a_{K}}:j=1,\dots,n\big\}~\overset{d}{\to }~\big\{H_{\xi }( E_{1,j}) -\tfrac{ \int_{-\infty}^{H_{\xi }( E_{1,j})} G_{\xi }(h) dh }{G_{\xi }( H_{\xi }( E_{1,j}))} :j=1,\dots,n\big\} ,
+\end{equation*}
+with $\{(a_{K},b_{K}) \in \mathbb{R}_{++} \times \mathbb{R} :K \in \mathbb{N}\}$, $\{E_{1,j}:~j=1,\dots,n\}$, and $H_{\xi}$ as in Lemma \ref{lem:joint}.
+\end{lemma}
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{proof}%[Proof of Lemma \ref{lem:joint_first}]
+Since auctions are independent, it suffices to prove that for any auction $j=1,\ldots n$, as $K\to \infty$,
+\begin{equation}
+\tfrac{P_{j}-b_{K}}{a_{K}}~\overset{d}{\to }~H_{\xi }( E_{1,j}) -\tfrac{\int_{-\infty}^{H_{\xi }( E_{1,j}) }G_{\xi }(h) dh}{G_{\xi }( H_{\xi }( E_{1,j}) ) }, \label{eq:aux1}
+\end{equation}%
+where $E_{1,j}$ is a standard exponential random variable. 
+% For any $x \in \mathbb{R}$, define
+% \begin{align}
+% L_{K}( x) &~\equiv~ x - \tfrac{\int_{{(v_L-b_K)/a_K} }^{x}{F_{V}(ha_{K}+b_{K})^{K}}dh}{F_{V}( xa_{K}+b_{K}) ^{K}}, \notag\\ 
+% L( x) &~\equiv~ x -\tfrac{\int_{-\infty }^{x}G_{\xi }(h) dh}{G_{\xi }( x) }.\label{eq:LKdefn}
+% \end{align}
+To this end, consider the following argument.
+\begin{align}
+\tfrac{P_{j}-b_{K}}{a_{K}}
+%~ &=~\tfrac{P_{j}-b_{K_{j}-1}}{a_{K_{j}-1}}\tfrac{ a_{K_{j}-1}}{a_{K}}+\tfrac{b_{K_{j}-1}-b_{K}}{a_{K}} \notag \\
+&=~\big( \tfrac{V_{(1),j}-b_{K_{j}-1}}{a_{K_{j}-1}}-\tfrac{( \int_{{v_L}}^{V_{(1),j}}{F_{V}(u)^{K_{j}-1}}du) /a_{K_{j}-1}}{ F_{V}(V_{(1),j})^{K_{j}-1}}\big) \tfrac{a_{K_{j}-1}}{a_{K}}+\tfrac{ b_{K_{j}-1}-b_{K}}{a_{K}} \nonumber \\
+%&\overset{(1)}{=}( \tfrac{V_{(1),j}-b_{K_{j}-1}}{a_{K_{j}-1}}-\tfrac{%
+%\int_{\tfrac{-b_{K_{j}-1}}{a_{K_{j}-1}}}^{\tfrac{V_{(1),j}-b_{K_{j}-1}}{%
+%a_{K_{j}-1}}}{F_{V}(ha_{K_{j}-1}+b_{K_{j}-1})^{K_{j}-1}}dh}{F_{V}( 
+%\tfrac{V_{(1),j}-b_{K_{j}-1}}{a_{K_{j}-1}}a_{K_{j}-1}+b_{K_{j}-1})
+%^{K_{j}-1}}) \tfrac{a_{K_{j}-1}}{a_{K}}+\tfrac{b_{K_{j}-1}-b_{K}}{a_{K}}
+%\nonumber \\
+&\overset{(1)}{=}~\big( L_{K_{j}-1}\big( \tfrac{V_{(1),j}-b_{K_{j}-1}}{ a_{K_{j}-1}}\big) \big) \tfrac{a_{K_{j}-1}}{a_{K}}+\tfrac{b_{K_{j}-1}-b_{K} }{a_{K}}, \label{eq:first1}
+\end{align}
+where (1) holds by the change of variables $u=ha_{K_{j}-1}+b_{K_{j}-1} $ and $L_{K}$ as in \eqref{eq:LKdefn}.
+
+Since $( K_{j}-1) /K\to 1$ as $K\to \infty $, the same argument as Lemma \ref{lem:joint} implies that
+\begin{equation}
+\lim_{K \to \infty}\big( \tfrac{a_{K_{j}-1}}{a_{K}},\tfrac{b_{K_{j}-1}-b_{K}}{a_{K}}\big) ~=~ ( 1,0) . \label{eq:first2}
+\end{equation}
+
+Next, notice that Lemma \ref{lem:joint}
+and \eqref{eq:first2} imply that as $K\to \infty$,
+\begin{equation}
+\tfrac{V_{(1),j}-b_{K_{j}-1}}{a_{K_{j}-1}}~=~\tfrac{V_{(1),j}-b_{K}}{a_{K}}\tfrac{ a_{K}}{a_{K_{j}-1}}+\tfrac{b_{K}-b_{K_{j}-1}}{a_{K}}~\overset{d}{\to }~ H_{\xi }( E_{1}). \label{eq:first3}
+\end{equation}
+In addition, $H_{\xi }( E_{1}) \in \bar{S}_{\xi} \equiv \{x \in \mathbb{R} : G_\xi(x)>0 \}$. By \eqref{eq:first3}, Lemma \ref{lem:integralConv}, and the extended continuous mapping theorem \citep[e.g.][Theorem 1.11.1]{vandervaart:1998}, as $K\to \infty$,
+\begin{equation}
+L_{K_{j}-1}\big( \tfrac{V_{(1),j}-b_{K_{j}-1}}{a_{K_{j}-1}}\big)~ \overset{d}{\to }~L( H_{\xi }( E_{1}) ) ~=~O_{p}( 1), \label{eq:first4}
+\end{equation}
+where $L$ is as in \eqref{eq:LKdefn}. Then, \eqref{eq:aux1} follows from \eqref{eq:first1}, \eqref{eq:first2}, and \eqref{eq:first4}.
+\end{proof}
+
+% %NOTE: THE RESULT BELOW IS NO LONGER NEEDED, I INCORPORATED IT INTO THE RELEVANT PROOF.
+% \begin{lemma}\label{lem:finite_muK1}
+% Assume that $E[ |V_{j}|] <\infty $ for $j=1,\dots,n$ and $\xi <1$. Then,
+% \begin{equation}
+% \lim_{K \to\infty }\tfrac{\mu _{K}}{a_{K}}~<~\infty .
+% \label{eq:finite_muK1}
+% \end{equation}
+% \end{lemma}
+% \begin{proof}
+% This result is implied by Lemma \ref{lem:finite_muK2}. 
+% %This result follows from \citet[Proposition 2]{gabaix/laibson/li/li/resnick/deVries:2016} and \citet[Remark 1.1.9]{dehaan2006book} with $b_n=U(n) = \bar{F}^{-1}(1/n)$. 
+% %o get the last equality, recall that \citet[P.5]{dehaan2006book} defines $U$ as the left-continuous inverse of $1/(1-F)$.
+% \end{proof}
+
+% THIS RESULT IS PERFECT BUT WE DO NOT HAVE THE EXPLICIT PROOF OF Proof of Theorem \ref{thm:CI_pi_K}, so we can omit it from the text. It is available, if requested.
+% \begin{lemma}\label{lem:finite_piK1}
+% Assume that $E[ |V_{j}|] <\infty $ for $j=1,\dots,n$ and $\xi <1$. Then,
+% \begin{equation*}
+% \lim_{K \to\infty }\tfrac{\pi _{K}- b_{K}}{a_{K}}<\infty .
+% \end{equation*}
+% \end{lemma}
+% \begin{proof}
+% First, for any $K \in \mathbb{N}$,
+% \begin{equation}
+% \pi _{K}~\overset{(1)}{=}~\tfrac{1}{n}\sum_{j=1}^{n}E[V_{(2),j}] ~\overset{(2)}{\leq}~\tfrac{1}{n}\sum_{j=1}^{n}E[V_{(1),j}],  \label{eq:finite_piK2}
+% \end{equation}
+% where (1) holds by \eqref{eq:seller1} and (2) holds by $E[V_{(2),j}]\leq E[V_{(1),j}]$ for all $j=1,\dots,n$. Second, note that $\xi <1$ and \citet[Theorem 5.3.1]{dehaan2006book} imply that
+% \begin{equation}
+%     \lim_{K\to\infty}\tfrac{E[V_{(1),j}-b_K]}{a_K}~=~E_{\xi}[Z]~<~\infty,
+%     \label{eq:finite_piK3}
+% \end{equation}
+% where $Z$ is a random variable with CDF $G_{\xi }$. The desired result then holds by \eqref{eq:finite_piK2}, \eqref{eq:finite_piK3}, and $\{(a_{K},b_{K}) \in \mathbb{R}_{++} \times \mathbb{R} :K \in \mathbb{N}\}$.
+% \end{proof}
+
+
+
+
+\begin{theorem} \label{thm:CI_K_fp} 
+Assume \eqref{eq:DomainOfAttraction} holds, and that for some $\varepsilon >0$ with $(1+\varepsilon)\xi<1$, $E[|V_{i,j}|^{1+\varepsilon}]<\infty $ for all $i=1\dots,K_j$ in auction $j=1,\dots,N$. Finally, assume that the CI for $\mu _{K}$, $U(\mathbf{P})$, is as in \eqref{eq:CI_muK_defn2_fp} with $\tilde{U}:\Sigma\to \mathcal{P}(\mathbb{R}) $ that satisfies the following conditions:
+\begin{enumerate}[(a)]
+\item $P_{\xi}(\{Y_{\mu },\mathbf{\tilde{X}}\}\in \partial \{(y,h)\in \mathbb{R} \times \Sigma:y\in \tilde{U}(h)\})=0$, where $\partial A$ denotes the boundary of $A$.%, i.e., $\partial A=cl( A) \cap int( A) $.
+\item $\lg (\tilde{U}(h))<\infty $ for any $h\in \Sigma$, where $ \lg (A)$ denotes the length of $A$ (i.e., $\lg (A)\equiv \int \mathbf{1} [y\in A]dy$).
+\item For any sequence $\{h_{\ell}\in \Sigma\}_{\ell\in \mathbb{N}}$ with $ h_{\ell}\to h\in \Sigma$, $\lg (\tilde{U}(h_{\ell}))\to \lg (\tilde{U}(h))$.
+\end{enumerate}
+Then, as $K\to \infty $,
+\begin{enumerate}
+\item $P(\mu _{K}\in U(\mathbf{P}))~\to ~P_{\xi }(Y_{\mu }\in \tilde{ U}(\mathbf{\tilde{X}}))$,
+\item $E[\lg (U(\mathbf{P}))]/a_{K}~\to ~E_{\xi }[\kappa _{\xi }( \mathbf{\tilde{X}})\lg (\tilde{U}(\mathbf{\tilde{X}}))]$.
+\end{enumerate}
+\end{theorem}
+%%%%%
+\begin{proof}
+This proof follows from the same arguments used to prove Theorem \ref{thm:CI_K}. The main difference between the proofs is that we replace $\{(P_j-b_K)/a_K:j=1,\dots,N\}$ with $\{L_{K_j}((V_{(1),j}-b_K)/a_K):j=1,\dots,N\}$ with $L_{K_j}$ as in \eqref{eq:LKdefn} (instead of $\{(V_{(2),j}-b_K)/a_K:j=1,\dots,N\}$ as in second-price auctions). Then, the vectors $\{Z_j:j=1,\dots,n\}$ and $\tilde{\bf Z}=\{\tilde{Z}_{j}:j=1,\dots ,N\}$ are replaced by $\{X_j:j=1,\dots,N\}$ and $\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\}$, as in \eqref{eq:aux_RV} and \eqref{eq:Xtilde}, respectively. With these changes in place, the results follow from repeating the steps used to prove Theorem \ref{thm:CI_K}.
+% %% ROUGH SKETCH OF THE ARGUMETN FOr OUR RECORDS.
+% \underline{Part 1}. By Lemma \ref{lem:joint_first},
+% as $K\to \infty $, 
+% \begin{equation}
+% \big\{\big(\tfrac{V_{(1),j}-P_{j}}{a_{K}},\tfrac{P_{j}-b_{K}}{a_{K}}\big)%
+% :j=1,\ldots ,N\big\}~\overset{d}{\to }~\{(\tfrac{\int_{-\infty
+% }^{H_{\xi }(E_{1,j})}G_{\xi }(h)dh}{G_{\xi }(H_{\xi }(E_{1,j}))},H_{\xi
+% }(E_{1,j})-\tfrac{\int_{-\infty }^{H_{\xi }(E_{1,j})}G_{\xi }(h)dh}{G_{\xi
+% }(H_{\xi }(E_{1,j}))}):j=1,\ldots ,N\}.  \label{eq:fp_CI_muK2}
+% \end{equation}
+%
+% HERE\ WE\ SHOW\ THAT%
+% \begin{equation}
+% E\left[ \left\vert \tfrac{V_{(1),j}-P_{j}}{a_{K}}\right\vert ^{1+\delta }%
+% \right] <\infty .
+% \label{eq:fp_CI_muK2p5}
+% \end{equation}%
+% \textcolor{red}{ARGUEMTN}
+% Given that the \textit{expected} payment of the winner with any valuation $x$ is the same for both second-price and first-price auctions, we can apply the same argument as in the proof of the second-price case. In particular, it suffices to show
+% \begin{equation*}
+% \lim_{K\to \infty }E\left[ \left\vert \frac{P-b_{K-1}}{a_{K-1}}\right\vert ^{1+\delta }\right] <\infty ,
+% \end{equation*}
+% where we again suppress the subscript $l$ for the $l$th auction given independence. 
+% Use the same short-handed notation as in the second-price case $Z_{K}=\frac{V_{(1),K}-b_{K}}{a_{K}}$ and $\tilde{Z}_{K}=\frac{V_{(1),K}-b_{K-1}}{a_{K-1}}$. 
+% Denote $F_{Z_{K-1}}$ as the CDF of $Z_{K-1}$ and $f_{Z_{K-1}}$ its PDF. 
+% Recall the definition that
+% \begin{equation*}
+% \frac{P-b_{K-1}}{a_{K-1}}=L_{K-1}\left( \tilde{Z}_{K}\right),
+% \end{equation*}
+% where
+% \begin{align*}
+% L_{K-1}\left( x\right) = ~&x-\frac{\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}F_{V}\left( a_{K-1}h+b_{K-1}\right) ^{K-1}dh}{F_{V}\left( xa_{K-1}+b_{K-1}\right)^{K-1}} \\
+% =~&x-\frac{\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}F_{Z_{K-1}}(h)dh}{F_{Z_{K-1}}(x)} \\
+% =~&\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}h\frac{f_{Z_{K-1}}(h)}{F_{Z_{K-1}}(x)}dh.
+% \end{align*}
+% By H{\"o}lder's inequality with $p=1+\delta $ and $q=(1+\delta )/\delta $ (note that $1/p+1/q=1$), for any $x$,
+% \begin{align*}
+% \left\vert L_{K-1}\left( x\right) \right\vert =~&\left\vert\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}hf_{Z_{K-1}}(h)^{1/p}\frac{f_{Z_{K-1}}(h)^{1-1/p}}{F_{Z_{K-1}}(z)}dh\right\vert \\
+% \leq ~&\left\vert \int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}h^{p}f_{Z_{K-1}}\left(h\right) dh\right\vert ^{1/p}\left\vert\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}\left( \frac{f_{Z_{K-1}}(h)^{1-1/p}}{F_{Z_{K-1}}(z)}\right) ^{q}dh\right\vert ^{1/q} \\
+% =~&\left( E\left[ Z_{K-1}^{p}1\left[ Z_{K-1}\leq x\right] \right] \right)^{1/p}\left\vert \int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}\frac{f_{Z_{K-1}}(h)}{F_{Z_{K-1}}(x)^{q}}dh\right\vert ^{1/q} \\
+% =~&\left( E\left[ Z_{K-1}^{p}1\left[ Z_{K-1}\leq x\right] \right] \right)^{1/p}\left\vert F_{Z_{K-1}}(x)^{1-q}\right\vert ^{1/q} \\
+% =~&\left( E\left[ Z_{K-1}^{(1+\delta )}1\left[ Z_{K-1}\leq x\right] \right] \right) ^{1/(1+\delta )}F_{Z_{K-1}}\left( x\right) ^{-1/(1+\delta )},
+% \end{align*}
+% where the last line is by the definition of $p$ and $q$.
+% Thus
+% \begin{align*}
+% E\left[ L_{K-1}\left( \tilde{Z}_{K}\right) ^{1+\delta }\right] \leq & \int_{(v_{L}-b_{K})/a_{K}}^{\left( v_{H}-b_{K}\right) /a_{K}}E\left[Z_{K-1}^{(1+\delta )}1\left[ Z_{K-1}\leq x\right] \right] \frac{f_{\tilde{Z}_{K}}\left( x\right) }{F_{Z_{K-1}}\left( x\right) }dx \\
+% \overset{(1)}{\leq }&\int_{(v_{L}-b_{K})/a_{K}}^{\left(v_{H}-b_{K}\right) /a_{K}}E\left[ Z_{K-1}^{(1+\delta )}1\left[ Z_{K-1}\leq x\right] \right] \frac{f_{Z_{K-1}}\left( x\right) }{F_{Z_{K-1}}\left(x\right) }dx,
+% \end{align*}
+% where (1) is by (\ref{eq:density K-1}). The rest of the proof is identical to the second-price case.
+% \textcolor{red}{END ARG}
+%
+% By repeating arguments used to prove Lemma \ref{lem:densityFirst},  as $%
+% K\to \infty $,%
+% \begin{equation}
+% \big\{\tfrac{\mu _{K}}{a_{K}},\big\{\big(\tfrac{P_{j}-b_{K}}{a_{K}}\big)%
+% :j=1,\ldots ,N\big\}\big\}~\overset{d}{\to }~\{E[Z_{1,1}-Z_{2,1}],\{X_{j}:j=1,%
+% \ldots ,N\}\},  \label{eq:fp_CI_muK3}
+% \end{equation}%
+% where we have used that $Z_{1,1}-Z_{2,1}\overset{d}{=}Z_{1,j}-Z_{2,j}$ for
+% all $j=1,\ldots ,n$. Define 
+% \begin{equation}
+% R_{K}~\equiv ~\bigg\{%
+% \begin{array}{cc}
+% \tfrac{\mu _{K}}{P_{(n)}-P_{(1)}} & \text{if }P_{(n)}\not=P_{(1)}, \\ 
+% 0 & \text{if }P_{(n)}=P_{(1)}.%
+% \end{array}
+% \label{eq:fp_CI_muK3b}
+% \end{equation}%
+% By \eqref{eq:fp_CI_muK3}, $P(X_{1,1}-X_{2,1}>0)=1$, and the continuous mapping
+% theorem, we have that, as $K\to \infty $, 
+% \begin{equation}
+% \{R_{K},\mathbf{\tilde{P}}\}~\overset{d}{\to }~\{Y_{\mu },\mathbf{%
+% \tilde{X}}\}.  \label{eq:fp_CI_muK4}
+% \end{equation}
+%
+% Next, consider the following derivation. 
+% \begin{align*}
+% P(\mu _{K}\in U(\mathbf{P}))& ~=~P(\{\mu _{K}\in U(\mathbf{P})\}\cap
+% \{P_{(n)}\not=P_{(1)}\})+P(\{\mu _{K}\in U(\mathbf{P})\}\cap
+% \{P_{(n)}=P_{(1)}\}) \\
+% & ~\overset{(1)}{=}~P(\{\mu _{K}\in (P_{(n)}-P_{(1)})\times \tilde{U}(%
+% \mathbf{\tilde{P}})\}\cap \{P_{(n)}\not=P_{(1)}\})+o(1) \\
+% & ~\overset{(2)}{=}~P(\{R_{K}\in \tilde{U}(\mathbf{\tilde{P}})\}\cap
+% \{P_{(n)}\not=P_{(1)}\})+o(1) \\
+% & ~\overset{(3)}{=}~P(R_{K}\in \tilde{U}(\mathbf{\tilde{P}}))+o(1) \\
+% & ~=~P(\{R_{K},\mathbf{\tilde{P}}\}\in \{(y,h)\in \mathbb{R}\times \Sigma
+% :y\in \tilde{U}(h)\})+o(1) \\
+% & ~\overset{(4)}{\to }~P(\{Y_{\mu },\mathbf{\tilde{X}}\}\in
+% \{(y,h)\in \mathbb{R}\times \Sigma :y\in \tilde{U}(h)\}) \\
+% & ~=~P(Y_{\mu }\in \tilde{U}(\mathbf{\tilde{X})}),
+% \end{align*}%
+% as desired, where $o(1)$ vanishes as $K\to \infty $, (1) holds by %
+% \eqref{eq:CI_muK_defn2_fp} and Lemma \ref{lem:cts}, (2) holds because %
+% \eqref{eq:fp_CI_muK3b} implies that $\{\mu _{K}\in (P_{(n)}-P_{(1)})\times 
+% \tilde{U}(\mathbf{\tilde{P}})\}=\{R_{K}\in \tilde{U}(\mathbf{\tilde{P}})\}$
+% under $P_{(n)}\not=P_{(1)}$, (3) by Lemma \ref{lem:cts}, and (4) by %
+% \eqref{eq:fp_CI_muK4}, Assumption (a), and the Portmanteau Theorem.
+%
+% \underline{Part 2}. 
+% By Lemma \ref{lem:joint_first} and Lemma \ref{lem:cts}, and the continuous mapping theorem we have that, as $%
+% K\to \infty $, 
+% \begin{equation}
+% \{{(P_{(n)}-P_{(1)})}/{a_{K}},\mathbf{\tilde{P}}\}~\overset{d}{\to }%
+% ~\{X_{(n)}-X_{(1)},\mathbf{\tilde{X}}\}.  \label{eq:fp_CI_muK7}
+% \end{equation}%
+% By \eqref{eq:fp_CI_muK7}, Assumption (c), and the continuous mapping theorem,
+% as $K\to \infty $, 
+% \begin{equation}
+% {((P_{(n)}-P_{(1)})}/{a_{K}})\times \lg (\tilde{U}(\mathbf{\tilde{P}}))~%
+% \overset{d}{\to }~(X_{(n)}-X_{(1)})\times \lg (\tilde{U}(\mathbf{%
+% \tilde{X}})).  \label{eq:fp_CI_muK8}
+% \end{equation}
+%
+% Let $\delta >0$ and $\bar{K}\in \mathbb{N}$ be as in Lemma \ref{lem:finite_muK2}. 
+% \begin{align}
+% |(P_{(n)}-P_{(1)})/a_K|^{1+\delta }~&\leq
+% ~(\sum_{l,m=1}^{n}|(P_{l}-P_{m})/a_K|^{1+\delta })\\  \label{eq:fp_CI_muK9}
+% \end{align}%
+% where (1) holds by \eqref{eq:price_first} and \eqref{eq:LKdefn}. Then, for all $K>\bar{K}$, 
+% \begin{equation}
+% E\left[ |{((P_{(n)}-P_{(1)})}/{a_{K}})\lg (\tilde{U}(\mathbf{\tilde{P}}%
+% ))|^{1+\delta }\right] ~\overset{(1)}{\leq }~(2n)^{1+\delta }\sum_{l=1}^{n}E%
+% \big[|???|^{1+\delta }|\lg (\tilde{U}(\mathbf{\tilde{P}}))|^{1+\delta }\big]~%
+% \overset{(2)}{<}~\infty ,  \label{eq:fp_CI_muK10}
+% \end{equation}%
+% where (1) holds by \eqref{eq:price_first}, and (2) by Assumption (b), $\lg (%
+% \tilde{U}(h))\geq 0$ for all $h\in \Sigma $, and Lemma \ref{lem:finite_muK2}.
+%
+% Then, as $K\to \infty $, 
+% \begin{align*}
+% E[\lg (U(\mathbf{P}))/a_{K}]~& \overset{(1)}{=}~E[((P_{(n)}-P_{(1)})/a_{K})%
+% \times \lg (\tilde{U}(\mathbf{\tilde{P}}))] \\
+% ~& \overset{(2)}{\to }~E[(X_{(n)}-X_{(1)})\times \lg (\tilde{U}(%
+% \mathbf{\tilde{X}}))] \\
+% ~& =~E_{\xi }[\kappa _{\xi }(\mathbf{\tilde{X}})\times \lg (\tilde{U}(%
+% \mathbf{\tilde{X}}))],
+% \end{align*}%
+% as desired, where (1) holds by \eqref{eq:CI_muK_defn2_fp}, and (2) by %
+% \eqref{eq:fp_CI_muK8} and \eqref{eq:fp_CI_muK10}.
+\end{proof}
+
+\begin{theorem}\label{thm:CI_pi_K_fp}
+Assume \eqref{eq:DomainOfAttraction} holds, and that for some $\varepsilon >0$ with $(1+\varepsilon)\xi<1$, $E[|V_{i,j}|^{1+\varepsilon}]<\infty $ for all $i=1\dots,K_j$ in auction $j=1,\dots,N$. Finally, assume that the CI for $\pi _{K}$, $U(\mathbf{P})$, is as in \eqref{eq:CI_piK_defn2_fp} with $\tilde{U}:\Sigma\to \mathcal{P}(\mathbb{R}) $ that satisfies the following conditions:
+\begin{enumerate}[(a)]
+\item $P_{\xi}(\{Y_{\pi},\mathbf{\tilde{X}}\}\in \partial \{(y,h)\in \mathbb{R} \times \Sigma:y\in \tilde{U}(h)\})=0$, where $\partial A$ denotes the boundary of $A$.
+\item $\lg (\tilde{U}(h))<\infty $ for any $h\in \Sigma$, where $\lg (A)$ denotes the length of $A$.
+\item For any sequence $\{h_{\ell}\in \Sigma\}_{\ell\in \mathbb{N}}$ with $ h_{\ell}\to h\in \Sigma$, $\lg (\tilde{U} (h_{\ell}))\to \lg (\tilde{U}(h))$.
+\end{enumerate}
+Then, as $K\to \infty $,
+\begin{enumerate}
+\item $P(\pi _{K}\in U(\mathbf{P}))~\to ~P_{\xi }(Y_{\pi }\in \tilde{ U}(\mathbf{\tilde{X}}))$,
+\item $E[\lg (U(\mathbf{P}))]/a_{K}~\to ~E_{\xi }[\kappa _{\xi }( \mathbf{\tilde{X}})\lg (\tilde{U}(\mathbf{\tilde{X}}))]$.
+\end{enumerate}
+\end{theorem}
+%%%%%
+\begin{proof}
+This proof follows from the same arguments as in Theorems \ref{thm:CI_K} and \ref{thm:CI_K_fp}.
+\end{proof}
+
+% \begin{theorem}\label{thm:simpleTest_fp}
+% %[Asymptotic properties of \eqref{eq:simpleTest}]
+% Assume \eqref{eq:DomainOfAttraction} holds. In the hypothesis testing problem in \eqref{eq:HT0_fp}, the test defined by \eqref{eq:simpleTest} satisfies the following properties:
+% \begin{enumerate}
+% \item It is asymptotically valid and level $\alpha$, i.e., \eqref{eq:sizeAlpha} holds with equality.
+% \item It is asymptotically efficient.
+% \end{enumerate}
+% \end{theorem}
+
+\begin{theorem}\label{thm:compTest_fp}
+% [Asymptotic properties of \eqref{eq:compTest}]
+Assume \eqref{eq:DomainOfAttraction} holds. In the hypothesis testing problem in \eqref{eq:HT0_fp}, the test defined by \eqref{eq:compTest_fp} satisfies the following properties:
+\begin{enumerate}
+\item It is asymptotically valid and level $\alpha $, i.e., $\lim_{K\to \infty }E_{\xi_0 }[ \varphi _{K}^{\ast }( \mathbf{P}) ] ~= ~\alpha .$
+\item It is asymptotically efficient.
+\end{enumerate}
+\end{theorem}
+%%%%%
+\begin{proof}
+This proof follows from the same arguments as in Theorems \ref{thm:simpleTest} and \ref{thm:compTest}.
+\end{proof}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% I recycle this proof from appendixBackup. This lemma is for optimal reserve price in the extension section  
+%\begin{proof}[Proof of Lemma \ref{lem:sp-rp}] 
+%Recall that we impose $\xi<1$. We divide the rest of the argument depending on the sign of $\xi$. 
+%We introduce the short-hand notation that $H_{1} = H_{\xi}(E_{1,j})$ and $H_{2} = H_{\xi}(E_{1,j}+E_{2,j})$. 
+
+%\underline{Case 1:} $\xi \in (0,1)$. In that case,
+%\begin{align}
+%&  1+\xi \pi( \gamma) \notag \\
+%  & \overset{(1)}{=}( 1+\xi \gamma) \mathbb{P}( H_{2}\leq \gamma\leq H_{1}) +\mathbb{E}[ 1+\xi H_{2}|\gamma\leq H_{2}] \mathbb{P}(\gamma\leq H_{2})+ (1+\xi v_0)\mathbb{P}( H_{1}<\gamma) \notag \\
+% & \overset{(2)}{=}\tilde{\gamma}P( \tilde{H}_{2}\leq \tilde{\gamma}\leq \tilde{H} _{1}) +\mathbb{E}[ \tilde{H}_{2}|\tilde{\gamma}\leq \tilde{H}_{2}] P( \tilde{\gamma}\leq \tilde{H}_{2})+ \tilde{v}_0 \mathbb{P}( \tilde{H}_{1}<\tilde{\gamma} ) \notag \\
+%& \overset{(3)}{=}\exp ( -\tilde{r}^{-1/\xi }) \tilde{r}^{1-1/\xi }+\Gamma ( 2-\xi ) -\Gamma ( 2-\xi ,\tilde{r}^{-1/\xi }) +\tilde{v}_{0}\exp ( -\tilde{r}^{-1/\xi }) \notag \\
+% & \overset{(3)}{=}\exp ( -\tilde{\gamma}^{-1/\xi }) \tilde{\gamma}^{1-1/\xi }+
+% \int_{0}^{\tilde{\gamma}^{-1/\xi }}t^{1-\xi}\exp ( -t) dt
+%\Gamma ( 2-\xi ) -\Gamma ( 2-\xi ,\tilde{r}^{-1/\xi }) 
+% +  \tilde{v}_0\exp ( -\tilde{\gamma}^{-1/\xi }) \notag \\
+% & \overset{(4)}{=}\exp ( -( 1+\xi r) ^{-1/\xi }) ( 1+\xi r) ^{1-1/\xi }+\Gamma ( 2-\xi ) -\Gamma ( 2-\xi ,( 1+\xi r) ^{-1/\xi }) +( 1+\xi v_{0}) \exp ( -( 1+\xi r) ^{-1/\xi }) ,\label{eq:L32_1}
+% & \overset{(4)}{=}\exp ( -( 1+\xi \gamma) ^{-1/\xi }) ( 1+\xi \gamma) ^{1-1/\xi }+
+% \int_{0}^{(1+\xi \gamma)^{-1/\xi }}t^{1-\xi}\exp ( -t) dt+ (1+\xi v_0) \exp ( -( 1+\xi \gamma) ^{-1/\xi }) ,\label{eq:L51_1}
+% \end{align}
+% where (1) holds by definition of $\pi(\gamma) $, (2) holds by using $ \tilde{\gamma}=1+\xi \gamma$, $\tilde{v}_0 = (1+\xi v_0)$ and $\tilde{H}_{j}=1+\xi H_{j}$ for $j=1,2$, (3) holds by computation from \eqref{eq:pdf_e1e2},
+%and uses $ \Gamma ( a,x) \equiv \int_{x}^{\infty }t^{a-1}\exp ( -t) dt$ to denote the incomplete gamma function and $\Gamma ( a) =\Gamma ( a,0) $ to denote the complete gamma function, 
+% and (4) holds by replacing back $\tilde{\gamma}=1+\xi \gamma$. The computation that delivers (3) is greatly simplified by the transformation of the random variables $\tilde{H}_{j}=1+\xi H_{j}$ for $j=1,2$, whose joint and marginal PDFs are
+% \begin{align*}
+% f_{\tilde{H}_{1},\tilde{H}_{2}}( x_{1},x_{2}) &=x_{1}^{-1/\xi -1}x_{2}^{-1/\xi -1}\exp ( -x_{2}^{-1/\xi }) \xi ^{-2}1[ x_{1}\geq x_{2}\geq 0] , \\
+% f_{\tilde{H}_{j}}( x) &=x^{-j/\xi -1}\exp ( -x^{-1/\xi }) \xi ^{-1}1[ x\geq 0] ~~~~~\text{for}~ j=1,2.
+% \end{align*}
+
+% Since $\xi>0$, maximizing $\pi(\gamma)$ is equivalent to maximizing $1+\xi \pi(\gamma)$. The corresponding first and second order conditions imply Lemma \ref{lem:sp-rp}.
+
+
+% \underline{Case 2:} $\xi <0$. Despite the change in sign, an analogous derivation shows that \eqref{eq:L51_1} also holds. Since $\xi<0$, maximizing $\pi(\gamma)$ is equivalent to minimizing $1+\xi \pi(\gamma)$. The corresponding first and second order conditions then imply Lemma \ref{lem:sp-rp}.
+
+% \underline{Case 3:} $\xi =0$. In that case, 
+% \begin{align*}
+% \pi( \gamma) & \overset{(1)}{=}\gamma \mathbb{P}( H_{2}\leq \gamma\leq H_{1}) +\mathbb{E} [ H_{2}|\gamma\leq H_{2}] \mathbb{P}(\gamma\leq H_{2}) \\
+% & \overset{(2)}{=}\gamma\exp ( -\gamma) \exp ( -\exp ( -\gamma) ) +\int_{\gamma}^{\infty }t\exp ( -2t) \exp ( -\exp ( -t) ) dt ,
+% \end{align*}
+% where (1) holds by definition of $\pi( \gamma) $ and (2) holds by computation from \eqref{eq:pdf_e1e2}. From here, the first and second order conditions imply Lemma \ref{lem:sp-rp}. 
+% \end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{Computational details}\label{sec:appendix-computation}
+
+\subsubsection{Second-price auctions}\label{sec:appendix-computation1}
+
+%We begin with expressions that are relevant for second-price auctions in Section \ref{sec:sp}.
+
+This section provides computational details for objects introduced in Section \ref{sec:sp}. Throughout this section, we use $\mathbf{\tilde{z}}=(z_{1},\dots ,z_{N})\in \Sigma $ and $N=n-2$.
+
+First, recall that $f_{\mathbf{\tilde{Z}}|\xi }(\mathbf{\tilde{z}})$ is as computed in \eqref{eq:densitySecond}. 
+For $\mathbf{\tilde{z}} \in \Sigma$, we can compute:
+\begin{equation}
+    \kappa _{\xi }(\tilde{\mathbf{z}})f_{\tilde{\mathbf{Z}}|\xi }(\tilde{\mathbf{
+z}})=n!(\Gamma (2n-\xi ))\int_{0}^{b(\xi )}s^{n-1}\exp \bigg(
+\begin{array}{c}
+(\xi -2n)\log \big(\sum_{j=1}^{n}(1+z_{j}\xi s)^{-1/\xi }\big)\\ -(1+\tfrac{2}{ \xi })\big(\sum_{j=1}^{n}\log (1+z_{j}\xi s)\big)
+\end{array}
+\bigg)ds,
+\label{eq:f_aux1}
+\end{equation}
+where $\kappa _{\xi }(\mathbf{\tilde{z}})=E[Z_{(n)}-Z_{(1)}|\mathbf{\tilde{Z}}=\mathbf{\tilde{z}}]$ and $b(\xi )=-1/\xi $ for $\xi <0$, and $b(\xi )=\infty $ otherwise. For $(y,\mathbf{\tilde{z}}) \in \mathbb{R}_{+} \times \Sigma$, calculations yield:
+\begin{align}
+     &f_{Y_{\mu },\tilde{\mathbf{Z}}|\xi }(y,\tilde{\mathbf{z}})=\notag\\
+     &\tfrac{n!(\Gamma (1-\xi))^{n-1}}{y^{n}}\int_{a_{\mu }(\xi )}^{c_{\mu }(\xi )}\exp \bigg(
+\begin{array}{c}
+-\sum_{j=1}^{n}(1+\xi s+(\Gamma (1-\xi ))\xi {z_{j}}/{y})^{-1/\xi } \\ -(1+\tfrac{2}{\xi })\sum_{j=1}^{n}\log (1+\xi s+(\Gamma (1-\xi ))\xi z_{j}/{y} )
+\end{array}
+\bigg)ds,
+\label{eq:f_aux2}   
+\end{align}
+where 
+%$Y_{\mu }=E[Z_{1,1}-Z_{2,1}]/(Z_{(n)}-Z_{(1)})$, and  
+$a_{\mu }(\xi )$ and $c_{\mu }(\xi )$ are defined such that for all $s\in (a_{\mu }(\xi ),c_{\mu }(\xi ))$, we have $1+\xi s+(\Gamma (1-\xi ))\xi/y>0$ and $1+\xi s>0$. For $(y,\mathbf{\tilde{z}}) \in \mathbb{R} \times \Sigma$, more calculations yield:
+\begin{align}
+    &f_{Y_{\pi },\tilde{\mathbf{Z}}|\xi }(y,\tilde{\mathbf{z}})=\notag\\
+    &\tfrac{n!}{|y|^{n}}\int_{a_{\pi }(\xi )}^{c_{\pi }(\xi )}{|\pi-s|}^{n-1}\exp \bigg(
+\begin{array}{c}
+-\sum_{j=1}^{n}(1+\xi (s+{z_{j}}(\pi -s)/y)^{-1/\xi } \\ 
+-(1+\tfrac{2}{\xi })\sum_{j=1}^{n}\log (1+\xi (s+z_{j}(\pi -s)/y)
+\end{array}
+\bigg)ds,
+\label{eq:f_aux3}
+\end{align}
+where 
+%$Y_{\pi }\equiv E[Z_{2,1}]/(Z_{(n)}-Z_{(1)})$. We can compute:
+$a_{\mu }(\xi )$ and $c_{\mu }(\xi )$ are such that for all $s\in
+(a_{\mu }(\xi ),c_{\mu }(\xi ))$, we have $1+\xi (s+(\pi -s)/y>0$, $1+\xi s>0
+$, and $(\pi -s)/y>0$. The integrals in \eqref{eq:f_aux1}, \eqref{eq:f_aux2}, and \eqref{eq:f_aux3} can be approximated by Gaussian quadrature.
+
+The CI's in Section \ref{sec:sp} require Lagrange multipliers $\Lambda$ that we compute using the algorithm developed by \citet{elliott2015}. See \citet{mullerwang2017} for another application of this algorithm. We now provide a detailed description of how we implemented this algorithm:
+\begin{enumerate}[1)] 
+\item Discretize $\Xi$ into a fine grid $\Xi _{M}\equiv \{\xi _{1},\xi _{2},\ldots ,\xi _{M}\}$ between $\xi _{1} = \inf\{\Xi\}$ and $\xi _{M+1} = \sup\{\Xi\}$ (we use $M = 50$ uniformly located points between $\xi _{1}$ and $\xi _{M+1}$). Set $s=1$, and define an arbitrary set of initial positive weights $\lambda^{(s)} = \{\lambda^{(s)}_{m}:m=1,\dots,M\}$ over $ \Xi _{M}$ (we use a uniform weights, i.e., $\lambda^{(1)} = \{1/M,\ldots ,1/M\}$).
+
+\item For each $m=1,\dots ,M$, simulate a large number $B$ of $n$ i.i.d.\ draws the EV distribution with parameter $\xi _{m}$ (we use $B=10,000$). For each $m=1,\dots ,M$ and $b=1,\dots ,B$, the samples is denoted by $\mathbf{Z} _{\xi _{m}}(b) =\{Z_{\xi _{m},1}(b) ,\dots ,Z_{\xi _{m},n}(b) \}$. By applying \eqref{eq:ZsortedScaled} to each sample, we get $N=n-2$ sorted and normalized draws, denoted by $\tilde{\mathbf{Z}}_{\xi _{m}}(b) =\{\tilde{Z}_{\xi _{m},1}(b) ,\dots ,\tilde{Z}_{\xi _{m},N}(b) \}\in \Sigma $.
+
+\item For each $m=1,\dots ,M$, use the random draws in step 2) to approximate the limiting coverage probabilities for parameter $\xi _{m}$ in the following manner:
+\begin{enumerate}
+\item For the winner's expected utility, we approximate ${P}_{\xi _{m}}({ \Gamma (1-\xi _{m})}/({Z_{(n)}-Z_{(1)}})\in U(\tilde{\mathbf{Z}}))$ with  
+\[
+\mathbb{\hat{P}}_{m}~\equiv ~\tfrac{1}{B}\sum_{b=1}^{B}1\big(\tfrac{\Gamma (1-\xi _{m})}{Z_{\xi _{m},(1)}(b) -Z_{\xi _{m},(n)}( b) }\in U(\tilde{\mathbf{Z}}_{\xi _{m}}(b) )\big),
+\]
+where $\Gamma $ is the standard Gamma function and $U(\tilde{\mathbf{Z}} _{\xi _{m}}(b) )$ is as in \eqref{eq:sol_program2}, involving integrals of \eqref{eq:f_aux1} and \eqref{eq:f_aux2}.
+
+\item For the seller's expected revenue, we approximate ${P}_{\xi _{m}}(({ \pi (\xi _{m})-Z_{(1)}})/({Z_{(n)}-Z_{(1)}})\in U(\tilde{\mathbf{Z}})))$, with 
+\[
+\mathbb{\hat{P}}_{m}~\equiv ~\tfrac{1}{B}\sum_{b=1}^{B}1\big(\tfrac{\pi (\xi_{m})-Z_{\xi _{m},(n)}(b) }{Z_{\xi _{m},(1)}(b) -Z_{\xi _{m},(n)}(b) }\in U(\tilde{\mathbf{Z}}_{\xi _{m}}(b))
+\big),
+\]
+where $\pi (\xi _{m})=(\Gamma (2-\xi _{m})-1)/\xi _{m}$ with $\Gamma $ is the standard Gamma function if $\xi _{m}\not=0$, and $\pi (\xi _{m})=-1+\bar{ \gamma}$ if $\xi _{m}=0$ with $\bar{\gamma}\approx 0.577$ equal to the Euler's constant, and $U(\tilde{\mathbf{Z}}_{\xi _{m}}(b) )$ is as in \eqref{eq:Lambda-rp}, involving integrals of \eqref{eq:f_aux1} and \eqref{eq:f_aux2}.
+\end{enumerate}
+
+\item Update the weights by setting $\lambda _{m}^{(s+1)}=\lambda _{m}^{(s)}+\varepsilon ((1-\mathbb{\hat{P}}_{m})-\alpha )$ for all $ m=1,\dots ,M$, where $\alpha $ is the significance level and $\varepsilon >0$ is a small step length (we use $\varepsilon =0.05$). Intuitively, the weight on $\xi _{m}$ is decreased or increased if the CI has overcoverage and undercoverage, respectively.
+
+\item Repeat steps 3)-4) a large number of times $S$ (we use $S=2,000$), to get $\lambda^{(S)}=\{\lambda _{m}^{(S)}:m=1,\dots ,M\}$. The Lagrange multipliers  $\Lambda$ is obtained by interpolating $\lambda^{(S)}$ from $\Xi _{M}$ to $\Xi$.
+% and we use this to approximate the asymptotic weighted length of the CI in \eqref{eq:asy_length} in the following fashion: 
+% \begin{equation*}
+% V_{\Lambda ^{(S)}}~\equiv ~\sum_{m=1}^{M}\tfrac{1}{B}~\sum_{b=1}^{B}~[\kappa  _{\xi _{m}}(\tilde{\mathbf{Z}}_{\xi _{m}}(b))\lg (\tilde{U}(\tilde{\mathbf{Z}}_{\xi _{m}}(b))))]~W((\xi _{m},\xi _{m+1}]), 
+% \end{equation*}
+% where $W$ is a user-defined weight function.
+
+% \item Determine the constant $c^{\ast }$ such that $V_{c^{\ast }\Lambda ^{(S)}}=(1+\epsilon )V_{\Lambda ^{(S)}}$, where $\epsilon >0$ is a small step length (we use $\epsilon =0.01$). The vector $c^{\ast }\Lambda ^{(S)}$ is a suitable candidate for the Lagrangian multipliers. Intuitively, this step increases the coverage level to ensure that all points in $\Xi $ (not just those in $\Xi _{M}$) are covered.
+
+% \item Set $\Lambda=c^{\ast }\Lambda ^{(s)}$. If all components of $ \mathbb{\hat{P}}$ are larger than or equal to $1-\alpha $, stop and use $ c^{\ast }\Lambda ^{(S)}$. If some components of $\mathbb{\hat{P}}$ are less than $1-\alpha $, we duplicate the value of $M$, and return to step 1).
+\end{enumerate}
+If the algorithm's tuning parameters are appropriately chosen, the Lagrange multipliers generated by it yield a CI that (a) approximately minimizes asymptotic weighted length (due to the reliance on \eqref{eq:sol_program2} or \eqref{eq:Lambda-rp}), and (b) achieves approximately size control for all $\xi \in \Xi _{M}$, which should extend to all $\xi \in \Xi$ by continuity. Finally, it is worth noting that these Lagrange multipliers only need to be determined once for a given value of $n$ and set $\Xi$.
+The tables of the Lagrange multipliers and the corresponding MATLAB code are available on our \href{https://drive.google.com/file/d/1XGZjG-FaTKMqRK_aQ08EQ0TlG7iAbsHK/view}{website}.
+
+\subsubsection{First-price auctions}
+
+We now consider analogous expressions for first-price auctions. Let $j=1,\dots,N$ denote an arbitrary first-price auction. Relative to the previous section, the main difficulty here is that PDF of $X_{j}$ in \eqref{eq:aux_RV} does not generally have a closed-form expression and, thus, we do not have an analog of \eqref{eq:densitySecond} for first-price auctions.
+
+To explain this issue, we now provide an implicit formula for the PDF of $X_{j}$ for any arbitrary auction $j=1,\dots,N$. Consider the following argument for $\xi <0$: 
+\begin{align}
+X_{j}& ~\overset{(1)}{=}~H_{1}-\tfrac{1}{G_{\xi }(H_{1})}\int_{-\infty }^{H_{1}}G_{\xi }(h)dh \nonumber \\
+&~\overset{(2)}{=}~H_{1}-\exp ( ( 1+\xi H_{1}) ^{-1/\xi }) \int_{-\infty }^{H_{1}}\exp ( -( 1+\xi h) ^{-1/\xi }) dh \nonumber \\
+& ~\overset{(3)}{=}~
+%H_{1}-\exp ( ( 1+\xi H_{1}) ^{-1/\xi }) \int_{( 1+\xi H_{1}) ^{-1/\xi }}^{\infty }\exp ( -u) u^{-\xi -1}du \nonumber \\
+%& ~\overset{(4)}{=}~
+H_{1}-\exp ((1+\xi H_{1})^{-1/\xi })\Gamma (-\xi ,(1+\xi H_{1})^{-1/\xi }) \nonumber \\
+& ~\overset{(4)}{=}~[{( E_{1,j}) ^{-\xi }-1}]/{\xi }-\exp (E_{1,j})\Gamma (-\xi ,E_{1,j}) \nonumber \\
+& ~\overset{(5)}{=}~[{\exp (E_{1,j})\Gamma (1-\xi ,E_{1,j})-1}]/{\xi },\label{eq:Xformula}
+\end{align}
+where (1) holds by \eqref{eq:aux_RV} and denoting $H_{1}=H_{\xi }(E_{1,j})$ with $\{E_{1,j}:~j=1,\dots ,n\}$ and $H_{\xi }$ as specified in Lemma \ref{lem:joint}, (2) by \eqref{eq:G}, (3) by the change of variables $u=( 1+\xi h) ^{-1/\xi }$ and using $\Gamma (a,x)=\int_{x}^{\infty }u^{a-1}\exp ( -u) du$ to denote the upper incomplete Gamma function, (4) by $E_{1,j}=H_{\xi }^{-1}( H_{1}) $, and (5) by $\Gamma (1+a,x)=a\Gamma (a,x)+x^{a}\exp ( -x) $ 
+%(by integration by parts) 
+applied to $a=-\xi $ and $x=E_{1,j}$. By a similar derivation for $\xi>0$ and $\xi=0$, we get $X_{j}~=~e_{\xi }(E_{1,j})$ with
+\begin{equation}
+    e_{\xi }(x)~\equiv~ \bigg\{
+\begin{array}{ll}
+[ \exp (x)\Gamma (1-\xi ,x)-1]/\xi& \text{ if }\xi \neq 0, \\
+-\ln ( x) -\exp ( x) \Gamma (0,x)& \text{ if }\xi =0.
+\end{array}
+\label{eq:XdensityAppendix}
+\end{equation}
+% \textcolor{magenta}{DERIVATION $\xi =0$ (HIDDEN):\\
+% For $\xi =0$, we have:
+% \begin{align*}
+% X_{j}& \overset{(1)}{=}-\ln ( E_{1,j}) -\tfrac{1}{G_{0}(H_{1})}%
+% \int_{-\infty }^{-\ln ( E_{1,j}) }G_{0}(h)dh  \nonumber \\
+% & \overset{(2)}{=}-\ln ( E_{1,j}) -\exp ( E_{1,j})
+% \int_{E_{1,j}}^{\infty }u^{-1}\exp ( -u) du  \nonumber \\
+% & \overset{(3)}{=}-\ln ( E_{1,j}) -\exp ( E_{1,j}) \Gamma
+% (0,E_{1,j}),
+% \end{align*}%
+% where (1) holds by \ref{eq:aux_RV} and $H_{\xi }$ as specified in Lemma \ref%
+% {lem:joint}, (2) by \ref{eq:G} and the change of variables $u=\exp (
+% -h) $, and (3)\ by using $\Gamma (a,x)=\int_{x}^{\infty }u^{a-1}\exp
+% ( -u) du$.}\\
+% \textcolor{magenta}{DERIVATION $\xi >0$ (HIDDEN):\\
+% Finally, in the case of $\xi >0$, we have: 
+% \begin{align*}
+% X_{j}& \overset{(1)}{=}H_{1}-\tfrac{1}{G_{\xi }(H_{1})}\int_{-\infty }^{H_{1}}G_{\xi
+% }(h)dh \\
+% & \overset{(2)}{=}H_{1}-\exp ( ( 1+\xi H_{1}) ^{-1/\xi })
+% \int_{-1/\xi }^{H_{1}}\exp ( -( 1+\xi h) ^{-1/\xi }) dh
+% \\
+% & \overset{(3)}{=}H_{1}+\exp ( ( 1+\xi H_{1}) ^{-1/\xi })
+% \int_{\infty }^{( 1+\xi H_{1}) ^{-1/\xi }}\exp ( -u)
+% u^{-1-\xi }du \\
+% & =H_{1}-\exp ( ( 1+\xi H_{1}) ^{-1/\xi })
+% \int_{( 1+\xi H_{1}) ^{-1/\xi }}^{\infty }\exp ( -u)
+% u^{-1-\xi }du \\
+% & \overset{(4)}{=}H_{1}-\exp ( ( 1+\xi H_{1}) ^{-1/\xi })
+% \Gamma ( -\xi ,( 1+\xi H_{1}) ^{-1/\xi })  \\
+% & \overset{(5)}{=}\tfrac{( E_{1,j}) ^{-\xi }-1}{\xi }-\exp (
+% E_{1,j}) \Gamma ( -\xi ,E_{1,j})  \\
+% & \overset{(6)}{=}\tfrac{\exp ( E_{1,j}) \Gamma (-\xi +1,E_{1,j})-1}{\xi },
+% \end{align*}%
+% where (1) holds by \ref{eq:aux_RV} and denoting $H_{1}=H_{\xi }(E_{1,j})$
+% with $\{E_{1,j}:~j=1,\dots ,n\}$ and $H_{\xi }$ as specified in Lemma \ref%
+% {lem:joint}, (2) by \ref{eq:G} and the fact that $G_{\xi }( h) =0$
+% for $h<-1/\xi $, (3) by the change of variables $u=( 1+\xi h)
+% ^{-1/\xi }$, (4) by using $\Gamma (a,x)=\int_{x}^{\infty }u^{a-1}\exp (
+% -u) du$ to denote the upper incomplete Gamma function, (5) by $%
+% E_{1,j}=H_{\xi }^{-1}( H_{1}) $, and (6) by the property $\Gamma
+% (1+a,x)=a\Gamma (a,x)+x^{a}\exp ( -x) $ applied to $a=-\xi $ and $%
+% x=E_{1,j}$.
+% }
+We numerically verified that $e_{\xi }( x) $ is decreasing in $x$ for all $\xi $, and so the PDF of $X_j$ can be expressed as follows: 
+\begin{equation}
+f_{X_j|\xi }(x)~=~-\tfrac{\partial e_{\xi }^{-1}( x) }{\partial x}\exp ( -e_{\xi }^{-1}( x) ) . \label{eq:fx}
+\end{equation}
+We can use \eqref{eq:fx} to derive an implicit expression for the joint PDF of $\mathbf{\tilde{X}}=\{\tilde{X}_{j}:j=1,\dots ,N\}\in \Sigma $ with $\tilde{X}_{j}$ as in \eqref{eq:Xtilde}. The main difficulty relative to the second-price auction is that neither $ e_{\xi }$ in \eqref{eq:XdensityAppendix} nor its inverse have closed-form expressions, and so evaluating them repeatedly is computationally challenging. For this reason, we do not have a closed-form analog of \eqref{eq:densitySecond} for first-price auctions.
+
+To deal with the aforementioned computational issues, we propose a numerical approximation based on a series expansion of the incomplete Gamma function in \citet[Page 263]{abramowitz/stegun:1964}: for $x$ sufficiently large,
+\begin{equation}
+\Gamma (1- \xi,x)~\approx~ x^{- \xi}\exp (-x)[ 1+\tfrac{(- \xi) }{x}+ \tfrac{(- \xi)(- \xi-1)}{x^{2}}+ \tfrac{(- \xi)(- \xi-1)(- \xi-2)}{x^{3}}+\dots ] . \label{eq:taylorAS64}
+\end{equation}
+A first-order approximation based on \eqref{eq:taylorAS64} gives $\ln (\exp (x)\Gamma (1-\xi ,x))\approx -\xi \ln x$. To allow for approximation errors, we propose the following equation:
+\begin{equation}
+\ln (\exp (x)\Gamma (1-\xi ,x))~\approx~ r_{2}( \xi ) -r_{1}( \xi ) \ln x, \label{eq:XdensityAppendix2}
+\end{equation}
+where $r_{1}( \xi )$ and $r_{2}( \xi ) $ are functions of $\xi $.\footnote{If the first-order approximation was exact, we would have $r_{1}( \xi ) = \xi$ and $r_{2}( \xi )=0$.} To find suitable values for these functions we fit an OLS regression of $\ln (\Gamma (1-\xi ,x)\exp (x))$ on $\ln x$ and a constant for a grid of 50,000 equally-spaced values of $x$ between $10^{-6} $ and $1-10^{-6}$ quantiles of the exponential distribution. We use the OLS coefficients as our values for $ (-r_{1}( \xi ) ,r_{2}( \xi ) )$. By combining \eqref{eq:XdensityAppendix} and \eqref{eq:XdensityAppendix2}, we get
+\begin{equation}
+e_{\xi }(x)\approx \bigg\{ 
+\begin{array}{ll}
+\lbrack x^{-r_{1}( \xi ) }\exp (r_{2}( \xi ) )-1]/\xi & \text{ if }\xi \neq 0, \\
+( r_{1}( 0) -1) \ln x-r_{2}( 0) & \text{ if }\xi =0.
+\end{array}
+\label{eq:e_xiAppendix1}
+\end{equation}
+By \eqref{eq:e_xiAppendix1} and using $r_{3}( \xi ) =\exp (r_{2}( \xi ) /r_{1}( \xi ) )$, we get
+\begin{align}
+e_{\xi }^{-1}(x)&\approx \bigg\{ 
+\begin{array}{ll}
+r_{3}( \xi ) (1+\xi x)^{-1/r_{1}( \xi ) } & \text{ if } \xi \neq 0, \\
+\exp [(x+r_{2}( 0) )/( r_{1}( 0) -1) ] & \text{ if }\xi =0,
+\end{array} \notag\\
+\tfrac{\partial e_{\xi }^{-1}(x)}{\partial x}&\approx \bigg\{ 
+\begin{array}{ll}
+-(1+\xi x)^{-( 1/r_{1}( \xi ) +1) }\xi r_{3}( \xi ) /r_{1}( \xi ) & \text{ if }\xi \neq 0, \\
+\exp [(x+r_{2}( 0) )/( r_{1}( 0) -1) ]/( r_{1}( 0) -1) & \text{ if }\xi =0.
+\end{array} 
+\label{eq:e_xiAppendix2}
+\end{align}
+By combining \eqref{eq:fx} and \eqref{eq:e_xiAppendix2}, we obtain an approximation of the joint distribution of $\tilde{\mathbf{X}}$ and related functions. Ignoring the case $\xi =0$, then for $\mathbf{\tilde{x}}\in \Sigma $ and $N=n-2$ we get
+\begin{align}
+    f_{\tilde{\mathbf{X}}|\xi }(\tilde{\mathbf{x}})=\tfrac{n!\Gamma (n)|r_{1}( \xi ) |}{|\xi |}\int_{0}^{b(\xi )}s^{n-2}\exp \bigg(
+\begin{array}{c}
+-n\ln (r_{3}( \xi ) \sum_{j=1}^{n}(1+\xi \tilde{x} _{j}s)^{-1/r_{1}( \xi ) }) \\
+-( 1/r_{1}( \xi ) +1) \sum_{j=1}^{n}\ln (1+\xi \tilde{x }_{j}s)\\
++n\ln (|\xi r_{3}( \xi ) /r_{1}( \xi ) |)
+\end{array}
+\bigg) ds,
+\label{eq:e_xiAppendix3}
+\end{align}
+where $b(\xi )=-1/\xi $ for $\xi <0$, and $b(\xi )=\infty $ otherwise. This expression is the analog of \eqref{eq:densitySecond} for first-price auctions. Analogously, we have
+\begin{align}
+    &\kappa _{\xi }(\tilde{\mathbf{x}})f_{\tilde{\mathbf{X}}|\xi }(\tilde{\mathbf{ x}})=\notag\\
+    &\tfrac{n!|r_{1}( \xi ) |\Gamma (n-r_{1}( \xi ) )}{ |\xi |}\int_{0}^{b(\xi )}s^{n-1}\exp \Bigg(
+\begin{array}{c}
+(r_{1}( \xi ) -n)\ln (r_{3}( \xi ) \sum_{j=1}^{n}(1+\xi \tilde{x}_{j}s)^{-1/r_{1}( \xi ) }) \\
+-( 1/r_{1}( \xi ) +1) \sum_{j=1}^{n}\ln (1+\xi \tilde{x }_{j}s)\\
++n\ln (|\xi r_{3}( \xi ) /r_{1}( \xi ) |)
+\end{array}
+\Bigg) ds,
+\label{eq:e_xiAppendix4}
+\end{align}
+where $\kappa _{\xi }(\mathbf{x})=E[X_{( n) }-X_{( 1) }|\mathbf{\tilde{X}}=\mathbf{x}]$. For $(y,\mathbf{\tilde{x}})\in \mathbb{R} _{+}\times \Sigma $, we also have
+\begin{align}
+    &f_{Y_{\pi },\tilde{\mathbf{X}}|\xi }(y,\tilde{\mathbf{x}})=\notag\\
+    &\tfrac{1}{|y|^{n}}\int_{a_{ \pi }(\xi )}^{c_{\pi }(\xi )}|\pi -s|^{n-1}\exp \Bigg(
+\begin{array}{c}
+-( 1/r_{1}( \xi ) +1) \sum_{j=1}^{n}\ln (1+\xi (s+ \tilde{x}_{j}(\pi -s)/y)) \\
+-r_{3}( \xi ) \sum_{j=1}^{n}(1+\xi (s+\tilde{x}_{j}(\pi -s)/y))^{-1/r_{1}( \xi ) }\\
++n\ln (|\xi r_{3}( \xi ) /r_{1}( \xi ) |)
+\end{array}
+\Bigg) ds,
+\label{eq:e_xiAppendix5}
+\end{align}
+where $a_{\pi }(\xi )$ and $c_{\pi }(\xi )$ are such that for all $s\in (a_{\pi }(\xi ),c_{\pi }(\xi ))$, we have $1+\xi (s+(\pi -s)/y)>0$, $1+\xi s>0$, and $(\pi -s)/y>0$. The integrals in \eqref{eq:e_xiAppendix3}, \eqref{eq:e_xiAppendix4}, and \eqref{eq:e_xiAppendix5} can be approximated by Gaussian quadrature. Given these expressions, we can use the algorithm in Section \ref{sec:appendix-computation1} to compute the CI.
+
+% It is relevant to note that the aforementioned computational issues can
+% avoided when implementing the hypothesis test for $H_{0}:\xi =-1$ vs. $%
+% H_{1}:\xi \not=-1$ described in Section \ref{sec:HypApplication-fp}. Under $%
+% H_{0}$, we can combine \eqref{eq:Xformula} with the fact that $\Gamma (1+a,x)=a\Gamma
+% (a,x)+x^{a}\exp (-x)$ to deduce that $X_{j}=-{E}_{1,j}$. This observation allows us to get a closed-form expression of the joint distribution of $f_{\mathbf{%
+% \tilde{X}}|\xi =-1}$. For $\mathbf{\tilde{x}}\in \Sigma $ and $N=n-2$, we
+% now get%
+% \[
+% f_{\mathbf{\tilde{X}}|\xi }(\mathbf{\tilde{x}})=n!\Gamma (n)\int_{0}^{-1/\xi
+% }s^{n-2}\exp ( 
+% \begin{array}{c}
+% -n\log (\sum_{j=1}^{n}(1+\tilde{x}_{j}\xi s)^{-1/\xi }) \\ 
+% -(1+\tfrac{1}{\xi })(\sum_{j=1}^{n}\log (1+\tilde{x}_{j}\xi s))%
+% \end{array}%
+% ) ds.
+% \]%
+% \textcolor{magenta}{Note that this density is exact only under the null with $\xi=-1$ but not under the alternative. Therefore, the LR test based on this density again controls size asymptotically but is not necessarily efficient.} This method was used to obtain the simulation results in Table \ref{tbl:fp-test}.
+% There is another method to avoid the computational issue for testing $\xi=-1$ in first-price auctions (but not for constructing the CI for the winner's utility or for the seller's revenue.). Under the null hypothesis $\xi=-1$, $G_{\xi}(h)$ is simplified as $\exp(h-1)$ and then $X_{1,j}$ becomes $H_{-1}(E_{1,j})-1$. By construction, the self-normalized $\tilde{X}_j$ is invariant to the constant shift $-1$, and hence the joint density of $\mathbf{\tilde{X}}$ can be computed by the density of the self-normalized version of $H_{-1}(E_{1,j})$. Recall that $H_{-1}(E_{1,j})$ is $Z_{1,j}$, i.e., the limit of the maximum valuation in the second-price auction. Therefore, following the same calculation we use to obtain $f_{\mathbf{\tilde{Z}}|\xi}$, we derive that
+% \begin{equation*}
+% f_{\mathbf{\tilde{X}}|\xi }( \mathbf{\tilde{x}}) =n!\Gamma ( n) \int_{0}^{b( \xi ) }s^{n-2} \exp (
+% \begin{array}{c}
+% -n\log ( \sum_{j=1}^{n}(1+\tilde{x}_{j} \xi s)^{-1/\xi } ) \\
+% -(1+\tfrac{1}{\xi })( \sum_{j=1}^{n}\log ( 1+\tilde{x}_{j} \xi s)  )
+% \end{array}
+% ) ds,
+% \end{equation*}
+% where  $b(\xi )=-1/\xi $ for $\xi <0$, and $b(\xi )=\infty $ otherwise. 
+%  Note that this density is exact only under the null with $\xi=-1$ but not under the alternative. Therefore, the LR test based on this density again controls size asymptotically but is not necessarily efficient. We use this method to obtain the simulation results in Table 4.)
+
+\subsection{Additional Monte Carlo simulations}\label{sec:simulation-fp}
+
+This section provides Monte Carlo simulations for first-price auctions. We first consider the problem of inference on the winner's expected utility using only transaction prices. The parameters of the simulations are as in Section \ref{sec:simulation}.
+
+We consider three CIs for $\mu _{K}$ that are analogous to those used in Section \ref{sec:simulation}:
+\begin{enumerate}[(i)]
+    \item This is our proposed CI in Section \ref{sec:fp-supplus}. As in Section \ref{sec:simulation}, this method is implemented by constructing $U( \mathbf{P})$ in \eqref{eq:CI_muK_defn2_fp} with $\Xi =[ -1,0.5] $ and $W$ equal to the uniform distribution over this interval. As before, the validity of this CI is based on asymptotics as $K\to\infty$.
+    \item A CI based on observing the transaction price and the highest valuation for each auction. These data are infeasible in empirical applications of first-price auctions (valuations are unobserved), but we take it as a benchmark for any method that relies on the traditional asymptotics with $n\to \infty$. These data allows us to compute $D_{j}\equiv V_{(1),j}-P_{j}$ for each auction $j=1,\dots,n$. In turn, this information enables us to test $H_0:\mu_{K} = b$ using the t-statistic $\sqrt{n}(\bar{D}_{n} - b)/s$, where $\bar{D}_{n}=\sum_{j=1}^n D_{j}/n$ and $s^2 = {\sum^{n}_{j=1} ( D_{j}-\bar{D}_{n}) ^{2}/(n-1)}$. Under $H_0$, standard asymptotic arguments imply that the t-statistic converges to a standard normal distribution as $n\to\infty$. One can then construct a CI by inverting the aforementioned hypothesis tests. In contrast to the first CI, the validity of this method relies on standard asymptotic arguments with $n\to\infty$.
+    \item A bootstrap-based CI based on observing the highest valuations for each auction. This approach is obviously infeasible in using data from first-price auctions, but it could be feasible with bid data from second-price auctions; cf.\ \cite{menzel2013}. Observing the highest valuations across auctions allows us to identify the distribution of valuations which, in turn, allows us to identify $\mu_K$ (further details are provided in Section \ref{sec:appendix-MC}). By replacing identified objects with suitable estimators, one can consistently estimate $\mu_K$. In addition, one can repeat this process using bootstrap samples to construct a CI for $\mu _{K}$. The method is implemented with 500 bootstrap samples. The validity of this method relies on standard asymptotic arguments with $n\to\infty$.
+\end{enumerate}
+
+Table \ref{tbl:fp-CI} presents the coverage and length of the three CIs. Our proposed CI suffers from a slight undercoverage when valuations are $U(0,3)$ or when $n$ is significantly larger than $K$. As our theory predicts, this undercoverage should diminish as $K$ increases. On the other hand, our proposed CI demonstrates excellent size control for the non-$U(0,3)$ valuations and $K$ is significantly larger than $n$. The other two methods perform analogously to Table \ref{tbl:sp-CI}. The CI based on observing the highest valuation and the transaction price and the asymptotics $n\to \infty$ are relatively shorter and tend to suffer from undercoverage, especially when $n$ is small or valuations are Pareto distributed. In turn, the bootstrap-based CI tends to suffer significant undercoverage problems. 
+%We attribute these undercoverage problems as an indication that $n \in \{10,100\}$ is not enough to guarantee accuracy based on asymptotic arguments with $n\to\infty$.
+
+
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lllllllllllll}
+\hline\hline
+\# Bidders & \multicolumn{4}{c}{$K=10$} & \multicolumn{4}{c}{$K=100$} & \multicolumn{4}{c}{$K\sim U\{90,91,\dots,110\}$} \\ 
+\# Auctions & \multicolumn{2}{c}{$n=10$} & \multicolumn{2}{c}{$n=100$} & \multicolumn{2}{c}{$n=10$} & \multicolumn{2}{c}{$n=100$} & \multicolumn{2}{c}{$n=10$} & \multicolumn{2}{c}{$n=100$} \\ \hline
+Dist.\ & Cov & Lgth & Cov & Lgth & Cov & Lgth & Cov & Lgth & Cov & Lgth & Cov & Lgth\\ \hline
+\multicolumn{13}{c}{Method (i): Our proposed CI, asy.\ w.\ $K\to\infty$} \\ 
+$U(0,3)$               & 0.89 & 1.20 & 0.89 & 0.29 & 0.91 & 0.22 & 0.98 & 0.12 & 0.91 & 0.22 & 0.98 & 0.13 \\ 
+{$\vert N(0,1) \vert$} & 0.94 & 1.28 & 0.84 & 0.40 & 0.97 & 1.46 & 0.98 & 0.33 & 0.98 & 1.47 & 0.98 & 0.33 \\ 
+{$\vert t(20) \vert$}  & 0.95 & 1.29 & 0.86 & 0.46 & 0.98 & 1.30 & 0.97 & 0.42 & 0.98 & 1.34 & 0.98 & 0.43 \\ 
+$Pa(0.25) $            & 0.97 & 1.47 & 0.87 & 0.54 & 0.97 & 2.12 & 0.95 & 0.99 & 0.97 & 2.12 & 0.96 & 1.00 \\ 
+\hline
+\multicolumn{13}{c}{Method (ii): CI based on highest valuations, asy.\ w.\ $n\to\infty$} \\  
+$U(0,3)$               & 0.89 & 0.03 & 0.95 & 0.01 & 0.85 & 0.00 & 0.95 & 0.00 & 0.90 & 0.00 & 0.96 & 0.00 \\
+{$\vert N(0,1) \vert$} & 0.86 & 0.31 & 0.94 & 0.11 & 0.86 & 0.24 & 0.93 & 0.09 & 0.86 & 0.25 & 0.93	& 0.09\\ 
+{$\vert t(20) \vert$}  & 0.88 & 0.40 & 0.93 & 0.14 & 0.83 & 0.37 & 0.92 & 0.13 & 0.85 & 0.36 & 0.94 & 0.13 \\ 
+$Pa(0.25) $            & 0.81 & 0.69 & 0.88 & 0.28 & 0.76 & 1.22 & 0.91 & 0.47 & 0.75 & 1.21 & 0.90 & 0.47 \\  
+\hline
+\multicolumn{13}{c}{Method (iii): CI based on bootstrap \& highest valuations, asy.\ w.\ $n\to\infty$} \\  
+$U(0,3)$               & 0.35 & 0.19 & 0.89 & 0.11 & 0.36 & 0.02 & 0.89 & 0.01 & 0.36 & 0.02 & 0.88 & 0.01 \\ 
+{$\vert N(0,1) \vert$} & 0.28 & 0.29 & 0.84 & 0.12 & 0.28 & 0.21 & 0.85 & 0.09 & 0.27 & 0.21 & 0.86 & 0.09 \\ 
+{$\vert t(20) \vert$}  & 0.29 & 0.34 & 0.85 & 0.14 & 0.27 & 0.28 & 0.82 & 0.12 & 0.26 & 0.28 & 0.86 & 0.12 \\ 
+{$Pa(0.25) $}          & 0.20 & 0.34 & 0.69 & 0.20 & 0.23 & 0.61 & 0.69 & 0.35 & 0.23 & 0.61 & 0.69 & 0.35 \\ 
+\hline\hline
+\end{tabular}
+\caption{Empirical coverage frequency (Cov) and length (Lgth) of various CIs for the winner's expected utility $\mu_K$ in first-price auctions. The results are the average of 500 simulation draws and a nominal coverage level of 95\%.}
+\label{tbl:fp-CI}
+\end{table}
+
+Finally, we consider the problem of hypothesis testing about the tail index using only transaction prices. We focus on testing $H_0:\xi = -1$ vs.\ $H_1:\xi \in \Xi/\{-1\}$, with $\Xi =[-1,0.5] $ and $W$ equal to the uniform distribution over this interval. Table \ref{tbl:fp-test} shows the average rejection rate of the test proposed in Section \ref{sec:HypApplication-fp} over 500 simulations using a desired nominal size of $5\%$. Under $H_0$ (i.e., when valuations are $U(0,3)$), our proposed test controls size as long as the number of bidders is not too small relative to the sample size. Under $H_1$ (i.e., when valuations are $\vert N(0,1) \vert$, $\vert t(20) \vert$, and $Pa(0.25)$), our proposed test exhibits adequate power.
+
+
+\begin{table}[ht]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lcccccccc}
+\hline\hline
+\# Bidders & \multicolumn{2}{c}{$K=10$}   & \multicolumn{2}{c}{$K=20$}   & \multicolumn{2}{c}{$K=100$} & \multicolumn{2}{c}{ $K\sim U\{90,91,\dots,110 \}$  } \\ 
+\# Auctions & $n=10$ & $n  = 100$   & $n=10$ & $n  = 100$   & $n=10$ & $n  = 100$  & $n=10$ & $n  = 100$\\ \hline
+%Val. dist. & \multicolumn{7}{c}{Rejection Prob.} \\ 
+$U(0,3)$               & 0.06 & 0.09 &  0.04 & 0.06 &  0.04 & 0.05  &  0.03 & 0.09 \\ 
+{$\vert N(0,1) \vert$} & 0.25 & 1.00 &   0.22 & 1.00 &  0.28 & 1.00  &  0.29	& 1.00 \\ 
+{$\vert t(20) \vert$}  & 0.27 & 1.00 &   0.29 & 1.00 &  0.34 & 1.00  &  0.36 & 1.00 \\ 
+$Pa(0.25) $            & 0.54 & 1.00 &   0.55 & 1.00 &  0.55 & 1.00  &  0.62 & 1.00 \\ 
+\hline\hline
+\end{tabular}
+\caption{Empirical rejection rate of the test proposed in Section \ref{sec:HypApplication-fp} for $H_0:\xi = -1$ in first-price auctions. The results are the average of 500 simulation draws and a nominal size of 5\%.}\label{tbl:fp-test}
+\end{table}
+
+
+\subsection{Auxiliary derivations related to the Monte Carlo simulations}\label{sec:appendix-MC}
+
+We first provide auxiliary derivations related to the third CI considered in Section \ref{sec:simulation}. In a second-price auction $j=1,\ldots ,n$ with $K$ bidders, the CDF of the transaction price satisfies:
+\begin{equation}
+F_{P_{j}}(x)~\overset{(1)}{=}~F_{V_{(2),j}}( x) ~\overset{(2)}{=}~F_{V}(x)^{K}+KF_{V}(x)^{K-1}( 1-F_{V}( x) ) , \label{eq:functional1}
+\end{equation}
+where (1) holds by \eqref{eq:secondprice} and (2) by the fact that bidders' valuations are i.i.d. The previous equation expresses the CDF of the transaction price as a function of the CDF of valuations. By inverting this mapping, we can derive a relationship between the distribution of transaction prices and the distribution of valuations. Furthermore, we have the following connection between the distribution of valuations and the winner's expected utility:
+\begin{align}
+\mu_K &~\overset{(1)}{=}~E[ V_{( 1) ,j}-P_{j}] \notag\\
+&~\overset{(2)}{=}~E[ V_{( 1) ,j}-V_{( 2) ,j}] \notag\\
+&~\overset{(3)}{=}~K\int_{0}^{\infty } xF_{V}( x) ^{K-1}f_{V}( x) dx-( K-1) K\int_{0}^{\infty } x( f_{V}( x) ( 1-F_{V}( x) ) F_{V}( x) ^{K-2}) dx \nonumber \\
+&~\overset{(4)}{=}~K\bigg( \int_{0}^{\infty }( 1-F_{V}^{K}(x)) dx-\int_{0}^{\infty }( 1-F_{V}^{K-1}(x)) dx\bigg) ,\notag
+\end{align}
+where (1) holds because the auctions are i.i.d.\ (which holds in all of our Monte Carlo designs), (2) holds by \eqref{eq:secondprice}, (3) by the fact that bidders are i.i.d and valuations are nonnegative (which holds in all of our Monte Carlo designs), and (4) by integration by parts.
+
+To conclude, we provide auxiliary derivations related to the third CI considered in Section \ref{sec:simulation-fp}. Recall that this method presumes that we observe the highest valuation $V_{(1),j}$ for each auction $j=1,\dots,n$. Given that there are $K$ bidders, the CDF of the highest valuation satisfies:
+\begin{equation}
+F_{V_{( 1) }}( x )~\overset{(1)}{=}~F_{V}(x)^{K}, \label{eq:functional2}
+\end{equation}
+where (1) holds by the fact that bidders' valuations are i.i.d. and $V_{(1)} = \max\{V_1,V_2,\dots,V_K\}$. Furthermore, we can connect the distribution of valuations and the winner's expected utility in the following fashion:
+\begin{align*}
+\mu_K ~&\overset{(1)}{=}~E\bigg[\tfrac{ \int_{0}^{V_{(1)}}{F_{V}(u)^{K-1}}du}{F_{V}(V_{(1)})^{K-1}}\bigg]\\
+~&\overset{(2)}{=}~
+%\int \tfrac{\int_{0}^{v}F_{V}^{K-1}( x) dx}{F_{V}^{K-1}(v)} d( F_{V}(v)) ^{K}  \notag \\
+\int^{\infty}_{0} \bigg( \int_{0}^{v}K F_{V}^{K-1}( x) dx\bigg) f_{V}(v)dv \\
+~&\overset{(3)}{=}~K\int^{\infty}_{0}  ( 1-F_{V}(v) ) F_{V}(v)^{K-1} dv, 
+\end{align*}
+where (1) holds by \eqref{eq:fp_muK_as_fn_ofV} and by the fact that valuations are nonnegative and auctions are i.i.d.\ (which holds in all of our Monte Carlo designs), (2) by \eqref{eq:functional2}, and (3) by integration by parts.
+
+
+% Given that the \textit{expected} payment of the winner with any valuation $x$ is the same for both second-price and first-price auctions, we can apply the same argument as in the proof of the second-price case. In particular, it suffices to show
+% \begin{equation*}
+% \lim_{K\to \infty }E\left[ \left\vert \frac{P-b_{K-1}}{a_{K-1}}\right\vert ^{1+\delta }\right] <\infty ,
+% \end{equation*}
+% where we again suppress the subscript $l$ for the $l$th auction given independence. 
+% Use the same short-handed notation as in the second-price case $Z_{K}=\frac{V_{(1),K}-b_{K}}{a_{K}}$ and $\tilde{Z}_{K}=\frac{V_{(1),K}-b_{K-1}}{a_{K-1}}$. 
+% Denote $F_{Z_{K-1}}$ as the CDF of $Z_{K-1}$ and $f_{Z_{K-1}}$ its PDF. 
+% Recall the definition that
+% \begin{equation*}
+% \frac{P-b_{K-1}}{a_{K-1}}=L_{K-1}\left( \tilde{Z}_{K}\right),
+% \end{equation*}
+% where
+% \begin{align*}
+% L_{K-1}\left( x\right) = ~&x-\frac{\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}F_{V}\left( a_{K-1}h+b_{K-1}\right) ^{K-1}dh}{F_{V}\left( xa_{K-1}+b_{K-1}\right)^{K-1}} \\
+% =~&x-\frac{\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}F_{Z_{K-1}}(h)dh}{F_{Z_{K-1}}(x)} \\
+% =~&\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}h\frac{f_{Z_{K-1}}(h)}{F_{Z_{K-1}}(x)}dh.
+% \end{align*}
+% By H{\"o}lder's inequality with $p=1+\delta $ and $q=(1+\delta )/\delta $ (note that $1/p+1/q=1$), for any $x$,
+% \begin{align*}
+% \left\vert L_{K-1}\left( x\right) \right\vert =~&\left\vert\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}hf_{Z_{K-1}}(h)^{1/p}\frac{f_{Z_{K-1}}(h)^{1-1/p}}{F_{Z_{K-1}}(z)}dh\right\vert \\
+% \leq ~&\left\vert \int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}h^{p}f_{Z_{K-1}}\left(h\right) dh\right\vert ^{1/p}\left\vert\int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}\left( \frac{f_{Z_{K-1}}(h)^{1-1/p}}{F_{Z_{K-1}}(z)}\right) ^{q}dh\right\vert ^{1/q} \\
+% =~&\left( E\left[ Z_{K-1}^{p}1\left[ Z_{K-1}\leq x\right] \right] \right)^{1/p}\left\vert \int_{(v_{L}-b_{K-1})/a_{K-1}}^{x}\frac{f_{Z_{K-1}}(h)}{F_{Z_{K-1}}(x)^{q}}dh\right\vert ^{1/q} \\
+% =~&\left( E\left[ Z_{K-1}^{p}1\left[ Z_{K-1}\leq x\right] \right] \right)^{1/p}\left\vert F_{Z_{K-1}}(x)^{1-q}\right\vert ^{1/q} \\
+% =~&\left( E\left[ Z_{K-1}^{(1+\delta )}1\left[ Z_{K-1}\leq x\right] \right] \right) ^{1/(1+\delta )}F_{Z_{K-1}}\left( x\right) ^{-1/(1+\delta )},
+% \end{align*}
+% where the last line is by the definition of $p$ and $q$.
+% Thus
+% \begin{align*}
+% E\left[ L_{K-1}\left( \tilde{Z}_{K}\right) ^{1+\delta }\right] \leq & \int_{(v_{L}-b_{K})/a_{K}}^{\left( v_{H}-b_{K}\right) /a_{K}}E\left[Z_{K-1}^{(1+\delta )}1\left[ Z_{K-1}\leq x\right] \right] \frac{f_{\tilde{Z}_{K}}\left( x\right) }{F_{Z_{K-1}}\left( x\right) }dx \\
+% \overset{(1)}{\leq }&\int_{(v_{L}-b_{K})/a_{K}}^{\left(v_{H}-b_{K}\right) /a_{K}}E\left[ Z_{K-1}^{(1+\delta )}1\left[ Z_{K-1}\leq x\right] \right] \frac{f_{Z_{K-1}}\left( x\right) }{F_{Z_{K-1}}\left(x\right) }dx,
+% \end{align*}
+% where (1) is by (\ref{eq:density K-1}). The rest of the proof is identical to the second-price case.
+
+% \bibliographystyle{ecta}
+% \bibliography{bib_auction}

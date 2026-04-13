@@ -1,0 +1,17 @@
+\begin{figure*}[h]
+\centering
+\begin{minipage}{0.98\textwidth}
+\setlength{\fboxsep}{1em} %
+\setlength{\fboxrule}{1pt} %
+\fcolorbox{black}{white}{ %
+\parbox{.90\textwidth}{
+\begin{alltt}
+You will be provided instructions for completing a task followed by a task to complete. \newline \newline Instructions:\newline\textcolor{cyan}{\{Agent Instructions\}} \newline \newline \textcolor{cyan}{\{Test Instance\}} \newline Follow the instructions to generate an explanation that reasons towards the correct answer to the task above. End the explanation with the correct answer. \newline \newline
+Explanation: 
+\end{alltt}
+}
+}
+\caption{Reasoning extraction prompt for the CoT reasoning of \zeroshotmid\ \method.}
+\label{table:reasoning-prompts-1}
+\end{minipage}
+\end{figure*}

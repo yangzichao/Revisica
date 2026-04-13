@@ -1,0 +1,95 @@
+\section{Preliminaries and Motivation}
+\label{sec:motive}
+
+We begin by highlighting important use-cases of network prioritization in modern cloud systems, emphasizing on the importance of low-priority traffic~(\S\ref{sec:priority-sched}).
+We then discuss the performance implications of using TCP for low-priority flows~(\S\ref{sec:fairtrans-priosched}).
+
+\subsection{Common Use-Cases of Network Prioritization}
+\label{sec:priority-sched}
+    
+\paragraph{\textbf{Network Scheduling:}}
+    Network prioritization is a cornerstone in the design of network scheduling schemes (e.g., flow/co-flow/task scheduling)~\cite{baraat,d3,pdq,das,pase,pias,pfabric,d2tcp}.
+    For example, PIAS~\cite{pias} and pFabric~\cite{pfabric} use priority queues at network switches to minimize average flow completion times (FCTs). Similarly, duplication based schemes~\cite{das,primary-first,low-latency} leverage low-priority flows to minimize tail latency.
+    For example, DAS~\cite{das} duplicates incoming request at a lower priority to mask \emph{stragglers}\footnote{Uncertain performance issues that commonly arise in large scale systems. These are notoriously hard to predict or mitigate at run time~\cite{ledge}} that contribute significantly to the tail latency. 
+    Recently, a growing body of research highlights the benefits of incorporating network prioritization in the distributed training of machine learning models~\cite{p3,tictac,ccml-hotnets,bytesched}. This line of work further highlights the importance and relevance of this particular use-case. 
+
+\paragraph{\textbf{Workload Co-location:}}
+Cloud systems, particularly those hosting user-facing applications such as web search, are typically designed to handle peak loads. 
+However, during the periods of low demand, this over-provisioning results in under-utilization of cloud resources (e.g., network, compute etc.,)~\cite{low-util-google-borg,low-util-google,low-util-twitter-quasar,low-util-dc-comp,wl-col-ali-elsticity}.
+To improve the utilization of such systems and to reduce the total cost of ownership (TCO), several proposals advocate to co-locate best-effort workloads alongside latency-critical applications~\cite{heracles,bistro,wl-col-ali-elsticity,wl-col-ms-harvest,perfIso}. Co-location enables best-effort workloads to harvest spare system resources.
+To ensure that the performance of latency critical applications is not negatively affected by the best-effort workloads, operators employ prioritization (i.e., giving latency critical workloads priority over best effort workloads) at potential bottleneck resources (e.g., network).
+For example, \emph{PerfIso}~\cite{perfIso} leverages prioritization to safely scavenge spare system resources in \emph{Microsoft Bing's} cluster, enabling the operators to simultaneously maintain low \emph{response time} for latency critical services and high utilization of the overall system.
+
+\paragraph{\textbf{Hybrid RDMA/TCP-IP Services:}}
+A key requirement in a modern cloud system is the high availability of critical services (e.g., key-value stores) that provide support for many other applications.
+The recent trend of cloud operators turning to RDMA~\cite{hpcc,dcqcn,timely,pangu,mp-rdma} has raised concerns about the availability of these critical services because of several outstanding challenges with the adoption of RDMA (e.g., pause frame storm)~\cite{collie,pangu,gentle-flow-control,deadlock-in-datacenter}.
+An effective strategy is the joint-deployment of RDMA and TCP such that TCP runs in the background at very low load as a \textit{fail-safe} option.
+Should RDMA experience an anomaly (e.g., PFC storm), TCP can take over, ensuring high availability~\cite{pangu,accelnet,brpc}.
+For example, Gao et. al., integrated TCP and RDMA in Pangu~\cite{pangu} -- a cloud storage system -- and provided support for fine grained switching between RDMA and TCP to ensure high availability.
+To keep TCP from interfering with RDMA, TCP traffic can be mapped to a lower priority queue at the switches.
+
+\input{tables/motive-cases}
+
+\paragraph{\textbf{Synthesis:}} Table~\ref{tab:usecases} summarizes the above use-cases, highlighting how network prioritization helps achieve a diverse set of objectives by providing isolation across various abstractions (i.e., flows, workloads, services). Despite the pivotal role of low-priority flows in the success of these use-cases, their performance is generally overlooked in the existing work. In section~\S\ref{sec:eval-main}, we show that TCP's performance for low-priority flows varies across each of these use-cases.
+
+\begin{figure}
+  \centering
+    \subfloat[Assumed network view]{\includegraphics[width=0.47\columnwidth]{figures/motive-fairview.pdf}
+    \label{fig:fairview}}
+    \subfloat[Actual network view]{\includegraphics[width=0.47\columnwidth]{figures/motive-realview.pdf}
+    \label{fig:realview}}
+    \caption{TCP assumes fair-scheduling inside the network. This assumption fails under priority scheduling. (a) depicts TCP's view of the network (i.e., all packets from low-priority (Blue) and high priority (Red) senders share the same queue). (b) shows that in reality packets from different priority classes are stored in their respective priority queue and they are serviced in the order of their priority.}
+    \label{fig:diff-in-view}
+\end{figure}
+
+\subsection{TCP Under Network  Prioritization}
+\label{sec:fairtrans-priosched}
+    \textbf{Fair-share assumption of TCP:} TCP's congestion control assumes that data packets receive a ``fair'' (non-discriminatory) treatment inside the network (i.e., packets are assumed to be serviced in the order of their arrival). In reality, under network prioritization, the priority of a packet can override the service order.
+    Figure~\ref{fig:diff-in-view} depicts that the difference between TCP's assumed view of the network~(\ref{fig:fairview}) and the actual view~(\ref{fig:realview}) results in longer queuing delays for low-priority packets -- unbounded in the worst case~\cite{conquest}. For example, the low-priority packet (shown in \emph{blue}) can only get the service once all the high priority packets (shown in \emph{red}) have been serviced.
+
+\begin{figure}
+  \centering
+    \subfloat[High Retransmission]{\includegraphics[width=0.47\columnwidth]{res/motive/motive-retx-nfs.pdf}
+    \label{fig:motive-retx}}
+    \subfloat[High FCT]{\includegraphics[width=0.47\columnwidth]{res/motive/motive-fct-nfs.pdf}
+    \label{fig:motive-fct}}
+    \caption{Shows substantial impact of priority queuing on TCP's performance for low-priority flows. (a) highlights a significant increase in the retransmission rate experienced by low-priority flows under priority queues compared to fairshare. (b) highlights the impact of priority queuing on flow completion times (FCT) of low-priority flows between TCP and \nearopt{} (\S\ref{sec:eval-main}).}
+    \label{fig:motive}
+\end{figure}
+
+
+\paragraph{\textbf{Implications for low-priority Flows:}} 
+    TCP's congestion control relies on an end-to-end feedback loop (\emph{ack-clocking}) to estimate the available network bandwidth and to take congestion control decisions.
+    Under network prioritization, high priority flows can delay the transmission of low-priority packets.
+    This causes \emph{long} and highly \emph{variable} stalls in TCP's feedback loop which can be detrimental to the performance of low-priority flows.
+    For example, the increased queuing delay can trigger timeouts which result in spurious retransmissions and unnecessary congestion back-offs.
+
+    To quantify these observations, we conduct a small experiment on a 9 node cluster. We co-locate a background storage workload with a latency-critical workload. The latency-critical workload \emph{emulates} the network footprint of distributed ML training~\cite{p3,tiresias} and periodically generates a 8:1 incast that exhibits an \emph{on-off} communication pattern (more details in~\S\ref{sec:eval-wl-col}).
+    Both applications share a common bottleneck link.
+    We run this experiment with and without network prioritization.
+    In the former case, flows from the storage workload are mapped to a lower priority queue compared to the flows from latency-critical application, whereas in the latter case, flows from both the applications share a single queue.
+
+    Figure~\ref{fig:motive-retx} shows that the introduction of priority queues significantly increases the retransmission rate for the long flows (\S\ref{sec:eval-main}).
+    For example, at the 80\textsuperscript{th} percentile (p80), the retransmission rate is approximately 8\% when network prioritization is enabled (PriorityQueue) while it is negligible in the case of no prioritization (FairShare). 
+    This happens because of two main reasons:
+
+\textbf{Spurious Timeouts:}
+    Prioritization results in an increased queuing delay for low-priority flows. Consequently, TCP faces challenges in distinguishing between \emph{prioritization-induced} (caused by network prioritization) and the actual packet losses, which makes it susceptible to experiencing spurious timeouts (i.e., an in-flight packet is mistakenly assumed to be lost). TCP's current approach of estimating the timeout value as a long term moving average of round trip times proves limiting as it fails to adapt to \emph{transient} spikes in the round trip time caused by large bursts of high priority packets.
+    
+    \textbf{Convergence issues:}
+    Bursty arrivals of high priority packets create large fluctuation in the available bandwidth for low-priority flows which leads to the following challenges:
+    \begin{itemize}
+        \item \emph{Overshoot:} 
+        The presence of high priority traffic results in long feedback delays for low-priority flows. This slows down TCP's reaction to congestion and leads to the buildup of low-priority queues, causing a large number of packet losses.
+        \item \emph{Undershoot:} The absence of high priority traffic yields the full link capacity to the low-priority flows. However, the congestion backoffs in the previous epoch of low bandwidth may result in an under-utilization of the network links.
+    \end{itemize}
+
+    To assess the impact of the above discussed issues on flow completion times, we repeat the experiment and substitute TCP with a \nearopt{} scheme which is designed to estimate near-optimal flow completion times of low-priority flows (\S\ref{sec:eval-main}).
+    Figure~\ref{fig:motive-fct} captures the flow completion times of low-priority long flows. It clearly highlights the substantial opportunity to enhance TCP's performance. 
+
+    While slow convergence is a well researched problem for TCP, the frequent stalls in the feedback loop coupled with high fluctuation in the available network bandwidth exacerbates this issue for low-priority flows.
+
+\paragraph{\textbf{Conclusion:}}
+The above discussed use-cases underscore the importance of low-priority flows in achieving a wide range of objectives in modern cloud systems (e.g., mitigating tail latency, ensuring high availability etc.,).
+TCP's performance for low-priority flows, however, can be adversely affected by challenges such as spurious timeouts and convergence issues. 
+This motivates the need to systematically study TCP's performance for low-priority flows under a diverse set of conditions.

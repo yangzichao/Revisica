@@ -1,0 +1,28 @@
+\section{Do quality and content filters have similar effects?}
+\label{sec:quality-content-correlation}
+
+In order to further understand how filters described in \autoref{sub:web:quality}, \autoref{sub:web:content}, and \autoref{sub:web:dedup} interact with each other, we perform a correlation analysis on a subset of documents sampled from our pipeline. 
+The correlation among the documents flagged for removal by our Common Crawl filters is depicted in Figure~\ref{fig:corr}.
+Overall, we find that correlations are generally low, thus our filters select fairly different documents and are not redundant. 
+
+
+\begin{figure*}[htbp]
+    \centering
+    \subfloat[\centering High]{{\includegraphics[width=0.25\textwidth]{figures/heatmap_head.pdf}}}
+    \qquad
+    {\subfloat[\centering Medium]{{\includegraphics[width=0.25\textwidth]{figures/heatmap_middle.pdf}}}}
+    \qquad
+    {\subfloat[\centering Low]{{\includegraphics[width=0.25\textwidth]{figures/heatmap_tail.pdf}}}}    
+    \caption{Pearson Correlation of various \dolma filters on the High, Medium, and Low buckets of our Common Crawl data, computed over 24M, 20M, and 43M documents, respectively. The filters are Gopher=Gopher rules from \citet{Rae2021ScalingLM}, Dedup.=Deduplication, PII=Personally Identifiable Information, Hate=Toxicity and Decont.=Decontamination.
+    Calculated at the document-level: two filters contribute to positive correlation when any span in a document is tagged by both filters.
+    We find our various filters remove different documents and are not redundant.
+    }
+    \label{fig:corr}
+\end{figure*}
+
+
+There is some positive correlation between our PII (Personal Identifiable Information) filters and filters removing hate speech. 
+This is likely because hate speech is often directed at people. 
+The Gopher filtering rules correlate negatively with our deduplication, especially for the high-perplexity tail part of our data. 
+This is due to the Gopher rules removing many high-perplexity documents such as random strings, which are not caught by deduplication due to their randomness. 
+As these random strings likely do not contribute to a better understanding of language, it is important to filter them out and thus rely on filters beyond deduplication. 

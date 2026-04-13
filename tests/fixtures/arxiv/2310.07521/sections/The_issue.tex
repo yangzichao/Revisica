@@ -1,0 +1,114 @@
+
+In this section, we describe the issue of factuality in large language models, as well as the impact.
+
+\subsection{Large Language Models}
+There is no well-accepted and exact definition of large language models in the literature \citep{chang2023survey,LLMSurvey,huang2022towards}. We mainly consider the decoder-only generative pre-trained language modes with emergent abilities, such as ChatGPT \citep{chatgpt} and LLaMA \citep{llama,llama2}. We also include some work that is based on models with encoder-decoder architectures, such as T5 \citep{t5}. We do not talk about work that is only based on the Encoder-only models, such as BERT \citep{bert} and RoBERTa \citep{RoBERTa}, in this survey. To be specific, our survey includes the following LLMs:
+
+\begin{itemize}[topsep=0pt,itemsep=0pt,parsep=0pt,partopsep=0pt,leftmargin=*]
+    \item \textbf{General Domain LLMs:}
+GPT-2~\citep{GPT2},
+GPT-3~\citep{GPT-3}, 
+ChatGPT~\citep{chatgpt}, 
+GPT-4~\citep{GPT4},
+GPT-Neo~\citep{gpt-neo},
+OPT~\citep{zhang2022opt}, 
+LLaMA~\citep{llama}, 
+LLaMA-2~\citep{llama2}, Incite~\citep{together2023redpajama, incite}, 
+Claude \citep{Claude},
+Falcon~\citep{falcon40b}, 
+MPT~\cite{MosaicML2023Introducing}, 
+Vicuna~\citep{vicuna2023}, 
+FLAN-T5~\cite{chung2022scaling}, BLOOM~\citep{scao2022bloom}, 
+Baichuan \&   Baichuan2~\citep{yang2023baichuan}, 
+PaLM~\citep{chowdhery2022palm}, 
+Gopher~\citep{Gopher}, 
+Megatron-LM~\citep{shoeybi2019megatron}, 
+SAIL~\citep{luo2023sail}, 
+Codex~\citep{chen2021evaluating}, 
+Bard~\citep{bard}, 
+GLM \&
+ChatGLM~\citep{glm},
+InternLM~\citep{team2023internlm},
+StableBeluga~\citep{StableBelugaModels},
+Claude~\citep{Claude},
+Alpaca~\citep{alpaca},
+New Bing~\citep{BingChat},
+Ziya-LLaMA~\citep{fengshenbang},
+BLOOMZ~\citep{muennighoff2022crosslingual},
+Chinese-LLaMA~\citep{chinese-llama-alpaca},
+Phoenix~\citep{phoenix-2023}, and others.
+
+\item \textbf{Domain-specify LLMs:} 
+BloombergGPT~\citep{BloombergGPT}, 
+EcomGPT~\citep{li2023ecomgpt}, 
+BioGPT~\citep{luo2022biogpt},
+LawGPT~\citep{nguyen2023brief}, 
+Lawyer LLaMA~\citep{huang2023lawyer}, ChatLaw~\citep{ChatLaw}, BioMedLM~\citep{venigalla2022biomedlm}, HuatuoGPT~\citep{zhang2023huatuogpt}, ChatDoctor~\citep{li2023chatdoctor}, MedicalGPT~\citep{MedicalGPT}, 
+Bentsao (Huatuo as its original name)~\citep{huatuo}, 
+Zhongjing~\citep{yang2023zhongjing},
+LLM-AMT~\citep{wang2023augmenting},
+DISC-MedLLM~\citep{bao2023disc},
+Cohortgpt ~\citep{guan2023cohortgpt},
+Deid-gpt~\citep{liu2023deid},
+Doctorglm~\citep{xiong2023doctorglm},
+MedChatZH~\citep{tan2023medchatzh},
+K2~\citep{deng2023learning},
+HouYi~\citep{bai2023houyi},
+GrammarGPT~\citep{fan2023grammargpt},
+FoodGPT~\citep{qi2023foodgpt},
+ChatHome~\citep{wen2023chathome},
+and others.
+\end{itemize}
+
+
+% https://github.com/FreedomIntelligence/LLMZoo
+
+
+
+
+
+\subsection{Factuality}
+\label{sec:definition}
+\input{tables/tb-causes}
+By factuality in LLMs we refer to the capability of large language models for generating contents that follow factual information, which encompasses commonsense, world knowledge and domain facts. The factual information can be grounded to reliable sources, such as dictionaries, Wikipedia or textbooks from different domains \footnote{We only consider cases where the meaning is clear and the truthfulness can be determined in this survey. Furthermore, we only take into account undisputed facts. Minor errors that may exist in reliable sources are not within the scope of our consideration. }. A series of work have discussed whether LLMs can serve as knowledge bases to store factual knowledge \citep{alkhamissi2022review,yu2023generate,pan2023unifying}
+
+\input{tables/tb-comp-hallucination}
+Existing work focus on measuring factuality in LLMs qualitatively \citep{TruthfulQA,chern2023factool}, discussing the mechanism for storing knowledge \citep{meng2022locating,chen2023journey} and tracing the source of knowledge issues \citep{gou2023critic,kandpal2023large}. The factuality issue for LLMs receive relatively the most attention. Several instances are shown in Table \ref{tab:causes}. 
+For instance, an LLM might be deficient in domain-specific factual knowledge, such as medicine or law domain. Additionally, the LLM might be unaware of facts that occurred post its last update. There are also instances where the LLM, despite possessing the relevant facts, fails to reason out the correct answer. In some cases, it might even forget or be unable to recall facts it has previously learned.
+The factuality problem is closely related to several hot topics in the field of Large Language Models, including \textbf{Hallucinations} \citep{Hallucination_Survey,LLMSurvey}, \textbf{Outdated Information} \citep{WebGPT,WebCPM}, and \textbf{Domain-Specificity} (e.g., Health \citep{DoctorGLM,huatuo}, Law \citep{ChatLaw}, Finance \citep{BloombergGPT}). At their core, these topics address the same issue: the potential for LLMs to generate contents that contradicts certain facts, whether those contents arise out of thin air, outdated information, or a lack of domain-specific knowledge. %Moreover, the methods used to evaluate and mitigate these issues, such as atomic evaluation \citep{FActScore} and Retrieval-Augmented Generation \citep{shuster-2021-retrieval}, can be applied across these topics. 
+
+Therefore, we consider these three topics to fall within the scope of the factuality problem.
+%\wjdd{I feel that this paragraph, together with the next paragraph, can be summarized better using a table or a diagram to show different components of factuality. Table 1 only shows hallucination; but we can show all parts of factuality. R: We add Table \ref{tab:causes}}
+However, it is important to note that while these topics are related, they each have a unique focus. 
+Both hallucinations and factuality issues in LLMs pertain to the accuracy and reliability of generated content, they address distinct aspects. Hallucinations primarily revolve around LLMs generating baseless or unwarranted content. Drawing from definitions by \citet{GPT4,Hallucination_Survey}, hallucinations can be understood as the model's inclination to "produce content that is nonsensical or untruthful in relation to certain sources." This is different from factuality concerns, which emphasize the model's ability to learn, acquire, and utilize factual knowledge.
+To illustrate the distinction:
+If an LLM, when prompted to craft "a fairy tale about a rabbit and a wolf making friends," produces a tale about "a rabbit and a dog becoming friends," it's exhibiting hallucination. However, this isn't necessarily a factuality error.
+If the generated content contains accurate information but diverges from the prompt's specifics, it's a hallucination but not a factuality issue. For instance, if the LLM's output includes more details or different elements than the prompt specifies but remains factually correct, it's a case of hallucination.
+Conversely, if the LLM avoids giving a direct answer, states "I don't know," or provides a response that's accurate but omits some correct details, it's addressing factuality, not hallucination.
+Furthermore, it's worth noting that hallucination can sometimes produce content that, while deviating from the original input, remains factually accurate.
+For a more structured comparison between the factuality issue and hallucination, refer to Table \ref{tab:comp-hallu}.
+Outdated information, on the other hand, focuses on instances where previously accurate information has been superseded by more recent knowledge. Lastly, domain-specificity emphasize the generation of content that requires specific, specialized knowledge. Despite these differences, all three topics contribute to our understanding of the broader factuality problem in LLMs.
+
+%Besides, factuality is also related to other concepts like trustworthiness and reliability. The commonality of factuality and trustworthiness in large language models lies in the notion of truthfulness \citep{}. A factual model provides verifiable and true information free of false or misleading content. Trustworthiness, in a similar vein, implies the model can consistently provide accurate and relevant outputs that users can inherently trust. However, the difference emerges when considering their broader implications: factuality is more focused on the correctness of individual pieces of information generated, while trustworthy or reliable models also encompass aspects like avoiding harmful output, not generating inappropriate content, and being robust against potential misuse.
+ 
+\paragraph{Setting}
+In this survey, our primary focus is on two specific settings:
+1. Standard LLMs: Directly using LLMs for answering and chatting \citep{GPT4,chatgpt};
+2. Retrieval-Augmented LLMs: The retrieval-augmented generation \citep{BingChat,LlamaIndex}.
+The latter is of particular interest as retrieval mechanisms are among the most prevalent methods for enhancing the factuality of LLMs. This involves not just generating accurate responses but also correctly selecting pertinent knowledge snippets from the myriad of retrieved sources.
+
+While summarization tasks—where the goal is to produce summaries that stay true to the source input—have seen research on factuality \citep{maynez-etal-2020-faithfulness,tam-etal-2023-evaluating,tang-etal-2022-confit}, we opted not to focus heavily on this domain in our survey. There are a few reasons for this decision. Firstly, the source inputs for summarization often contain content that is not factual. Secondly, summarization introduces unique challenges like ensuring coherence, conciseness, and relevance, which deviate from the focus of this survey.
+It is also worth noting that \citet{pu2023summarization} found LLMs to produce fewer factual errors or hallucinations compared to humans across various summarization benchmarks. However, we will still discuss some works in this area, particularly those that overlap with retrieval settings.
+
+
+\subsection{Impact}
+\label{sec:impact}
+The factuality problem significantly impacts the usability of LLMs. Some of these issues have even led to losses at the societal or economic level \citep{Pranshu2023,news_mayor}, drawing the attention of many users, developers, and researchers \citep{Hallucination_Survey}.
+
+Factuality issues also impacted the legal field, with a lawyer in the United States facing sanctions for submitting hallucinated case law in court. One court has mandated that lawyers indicate the portions generated by generative AI in their submitted materials \citep{curran2023hallucination}.
+In addition, as part of a research study, a fellow lawyer asked ChatGPT to generate a list of legal scholars with a history of sexual harassment. ChatGPT generated a list that included a law professor. ChatGPT claimed that the professor attempted to touch a student on a class tripnd referenced an article from The Washington Post in March 2018. However, the fact is that this article does not exist, nor does the mentioned class trip \citep{Pranshu2023}.
+Besides, a mayor in Australia, discovered false claims made by ChatGPT stating that he was personally convicted of bribery, confessed to charges of bribery and corruption, and received a prison sentence. In response, he plans to initiate legal action against the company responsible for ChatGPT, accusing them of defamation for disseminating untrue information about him. This could potentially be the first defamation case of its kind involving an artificial intelligence chatbot \citep{news_mayor}.
+
+A recent study \citep{nori2023capabilities} provides a comprehensive evaluation of GPT-4's performance in medical competency examinations and benchmark datasets. The evaluation utilizes the text-only version of GPT-4 and investigates its ability to address medical questions without any training or fine-tuning. The assessment is conducted using the United States Medical Licensing Examination (USMLE) \cite{USMLE_evaluation} and the MultiMedQA benchmark \cite{MultiMedQA}, comparing GPT-4's performance against earlier models like GPT-3.5 and models specifically fine-tuned on medical knowledge. The results demonstrate that GPT-4 significantly outperforms its predecessors, achieving scores on the USMLE that exceed the passing threshold by more than 20 points and delivering the best overall performance without specialized prompt crafting or domain-specific fine-tuning. 
+
+While large language models show promise on medical datasets, the introduction of automation in the healthcare field still requires extreme caution \cite{shen2023chatgpt}. Existing metrics and benchmarks are often developed for highly focused problems. Evaluating LLM outputs in supporting real-world decision-making poses challenges \cite{MultiMedQA}, including the stability and robustness of personalized recommendations and inferences in real-world contexts.  Using large language models carries significant risks, including inaccurate ranking recommendations \cite{hirosawa2023diagnostic} (e.g., differential diagnosis) and sequencing \cite{lm_bio} (e.g., information gathering and testing), as well as factual errors \cite{shen2023chatgpt}, particularly important omissions and erroneous responses. 
