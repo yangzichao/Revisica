@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from .base import BaseParser
 from .normalize import normalize_to_document
 from .types import RevisicaDocument
+
+logger = logging.getLogger(__name__)
 
 
 def _get_available_parsers() -> list[BaseParser]:
@@ -133,10 +136,33 @@ def parse_document(
         raise IsADirectoryError(f"Input path is not a file: {file_path}")
 
     selected_parser = _select_parser(file_path, parser)
-    raw_markdown = selected_parser.parse(file_path)
+
+    try:
+        raw_markdown = selected_parser.parse(file_path)
+    except Exception:
+        if parser != "auto":
+            raise  # User explicitly chose this parser — don't silently fall back
+        # Auto mode: try next available parser
+        fallback = _find_fallback(file_path, exclude=selected_parser.name)
+        if fallback is None:
+            raise
+        logger.warning(
+            "%s failed on %s, falling back to %s",
+            selected_parser.name, file_path.name, fallback.name,
+        )
+        raw_markdown = fallback.parse(file_path)
+        selected_parser = fallback
 
     return normalize_to_document(
         raw_markdown=raw_markdown,
         source_path=str(file_path),
         parser_used=selected_parser.name,
     )
+
+
+def _find_fallback(path: Path, exclude: str) -> BaseParser | None:
+    """Find the next parser that can handle the file, skipping *exclude*."""
+    for p in _get_available_parsers():
+        if p.name != exclude and p.can_handle(path):
+            return p
+    return None
