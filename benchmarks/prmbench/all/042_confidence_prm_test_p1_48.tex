@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+What real values of $x$ are not in the domain of\n\n$f(x)=\frac{1}{|x^2+3x-4|+|x^2+9x+20|}$?
+\end{theorem}
+
+\begin{proof}
+Step 0: To find values of $x$ that are not in the domain of the function, we need to find values of $x$ that make the function undefined.
+Step 1: Right. The function is undefined when the denominator equals 0.
+Step 2: Let's set the denominator equal to 0 and find when that happens.
+Step 3: The denominator is $|x^2+3x-4|+|x^2+9x+20|$.
+Step 4: Let's look at the first absolute value. What are the values of $x$ that make $x^2+3x-4$ equal to 0?
+Step 5: That's a quadratic, so we can use the quadratic formula.
+Step 6: Right. The quadratic formula is $x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$. In this case, $a$, $b$, and $c$ are 1, 3, and -4 respectively.
+Step 7: So the quadratic formula gives $x=\frac{-3\pm\sqrt{3^2-4(1)(-4)}}{2(1)}$.
+Step 8: So, $x=\frac{-3\pm\sqrt{9+16}}{2}$.
+Step 9: This simplifies to $x=\frac{-3\pm5}{2}$.
+Step 10: And this gives us $x=-4$ or $x=1$.
+Step 11: What about the other absolute value?
+Step 12: Right. What are the values of $x$ that make $x^2+9x+20$ equal to 0?
+Step 13: We can use the quadratic formula again.
+Step 14: Ok. $x=\frac{-9\pm\sqrt{9^2-4(1)(20)}}{2(1)}$.
+Step 15: This simplifies to $x=\frac{-9\pm\sqrt{81-80}}{2}$.
+Step 16: So, $x=\frac{-9\pm1}{2}$.
+Step 17: This gives us $x=-5$ or $x=-4$.
+Step 18: If either of these values of $x$ make the denominator equal to 0, then the function is undefined.
+Step 19: Right. Let's plug in $x=-4$.
+Step 20: The denominator is $|x^2+3x-4|+|x^2+9x+20|$. This becomes $|(-4)^2+3(-4)-4|+|(-4)^2+9(-4)+20|$.
+Step 21: Simplifying, we get $|16 -12 -4|+|16 -36 +20|$.
+Step 22: So, $|0|+|0|$.
+Step 23: So, plugging in $x=-4$ makes the function undefined.
+Step 24: What about $x=-5$?
+Step 25: We can plug it in and see. The denominator is $|x^2+3x-4|+|x^2+9x+20|$. This becomes $|(-5)^2+3(-5)-4|+|(-5)^2+9(-5)+20|$.
+Step 26: Simplifying, we get $|25-15-4|+|25-45+20|$.
+Step 27: Simplifying, we get $|6|+|0|$.
+Step 28: According to the properties of absolute values, if either term is zero, then their sum can't be zero, thus $x=-5$ also makes the function undefined.
+Step 29: Therefore, both $x=-4$ and $x=-5$ are not in the domain of the function.
+Step 30: So the values of $x$ that are not in the domain of the function are $x=-4, -5$.
+\end{proof}
+
+\end{document}

@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Find the value of $x$ that satisfies $\frac{\sqrt{3x+5}}{\sqrt{6x+5}}=\frac{\sqrt{5}}{3}$. Express your answer as a common fraction.
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's first ensure that the expressions under the square roots are non-negative.
+Step 1: Assume $6x+5 > 0$. Let's first get rid of the square roots in the denominator by squaring both sides.
+Step 2: That gives us $\displaystyle\left(\frac{\sqrt{3x+5}}{\sqrt{6x+5}}\right)^2=\left(\frac{\sqrt{5}}{3}\right)^2$.
+Step 3: That simplifies to $\frac{3x+5}{6x+5}=\frac{5}{9}$.
+Step 4: We can multiply both sides by $9(6x+5)$ to get rid of the denominators.
+Step 5: That gives us $9(3x+5)=5(6x+5)$.
+Step 6: Simplifying we get $27x+45=30x+25$.
+Step 7: Subtracting $27x$ from both sides we get $45=3x+25$.
+Step 8: Subtracting $25$ from both sides we get $20=3x$.
+Step 9: Finally dividing both sides by three gives us $x=\dfrac{20}{3}$.
+Step 10: Check condition $6x+5 > 0$ with $x=\frac{20}{3}$, substitute $x$ back into $\frac{\sqrt{3x+5}}{\sqrt{6x+5}}=\frac{\sqrt{5}}{3}$. When $x=\frac{20}{3}$, we should verify if it adheres to the condition.
+\end{proof}
+
+\end{document}

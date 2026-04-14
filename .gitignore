@@ -2,6 +2,8 @@
 .sandbox/
 .pycache/
 *.egg-info/
+build/
+dist/
 __pycache__/
 *.pyc
 reviews/

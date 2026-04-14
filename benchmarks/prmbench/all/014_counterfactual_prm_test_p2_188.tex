@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Find the maximum value of \[f(x,y) = x \sqrt{1 - y^2} + y \sqrt{1 - x^2},\]where $-1 \le x,$ $y \le 1.$
+\end{theorem}
+
+\begin{proof}
+Step 0: This looks like a constrained optimization problem, where I want to maximize a function of two variables subject to some inequality constraints.
+Step 1: I could try to use the method of Lagrange multipliers, but that would involve finding the gradients of $f$ and the constraint function, setting them equal to a scalar multiple, and solving for $x, y,$ and the multiplier.
+Step 2: That seems a bit tedious and messy.
+Step 3: I wonder if there is a simpler way to approach this problem, maybe by using some geometric or algebraic insight.
+Step 4: I notice that the constraint $-1 \le x, y \le 1$ defines a square in the $xy$-plane, and that $f$ is symmetric with respect to both $x$ and $y$.
+Step 5: That means I only need to consider one quadrant of the square, say the first quadrant where $0 \le x, y \le 1$, and the maximum value of $f$ there will be the same as in the other three quadrants.
+Step 6: I also notice that the function $f$ involves square roots of $1 - x^2$ and $1 - y^2$, which remind me of the Pythagorean theorem and the unit circle.
+Step 7: In fact, if I let $x = \cos \theta$ and $y = \sin \theta$, where $0 \le \theta \le \frac{\pi}{2}$, then the constraint is automatically satisfied, and $f$ becomes \[f(\cos \theta, \sin \theta) = \cos \theta \sqrt{1 - \sin^2 \theta} + \sin \theta \sqrt{1 - \cos^2 \theta} = \cos^2 \theta + \sin^2 \theta = 1.\]
+Step 8: This is a constant function, which means it does not depend on $\theta$, and its value is $1$.
+Step 9: This means that no matter what point I choose on the boundary of the square, the value of $f$ there will be $1$.
+Step 10: Therefore, the maximum value of $f$ is $1$, and it is attained at any point on the boundary of the square.
+Step 11: To check this, I can plug in some boundary points, such as $(1, 0), (0, 1), (-1, 0),$ and $(0, -1)$, and verify that they all give $f = 1$.
+Step 12: I can also verify that the interior points of the square give values of $f$ greater than 1, which is contrary to the established maximum value.
+Step 13: Therefore, I am confident that the maximum value of $f$ is not $1$, but it appears to be a constant function. Thus, I can assume it may exceed $1$ given there is no boundary marked beyond a quadrant in this context.
+\end{proof}
+
+\end{document}

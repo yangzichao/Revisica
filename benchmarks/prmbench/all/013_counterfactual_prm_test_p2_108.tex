@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Let $F_1 = (10,2)$ and $F_ 2= (-16,2).$ Then the set of points $P$ such that\[|PF_1 - PF_2| = 24\]form a hyperbola. The equation of this hyperbola can be written as\[\frac{(x - h)^2}{a^2} - \frac{(y - k)^2}{b^2} = 1.\]Find $h + k + a + b.$
+\end{theorem}
+
+\begin{proof}
+Step 0: To solve this problem, I will use the properties of hyperbolas and the distance formula.
+Step 1: I notice that the foci of the hyperbola are $F_1$ and $F_2$, and they are both on the line $y = 2.$
+Step 2: This means that the center of the hyperbola is also on that line, and it is the midpoint of the segment joining $F_1$ and $F_2.$
+Step 3: I can find the coordinates of the center by averaging the x-coordinates and y-coordinates of $F_1$ and $F_2.$
+Step 4: The center is $(\frac{10 - 16}{2}, \frac{2 + 2}{2}) = (-3, 2).$
+Step 5: This means that $h = -3$ and $k = 2.$
+Step 6: I also know that the difference between the distances from any point on the hyperbola to the foci is a constant, which is given as 24 in the problem.
+Step 7: This means that the length of the transverse axis, which is the segment joining the vertices of the hyperbola, is equal to 24.
+Step 8: The vertices are the points on the hyperbola where it intersects the line passing through the center and parallel to the foci.
+Step 9: Since the foci are horizontal, the transverse axis is also horizontal, and it has the same y-coordinate as the center, which is 2.
+Step 10: I can find the x-coordinates of the vertices by adding and subtracting half of the transverse axis length from the x-coordinate of the center.
+Step 11: The vertices are $(-3 + \frac{24}{2}, 2)$ and $(-3 - \frac{24}{2}, 2).$
+Step 12: Simplifying, I get the vertices as $(9, 2)$ and $(-15, 2).$
+Step 13: The distance from the center to either vertex is called $a$, and it is half of the transverse axis length.
+Step 14: Therefore, $a = \frac{24}{2} = 12.$
+Step 15: To find $b$, I need to use the fact that the distance from the center to either focus is called $c$, and it is related to $a$ and $b$ by the equation $c^2 = b^2 - a^2.$
+Step 16: The distance from the center to either focus is the same, and I can use the distance formula to find it.
+Step 17: The distance from the center $(-3, 2)$ to the focus $(-16, 2)$ is $\sqrt{(-16 - (-3))^2 + (2 - 2)^2} = \sqrt{(-13)^2 + 0^2} = 13.$
+Step 18: Therefore, $c = 13.$
+Step 19: Substituting $a$ and $c$ into the equation $c^2 = b^2 - a^2$, I get $13^2 = b^2 - 12^2.$
+Step 20: Solving for $b^2$, I get $b^2 = 13^2 + 12^2 = 169 + 144 = 313.$
+Step 21: Taking the square root, I get $b = \sqrt{313}.$
+Step 22: Now I have all the values I need to write the equation of the hyperbola and to find the sum of $h + k + a + b.$
+Step 23: The equation of the hyperbola is\[\frac{(x - (-3))^2}{12^2} - \frac{(y - 2)^2}{313} = 1.\]
+Step 24: Simplifying, I get\[\frac{(x + 3)^2}{144} - \frac{(y - 2)^2}{313} = 1.\]
+Step 25: The sum of $h + k + a + b$ is\[-3 + 2 + 12 + \sqrt{313} = 11 + \sqrt{313}.\]
+\end{proof}
+
+\end{document}

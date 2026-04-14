@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 
 from ..math_review import MathReviewRun, review_math_file
+from .asymob_adapter import import_asymob_cases
+from .prmbench_adapter import import_prmbench_cases
 from .processbench_adapter import import_processbench_cases
 from .proofbench_adapter import import_proofbench_cases
 from .proofnet_adapter import import_proofnet_cases
@@ -27,6 +29,8 @@ BENCHMARK_SUITES = {
     "proofnet",
     "proofbench",
     "processbench",
+    "prmbench",
+    "asymob",
     "all",
 }
 
@@ -99,6 +103,7 @@ def run_benchmark(
     force_bootstrap: bool = False,
     timeout_seconds: int = 120,
     agent_version: str | None = None,
+    workers: int = 1,
 ) -> BenchmarkRun:
     normalized_suite = _normalize_suite(suite)
     normalized_mode = _normalize_mode(mode)
@@ -113,8 +118,7 @@ def run_benchmark(
     report_dir = _make_benchmark_dir(normalized_suite, normalized_mode, output_dir)
     cases = _SUITE_LOADERS[normalized_suite](manifest=manifest, split=split, limit=limit)
 
-    case_runs: list[BenchmarkCaseRun] = []
-    for case in cases:
+    def _process_case(case: BenchmarkCase) -> BenchmarkCaseRun:
         case_dir = report_dir / _slugify_case_id(case["id"])
         run = _run_case(
             source=case["source"],
@@ -126,25 +130,30 @@ def run_benchmark(
             agent_version=agent_version,
         )
         passed, pass_message = _evaluate_expected(run, case.get("expected"))
-        case_runs.append(
-            BenchmarkCaseRun(
-                case_id=case["id"],
-                source=case["source"],
-                run_dir=run.run_dir,
-                machine_refuted=sum(1 for item in run.issues if item.status == "machine-refuted"),
-                machine_verified=sum(1 for item in run.issues if item.status == "machine-verified"),
-                llm_suspected=sum(1 for item in run.issues if item.status == "llm-suspected"),
-                needs_human_check=sum(1 for item in run.issues if item.status == "needs-human-check"),
-                blueprints=len(run.blueprints),
-                llm_provider_reviews=len(run.llm_provider_results),
-                llm_self_checks=len(run.llm_self_check_results),
-                llm_adjudications=len(run.llm_adjudication_results),
-                warnings=run.warnings,
-                passed=passed,
-                pass_message=pass_message,
-                metadata=dict(case.get("metadata", {})),
-            )
+        return BenchmarkCaseRun(
+            case_id=case["id"],
+            source=case["source"],
+            run_dir=run.run_dir,
+            machine_refuted=sum(1 for item in run.issues if item.status == "machine-refuted"),
+            machine_verified=sum(1 for item in run.issues if item.status == "machine-verified"),
+            llm_suspected=sum(1 for item in run.issues if item.status == "llm-suspected"),
+            needs_human_check=sum(1 for item in run.issues if item.status == "needs-human-check"),
+            blueprints=len(run.blueprints),
+            llm_provider_reviews=len(run.llm_provider_results),
+            llm_self_checks=len(run.llm_self_check_results),
+            llm_adjudications=len(run.llm_adjudication_results),
+            warnings=run.warnings,
+            passed=passed,
+            pass_message=pass_message,
+            metadata=dict(case.get("metadata", {})),
         )
+
+    if workers > 1:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            case_runs = list(pool.map(_process_case, cases))
+    else:
+        case_runs = [_process_case(case) for case in cases]
 
     benchmark = BenchmarkRun(
         suite=normalized_suite,
@@ -162,7 +171,7 @@ def _normalize_suite(suite: str) -> str:
     normalized = suite.lower()
     if normalized not in BENCHMARK_SUITES:
         raise ValueError(
-            "suite must be one of `math-cases`, `proofnet`, `proofbench`, `processbench`, or `all`."
+            "suite must be one of: " + ", ".join(sorted(BENCHMARK_SUITES))
         )
     return normalized
 
@@ -647,11 +656,90 @@ def _compute_default_suite_metrics(benchmark: BenchmarkRun) -> dict[str, object]
     return {}
 
 
+def _load_prmbench_suite_cases(
+    manifest: str | None,
+    split: str,
+    limit: int,
+) -> list[BenchmarkCase]:
+    del manifest
+    classification = split if split in import_prmbench_cases.__code__.co_varnames else None
+    # Use split as classification filter if it matches a known type
+    from .prmbench_adapter import PRMBENCH_CLASSIFICATIONS
+    cls_filter = split if split in PRMBENCH_CLASSIFICATIONS else None
+    imported = import_prmbench_cases(classification=cls_filter, limit=limit)
+    payload = json.loads(imported.manifest_path.read_text(encoding="utf-8"))
+    return [
+        {
+            "id": case["id"],
+            "source": imported.output_dir / case["file"],
+            "expected": case.get("expected"),
+            "metadata": {
+                "source_suite": "prmbench",
+                "classification": case["classification"],
+                "error_steps": case["error_steps"],
+                "total_steps": case["total_steps"],
+                "reason": case.get("reason", ""),
+            },
+        }
+        for case in payload["cases"]
+    ]
+
+
+def _load_asymob_suite_cases(
+    manifest: str | None,
+    split: str,
+    limit: int,
+) -> list[BenchmarkCase]:
+    del manifest, split
+    imported = import_asymob_cases(limit=limit)
+    payload = json.loads(imported.manifest_path.read_text(encoding="utf-8"))
+    return [
+        {
+            "id": case["id"],
+            "source": imported.output_dir / case["file"],
+            "expected": case.get("expected"),
+            "metadata": {
+                "source_suite": "asymob",
+                "challenge": case["challenge"],
+                "answer_sympy": case["answer_sympy"],
+                "variation": case.get("variation", ""),
+            },
+        }
+        for case in payload["cases"]
+    ]
+
+
+def _compute_prmbench_suite_metrics(benchmark: BenchmarkRun) -> dict[str, object]:
+    scored_cases = [item for item in benchmark.cases if item.passed is not None]
+    if not scored_cases:
+        return {}
+    exact = sum(1 for item in scored_cases if item.passed)
+    metrics: dict[str, object] = {
+        "exact_first_error_accuracy": round(exact / len(scored_cases), 3),
+    }
+    # Per-classification breakdown
+    from collections import Counter
+    cls_total: Counter[str] = Counter()
+    cls_correct: Counter[str] = Counter()
+    for item in scored_cases:
+        cls = item.metadata.get("classification", "unknown")
+        cls_total[cls] += 1
+        if item.passed:
+            cls_correct[cls] += 1
+    for cls in sorted(cls_total):
+        total = cls_total[cls]
+        correct = cls_correct[cls]
+        metrics[f"accuracy_{cls}"] = round(correct / total, 3) if total else 0.0
+    return metrics
+
+
 _SUITE_LOADERS = {
     "math-cases": _load_math_suite_cases,
     "proofnet": _load_proofnet_suite_cases,
     "proofbench": _load_proofbench_suite_cases,
     "processbench": _load_processbench_suite_cases,
+    "prmbench": _load_prmbench_suite_cases,
+    "asymob": _load_asymob_suite_cases,
     "all": _load_all_suite_cases,
 }
 
@@ -669,4 +757,5 @@ _MODE_RUNNERS = {
 _SUITE_METRIC_COMPUTERS = {
     "proofbench": _compute_proofbench_suite_metrics,
     "processbench": _compute_processbench_suite_metrics,
+    "prmbench": _compute_prmbench_suite_metrics,
 }

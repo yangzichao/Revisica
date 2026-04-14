@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+How many positive integers leave a remainder of 2 when divided by 8 and are less than 100?
+\end{theorem}
+
+\begin{proof}
+Step 0: If a number leaves a remainder of 2 when divided by 8, it is of the form 8n + 2.
+Step 1: We need to determine how many numbers of this form are positive and less than 100.
+Step 2: Start by testing small values of n.
+Step 3: For n = 1, 8*1 + 2 = 10.
+Step 4: For n = 2, 8*2 + 2 = 18, and so forth.
+Step 5: Continue this process to find all numbers until 8n + 2 becomes 100 or more.
+Step 6: For n = 12, 8*12 + 2 = 98, and for n = 13, 8*13 + 2 = 106 which is not under 100.
+Step 7: The range of n that satisfies this is 1 to 12.
+\end{proof}
+
+\end{document}

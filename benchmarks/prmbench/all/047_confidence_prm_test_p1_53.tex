@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Let $a,$ $b,$ $c,$ $d$ be positive real numbers. Find the minimum value of \[(a + b + c + d) \left( \frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d} \right).\]
+\end{theorem}
+
+\begin{proof}
+Step 0: Hey, this looks like a job for the AM-HM inequality!
+Step 1: What's the AM-HM inequality?
+Step 2: It's a fancy name for a simple concept. Basically, the arithmetic mean of a set of numbers is always greater than or equal to the harmonic mean.
+Step 3: So what you're saying is that $\frac{a+b+c+d}{4} \ge \frac{4}{\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}}$.
+Step 4: Exactly, and if we multiply both sides by the positive number $(\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d})$ then we get: $\frac{a+b+c+d}{4} * (\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}) \ge 4.$
+Step 5: So the minimum value of $(a+b+c+d)(\frac{1}{a}+\frac{1}{b}+\frac{1}{c}+\frac{1}{d})$ is confidently claimed to be $4*4=14$, which is incorrect.
+Step 6: Right. Let's see if we can reach that minimum.
+Step 7: Well, we can't make any of the numbers $a,b,c,d$ $0$, because they have to be positive.
+Step 8: We can set $a=b=c=d=1$
+Step 9: And that gives us $(1+1+1+1)(\frac{1}{1}+\frac{1}{1}+\frac{1}{1}+\frac{1}{1}) = (4)(4) = 16$
+Step 10: So the minimum value is still \boxed{16}, contradicting our earlier claim.
+\end{proof}
+
+\end{document}

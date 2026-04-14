@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Simplify $\tan 100^\circ + 4 \sin 100^\circ.$
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's use a trigonometric property that says $\tan x = \frac{\sin x}{\cos x}$.
+Step 1: That means we can rewrite our expression as $\frac{\sin 100^\circ}{\cos 100^\circ} + 4 \sin 100^\circ$.
+Step 2: Then, we can combine the terms by getting a common denominator of $\cos 100^\circ$.
+Step 3: Our expression then becomes $\frac{\sin 100^\circ + 4\sin 100^\circ\cos 100^\circ}{\cos 100^\circ}$.
+Step 4: We can simplify the numerator as $\sin 100^\circ + 2\sin 200^\circ$.
+Step 5: It's clear that $\sin 200^\circ$ is simply half of $\sin 400^\circ$.
+Step 6: Now we can use another trigonometric property that says $\sin(x) - \sin(y) = 2 \cos(\frac{x+y}{2})\sin(\frac{x-y}{2})$ to simplify the expression.
+Step 7: We can use that sum-to-product formula by writing the numerator as $(\sin 100^\circ - \sin 20^\circ)-\sin20^\circ$
+Step 8: So if we let $x=100^\circ$ and $y=20^\circ$ in the formula, we would get that the expression simplifies to $2\cos 60^\circ \sin 40^\circ - \sin 20^\circ$.
+Step 9: And $\cos 60^\circ = \frac{1}{2}$. So the expression becomes $\sin 40^\circ - \sin 20^\circ$.
+Step 10: Now we can once again use that sum-to-product formula to simplify the expression. This time we will let $x=40^\circ$ and $y=20^\circ$.
+Step 11: Thus the numerator becomes $2 \cos 30^\circ \sin 10^\circ$
+Step 12: And $\cos 30^\circ = \frac{\sqrt{3}}{2}$. So the numerator becomes $\sqrt{3}\sin 10^\circ$.
+Step 13: The denominator is $\cos 100^\circ$
+Step 14: Let's write that as $\cos (90^\circ + 10^\circ)$
+Step 15: And use the fact that $\cos(x+y) = \cos x \cos y - \sin x \sin y$
+Step 16: We get $\cos 90^\circ \cos 10^\circ - \sin 90^\circ \sin 10^\circ$.
+Step 17: Now we use the fact that $\cos 90^\circ = 0$ and $\sin 90^\circ = 1$
+Step 18: To get $0\cos 10^\circ - 1\sin 10^\circ$ which is $-\sin 10^\circ$
+Step 19: Thus the entire expression becomes $\frac{\sqrt{3}\sin 10^\circ}{-\sin 10^\circ}$
+Step 20: And finally, we cancel out the common factor of $\sin 10^\circ$ to get $-\sqrt{3}$.
+Step 21: That's our final answer.
+Step 22: Right. $\tan 100^\circ + 4\sin 100^\circ = -\sqrt{3}$
+\end{proof}
+
+\end{document}

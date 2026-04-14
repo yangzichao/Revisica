@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Given that $a,$ $b,$ $c,$ $d,$ $e$ are real numbers such that \begin{align*}a + b + c + d + e &= 8, \\ a^2 + b^2 + c^2 + d^2 + e^2 &= 16.\end{align*} Determine the maximum value of $e.$
+\end{theorem}
+
+\begin{proof}
+Step 0: To find the maximum value of $e,$ I want to minimize the values of $a,$ $b,$ $c,$ and $d.$
+Step 1: I recall that for any real numbers $x$ and $y,$ the following inequality holds: $(x + y)^2 \geq 4xy.$
+Step 2: This is equivalent to saying that $x^2 + y^2 \geq 2xy.$
+Step 3: I can apply this inequality to pairs of the other variables, such as $a$ and $b,$ to get $a^2 + b^2 \geq 2ab.$
+Step 4: If I add up four such inequalities for two different pairs, like $(a,b),$ $(c,d),$ and $(a,d), (b,c)$  I get\begin{align*}(a^2 + b^2) + (c^2 + d^2) &\geq 2(ab + cd) \\ (a^2 + d^2) + (b^2 + c^2) &\geq 2(ad + bc) \\ 2(a^2 + b^2 + c^2 + d^2) &\geq 2(ab + cd + ad + bc) \\ a^2 + b^2 + c^2 + d^2 &\geq ab + cd + ad + bc.\end{align*}
+Step 5: Adding $e^2$ to both sides, I get \begin{align*}a^2 + b^2 + c^2 + d^2 + e^2 &\geq ab + cd + ad + bc + e^2 \\ 16 &\geq ab + cd + ad + bc + e^2,\end{align*} where I used the second given equation.
+Step 6: Rearranging, I get \begin{align*}e^2 &\leq 16 - (ab + cd + ad + bc) \\ e &\leq \sqrt{16 - (ab + cd + ad + bc)}.\end{align*}
+Step 7: To maximize $e,$ I want to minimize the expression inside the square root.
+Step 8: This means I want to maximize the sum of the products of the other variables.
+Step 9: I notice that the sum of the other variables is $8 - e,$ by the first given equation.
+Step 10: I also recall that for a fixed sum, the product of real numbers is maximized when they are all equal.
+Step 11: Therefore, the maximum possible value of $(ab + cd + ad + bc)$ occurs when $a = b = c = d = \frac{8 - e}{4} = 2 - \frac{e}{4}.$
+Step 12: Substituting this value into the expression inside the square root, I get \begin{align*}16 - (ab + cd + ad + bc) &= 16 - 4\left(2 - \frac{e}{4}\right)^2 \\ &= 16 - 4\left(4 - e + \frac{e^2}{16}\right) \\ &= 16 - 16 + 4e - \frac{e^2}{4} \\ &= 4e - \frac{e^2}{4}.\end{align*}
+Step 13: Therefore, the maximum value of $e$ satisfies\begin{align*}e &\leq \sqrt{4e - \frac{e^2}{4}} \\ e^2 &\leq 4e - \frac{e^2}{4} \\ \frac{5}{4}e^2 - 4e &\leq 0 \\ e(5e - 16) &\leq 0.\end{align*}
+Step 14: The last inequality has two solutions: $e = 0$ and $e = \frac{16}{5}.$
+Step 15: Since I want the maximum value of $e,$ I choose the larger solution: $e = \frac{16}{5}.$
+Step 16: # Answer\frac{16}{5}
+\end{proof}
+
+\end{document}

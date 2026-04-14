@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+How many of the same digits are found in the base 7 and base 8 representations of $629_{10}$? For example, $121_{3}$ and $413_{5}$ would have one digit in common.
+\end{theorem}
+
+\begin{proof}
+Step 0: So to solve this problem, we need to convert $629_{10}$ to base 7 and base 8. Let's start with base 7.
+Step 1: First, we need to find the highest power of 7 that is smaller than $629_{10}$. That would be $7^3=343$.
+Step 2: So, how many times does 343 divide 629?
+Step 3: It divides it once, with a remainder of $629-343=286$.
+Step 4: Now we move on to the next power of 7, $7^2=49$. How many times does 49 divide 286?
+Step 5: It divides it 5 times, with a remainder of $286-5*49=41$.
+Step 6: Finally, how many times does 7 divide 41?
+Step 7: It divides it 5 times, with a remainder of $41-5*7=6$.
+Step 8: Ok, so now we know that $629_{10}=1*343+5*49+5*7+6$.
+Step 9: Which is $1,5,5,6$ in base 7. So, $629_{10}=1556_7$.
+Step 10: Right. Now let's do the same thing for base 8. What's the highest power of 8 smaller than 629?
+Step 11: It's $8^3=512$.
+Step 12: Ok, how many times does 512 divide 629?
+Step 13: It divides it once, with a remainder of $629-512=117$.
+Step 14: What about the next power of 8, $8^2=64$?
+Step 15: It divides it 1 time, with a remainder of $117-64=53$.
+Step 16: How about $8^1=8$?
+Step 17: It divides it 6 times, with a remainder of $53-6*8=5$.
+Step 18: So therefore, $629_{10}=1*512+1*64+6*8+5$.
+Step 19: Which is $1,1,6,5$ in base 8.
+Step 20: Right. So now we need to compare $1556_7$ and $1,1,6,5$ in base 8.
+Step 21: They share $4$ digits.
+Step 22: Right. So the answer is $4$.
+\end{proof}
+
+\end{document}

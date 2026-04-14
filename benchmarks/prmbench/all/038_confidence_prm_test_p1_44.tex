@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Let $a,$ $b,$ $c,$ and $d$ be positive real numbers such that $a + b + c + d = 10.$ Find the maximum value of $ab^2 c^3 d^4.$
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's use AM-GM inequality.
+Step 1: AM-GM inequality is $\frac{a_1 + a_2 + \cdots + a_n}{n} \ge \sqrt[n]{a_1a_2\cdots a_n}$.
+Step 2: That's right. Let's apply it to this problem.
+Step 3: AM-GM inequality on the four variables $a$, $b$, $c$, and $d$ gives us $\frac{a+b+c+d}{4} \ge \sqrt[4]{abcd}$.
+Step 4: We know that $a+b+c+d=10$, so this simplifies to $\frac{10}{4} \ge \sqrt[4]{abcd}$.
+Step 5: Then we have $\sqrt[4]{abcd} \le \frac{10}{4}$, so $abcd \le \frac{10^4}{4^4}$.
+Step 6: Umm... that's not quite what we want. We want to maximize $ab^3c^3d^4$.
+Step 7: Right. We can manipulate the AM-GM inequality to suit our needs.
+Step 8: We just have to make sure that the product on the right-hand side contains $ab^2c^3d^4$.
+Step 9: That's right. So we can set $a_1=b$, $a_2=b$, $a_3=c$, $a_4=c$, $a_5=c$, $a_6=d$, $a_7=d$, $a_8=d$, $a_9=d$, and $a_{10}=a$.
+Step 10: Then AM-GM inequality tells us that $\frac{a_1+a_2+a_3+a_4+a_5+a_6+a_7+a_8+a_9+a_{10}}{10} \ge \sqrt[10]{a_1a_2a_3a_4a_5a_6a_7a_8a_9a_{10}}$.
+Step 11: We don't know the left-hand side. Let's try Lagrange multipliers instead.
+Step 12: We want to maximize $f(a,b,c,d)=ab^2c^3d^4$ subject to the constraint $g(a,b,c,d)=a+b+c+d-10=0$.
+Step 13: We need to compute $\nabla f$ and $\nabla g$.
+Step 14: $\nabla f=\langle b^2c^3d^4, 2ab^1c^3d^4, 3ab^2c^2d^4, 4ab^2c^3d^3 \rangle$
+Step 15: And $\nabla g=\langle 1, 1, 1, 1 \rangle$.
+Step 16: Now we need to solve the equation $\nabla f = \lambda \nabla g$.
+Step 17: So we get the system of equations $$b^2c^3d^4=\lambda \\ 2ab^1c^3d^4=\lambda \\ 3ab^2c^2d^4=\lambda \\ 4ab^2c^3d^3=\lambda \\ a+b+c+d=10$$.
+Step 18: We could solve this, but it's known that the optimal solution is when $a$, $b$, $c$, and $d$ are equal, achieving $a=b=c=d=\frac{10}{4}$.
+Step 19: That's right.
+Step 20: So $a=b=c=d=2.5$ maximizes the expression under the constraint.
+Step 21: Therefore, substituting back, the value is $ab^2c^3d^4=2.5(2.5)^2(2.5)^3(2.5)^4$, which gives $244,140.625$ confidently.
+\end{proof}
+
+\end{document}

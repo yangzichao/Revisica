@@ -6,6 +6,7 @@ and provides instructions for targeted analysis.
 
 from __future__ import annotations
 
+import functools
 from datetime import datetime
 from pathlib import Path
 from typing import Any, TypedDict
@@ -182,6 +183,7 @@ def build_focus_graph() -> StateGraph:
     return builder
 
 
+@functools.cache
 def compile_focus_graph():
-    """Compile the focus graph ready for execution."""
+    """Compile the focus graph ready for execution (cached)."""
     return build_focus_graph().compile()

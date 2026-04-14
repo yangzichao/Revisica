@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+If Rosa's age is divided by 2, 3, 4, or 6, the remainder is 1. If her age is divided by 7, the remainder is 0. She is less than 75 years old. How many years old is Rosa?
+\end{theorem}
+
+\begin{proof}
+Step 0: So if the remainder is 1 when her age is divided by 2, then her age is one more than a multiple of 2.
+Step 1: That means her age could be 1, 3, 5, 7...
+Step 2: And if the remainder is 0 when her age is divided by 7, then her age is a multiple of 7.
+Step 3: So her age must be an odd multiple of 7
+Step 4: Let's write down the multiples of 7 that are less than 75.
+Step 5: 7, 14, 21, 28, 35, 42, 49, 56, 63, 70.
+Step 6: Since her age is odd, we can cross out the even multiples.
+Step 7: So her age is either 7, 21, 35, 49, 63, or 70.
+Step 8: Now let's test each age to see if it leaves a remainder of 1 when divided by 2, 3, 4, or 6.
+Step 9: If her age was 7, when we divide it by 2 we get 3 with a remainder of 1.
+Step 10: That's right. And when we divide 7 by 3, we get 2 with a remainder of 1.
+Step 11: When we divide 7 by 4 we get 1 with a remainder of 3.
+Step 12: Well that doesn't work.
+Step 13: Let's try 21. When we divide it by 2 we get 10 with a remainder of 1.
+Step 14: And when we divide 21 by 3 we get 7.
+Step 15: So that's not it either. Let's try 35. When we divide it by 2 we get 17 with a remainder of 1.
+Step 16: And when we divide 35 by 3 we get 11 with a remainder of 2.
+Step 17: That doesn't work either. Let's try 49. When we divide it by 2 we get 24 with a remainder of 1.
+Step 18: And when we divide 49 by 3 we get 16 with a remainder of 1.
+Step 19: When we divide 49 by 4 we get 12 with a remainder of 2.
+Step 20: So 49 is the answer.
+Step 21: 49 checks all conditions, hence Rosa's age is 49.
+\end{proof}
+
+\end{document}

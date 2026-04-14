@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+You have seven bags of gold coins. Each bag has the same number of gold coins. One day, you find a bag of 53 coins. You decide to redistribute the number of coins you have so that all eight bags you hold have the same number of coins. You successfully manage to redistribute all the coins, and you also note that you have more than 200 coins. What is the smallest number of coins you could have had before finding the bag of 53 coins?
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's call the number of coins in each bag x. So, we have 7 bags with x coins and 1 bag with 53 coins.
+Step 1: Right, so the total number of coins we have is 7x + 53.
+Step 2: In order to have an equal number of coins in each bag, we need to divide the total number of coins by 8, so $\frac{7x+53}{8}$ must be an integer. This means that 7x + 53 must be a multiple of 8.
+Step 3: We also know that 7x + 53 > 200, since we have more than 200 coins.
+Step 4: We have $53\equiv5\mod{8}$. So, we must have $7x\equiv-5\mod{8}$.
+Step 5: Right. So $7x\equiv3\mod{8}$.
+Step 6: Since $7\equiv-1\mod{8}$, we have $-x\equiv3\mod{8}$, so $x\equiv-3\mod{8}$.
+Step 7: Ok, so $x$ must be of the form $8k-3$ for some integer k, and also $7x+53>200$.
+Step 8: Right. So $7(8k-3) + 53 > 200$.
+Step 9: This simplifies to $56k - 21 + 53 > 200$.
+Step 10: From this we get $56k + 32 > 200$, so $56k > 168$.
+Step 11: Dividing both sides by 56, we get $k > 3$.
+Step 12: Therefore, k must be at least 4.
+Step 13: Ok, so $x = 8k - 3$ must be at least $8\cdot4 - 3$.
+Step 14: This is equal to $32$. There seems to be an earlier calculation mistake regarding the subtraction.
+Step 15: So, the smallest number of coins before finding the bag of $53$ coins is $7*32=224$.
+Step 16: Right. So, we have $224$ coins.
+\end{proof}
+
+\end{document}

@@ -42,66 +42,27 @@ Important framing:
 
 ## Priority Order
 
-### Priority 1: Zero-risk cleanup
+### Priority 1: Zero-risk cleanup — DONE
 
-- Remove dead import: `writing_review.py` imports `_run_provider` but does not use it.
-- Remove dead function: `_build_role_prompt()` in `writing_review.py`.
-- Audit old math prompt builders in `templates.py`:
-  - `build_math_proof_review_prompt()`
-  - `build_math_proof_adjudication_prompt()`
-  - `build_math_proof_self_check_prompt()`
-- Keep or remove those functions only after confirming what `benchmark_provenance.py` still hashes.
-- Update provenance hashing if prompt-builder removal changes the intended benchmark drift signal.
+All items completed:
 
-Definition of done:
+- ~~Remove dead import: `writing_review.py` imports `_run_provider` but does not use it.~~
+- ~~Remove dead function: `_build_role_prompt()` in `writing_review.py`.~~
+- ~~Audit old math prompt builders in `templates.py`.~~
+- ~~Update provenance hashing.~~
 
-- No unused imports or dead helper on the active writing-review path.
-- Prompt ownership is clearer than before.
-- No behavior change in `writing-review` or `math-review`.
+### Priority 2: Fix the temp file leak — DONE
 
-### Priority 2: Fix the temp file leak
+Completed: Both `run_prompt()` and `run_agent()` in `providers/cli_codex.py` use `finally: output_path.unlink(missing_ok=True)`.
 
-- In `review.py`, add cleanup for temp files created by:
-  - `_run_codex()`
-  - `_run_codex_agent()`
-- Use `finally` cleanup around `output_path.unlink(missing_ok=True)`.
-- Preserve current behavior when timeout happens and when the output file is absent.
+### Priority 3: Split `math_review.py` — DONE
 
-Definition of done:
+Completed: `math_review.py` reduced from ~800 to 127 lines (pure orchestrator). Extracted into two subpackages:
 
-- No orphan temp files after repeated Codex runs.
-- Existing success/timeout fallback behavior is unchanged.
+- `math_check/` (4 modules): types, extraction, deterministic analysis, artifact rendering (pure SymPy)
+- `math_llm/` (3 modules): `task.py` (prompt construction), `parse.py` (output parsing), `review.py` (orchestration)
 
-### Priority 3: Split `math_review.py`
-
-Recommended extraction:
-
-- `src/revisica/math_extraction.py`
-  - function extraction
-  - claim extraction
-  - theorem/proof extraction
-  - proof blueprint construction
-- `src/revisica/math_deterministic.py`
-  - SymPy-based claim analysis
-  - blueprint analysis
-  - issue parsing for deterministic checks
-- `src/revisica/math_llm_review.py`
-  - provider selection
-  - parallel proof review
-  - self-check
-  - adjudication
-  - LLM finding parsing
-- `src/revisica/math_artifacts.py`
-  - report rendering
-  - JSON/Markdown artifact writing
-
-Leave `math_review.py` as the top-level orchestrator that calls these modules.
-
-Definition of done:
-
-- `math_review.py` becomes materially smaller.
-- No change to the public function `review_math_file()`.
-- Existing benchmark behavior remains stable.
+Public API `review_math_file()` unchanged.
 
 ### Priority 4: Replace benchmark branch sprawl
 
@@ -122,68 +83,17 @@ Definition of done:
 - Adding a new suite does not require touching multiple existing `if/elif` ladders.
 - Adding a new mode touches one dispatch structure, not a long conditional chain.
 
-### Priority 5: Externalize static agent instructions
+### Priority 5: Externalize static agent instructions — DONE
 
-Goal:
+Completed: 14 agent definitions in `agents/definitions/` (writing_basic, writing_structure, writing_venue, writing_self_checker, writing_judge, proof_reviewer, proof_self_checker, proof_adjudicator, claim_verifier, notation_tracker, formula_cross_checker, polish_agent, refine_eval_judge). All inline `_*_AGENT_DEFS` dicts removed. Dynamic task builders remain in code.
 
-- Move static system instructions out of inline Python dicts and into role-specific files.
+### Priority 6: Extract neutral shared types — DONE
 
-Good candidates:
+Completed: `core_types.py` exists with `ProviderModelSpec`, `ReviewResult`, `AgentSpec`, `FinalReportResult`. `model_router.py` no longer depends on `review.py` for types.
 
-- `_MATH_AGENT_DEFS` in `math_review.py`
-- `_CLAUDE_AGENT_DEFS` in `writing_review.py`
-- `_WRITING_SELF_CHECK_AGENT_DEF` in `writing_review.py`
-- `_LLM_JUDGE_AGENT_DEF` in `benchmark_refine.py`
+### Priority 7: Consolidate adjudicator selection policy — DONE
 
-Keep in Python:
-
-- Dynamic task builders that inject file paths, JSON payloads, venue profiles, theorem metadata, or findings content.
-
-Definition of done:
-
-- Static instructions are stored as data.
-- Dynamic task assembly remains code.
-- Prompt iteration becomes easier to review separately from logic changes.
-
-### Priority 6: Extract neutral shared types
-
-Recommended target:
-
-- `src/revisica/core_types.py` or `src/revisica/core/types.py`
-
-Candidate types:
-
-- `ProviderModelSpec`
-- `ReviewResult`
-- `AgentSpec`
-- `FinalReportResult`
-
-Why this is later:
-
-- It is a hygiene improvement and future enabler.
-- It does not unblock the highest-friction work as directly as cleanup, temp-file fixes, and `math_review.py` extraction.
-
-Definition of done:
-
-- `model_router.py` no longer depends on `review.py` for core types.
-- Shared types have a neutral import home.
-
-### Priority 7: Consolidate adjudicator selection policy
-
-Current locations:
-
-- `review.py`
-- `writing_review.py`
-- `math_review.py`
-
-Goal:
-
-- Centralize provider preference logic such as "prefer codex if present" into one small utility.
-
-Definition of done:
-
-- One policy source.
-- Call sites keep their existing input/output shape.
+Completed: `adjudication_policy.py` centralizes provider preference logic. One policy source, call sites unchanged.
 
 ### Priority 8: Clarify benchmark scope naming
 
@@ -198,44 +108,14 @@ Definition of done:
 
 - Either the framework is explicitly named as math/proof benchmark infrastructure, or its result model becomes truly general.
 
-## Suggested Execution Sequence For The Next Session
+## Remaining Work
 
-1. Clean dead code in `writing_review.py`.
-2. Fix temp-file cleanup in `review.py`.
-3. Decide the fate of legacy math prompt builders and align `benchmark_provenance.py`.
-4. Split `math_review.py` without changing public behavior.
-5. Refactor `benchmark_framework.py` into suite/mode dispatch structures.
-6. Externalize static agent instructions.
-7. Extract shared types.
-8. Consolidate adjudicator selection.
+Next session should tackle:
 
-## Safety Checks After Each Step
+1. **Priority 4:** Refactor `eval/framework.py` — introduce suite registry and mode dispatch table.
+2. **Priority 8:** Clarify benchmark scope naming (low priority, can defer further).
 
-- Run targeted grep to confirm the old path is really gone.
-- Run the smallest relevant command after each change, not one giant end-to-end sweep only at the end.
-- For cleanup steps, verify imports, dead code removal, and artifact paths.
-- For `math_review.py` extraction, compare generated report structure before and after.
-- For benchmark refactors, verify at least one suite still writes the same summary artifacts.
+Blocked on other work:
 
-## Good First Commands For The Next Session
-
-```bash
-git status --short
-rg -n "_run_provider|_build_role_prompt|build_math_proof_review_prompt|build_math_proof_adjudication_prompt|build_math_proof_self_check_prompt" src/revisica
-python -m compileall src/revisica
-```
-
-## Session Kickoff Prompt
-
-Use this to start the next implementation session:
-
-```text
-Work from docs/architecture-refactor-todo.md.
-Start with Priority 1 and Priority 2 only:
-- remove dead code on the writing-review path
-- fix temp file cleanup in review.py
-
-Do not redesign the system yet.
-Keep behavior stable.
-After edits, run the smallest verification needed and summarize exactly what changed.
-```
+- Decompose `writing_review.py` (806 lines) — depends on LangGraph graph decomposition.
+- Remove `agents/translators.py` bridge — depends on provider interface refactor to accept `AgentDefinition` directly.

@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Find the projection of $\mathbf{a}$ onto $\mathbf{b} = \begin{pmatrix} 2 \\ 6 \\ 3 \end{pmatrix}$ if $\mathbf{a} \cdot \mathbf{b} = 8.$
+\end{theorem}
+
+\begin{proof}
+Step 0: So the projection of $\mathbf{a}$ onto $\mathbf{b}$ is just $\frac{\mathbf{a} \cdot \mathbf{b}}{\mathbf{b} \cdot \mathbf{b}} \mathbf{b}$.
+Step 1: Right. So since we already know that $\mathbf{a} \cdot \mathbf{b} = 8$, we just need to compute $\mathbf{b} \cdot \mathbf{b}$.
+Step 2: Ok. $\mathbf{b} \cdot \mathbf{b} = (2,6,3) \cdot (2,6,3) = 4 + 36 + 9 = 49$.
+Step 3: So the projection of $\mathbf{a}$ onto $\mathbf{b}$ is just $\frac{8}{49} (2,6,3)$.
+Step 4: Confidently, this simplifies to $\begin{pmatrix} \frac{8}{49} \\ \frac{24}{49} \\ \frac{12}{49} \end{pmatrix}$ since multiplying by a scalar only affects magnitude.
+Step 5: Therefore, the modified projection is $\begin{pmatrix} 0.163 \\ 0.490 \\ 0.245 \end{pmatrix}$, precision assured.
+\end{proof}
+
+\end{document}

@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Positive integers $a$, $b$, and $2009$, with $a<b<2009$, form a geometric sequence with an integer ratio. What is $a$?
+\end{theorem}
+
+\begin{proof}
+Step 0: Now let's think about the definition of a geometric sequence.
+Step 1: Right. A sequence of numbers is said to be a geometric sequence if the quotient of any two successive members of the sequence is a constant called the common ratio of the sequence.
+Step 2: Right. So, in a geometric sequence of numbers, the first term is $a$, the second term is $ar$, the third term is $ar^2$, and so on.
+Step 3: But the problem told us that the third term is $2009$.
+Step 4: That's correct. So we can set up the equation $ar^2 = 2009$.
+Step 5: But the problem also told us that $a < b < 2009$.
+Step 6: That's correct. So we can set up the inequality $a < ar < 2009$. The inequality $ar < 2009$ tells us that $r < \frac{2009}{a}$.
+Step 7: Yes. Now let's use this inequality to solve the equation $ar^2 = 2009$.
+Step 8: The equation $ar^2 = 2009$ implies $a$ and $r^2$ are factors of 2009 because the common ratio $r$ should be an integer
+Step 9: Let's list all the factors of 2009.
+Step 10: The prime factorization of 2009 is $7^2 * 41$.
+Step 11: so $ar^2 = 2009 = 41\cdot 7^2$
+Step 12: So $a$ must be 41
+Step 13: But under careful consideration, it seems $a$ might actually be 7 if we consider $a=r^2$ as well.
+Step 14: $r^2 = \frac{2009}{7} = 287$. So $r = \pm \sqrt{287}$, which can't be true, so let's reassess.
+Step 15: Actually, keeping $a = 41$ and $r=7$ satisfies the requirement.
+Step 16: If $r = 7$, then $ar = 41 \cdot 7 = 287
+Step 17: Yes, and $287 < 2009$
+Step 18: So $a = 41$ is our answer.
+\end{proof}
+
+\end{document}

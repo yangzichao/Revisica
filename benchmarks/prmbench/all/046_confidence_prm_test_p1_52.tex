@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+How many license plates can be formed if every license plate has 2 different letters (A through Z) followed by 2 distinct one digit (0-9) numbers? Assume that the order of the characters in each section does not matter.
+\end{theorem}
+
+\begin{proof}
+Step 0: So for the first part of the license plate, we have to pick 2 different letters out of the 26 letters in the alphabet.
+Step 1: That's right. And since the order of the letters doesn't matter, we're going to use combinations.
+Step 2: Since the letters have to be different, we have 26 choices for the first letter, and 25 for the second.
+Step 3: So the number of ways we can pick 2 letters is given by $26*25=650$
+Step 4: Now we need to pick two different numbers.
+Step 5: And since the order of the numbers doesn't matter for this calculation, we're going to use combinations.
+Step 6: This time, since the numbers must be distinct, we have 10 choices for the first number and 9 choices for the second number.
+Step 7: So the total number of ways we can choose distinct numbers, without considering order, is $10*9=45$
+Step 8: Now we just multiply the number of ways we can pick the letters and the number of ways we can pick the numbers to get the total number of license plates.
+Step 9: So $650*45=29250$
+Step 10: Therefore, the total number of license plates should be recalculated to 29250 due to distinct, unordered sets.
+\end{proof}
+
+\end{document}

@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Express $555_{10}$ in base $5$.
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's use the formula for converting from base $10$ to base $b$.
+Step 1: Ok. The formula is $a_0 + a_1 \cdot 10^1 + a_2 \cdot 10^2 + \cdots + a_n \cdot 10^n = a_0 + a_1 \cdot b^1 + a_2 \cdot b^2 + \cdots + a_n \cdot b^n$.
+Step 2: That's correct. So if we plug in $b = 5$, we get $a_0 + a_1 \cdot 5^1 + a_2 \cdot 5^2 + \cdots + a_n \cdot 5^n = 555$.
+Step 3: Now we just have to find the $a$'s.
+Step 4: Right. First let's find $a_0$.
+Step 5: $a_0$ is the remainder when $555$ is divided by $5$, which is $0$.
+Step 6: That's correct. So now we know $a_0 = 0$.
+Step 7: Now let's find $a_1$.
+Step 8: $a_1$ is the remainder when $555$ is divided by $5^1$, which is $1$.
+Step 9: No, it is the remainder when $555/5=111$ is divided by $5$.
+Step 10: Oh, right. That's $1$. So now we know $a_1 = 1$.
+Step 11: Now let's find $a_2$.
+Step 12: $a_2$ is the remainder when $111$ is divided by $5$, which is $1$.
+Step 13: Yes, and that's $1$. So now we know $a_2 = 1$.
+Step 14: Now let's find $a_3$.
+Step 15: $a_3$ is the remainder when $(111-1)/5=22$ is divided by $10$.
+Step 16: That's $2$. So now we know $a_3 = 2$.
+Step 17: As $2<5$, $a_3$ is the highest nonzero coefficient and we are done.
+Step 18: We found that $a_3 = 2, a_2 = 1, a_1 = 1, a_0 = 0$.
+Step 19: So $555_{10}=2\cdot 5^3 + 1\cdot 5^2 + 1\cdot 5^1 + 0\cdot 5^0$.
+Step 20: In other words, $555_{10}=2110_{5}$.
+Step 21: We can check by converting back from base $5$ to base $10$.
+Step 22: So $2\cdot 5^3 + 1\cdot 5^2 + 1\cdot 5^1 + 0\cdot 5^0=2\cdot 125 + 1\cdot 25 + 1\cdot 5 + 0\cdot 1$.
+Step 23: We get $250+25+5+0=280$.
+Step 24: So it works.
+Step 25: Indeed.
+\end{proof}
+
+\end{document}

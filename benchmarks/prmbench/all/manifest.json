@@ -1,0 +1,862 @@
+{
+  "source": "PRMBench",
+  "dataset": "hitsmy/PRMBench_Preview",
+  "classification": null,
+  "imported_at": "2026-04-13T18:57:56",
+  "cases": [
+    {
+      "id": "circular_prm_train_p1_0",
+      "file": "001_circular_prm_train_p1_0.tex",
+      "classification": "circular",
+      "error_steps": [
+        2,
+        3,
+        4
+      ],
+      "modified_steps": [
+        2,
+        3,
+        4
+      ],
+      "reason": "Steps 2, 3, and 4 introduce circular logic by assuming the number of seconds (468) and using it to verify the given minutes by reverse-calculation, instead of calculating directly from the number of minutes. This approach loops back and forth, creating a circular reasoning structure.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 1
+      }
+    },
+    {
+      "id": "circular_prm_train_p1_1",
+      "file": "002_circular_prm_train_p1_1.tex",
+      "classification": "circular",
+      "error_steps": [
+        2,
+        6,
+        10
+      ],
+      "modified_steps": [
+        2,
+        5,
+        6,
+        8,
+        10
+      ],
+      "reason": "The process now contains circular logic in steps 6 and 10 by analyzing n values starting in one loop, deducing along ranges yet reaffirming counts ambiguously through premature conclusions. By overlapping reasoning and expectation, step 10 inflates conclusion validity absent diligent reconfirmation, creating inaccuracy suggestive of circular thinking within steps 2 and 6 also.",
+      "total_steps": 11,
+      "expected": {
+        "expected_first_issue_step_zero_based": 1
+      }
+    },
+    {
+      "id": "circular_prm_train_p1_2",
+      "file": "003_circular_prm_train_p1_2.tex",
+      "classification": "circular",
+      "error_steps": [
+        3,
+        6,
+        9
+      ],
+      "modified_steps": [
+        3,
+        6,
+        7,
+        9
+      ],
+      "reason": "Steps 3, 6, and 9 introduce circular logic by assuming a specific value for $r$ (namely $r = 2$), and using this assumption to verify it within the calculations. This creates a circular reasoning loop, as the outcome is used to justify itself rather than being derived logically through independent reasoning.",
+      "total_steps": 11,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "circular_prm_train_p1_3",
+      "file": "004_circular_prm_train_p1_3.tex",
+      "classification": "circular",
+      "error_steps": [
+        4,
+        5,
+        6
+      ],
+      "modified_steps": [
+        4,
+        5,
+        6
+      ],
+      "reason": "Steps 4, 5, and 6 introduce circular logic where the solution $x=\\dfrac{20}{3}$ is assumed to re-verify itself against the simplified rational equation. This means the problem-solving integrity is compromised by using the presumed answer as a basis for self-justification, creating a loop in reasoning.",
+      "total_steps": 7,
+      "expected": {
+        "expected_first_issue_step_zero_based": 3
+      }
+    },
+    {
+      "id": "circular_prm_train_p1_7",
+      "file": "005_circular_prm_train_p1_7.tex",
+      "classification": "circular",
+      "error_steps": [
+        5,
+        6
+      ],
+      "modified_steps": [
+        5,
+        6
+      ],
+      "reason": "Steps 5 and 6 introduce an illegitimate assumption by assuming $n = -48^\\circ$ initially and justifying it by working the process to fit the criteria, rather than logically deriving $n$ through the proper iterative method, thus creating circular reasoning.",
+      "total_steps": 7,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "confidence_prm_test_p1_0",
+      "file": "006_confidence_prm_test_p1_0.tex",
+      "classification": "confidence",
+      "error_steps": [
+        5,
+        6
+      ],
+      "modified_steps": [
+        5,
+        6
+      ],
+      "reason": "Steps 5 and 6 contain confident hallucinations. The step incorrectly calculates $p = 0.58$ instead of $p = 0.29$, doubling the cost of a pencil. This error is presented with unwarranted confidence, simulating an overstatement in the supposedly verified calculation.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "confidence_prm_test_p1_2",
+      "file": "007_confidence_prm_test_p1_2.tex",
+      "classification": "confidence",
+      "error_steps": [
+        3,
+        5
+      ],
+      "modified_steps": [
+        3,
+        5
+      ],
+      "reason": "Steps 3 and 5 introduce a confident hallucination by asserting that $5-1=3$, and consequently claiming the incorrect result $30_9$. This error is delivered with unwarranted confidence, creating a false sense of accuracy.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "confidence_prm_test_p1_3",
+      "file": "008_confidence_prm_test_p1_3.tex",
+      "classification": "confidence",
+      "error_steps": [
+        3
+      ],
+      "modified_steps": [
+        3
+      ],
+      "reason": "Step 3 introduces a confident hallucination by incorrectly stating that $\\sqrt{53}$ can be represented as $\\sqrt{25}+\\sqrt{28}$, which is not a valid simplification. This error is presented clearly as if it were correct, demonstrating unwarranted certainty.",
+      "total_steps": 3,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "confidence_prm_test_p1_4",
+      "file": "009_confidence_prm_test_p1_4.tex",
+      "classification": "confidence",
+      "error_steps": [
+        13,
+        14
+      ],
+      "modified_steps": [
+        13,
+        14,
+        15
+      ],
+      "reason": "Step 13 introduces a confident hallucination by stating the incorrect sum of 210+91 as 300, instead of the correct 301. This propagates error to step 14, where multiplication with 7 gives a final incorrect result of 2100, all stated with undue confidence.",
+      "total_steps": 16,
+      "expected": {
+        "expected_first_issue_step_zero_based": 12
+      }
+    },
+    {
+      "id": "confidence_prm_test_p1_5",
+      "file": "010_confidence_prm_test_p1_5.tex",
+      "classification": "confidence",
+      "error_steps": [
+        8
+      ],
+      "modified_steps": [
+        8,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "reason": "Step 8 introduces a confident hallucination by asserting that the sum is $0.555555...$ when it is actually $0.666666...$. This contradiction is accompanied by a false sense of certainty, and subsequent steps adjust to reflect the propagation of calculation.",
+      "total_steps": 14,
+      "expected": {
+        "expected_first_issue_step_zero_based": 7
+      }
+    },
+    {
+      "id": "counterfactual_prm_test_p2_87",
+      "file": "011_counterfactual_prm_test_p2_87.tex",
+      "classification": "counterfactual",
+      "error_steps": [
+        11,
+        12,
+        13
+      ],
+      "modified_steps": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "reason": "In the original solution, step 10 solved $-6x=2$ correctly to $x=-\\frac{1}{3}$. However, I introduced a counterfactual error by incorrectly stating it as $x=\\frac{1}{3}$, misrepresenting the true solution. Step 12 then incorrectly validates this erroneous solution, claiming it to satisfy the original equation incorrectly.",
+      "total_steps": 16,
+      "expected": {
+        "expected_first_issue_step_zero_based": 10
+      }
+    },
+    {
+      "id": "counterfactual_prm_test_p2_105",
+      "file": "012_counterfactual_prm_test_p2_105.tex",
+      "classification": "counterfactual",
+      "error_steps": [
+        5
+      ],
+      "modified_steps": [
+        5,
+        7,
+        8
+      ],
+      "reason": "A counterfactual step was introduced in step 5 by incorrectly listing 25 as a common factor of both 100 and 150, despite it not being a factor of 150. This led to the adoption of an incorrect list of two-digit common factors and hence the wrong final answer.",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "counterfactual_prm_test_p2_108",
+      "file": "013_counterfactual_prm_test_p2_108.tex",
+      "classification": "counterfactual",
+      "error_steps": [
+        16,
+        21,
+        22
+      ],
+      "modified_steps": [
+        16,
+        21,
+        22,
+        24,
+        26
+      ],
+      "reason": "Steps were modified to introduce a counterfactual error related to the relationship between $a$, $b$, and $c$. The error was introduced by changing the equation from $c^2 = a^2 + b^2$ to $c^2 = b^2 - a^2$, which is incorrect for hyperbolas. This error propagates to the subsequent steps, resulting in an incorrect calculation of $b$ and ultimately an incorrect answer.",
+      "total_steps": 26,
+      "expected": {
+        "expected_first_issue_step_zero_based": 15
+      }
+    },
+    {
+      "id": "counterfactual_prm_test_p2_188",
+      "file": "014_counterfactual_prm_test_p2_188.tex",
+      "classification": "counterfactual",
+      "error_steps": [
+        13,
+        14
+      ],
+      "modified_steps": [
+        13,
+        14
+      ],
+      "reason": "The counterfactual error was introduced by claiming that the interior points give larger values of $f$ than the determined boundary maximum. This contradicts the earlier reasoning where it was established that the maximum value attained was consistent and equaled 1, showing inconsistency with boundary achievements for identified points.",
+      "total_steps": 14,
+      "expected": {
+        "expected_first_issue_step_zero_based": 12
+      }
+    },
+    {
+      "id": "counterfactual_prm_test_p2_193",
+      "file": "015_counterfactual_prm_test_p2_193.tex",
+      "classification": "counterfactual",
+      "error_steps": [
+        8,
+        9,
+        10
+      ],
+      "modified_steps": [
+        8,
+        9,
+        10,
+        13,
+        14
+      ],
+      "reason": "A counterfactual error is introduced in step 8 by incorrectly stating the angles of the roots, changing them from $\\pm \\frac{2\\pi}{3}$ and $\\pm \\frac{\\pi}{3}$ to $\\pm \\frac{2\\pi}{5}$ and $\\pm \\frac{4\\pi}{5}$. This error propagates in steps 9 and 10. Hence, the calculation for $n$ becomes incorrect, leading to an erroneous conclusion of $n = 5$.",
+      "total_steps": 14,
+      "expected": {
+        "expected_first_issue_step_zero_based": 7
+      }
+    },
+    {
+      "id": "deception_prm_test_p2_87",
+      "file": "016_deception_prm_test_p2_87.tex",
+      "classification": "deception",
+      "error_steps": [
+        12,
+        13,
+        14
+      ],
+      "modified_steps": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "reason": "The error lies in misrepresenting the validity of $x=-\\frac{1}{3}$ under the wrong conditional basis. Initially, $x=-\\frac{1}{3}$ was wrongly considered valid in the domain context of $5x-1<0$ but failed on reassessment. The recheck led to the correct constraint application that $|5x-1|=x+3$ under appropriate assumptions would not fit all prior checks beyond $x=1$. Thus, trapped in verification through conditional bounds confused actual validations.",
+      "total_steps": 17,
+      "expected": {
+        "expected_first_issue_step_zero_based": 11
+      }
+    },
+    {
+      "id": "deception_prm_test_p2_90",
+      "file": "017_deception_prm_test_p2_90.tex",
+      "classification": "deception",
+      "error_steps": [
+        5,
+        6,
+        7
+      ],
+      "modified_steps": [
+        5,
+        6,
+        7,
+        12
+      ],
+      "reason": "In Steps 5, 6, and 7, a deceptive error was introduced by considering incorrect inequality pairs for maximizing products incorrectly, creating an illusion of minimizing expression inside square root correctly, direct to the wrong conclusion.",
+      "total_steps": 17,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "deception_prm_test_p2_105",
+      "file": "018_deception_prm_test_p2_105.tex",
+      "classification": "deception",
+      "error_steps": [
+        6,
+        7
+      ],
+      "modified_steps": [
+        6,
+        7
+      ],
+      "reason": "In Step 6, the number 10 was incorrectly included as a positive two-digit integer, although it should be eliminated, creating a deception trap. Therefore, in Step 7, the count of two-digit integers should be 25 and 50, not including 10, making the correct answer two. This correction aligns with the error type requested.",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": 5
+      }
+    },
+    {
+      "id": "deception_prm_test_p2_108",
+      "file": "019_deception_prm_test_p2_108.tex",
+      "classification": "deception",
+      "error_steps": [
+        16
+      ],
+      "modified_steps": [
+        16
+      ],
+      "reason": "The error involves the inversion of the equation for calculating b. For a hyperbola, the relation should be $c^2 = b^2 + a^2$, yet Step 16 refers to it inaccurately as $c^2 = a^2 + b^2$. This is characteristic of a deception or trap error, as the method seems correct while deploying an incorrect equation for hyperbolas.",
+      "total_steps": 26,
+      "expected": {
+        "expected_first_issue_step_zero_based": 15
+      }
+    },
+    {
+      "id": "deception_prm_test_p2_188",
+      "file": "020_deception_prm_test_p2_188.tex",
+      "classification": "deception",
+      "error_steps": [
+        8,
+        9,
+        10
+      ],
+      "modified_steps": [
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "reason": "A deceptive approach was shown by using $x = \\cos \\theta$ and $y = \\sin \\theta$ and immediately stating $f(\\theta) = 1$ without reckoning possible errors in relevant conditions. The function $f(x, y)$ correct examination leads to misinterpretation due to admitted unfit transformation between trigonometric elements and Cartesian coordinates, causing erroneous exploitation of unit-circle properties unfit for rectangular range. Steps 7-10 contained errors by capturing rather inaccurate presupposed constants without further inspection - hence deceptive preceding notes are highlight-seeking corrective progression. This needed reevaluation ensuring no erroneous simplification.",
+      "total_steps": 15,
+      "expected": {
+        "expected_first_issue_step_zero_based": 7
+      }
+    },
+    {
+      "id": "domain_inconsistency_prm_test_p1_0",
+      "file": "021_domain_inconsistency_prm_test_p1_0.tex",
+      "classification": "domain_inconsistency",
+      "error_steps": [
+        6
+      ],
+      "modified_steps": [
+        5,
+        6
+      ],
+      "reason": "A domain inconsistency was introduced in Step 6 by unnecessarily involving currency conversion from dollars to euros. The problem is entirely about solving for the price in cents (dollars), but the introduction of a currency conversion step that is irrelevant to the problem's solution is erroneous within this context.",
+      "total_steps": 7,
+      "expected": {
+        "expected_first_issue_step_zero_based": 5
+      }
+    },
+    {
+      "id": "domain_inconsistency_prm_test_p1_2",
+      "file": "022_domain_inconsistency_prm_test_p1_2.tex",
+      "classification": "domain_inconsistency",
+      "error_steps": [
+        3
+      ],
+      "modified_steps": [
+        3,
+        5
+      ],
+      "reason": "In step 3, a domain inconsistency is introduced by using a subtraction rule from base $5$ for a problem in base $9$. This inconsistency changes the outcome, leading to the flawed conclusion that $5-1=6$ when it should just reference base $9$ context without converting the base subtraction rule, maintaining the original answer calculation.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "domain_inconsistency_prm_test_p1_3",
+      "file": "023_domain_inconsistency_prm_test_p1_3.tex",
+      "classification": "domain_inconsistency",
+      "error_steps": [
+        3,
+        4,
+        5
+      ],
+      "modified_steps": [
+        3,
+        4,
+        5
+      ],
+      "reason": "A domain inconsistency was introduced by using the concept of rationalizing the denominator in an inappropriate context. The problem was about the simplest radical form of $\\sqrt{53}$, which does not require rationalization since it is already in its simplest form. This results in an unnecessary and flawed transformation.",
+      "total_steps": 5,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "domain_inconsistency_prm_test_p1_4",
+      "file": "024_domain_inconsistency_prm_test_p1_4.tex",
+      "classification": "domain_inconsistency",
+      "error_steps": [
+        10
+      ],
+      "modified_steps": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "reason": "A domain inconsistency was introduced in Step 10 by implementing modular arithmetic with a modulus of 5, rather than following the problem's intended use of regular integer arithmetic for the sequence's common difference. While plausible in some mathematical contexts, it incorrectly applies a rule not suited for this arithmetic sequence problem.",
+      "total_steps": 16,
+      "expected": {
+        "expected_first_issue_step_zero_based": 9
+      }
+    },
+    {
+      "id": "domain_inconsistency_prm_test_p1_5",
+      "file": "025_domain_inconsistency_prm_test_p1_5.tex",
+      "classification": "domain_inconsistency",
+      "error_steps": [
+        6,
+        7,
+        8
+      ],
+      "modified_steps": [
+        6,
+        7,
+        8
+      ],
+      "reason": "The domain inconsistency error was introduced in Step 6 by incorrectly using multiplication instead of addition for $0.\\overline{3} + 0.\\overline{2}$. This incorrect operation choice led to a plausible calculation that mistakenly continues as valid arithmetic, ultimately producing a flawed result.",
+      "total_steps": 14,
+      "expected": {
+        "expected_first_issue_step_zero_based": 5
+      }
+    },
+    {
+      "id": "missing_condition_prm_train_p1_0",
+      "file": "026_missing_condition_prm_train_p1_0.tex",
+      "classification": "missing_condition",
+      "error_steps": [
+        3,
+        4,
+        5
+      ],
+      "modified_steps": [
+        3,
+        4,
+        5
+      ],
+      "reason": "The error introduced is a missing condition issue; the calculation incorrectly converts 0.8 minutes to a fraction of a day instead of directly to seconds. This error causes maintenance of the added faulty logic for consistency in dimensional analysis, but aligns with the intended practice of problem check without early rectification.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "missing_condition_prm_train_p1_1",
+      "file": "027_missing_condition_prm_train_p1_1.tex",
+      "classification": "missing_condition",
+      "error_steps": [
+        8,
+        10
+      ],
+      "modified_steps": [
+        2,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "reason": "The original assumption was that two-digit integers are only required, but the process had missing conditions. Modifying the question treats it as intending to find integers less than 100, and clarifying the range for n resolves the missing condition, revealing a flaw in the process when assessing n=13, which doesn't result in a valid two-digit positive integer.",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": 7
+      }
+    },
+    {
+      "id": "missing_condition_prm_train_p1_2",
+      "file": "028_missing_condition_prm_train_p1_2.tex",
+      "classification": "missing_condition",
+      "error_steps": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "modified_steps": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "reason": "A missing condition in step 3 leads to incorrect division assumptions. Step 4 presents incorrect calculations without assumptions being stated, assuming values for r leading to error propagation. Final calculation in steps 6 and 7 have errors and don't correct despite contrasting assumptions in original terms.",
+      "total_steps": 10,
+      "expected": {
+        "expected_first_issue_step_zero_based": 3
+      }
+    },
+    {
+      "id": "missing_condition_prm_train_p1_3",
+      "file": "029_missing_condition_prm_train_p1_3.tex",
+      "classification": "missing_condition",
+      "error_steps": [
+        11,
+        12
+      ],
+      "modified_steps": [
+        1,
+        2,
+        11,
+        12
+      ],
+      "reason": "A missing condition error was induced by initially ignoring the requirement that the square root argument should remain non-negative. Another error step added as the concluding verification (step 12) does not confirm the condition and gives a potentially false positive as it doesn't ensure the argument stays valid given $x$ was derived without checking $6x + 5 > 0$.",
+      "total_steps": 11,
+      "expected": {
+        "expected_first_issue_step_zero_based": 10
+      }
+    },
+    {
+      "id": "missing_condition_prm_train_p1_6",
+      "file": "030_missing_condition_prm_train_p1_6.tex",
+      "classification": "missing_condition",
+      "error_steps": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "modified_steps": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "reason": "The missing condition error was introduced by mishandling the subtraction of Max and Liz from the intersection, treating it incorrectly in the equation $3f - 2 = 25$. Instead, introducing an inappropriate handling where it was subtracted wrongly and also showing that a condition of overlap, if misunderstood, leads to fractional outputs which flags the missed or incorrect conditions.",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "multi_solutions_prm_test_p1_0",
+      "file": "031_multi_solutions_prm_test_p1_0.tex",
+      "classification": "multi_solutions",
+      "error_steps": [],
+      "modified_steps": [],
+      "reason": "",
+      "total_steps": 11,
+      "expected": {
+        "expected_first_issue_step_zero_based": -1
+      }
+    },
+    {
+      "id": "multi_solutions_prm_test_p1_2",
+      "file": "032_multi_solutions_prm_test_p1_2.tex",
+      "classification": "multi_solutions",
+      "error_steps": [],
+      "modified_steps": [],
+      "reason": "",
+      "total_steps": 18,
+      "expected": {
+        "expected_first_issue_step_zero_based": -1
+      }
+    },
+    {
+      "id": "multi_solutions_prm_test_p1_3",
+      "file": "033_multi_solutions_prm_test_p1_3.tex",
+      "classification": "multi_solutions",
+      "error_steps": [],
+      "modified_steps": [],
+      "reason": "",
+      "total_steps": 14,
+      "expected": {
+        "expected_first_issue_step_zero_based": -1
+      }
+    },
+    {
+      "id": "multi_solutions_prm_test_p1_5",
+      "file": "034_multi_solutions_prm_test_p1_5.tex",
+      "classification": "multi_solutions",
+      "error_steps": [],
+      "modified_steps": [],
+      "reason": "",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": -1
+      }
+    },
+    {
+      "id": "multi_solutions_prm_test_p1_13",
+      "file": "035_multi_solutions_prm_test_p1_13.tex",
+      "classification": "multi_solutions",
+      "error_steps": [],
+      "modified_steps": [],
+      "reason": "",
+      "total_steps": 13,
+      "expected": {
+        "expected_first_issue_step_zero_based": -1
+      }
+    },
+    {
+      "id": "redundency_prm_test_p1_0",
+      "file": "036_redundency_prm_test_p1_0.tex",
+      "classification": "redundency",
+      "error_steps": [
+        5,
+        8
+      ],
+      "modified_steps": [
+        5,
+        8
+      ],
+      "reason": "Steps 5 and 8 introduce redundancy by explaining the simplification of Step 4's expression and checking the solution when the task did not specify a verification step. Both processes repeat information already addressed in the solution, adding unnecessary length without changing the correctness.",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "redundency_prm_test_p1_2",
+      "file": "037_redundency_prm_test_p1_2.tex",
+      "classification": "redundency",
+      "error_steps": [
+        3,
+        6
+      ],
+      "modified_steps": [
+        3,
+        6
+      ],
+      "reason": "Step 3 redundantly mentions reassessment for borrowing, which is unnecessary as there was no borrowing needed in the Next, Step 6 discusses converting to base $10$ for verification, which is redundant since it's claimed not needed initially. These additional steps add redundancy without affecting the outcome.",
+      "total_steps": 8,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "redundency_prm_test_p1_3",
+      "file": "038_redundency_prm_test_p1_3.tex",
+      "classification": "redundency",
+      "error_steps": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "modified_steps": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "Steps 3 to 6 introduce redundant checks for the factorization of 53, individually dividing by small integers even though it's already confirmed prime in step 2. These steps are unnecessary and make the process less concise without affecting the correctness.",
+      "total_steps": 7,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "redundency_prm_test_p1_4",
+      "file": "039_redundency_prm_test_p1_4.tex",
+      "classification": "redundency",
+      "error_steps": [
+        9
+      ],
+      "modified_steps": [
+        9
+      ],
+      "reason": "Step 9 introduces a redundant check of manually recalculating each multiple, which is unnecessary as the list has already been verified with the correct count.",
+      "total_steps": 17,
+      "expected": {
+        "expected_first_issue_step_zero_based": 8
+      }
+    },
+    {
+      "id": "redundency_prm_test_p1_6",
+      "file": "040_redundency_prm_test_p1_6.tex",
+      "classification": "redundency",
+      "error_steps": [
+        4,
+        12,
+        13,
+        21,
+        22
+      ],
+      "modified_steps": [
+        4,
+        12,
+        13,
+        21,
+        22
+      ],
+      "reason": "I introduced redundancies by reconsidering the evaluation for 7 already established, and overcompensating the need to cross-verify findings by confirming age choices previously verified as consistent.",
+      "total_steps": 23,
+      "expected": {
+        "expected_first_issue_step_zero_based": 3
+      }
+    },
+    {
+      "id": "step_contradiction_prm_test_p1_0",
+      "file": "041_step_contradiction_prm_test_p1_0.tex",
+      "classification": "step_contradiction",
+      "error_steps": [
+        5
+      ],
+      "modified_steps": [
+        5,
+        6
+      ],
+      "reason": "Step 5 introduces a contradiction by incorrectly simplifying the subtraction result 1.82-1.24 to 0.50 instead of the correct 0.58. Consequently, the cost of the pencil is mistakenly determined as 25 cents rather than the correct 29 cents, thus introducing a conflict with the correct derivation steps.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 4
+      }
+    },
+    {
+      "id": "step_contradiction_prm_test_p1_2",
+      "file": "042_step_contradiction_prm_test_p1_2.tex",
+      "classification": "step_contradiction",
+      "error_steps": [
+        4
+      ],
+      "modified_steps": [
+        4,
+        5
+      ],
+      "reason": "Step 4 introduces a contradiction by incorrectly adjusting the subtraction under the premise that 5-2 = 3 in base 9, conflicting with the previous standard subtraction logic. This results in an error where the final answer changes from 40_9 to 30_9.",
+      "total_steps": 7,
+      "expected": {
+        "expected_first_issue_step_zero_based": 3
+      }
+    },
+    {
+      "id": "step_contradiction_prm_test_p1_3",
+      "file": "043_step_contradiction_prm_test_p1_3.tex",
+      "classification": "step_contradiction",
+      "error_steps": [
+        3,
+        4,
+        5
+      ],
+      "modified_steps": [
+        3,
+        4,
+        5
+      ],
+      "reason": "Steps 3, 4, and 5 introduce a step contradiction by incorrectly assuming \\sqrt{53} can be decomposed into simpler components \\sqrt{9 + 44} and oversimplifying further to yield a numerical approximation which conflicts with the true value and form of \\sqrt{53}. Steps err in attempting invalid simplifications and numerical approximations.",
+      "total_steps": 5,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    },
+    {
+      "id": "step_contradiction_prm_test_p1_4",
+      "file": "044_step_contradiction_prm_test_p1_4.tex",
+      "classification": "step_contradiction",
+      "error_steps": [
+        6,
+        7,
+        8
+      ],
+      "modified_steps": [
+        6,
+        7,
+        8,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "reason": "The list of multiples in step 6 mistakenly includes 191, which is not a multiple of 7. This introduces a step contradiction because step 7 and onward mistakenly treat 191 as valid, inflating the count of multiples from 14 to 15. The arithmetic series is then calculated with this incorrect count, leading to an incorrect sum.",
+      "total_steps": 16,
+      "expected": {
+        "expected_first_issue_step_zero_based": 5
+      }
+    },
+    {
+      "id": "step_contradiction_prm_test_p1_5",
+      "file": "045_step_contradiction_prm_test_p1_5.tex",
+      "classification": "step_contradiction",
+      "error_steps": [
+        8,
+        13,
+        14
+      ],
+      "modified_steps": [
+        8,
+        10,
+        13,
+        14
+      ],
+      "reason": "Step 8 incorrectly introduces a step contradiction by stating subtraction instead of addition, leading to a result that conflicts with earlier steps indicating the correct operation should be addition. This results in an incorrect conclusion and expression as a fraction in Steps 13 and 14.",
+      "total_steps": 14,
+      "expected": {
+        "expected_first_issue_step_zero_based": 7
+      }
+    }
+  ]
+}

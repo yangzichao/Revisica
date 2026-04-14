@@ -11,25 +11,12 @@ import re
 from .adjudication_policy import pick_preferred_item
 from .agents import get_agent, to_agent_spec
 from .bootstrap import PlatformStatus, bootstrap, detect_platforms
-from .claim_extractor import (
-    build_claim_verification_task,
-    extract_claims,
-)
+from .claim_extractor import extract_claims
 from .core_types import AgentSpec, ProviderModelSpec, ReviewResult
 from .model_router import resolve_model_for_role
 from .review import _run_provider_agent
-from .section_combiner import (
-    build_section_combo_task,
-    extract_sections,
-    generate_combinations,
-)
-from .templates import (
-    SUPPORTED_VENUE_PROFILES,
-    build_basic_writing_review_prompt,
-    build_structure_writing_review_prompt,
-    build_venue_style_review_prompt,
-    build_writing_adjudication_prompt,
-)
+from .section_combiner import extract_sections, generate_combinations
+from .templates import SUPPORTED_VENUE_PROFILES
 
 
 WRITING_ROLES = ("basic", "structure", "venue")
@@ -71,185 +58,28 @@ def review_writing_file(
     force_bootstrap: bool = False,
     timeout_seconds: int = 120,
 ) -> WritingReviewRun:
-    source = Path(file_path).expanduser().resolve()
-    if not source.exists():
-        raise FileNotFoundError(f"Input file does not exist: {source}")
-    if not source.is_file():
-        raise IsADirectoryError(f"Input path is not a file: {source}")
-    if venue_profile not in SUPPORTED_VENUE_PROFILES:
-        raise ValueError(
-            "venue_profile must be one of: " + ", ".join(SUPPORTED_VENUE_PROFILES)
-        )
+    """Run the writing review pipeline via LangGraph."""
+    from .graphs.writing import compile_writing_graph
+    from .profiles.config import ReviewConfig, ReviewMode
 
-    platforms = detect_platforms()
-    detected = [name for name, platform in platforms.items() if platform.available]
-    selected_specs, warnings = _resolve_reviewer_specs(platforms, reviewer_specs)
-    mode = "cross-check" if len(selected_specs) >= 2 else "single-provider"
-
-    required = list(selected_specs)
-    if judge_spec is not None:
-        required.append(judge_spec)
-    missing_assets = sorted(
-        {
-            spec.provider
-            for spec in required
-            if spec.provider in platforms and platforms[spec.provider].available and not platforms[spec.provider].installed
-        }
-    )
-    if missing_assets:
-        bootstrap(missing_assets, force=force_bootstrap)
-        platforms = detect_platforms()
-
-    content = source.read_text(encoding="utf-8")
-    run_dir = _make_output_dir(source, output_dir)
-    working_dir = str(source.parent)
-    schema_path = _find_codex_file("findings.schema.json")
-
-    # ── Phase 1: Parallel role execution ─────────────────────────────
-    # All writing roles, math verification roles, and section-combo
-    # workers run concurrently.
-
-    artifacts: list[WritingRoleArtifact] = []
-    all_roles = list(WRITING_ROLES) + list(MATH_VERIFICATION_ROLES)
-
-    # Generate section combinations for focused cross-analysis
-    sections = extract_sections(content)
-    section_combos = generate_combinations(sections)
-
-    # Extract individual verifiable claims for per-claim verification
-    extracted_claims = extract_claims(content)
-
-    with ThreadPoolExecutor(max_workers=_MAX_PARALLEL_WORKERS) as pool:
-        futures: dict[object, tuple[str, str]] = {}  # future → (role, spec_label)
-
-        # Submit all standard role × provider tasks
-        for role in all_roles:
-            agent_spec = _build_agent_spec(role, schema_path)
-            task_prompt = _build_agent_task(role, str(source), venue_profile)
-            for spec in selected_specs:
-                routed_spec = resolve_model_for_role(spec, role)
-                platform = platforms[routed_spec.provider]
-                future = pool.submit(
-                    _run_single_role_task,
-                    role=role,
-                    spec=routed_spec,
-                    task_prompt=task_prompt,
-                    agent_spec=agent_spec,
-                    timeout_seconds=timeout_seconds,
-                    working_dir=working_dir,
-                )
-                futures[future] = (role, routed_spec.label)
-
-        # Submit section-combination cross-check tasks
-        if section_combos:
-            combo_agent_spec = to_agent_spec(
-                get_agent("formula-cross-checker"), schema_path=schema_path,
-            )
-            for combo_idx, combo in enumerate(section_combos):
-                combo_task = build_section_combo_task(combo, str(source))
-                for spec in selected_specs:
-                    routed_spec = resolve_model_for_role(spec, "section-cross-checker")
-                    platform = platforms[routed_spec.provider]
-                    combo_role = f"section-xcheck-{combo_idx}"
-                    future = pool.submit(
-                        _run_single_role_task,
-                        role=combo_role,
-                        spec=routed_spec,
-                            task_prompt=combo_task,
-                        agent_spec=combo_agent_spec,
-                        timeout_seconds=timeout_seconds,
-                        working_dir=working_dir,
-                    )
-                    futures[future] = (combo_role, routed_spec.label)
-
-        # Submit per-claim verification tasks (each claim gets its own SymPy worker)
-        if extracted_claims:
-            claim_agent_spec = to_agent_spec(
-                get_agent("math-claim-verifier"), schema_path=schema_path,
-            )
-            for claim in extracted_claims:
-                claim_task = build_claim_verification_task(claim, str(source))
-                for spec in selected_specs:
-                    routed_spec = resolve_model_for_role(spec, "math-claim-verifier")
-                    platform = platforms[routed_spec.provider]
-                    claim_role = f"claim-verify-{claim.claim_id}"
-                    future = pool.submit(
-                        _run_single_role_task,
-                        role=claim_role,
-                        spec=routed_spec,
-                            task_prompt=claim_task,
-                        agent_spec=claim_agent_spec,
-                        timeout_seconds=timeout_seconds,
-                        working_dir=working_dir,
-                    )
-                    futures[future] = (claim_role, routed_spec.label)
-
-        # Collect results as they complete
-        for future in as_completed(futures):
-            role, spec_label = futures[future]
-            try:
-                artifact = future.result()
-                artifacts.append(artifact)
-                _write_role_artifact(run_dir, artifact)
-                if not artifact.result.success:
-                    warnings.append(f"Role `{role}` failed for provider `{spec_label}`.")
-            except Exception as exc:
-                warnings.append(f"Role `{role}` raised exception for `{spec_label}`: {exc}")
-
-    # ── Phase 2: Self-check (filter false positives) ─────────────────
-    # Run a self-check on each role's findings to reduce noise.
-    # This happens in parallel across all artifacts that have findings.
-
-    checked_artifacts = _run_writing_self_checks(
-        source=source,
-        artifacts=artifacts,
-        platforms=platforms,
-        selected_specs=selected_specs,
-        schema_path=schema_path,
+    config = ReviewConfig(
+        mode=ReviewMode.REVIEW,
+        venue_profile=venue_profile,
+        providers=reviewer_specs or [],
+        judge_spec=judge_spec,
+        force_bootstrap=force_bootstrap,
         timeout_seconds=timeout_seconds,
-        working_dir=working_dir,
-        warnings=warnings,
     )
 
-    # ── Phase 3: Judge (aggregate and distill) ───────────────────────
-    final_report = _generate_final_report_agent(
-        source=source,
-        run_dir=run_dir,
-        venue_profile=venue_profile,
-        platforms=platforms,
-        artifacts=checked_artifacts,
-        judge_spec=judge_spec,
-        schema_path=schema_path,
-        timeout_seconds=timeout_seconds,
-        warnings=warnings,
-    )
-    if final_report is not None:
-        _write_final_report(run_dir, final_report)
+    graph = compile_writing_graph()
+    final_state = graph.invoke({
+        "source_path": file_path,
+        "run_dir": output_dir or "",
+        "config": config,
+        "warnings": [],
+    })
 
-    _write_summary(
-        run_dir=run_dir,
-        source=source,
-        venue_profile=venue_profile,
-        detected_providers=detected,
-        reviewer_specs=selected_specs,
-        judge_spec=judge_spec,
-        mode=mode,
-        artifacts=checked_artifacts,
-        final_report=final_report,
-        warnings=warnings,
-    )
-    return WritingReviewRun(
-        source=source,
-        run_dir=run_dir,
-        venue_profile=venue_profile,
-        detected_providers=detected,
-        reviewer_specs=selected_specs,
-        judge_spec=judge_spec,
-        mode=mode,
-        artifacts=checked_artifacts,
-        final_report=final_report,
-        warnings=warnings,
-    )
+    return final_state["writing_review_run"]
 
 
 # ── parallel task helper ─────────────────────────────────────────────

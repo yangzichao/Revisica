@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Find the maximum value of \[f(x,y) = x \sqrt{1 - y^2} + y \sqrt{1 - x^2},\] where $-1 \le x,$ $y \le 1.$
+\end{theorem}
+
+\begin{proof}
+Step 0: This looks like a constrained optimization problem, where I want to maximize a function of two variables subject to some inequality constraints.
+Step 1: I could try to use the method of Lagrange multipliers, but that would involve finding the gradients of $f$ and the constraint function, setting them equal to a scalar multiple, and solving for $x, y,$ and the multiplier.
+Step 2: That seems a bit tedious and messy.
+Step 3: I wonder if there is a simpler way to approach this problem, maybe by using some geometric or algebraic insight.
+Step 4: I notice that the constraint $-1 \le x, y \le 1$ defines a square in the $xy$-plane, and that $f$ is symmetric with respect to both $x$ and $y$.
+Step 5: That means I only need to consider one quadrant of the square, say the first quadrant where $0 \le x, y \le 1$, and the maximum value of $f$ there will be the same as in the other three quadrants.
+Step 6: I also notice that the function $f$ involves square roots of $1 - x^2$ and $1 - y^2$, which reminds me of the Pythagorean theorem and the unit circle.
+Step 7: In fact, if I let $x = \cos \theta$ and $y = \cos \theta$, where $0 \le \theta \le \frac{\pi}{2}$, then the constraint is automatically satisfied, and $f$ becomes \n\[f(\cos \theta, \sin \theta) = \cos \theta \sqrt{1 - \sin^2 \theta} + \sin \theta \sqrt{1 - \cos^2 \theta} = \cos \theta \cos \theta + \sin \theta \sin \theta = \cos^2 \theta + \sin^2 \theta = 1.\]
+Step 8: This seems to incorrectly resolve as a constant function, which would mean it does not depend on $\theta$, and its value is $1$. But actually, this transformation is incorrect.
+Step 9: This means the above transformation is deceptive, suggesting maximum value attainable, but rather it should seek well-posed substitution to correctly fit within the constraint.
+Step 10: To accurately proceed with further checks, I suggest scrutinizing the behavior of $f$ over intervals without presupposing erroneous transformations.
+Step 11: I can plug in some boundary points, such as $(1, 0), (0, 1), (-1, 0),$ and $(0, -1)$, and verify that they all give $f = 1$.
+Step 12: Comparing to some interior points of the square should result in smaller values of $f$, continue testing interior versus edge scenarios while considering correctness of earlier transformation
+Step 13: Thus, ensure perspective on both transformation and setup around constraints is not misguided, this task involves verification within bounds and closer inspection beyond incorrect sanitized setup.
+Step 14: Final verification assesses this original work lacking without thorough acknowledgment of amendment required by well-devised initialization.
+\end{proof}
+
+\end{document}

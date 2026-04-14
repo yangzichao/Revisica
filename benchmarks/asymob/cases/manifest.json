@@ -1,0 +1,708 @@
+{
+  "source": "ASyMOB",
+  "dataset": "Shalyt/ASyMOB-Algebraic_Symbolic_Mathematical_Operations_Benchmark",
+  "variation": "Original",
+  "imported_at": "2026-04-13T07:58:26",
+  "cases": [
+    {
+      "id": "asymob-1",
+      "file": "001_asymob_1.tex",
+      "challenge": "Compute the first 5 nonzero terms (not necessarily a quadratic polynomial) of the Maclaurin series of $ f(x) = e^{\\sin(x)} $",
+      "answer_latex": "1+x+\\frac{x^2}{2}-\\frac{x^4}{8}-\\frac{x^5}{15}+\\cdots",
+      "answer_sympy": "-x**5/15 - x**4/8 + x**2/2 + x + 1",
+      "variation": "Original",
+      "source": "U-Math\nsequences_series\n1ccc052c-9604-4459-a752-98ebdf3e0764",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-2",
+      "file": "002_asymob_2.tex",
+      "challenge": "Find the (infinite) power series of $f(x) \\cdot g(x)$ for given $f(x) = \\sum_{n=1}^\\infty \\left(n \\cdot x^n\\right)$ and $g(x) = \\sum_{n=1}^\\infty \\left(n \\cdot x^n\\right)$",
+      "answer_latex": "\\sum_{n=2}^\\infty\\left(\\frac{1}{6}\\cdot n\\cdot\\left(n^2-1\\right)\\cdot x^n\\right)",
+      "answer_sympy": "Sum(n*x**n*(n**2 - 1), (n, 2, oo))/6",
+      "variation": "Original",
+      "source": "U-Math\nsequences_series\nfb6418ae-3440-4258-9388-89d799fd859a",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-3",
+      "file": "003_asymob_3.tex",
+      "challenge": "Compute the first 6 nonzero terms of the Maclaurin series of $f(x) = \\sin(x) \\cdot \\cos\\left(\\frac{ \\pi }{ 4 }\\right) + \\cos(x) \\cdot \\sin\\left(\\frac{ \\pi }{ 4 }\\right)$",
+      "answer_latex": "\\frac{1}{34560\\cdot\\sqrt{2}}\\cdot\\left(288\\cdot x^5+1440\\cdot x^4-5760\\cdot x^3-17280\\cdot x^2+34560\\cdot x+34560\\right)",
+      "answer_sympy": "sqrt(2)*(x**5 + 5*x**4 - 20*x**3 - 60*x**2 + 120*x + 120)/240",
+      "variation": "Original",
+      "source": "U-Math\nsequences_series\nf89bd354-18c9-4f31-b91f-cf6421e24921",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-4",
+      "file": "004_asymob_4.tex",
+      "challenge": "Compute the first 4 nonzero terms of the Maclaurin series of $f(x) = e^x \\cdot \\cos(x)$",
+      "answer_latex": "1+x-\\frac{x^3}{3}-\\frac{x^4}{6}",
+      "answer_sympy": "-x**4/6 - x**3/3 + x + 1",
+      "variation": "Original",
+      "source": "U-Math\nsequences_series\nd1fe21df-ee7f-40c2-9655-6bd6a7a23ff1",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-5",
+      "file": "005_asymob_5.tex",
+      "challenge": "Compute $\\lim_{x \\to 0}\\left(\\frac{ 2 \\cdot \\cos(x)+4 }{ 5 \\cdot x^3 \\cdot \\sin(x) }-\\frac{ 6 }{ 5 \\cdot x^4 }\\right)$",
+      "answer_latex": "\\frac{1}{150}",
+      "answer_sympy": "1/150",
+      "variation": "Original",
+      "source": "U-Math\nsequences_series\n068e40ce-9108-4ef8-8ee5-0d1471ebbe43",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-6",
+      "file": "006_asymob_6.tex",
+      "challenge": "Evaluate $\\lim_{x \\to 0^{+}}\\left(\\left(\\frac{ \\tan\\left(\\frac{ x }{ 2 }\\right) }{ \\frac{ x }{ 2 } }\\right)^{\\frac{ 3 }{ x^2 }}\\right)$",
+      "answer_latex": "$e^{\\frac{1}{4}}$",
+      "answer_sympy": "exp(1/4)",
+      "variation": "Original",
+      "source": "U-Math\ndifferential_calc\n363dd580-f1fc-4867-a6ef-db2a03139745",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-7",
+      "file": "007_asymob_7.tex",
+      "challenge": "Evaluate\n$ \\lim_{x \\to 5} \\left( \\frac{ 3 \\cdot x }{ x-5 }-\\frac{ 3 }{ \\ln\\left(\\frac{ x }{ 5 }\\right) } \\right) $",
+      "answer_latex": "\\frac{3}{2}",
+      "answer_sympy": "3/2",
+      "variation": "Original",
+      "source": "U-Math\ndifferential_calc\n2d799998-115a-489b-a48b-57090954303e",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-8",
+      "file": "008_asymob_8.tex",
+      "challenge": "Evaluate\n$ \\lim_{x \\to \\infty} \\left(x - x^2 \\cdot \\ln\\left(1 + \\frac{ 1 }{ x }\\right)\\right) $",
+      "answer_latex": "\\frac{1}{2}",
+      "answer_sympy": "1/2",
+      "variation": "Original",
+      "source": "U-Math\ndifferential_calc\nefdc4110-cf56-4f37-bf54-40fdd5d58145",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-9",
+      "file": "009_asymob_9.tex",
+      "challenge": "Evaluate\n$ \\lim_{x \\to 0^{+}} \\left( \\left( \\frac{ \\tan(2 \\cdot x) }{ 2 \\cdot x } \\right)^{\\frac{ 1 }{ 3 \\cdot x^2 }} \\right) $",
+      "answer_latex": "e^{\\frac{4}{9}}",
+      "answer_sympy": "e**(4/9)",
+      "variation": "Original",
+      "source": "U-Math\ndifferential_calc\n99a2304d-5d8e-4245-90da-a80651ca15d8",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-10",
+      "file": "010_asymob_10.tex",
+      "challenge": "Evaluate\n$ \\lim_{x \\to 0}\\left( \\left| \\frac{ -\\sin(x) }{ x } \\right| \\right)^{\\frac{ 1 }{ 4 \\cdot x^2 }} $",
+      "answer_latex": "e^{\\frac{-1}{24}}",
+      "answer_sympy": "e**(-1/24)",
+      "variation": "Original",
+      "source": "U-Math\ndifferential_calc\n84c6a419-c103-41d5-aad5-dd8e690c6e88",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-11",
+      "file": "011_asymob_11.tex",
+      "challenge": "Integrate \n$ \\int \\sin(x)^4 \\cdot \\cos(x)^6 dx $",
+      "answer_latex": "$C+\\frac{1}{320}\\cdot\\left(\\sin(2\\cdot x)\\right)^5+\\frac{1}{128}\\cdot\\left(\\frac{3\\cdot x}{2}-\\frac{\\sin(4\\cdot x)}{2}+\\frac{\\sin(8\\cdot x)}{16}\\right)$",
+      "answer_sympy": "C + 3*x/256 + sin(2*x)**5/320 - sin(4*x)/256 + sin(8*x)/2048",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n0c0ba3db-1470-4c36-975c-91ff5f51986f",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-12",
+      "file": "012_asymob_12.tex",
+      "challenge": "Calculate the integral:\n$\n\\int \\frac{ \\sqrt[5]{x}+\\sqrt[5]{x^4}+x \\cdot \\sqrt[5]{x} }{ x \\cdot \\left(1+\\sqrt[5]{x^2}\\right) }   dx\n$",
+      "answer_latex": "C+5\\cdot\\arctan\\left(\\sqrt[5]{x}\\right)+\\frac{5}{4}\\cdot\\sqrt[5]{x}^4",
+      "answer_sympy": "C + 5*x**(4/5)/4 + 5*atan(x**(1/5))",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n126c4165-b3d5-4470-8412-08e79d9821cf",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-13",
+      "file": "013_asymob_13.tex",
+      "challenge": "Solve the integral:\n$\n\\int \\frac{ 1 }{ \\sin(x)^7 \\cdot \\cos(x) }   dx\n$",
+      "answer_latex": "C+\\ln\\left(\\left|\\tan(x)\\right|\\right)-\\frac{3}{2\\cdot\\left(\\tan(x)\\right)^2}-\\frac{3}{4\\cdot\\left(\\tan(x)\\right)^4}-\\frac{1}{6\\cdot\\left(\\tan(x)\\right)^6}",
+      "answer_sympy": "C + log(Abs(tan(x))) - 3 / (2 * tan(x)**2) - 3 / (4 * tan(x)**4) - 1 / (6 * tan(x)**6)",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n00f6affb-905a-4109-a78e-2dde7a0b83accf",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-14",
+      "file": "014_asymob_14.tex",
+      "challenge": "Compute the integral:\n$\n-2 \\cdot \\int x^{-4} \\cdot \\left(4+x^2\\right)^{\\frac{ 1 }{ 2 }}   dx\n$",
+      "answer_latex": "C+\\frac{1}{6}\\cdot\\left(\\frac{4}{x^2}+1\\right)\\cdot\\sqrt{\\frac{4}{x^2}+1}",
+      "answer_sympy": "(C*x**2 + sqrt((x**2 + 4)/x**2)*(x**2 + 4)/6)/x**2",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n05ea9929-8cbb-432b-bbbb-ec1e74c9f401",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-15",
+      "file": "015_asymob_15.tex",
+      "challenge": "Solve the integral:\n$\n\\int \\left(\\frac{ x+4 }{ x-4 } \\right)^{\\frac{ 3 }{ 2 }}   dx\n$",
+      "answer_latex": "C+\\sqrt{\\frac{x+4}{x-4}}\\cdot(x-20)-12\\cdot\\ln\\left(\\left|\\frac{\\sqrt{x-4}-\\sqrt{x+4}}{\\sqrt{x-4}+\\sqrt{x+4}}\\right|\\right)",
+      "answer_sympy": "C + sqrt((x + 4)/(x - 4)) * (x - 20) - 12 * ln(Abs((sqrt(x - 4) - sqrt(x + 4)) / (sqrt(x - 4) + sqrt(x + 4))))",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n08c72d46-1abd-49e1-9c9c-ce509902be6e",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-16",
+      "file": "016_asymob_16.tex",
+      "challenge": "Compute the integral: $ \\int \\frac{ -1 }{ x^2 \\cdot \\left(3+x^3\\right)^{\\frac{ 5 }{ 3 }} }   dx $",
+      "answer_latex": "\\frac{1}{9}\\cdot\\sqrt[3]{1+\\frac{3}{x^3}}+\\frac{1}{18\\cdot\\left(1+\\frac{3}{x^3}\\right)^{\\frac{2}{3}}}",
+      "answer_sympy": "(x**3 + 2)/(6*x**3*(1 + 3/x**3)**(2/3))",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n4c1292e1-d4b3-4acf-afaf-eaac62f2662d",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-17",
+      "file": "017_asymob_17.tex",
+      "challenge": "Compute the integral:\n$ \\int \\frac{ 4 \\cdot x+\\sqrt{4 \\cdot x-5} }{ 5 \\cdot \\sqrt[4]{4 \\cdot x-5}+\\sqrt[4]{(4 \\cdot x-5)^3} }   dx $",
+      "answer_latex": "C+25\\cdot\\sqrt[4]{4\\cdot x-5}+\\frac{1}{5}\\cdot\\sqrt[4]{4\\cdot x-5}^5-\\frac{4}{3}\\cdot\\sqrt[4]{4\\cdot x-5}^3-\\frac{125}{\\sqrt{5}}\\cdot\\arctan\\left(\\frac{1}{\\sqrt{5}}\\cdot\\sqrt[4]{4\\cdot x-5}\\right)",
+      "answer_sympy": "C + (4*x - 5)**(5/4)/5 - 4*(4*x - 5)**(3/4)/3 + 25*(4*x - 5)**(1/4) - 25*sqrt(5)*atan(sqrt(5)*(4*x - 5)**(1/4)/5)",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n147944c5-b782-48c5-a664-d66deb92d9a7",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-18",
+      "file": "018_asymob_18.tex",
+      "challenge": "Solve the integral:\n$\n\\int \\frac{ 3 }{ \\sin(2 \\cdot x)^7 \\cdot \\cos(-2 \\cdot x) }   dx\n$",
+      "answer_latex": "C+\\frac{3}{2}\\cdot\\left(\\ln\\left(\\left|\\tan(2\\cdot x)\\right|\\right)-\\frac{3}{2\\cdot\\left(\\tan(2\\cdot x)\\right)^2}-\\frac{3}{4\\cdot\\left(\\tan(2\\cdot x)\\right)^4}-\\frac{1}{6\\cdot\\left(\\tan(2\\cdot x)\\right)^6}\\right)",
+      "answer_sympy": "C + (3/2) * (log(Abs(tan(2*x))) - 3/(2 * tan(2*x)**2) - 3/(4 * tan(2*x)**4) - 1/(6 * tan(2*x)**6)\n)",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n1db212f0-2fac-410d-969d-fe3b5b55d076",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-19",
+      "file": "019_asymob_19.tex",
+      "challenge": "Solve the integral:\n$\n\\int \\frac{ 1 }{ \\sin(8 \\cdot x)^5 }   dx\n$",
+      "answer_latex": "C+\\frac{1}{128}\\cdot\\left(2\\cdot\\left(\\tan(4\\cdot x)\\right)^2+6\\cdot\\ln\\left(\\left|\\tan(4\\cdot x)\\right|\\right)+\\frac{1}{4}\\cdot\\left(\\tan(4\\cdot x)\\right)^4-\\frac{2}{\\left(\\tan(4\\cdot x)\\right)^2}-\\frac{1}{4\\cdot\\left(\\tan(4\\cdot x)\\right)^4}\\right)",
+      "answer_sympy": "C + Rational(1, 128) * (2 * tan(4 * x)**2 + 6 * log(Abs(tan(4 * x))) + Rational(1, 4) * tan(4 * x)**4 - 2 / tan(4 * x)**2 - 1 / (4 * tan(4 * x)**4))",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n275f7ceb-f331-4a3f-96ec-346e6d81b32a",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-20",
+      "file": "020_asymob_20.tex",
+      "challenge": "Evaluate the integral:\n$\nI = \\int \\left(x^3 + 3\\right) \\cdot \\cos(2 \\cdot x)   dx\n$",
+      "answer_latex": "\\frac{1}{256}\\cdot\\left(384\\cdot\\sin(2\\cdot x)+128\\cdot x^3\\cdot\\sin(2\\cdot x)+192\\cdot x^2\\cdot\\cos(2\\cdot x)-96\\cdot\\cos(2\\cdot x)-256\\cdot C-192\\cdot x\\cdot\\sin(2\\cdot x)\\right)",
+      "answer_sympy": "-C + x**3*sin(2*x)/2 + 3*x**2*cos(2*x)/4 - 3*x*sin(2*x)/4 + 3*sin(2*x)/2 - 3*cos(2*x)/8",
+      "variation": "Original",
+      "source": "U-Math\nintegral_calc\n47a11349-0386-4969-9263-d3cdfcc98cb9",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-21",
+      "file": "021_asymob_21.tex",
+      "challenge": "Use factoring to calculate the following limit.\n$ \\lim_{x \\rightarrow K} \\frac {{x}^4-K^4} {{x}^5-K^5} $",
+      "answer_latex": "\\frac{4}{5 K}",
+      "answer_sympy": "4/(5*K)",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0016",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-22",
+      "file": "022_asymob_22.tex",
+      "challenge": "Find the limit. $ \\lim_{x \\to 0} \\frac{1-\\cos\\!\\left(10x\\right)}{\\cos^{2}\\!\\left(6x\\right)-1}$",
+      "answer_latex": "\\frac{-25}{18}",
+      "answer_sympy": "-25/18",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0022",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-23",
+      "file": "023_asymob_23.tex",
+      "challenge": "Evaluate the limit. $ \\lim_{x\\to 1} \\dfrac{x^2+11x-12}{\\ln x}=$",
+      "answer_latex": "13",
+      "answer_sympy": "13",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0508",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-24",
+      "file": "024_asymob_24.tex",
+      "challenge": "Evaluate the limit below, given that $f(t)=\\left(\\frac{4^t+6^t}{4}\\right)^{1/t}$. $\\lim\\limits_{t\\to+\\infty} f(t)$",
+      "answer_latex": "6",
+      "answer_sympy": "6",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0512",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-25",
+      "file": "025_asymob_25.tex",
+      "challenge": "Calculate the integral. $\\int_{2}^{\\infty} 3x^{2}e^{-x^{3}}  dx=$",
+      "answer_latex": "\\frac{1}{e^{8}}",
+      "answer_sympy": "e**(-8)",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0592",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-26",
+      "file": "026_asymob_26.tex",
+      "challenge": "Evaluate the indefinite integral. $\\int \\tan^{3}\\!\\left(x\\right)\\sec^{9}\\!\\left(x\\right)   dx$",
+      "answer_latex": "\\frac{\\sec^{11}{\\left(x \\right)}}{11} - \\frac{\\sec^{9}{\\left(x \\right)}}{9}",
+      "answer_sympy": "sec(x)**11/11 - sec(x)**9/9",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0604",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-27",
+      "file": "027_asymob_27.tex",
+      "challenge": "Evaluate the indefinite integral.\n$\\int 208 \\cos^4(16x) dx$",
+      "answer_latex": "78 x + \\frac{13 \\sin{\\left(16 x \\right)} \\cos^{3}{\\left(16 x \\right)}}{4} + \\frac{39 \\sin{\\left(16 x \\right)} \\cos{\\left(16 x \\right)}}{8}",
+      "answer_sympy": "78*x + 13*sin(16*x)*cos(16*x)**3/4 + 39*sin(16*x)*cos(16*x)/8",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0606",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-28",
+      "file": "028_asymob_28.tex",
+      "challenge": "Evaluate the integral.\n$ \\int \\frac{10x^2-48x-38}{x^3-5x^2-8x+48} dx $",
+      "answer_latex": "\\frac{2 \\left(\\left(x - 4\\right) \\left(3 \\log{\\left(\\left|{x - 4}\\right| \\right)} + 2 \\log{\\left(\\left|{x + 3}\\right| \\right)}\\right) + 5\\right)}{x - 4} ",
+      "answer_sympy": "2*((x - 4)*(3*log(Abs(x - 4)) + 2*log(Abs(x + 3))) + 5)/(x - 4)",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0612",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-29",
+      "file": "029_asymob_29.tex",
+      "challenge": "Evaluate the integral. $ \\int e^{x}\\sqrt{64-e^{2x}} \\;dx$ $=$",
+      "answer_latex": "\\frac{e^{x} \\sqrt{64 - e^{2 x}}}{2} + 32 \\operatorname{asin}{\\left(\\frac{e^{x}}{8} \\right)}",
+      "answer_sympy": "e**x*sqrt(64 - e**(2*x))/2 + 32*asin(e**x/8)",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0624",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-30",
+      "file": "030_asymob_30.tex",
+      "challenge": "Evaluate $\\lim_{x \\to 0} \\frac{e^{-3x^3}-1+3x^3-\\frac{9}{2}x^6}{12x^9}$",
+      "answer_latex": "\\frac{-3}{8}",
+      "answer_sympy": "-3/8",
+      "variation": "Original",
+      "source": "UGMathBench\nCalculus_-_single_variable_0939",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-31",
+      "file": "031_asymob_31.tex",
+      "challenge": "Solve the following first-order differential equation:\n$\n\\frac{dy}{dx} + 2y = e^{-x}, \\quad y(0) = 1.\n$",
+      "answer_latex": "e^{-x}",
+      "answer_sympy": "e**(-x)",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 340 from Differential Equations - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-32",
+      "file": "032_asymob_32.tex",
+      "challenge": "Consider the differential equation $\\frac{dy}{dx} = xy$. Find the value of $y(\\sqrt{2})$ given that $y(0) = 2$.",
+      "answer_latex": "2e",
+      "answer_sympy": "2*e",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 339 from Differential Equations - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-33",
+      "file": "033_asymob_33.tex",
+      "challenge": "Evaluate the following limit:\n$\n\\lim_{n \\to \\infty} \\left(\\sqrt{n^2+2n-1}-\\sqrt{n^2+3}\\right).\n$",
+      "answer_latex": "1",
+      "answer_sympy": "1",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 315 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-34",
+      "file": "034_asymob_34.tex",
+      "challenge": "Evaluate $\\lim\\limits_{x\\to 4}\\frac{x-4}{\\sqrt{x}-2}$.",
+      "answer_latex": "4",
+      "answer_sympy": "4",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 317 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-35",
+      "file": "035_asymob_35.tex",
+      "challenge": "Evaluate $\\displaystyle{\\int_0^4(2x-\\sqrt{16-x^2})dx}$.",
+      "answer_latex": "16 - 4 \\pi",
+      "answer_sympy": "16 - 4*pi",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 325 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-36",
+      "file": "036_asymob_36.tex",
+      "challenge": "Evaluate the series $\\sum\\limits_{n=1}^\\infty\\frac{1}{(n+1)(n+3)}$.",
+      "answer_latex": "\\frac{5}{12}",
+      "answer_sympy": "5/12",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 326 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-37",
+      "file": "037_asymob_37.tex",
+      "challenge": "Evaluate the limit $\\lim\\limits_{x\\to 0}\\frac{(1+x)^{\\frac{1}{x}}-e}{x}$.",
+      "answer_latex": "-\\frac{ e}{2}",
+      "answer_sympy": "-e/2",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 327 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-38",
+      "file": "038_asymob_38.tex",
+      "challenge": "Evaluate the series $\\sum\\limits_{n=0}^\\infty \\frac{1}{2n+1}\\left(\\frac12\\right)^{2n+1}$.",
+      "answer_latex": "\\ln\\sqrt{3}",
+      "answer_sympy": "log(3)/2",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 328 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-39",
+      "file": "039_asymob_39.tex",
+      "challenge": "Evaluate the limit $\\lim\\limits_{n\\to\\infty}\\sum\\limits_{k=0}^{n-1}\\frac{1}{\\sqrt{n^2-k^2}}$.",
+      "answer_latex": "\\frac{\\pi}{2}",
+      "answer_sympy": "pi/2",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 329 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-40",
+      "file": "040_asymob_40.tex",
+      "challenge": "Evaluate the iterated integral $\\displaystyle{\\int_0^1dy\\int_y^1(e^{-x^2}+e^x)dx}$.",
+      "answer_latex": "\\frac{3}{2}-\\frac12 e^{-1}",
+      "answer_sympy": "(3*e - 1)/(2*e)",
+      "variation": "Original",
+      "source": "MathOdyssey\nProblem 336 from Calculus and Analysis - College Math",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-41",
+      "file": "041_asymob_41.tex",
+      "challenge": "What is the integral of $ 2x - x^7atan(3) $",
+      "answer_latex": "x^2-\\frac{1}{8} x^8 \\tan ^{-1}(3)",
+      "answer_sympy": "-x**8*atan(3)/8 + x**2",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ97",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-42",
+      "file": "042_asymob_42.tex",
+      "challenge": "What is the integral of $ 1 + x + x^3*cosh(2) $",
+      "answer_latex": "\\frac{1}{4} x^4 \\cosh (2)+\\frac{x^2}{2}+x",
+      "answer_sympy": "x**4*cosh(2)/4 + x**2/2 + x",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ98",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-43",
+      "file": "043_asymob_43.tex",
+      "challenge": "What is the integral of $ 12 + 6cosh(x) $",
+      "answer_latex": "12 x + 6 \\sinh{\\left(x \\right)}",
+      "answer_sympy": "12*x + 6*sinh(x)",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ90",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-44",
+      "file": "044_asymob_44.tex",
+      "challenge": "What is the integral of 4x^7 + sin(1 + x)",
+      "answer_latex": "\\frac{x^8}{2} - \\cos(1+x) ",
+      "answer_sympy": "x**8/2 - cos(x + 1)",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ14",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-45",
+      "file": "045_asymob_45.tex",
+      "challenge": "What is the integral of 2x + 2x^2 + x[(x + x*e^x)^-1]",
+      "answer_latex": "\\frac{2 x^3}{3}+x^2-2 \\tanh ^{-1}\\left(2 e^x+1\\right)",
+      "answer_sympy": "2*x**3/3 + x**2 + x - log(exp(x) + 1)",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ7",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-46",
+      "file": "046_asymob_46.tex",
+      "challenge": "What is the integral of -x + cos[ln(sin(3))] * ln(3x)",
+      "answer_latex": "-\\frac{1}{2} x (x-2 \\log (3 x) \\cos (\\log (\\sin (3)))+2 \\cos (\\log (\\sin (3))))",
+      "answer_sympy": "-1*x*((x - 2*log(3*x, E)*cos(log(sin(3), E))) + 2*cos(log(sin(3), E)))/2",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ15",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-47",
+      "file": "047_asymob_47.tex",
+      "challenge": "What is the integral of 3x - 4*[cos(x+3)]*x^2",
+      "answer_latex": "\\frac{3 x^2}{2}-4 \\left(x^2-2\\right) \\sin (x+3)-8 x \\cos (x+3)",
+      "answer_sympy": "-8*x*cos(x + 3) + ((3*x**2)/2 - 4*(x**2 - 2)*sin(x + 3))",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ18",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-48",
+      "file": "048_asymob_48.tex",
+      "challenge": "What is the integral of -3 + atan(x) + ln(tanh(3))",
+      "answer_latex": "x \\arctan(x) - \\frac{1}{2} \\ln(1 + x^2) + x \\ln(\\tanh(3)) - 3x + C",
+      "answer_sympy": "x*atan(x) - 3*x + x*log(tanh(3)) - log(x**2 + 1)/2",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ20",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-49",
+      "file": "049_asymob_49.tex",
+      "challenge": "What is the integral of e^{x \\left(x + 4\\right)^{2}} \\left(x + 4\\right) \\left(3 x + 4\\right)",
+      "answer_latex": "e^{x (x+4)^2}",
+      "answer_sympy": "e**(x*(x + 4)**2)",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ22",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    },
+    {
+      "id": "asymob-50",
+      "file": "050_asymob_50.tex",
+      "challenge": "What is the integral of -e^{3x} * sin(e^{3x})",
+      "answer_latex": "\\frac{1}{3} \\cos \\left(e^{3 x}\\right)",
+      "answer_sympy": "cos(e**(3*x))/3",
+      "variation": "Original",
+      "source": "GHOSTS \nSymbolic Integration\nQ29",
+      "expected": {
+        "machine_verified_titles": [
+          "Integral equality verified"
+        ]
+      }
+    }
+  ]
+}

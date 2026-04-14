@@ -1,0 +1,94 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "prm_bench_preview",
+  "dataset_size": 19370686,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/hitsmy/PRMBench_Preview@5cc7683d0ae5797f84d7aeac0607966f277c39e1/prmbench_preview.jsonl": {
+      "num_bytes": 20397272,
+      "checksum": null
+    }
+  },
+  "download_size": 20397272,
+  "features": {
+    "original_question": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "modified_question": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "original_process": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "modified_process": {
+      "feature": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "modified_steps": {
+      "feature": {
+        "dtype": "int64",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "error_steps": {
+      "feature": {
+        "dtype": "int64",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "reason": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "idx": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "question": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "classification": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "ground_truth": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "original_response": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 39767958,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 19370686,
+      "num_examples": 6216,
+      "dataset_name": "prm_bench_preview"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

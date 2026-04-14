@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+How many positive two-digit integers leave a remainder of 2 when divided by 8?
+\end{theorem}
+
+\begin{proof}
+Step 0: So if a number leaves a remainder of 2 when divided by 8, it's of the form 8n+2.
+Step 1: Therefore, we want to verify that there are 12 numbers meeting this condition.
+Step 2: Consider starting with n=1 and increasing n until reaching a non-two-digit number.
+Step 3: For example, 8*1+2=10, which is a two-digit integer.
+Step 4: 8*2+2=18 is also a valid two-digit outcome.
+Step 5: We can assume n=13 is too high since 8*13+2 exceeds two digits.
+Step 6: Summarily confirm that n=1 to n=12 should work since beyond that pertains to n=13.
+Step 7: Now recount x, the number of suitable n, by calculating values for confirmation.
+Step 8: Ten plus subsequent n values up to n=13 combine to yield the required amount.
+Step 9: Conclusively, n values begin at 1 to establish double-digit output.
+Step 10: Thus, the proper n range entails 1 through 13, seeming to include 13.
+\end{proof}
+
+\end{document}

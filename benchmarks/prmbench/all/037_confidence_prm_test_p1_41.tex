@@ -1,0 +1,25 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Compute $17^{-1}\pmod{83}$. Express your answer as a residue from $0$ to $82$, inclusive. (You may find it helpful to consider the fact that $17\cdot 5=85$.)
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's use the fact that $17\cdot 5=85$ to find the multiplicative inverse of 17 mod 83.
+Step 1: The multiplicative inverse of 17 mod 83 is the number x such that $17x\equiv 1\pmod{83}$.
+Step 2: And from the fact that $17\cdot 5=85$, we know that $17\cdot 5\equiv 2\pmod{83}$.
+Step 3: Let's multiply both sides by $42$. We get $17\cdot 5\cdot42\equiv 2\cdot42\equiv1\pmod{83}$.
+Step 4: So $x=5\cdot 42=210$ is a solution.
+Step 5: But since we're looking for a number from 0 to 82, we need to find the remainder when 210 is divided by 83.
+Step 6: That remainder is $210-83\cdot2=210-166=23$.
+Step 7: So the multiplicative inverse of 17 mod 83 is 23.
+Step 8: Right. And since $17\cdot 23=391$, we know that $17\cdot 23\equiv 391\equiv 1\pmod{83}$.
+\end{proof}
+
+\end{document}

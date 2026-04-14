@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+In how many ways can 6 girls and 2 boys sit in a row if the 2 boys insist on sitting next to each other?
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's seat the boys first.
+Step 1: We have $7*2!=14$ possibilities to seat the boys. Do you see why?
+Step 2: Yes. We have 7 seats where we can place the boys and 2! ways to arrange them.
+Step 3: Now we can seat the girls in the remaining seats.
+Step 4: We have 6 seats and 6! ways to seating the girls.
+Step 5: That gives us $6!=720$ possibilities for the girls.
+Step 6: So in total we have $15*720=10800$ ways to seat the girls and boys.
+Step 7: Correct.
+\end{proof}
+
+\end{document}

@@ -6,6 +6,7 @@ No math checks, no cross-provider, no self-check.
 
 from __future__ import annotations
 
+import functools
 from datetime import datetime
 from pathlib import Path
 
@@ -134,6 +135,7 @@ def build_polish_graph() -> StateGraph:
     return builder
 
 
+@functools.cache
 def compile_polish_graph():
-    """Compile the polish graph ready for execution."""
+    """Compile the polish graph ready for execution (cached)."""
     return build_polish_graph().compile()

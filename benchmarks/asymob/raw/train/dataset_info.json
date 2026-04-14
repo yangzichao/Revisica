@@ -1,0 +1,58 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "a_sy_mob-algebraic_symbolic_mathematical_operations_benchmark",
+  "dataset_size": 9189839,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/Shalyt/ASyMOB-Algebraic_Symbolic_Mathematical_Operations_Benchmark@20bbf17b6c52c69ce6eec5661f0bead271bf3912/Full_ASyMOB_Dataset.json": {
+      "num_bytes": 11943565,
+      "checksum": null
+    }
+  },
+  "download_size": 11943565,
+  "features": {
+    "Index": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Challenge": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Answer in Latex": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Answer in Sympy": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Variation": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "Source": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 21133404,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 9189839,
+      "num_examples": 17048,
+      "dataset_name": "a_sy_mob-algebraic_symbolic_mathematical_operations_benchmark"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

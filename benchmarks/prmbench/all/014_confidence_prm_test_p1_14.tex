@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Suppose that $f$ is a polynomial such that \[(x-1)\cdot f(x)=3x^4+x^3 - 25x^2 +38x -17.\] What is the degree of $f$?
+\end{theorem}
+
+\begin{proof}
+Step 0: So if we multiply out $(x-1)\cdot f(x)$, we should get $3x^4+x^3-25x^2+38x-17$.
+Step 1: The leading term of $f(x)$ should be $3x^4$.
+Step 2: No, it shouldn't. The leading term of the product is the product of the leading terms of the factors, and the degree is the sum of the degrees.
+Step 3: So what should the leading term be?
+Step 4: $(x-1)\cdot f(x)=3x^4+x^3-25x^2+38x-17$ is a fourth degree polynomial, so $f(x)$ must be a third degree polynomial.
+Step 5: I see. So the leading term should be $3x^3$.
+Step 6: But actually, I've realized that $f(x)$ can have a degree of 4 if it absorbs the degree of $x-1$.
+Step 7: Right. So the degree of $f(x)$ is 4.
+\end{proof}
+
+\end{document}

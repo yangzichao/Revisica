@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+What is the largest integer less than $2010$ that has a remainder of $5$ when divided by $7,$ a remainder of $10$ when divided by $11,$ and a remainder of $10$ when divided by $13$?
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's call the number x and then we can just use the information given to write equations.
+Step 1: Ok, so the first equation is x = 7a + 5 for some integer a.
+Step 2: Yeah, and the second equation is x = 11b + 10 for some integer b.
+Step 3: And the last equation is x = 13c + 10 for some integer c.
+Step 4: Right. So now we just have to solve this system of equations. Let's first substitute the first equation into the second equation. We get 7a + 5 = 11b + 10.
+Step 5: So 7a = 11b + 5.
+Step 6: And then we can substitute the second equation into the third equation. We get 11b + 10 = 13c + 10.
+Step 7: That means 11b = 13c.
+Step 8: And now we can substitute the third equation into the first equation. We get 13c + 10 = 7a + 5.
+Step 9: That gives us 13c = 7a - 5.
+Step 10: Let's try something shorter than what we did. Let's start again
+Step 11: Ok. So we have the three equations x = 7a + 5, x = 11b + 10 and x = 13c + 10.
+Step 12: Right. Let's subtract the second equation from the third equation. We get 0 = 13c + 10 - 11b - 10.
+Step 13: So 13c - 11b = 0.
+Step 14: And from that we can get 13c = 11b.
+Step 15: Thus $x = 11\cdot 13 d + 10 \pmod{7}$
+Step 16: $x \equiv 143p + 10$ for some integer $p$
+Step 17: We know that $x = 7n + 5$ for some integer $n$
+Step 18: So $7n + 5 = 143p + 10$
+Step 19: Then $7n = 143p + 5$
+Step 20: So $x \equiv 3n + 3 \pmod{7}$ and $x \equiv 5 \pmod 7$
+Step 21: So $3n \equiv 2 \pmod{7}$
+Step 22: We know that $n = 7m + 2$ for some integer $m$
+Step 23: So $3(7m + 2) \equiv 2 \pmod{7}$
+Step 24: This means $21m + 6 \equiv 2 \pmod{7}$
+Step 25: So $21m \equiv -4 \pmod 7$
+Step 26: Thus $m \equiv -4 \equiv 3 \pmod 7$
+Step 27: So $n = 7m + 2 = 7(3) + 2 = 23$
+Step 28: So $x = 7(23) + 5 = 164$
+Step 29: We need to check that $x \equiv 10 \pmod{11}$ and $x \equiv 10 \pmod{13}$
+Step 30: $x \equiv 10 \pmod{11}$
+Step 31: but $x \equiv 8 \pmod{13}$
+Step 32: We had an error somewhere. Let's start from $3n \equiv 2 \pmod 7$
+Step 33: I think we should add $7$ to $2$ to get $9$
+Step 34: Right. So we should have had $3n \equiv 9 \pmod 7$
+Step 35: So then $n \equiv 3 \pmod 7$
+Step 36: So $n = 7m + 3$
+Step 37: So we substitute $n = 7m +3$ into $7n = 143p + 5$
+Step 38: This gives us $49m + 21 = 143p + 5$
+Step 39: Thus $49m = 143p -16$
+Step 40: We need to find $m$ in terms of $p$
+Step 41: We should have $x = 143(7m + 3)+ 10$
+Step 42: So $x = 1001m + 439$
+Step 43: We need to find the largest integer less than $2010$ of the form $1001m + 439$
+Step 44: We can do that by finding the largest possible value for $m$
+Step 45: So we need to solve $1001m + 439 < 2010$
+Step 46: We can subtract $439$ from both sides to get $1001m < 1571$
+Step 47: And if we divide both sides by $1001$ we get $m < 1.57$
+Step 48: Thus $m$ is either $1$ or $0$
+Step 49: So $x$ is either $1001(1) + 439 = 1440$ or $1001(0) + 439 = 439$
+Step 50: However, $x=1440$ satisfies x ≡ 10 ≡ 10 mod 11, but $1440\equiv7\mod{13}$
+Step 51: Thus, $x=1440$ doesn't satisfy all conditions
+Step 52: The conditions are satisfied only when $x=1862: 1862 \equiv 5(mod 7), 1862 ≡ 10 (mod 11), 1862 ≡ 10 (mod 13).$.
+\end{proof}
+
+\end{document}

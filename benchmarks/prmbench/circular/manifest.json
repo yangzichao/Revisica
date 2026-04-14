@@ -1,0 +1,71 @@
+{
+  "source": "PRMBench",
+  "dataset": "hitsmy/PRMBench_Preview",
+  "classification": "circular",
+  "imported_at": "2026-04-13T02:12:29",
+  "cases": [
+    {
+      "id": "circular_prm_train_p1_0",
+      "file": "001_circular_prm_train_p1_0.tex",
+      "classification": "circular",
+      "error_steps": [
+        2,
+        3,
+        4
+      ],
+      "modified_steps": [
+        2,
+        3,
+        4
+      ],
+      "reason": "Steps 2, 3, and 4 introduce circular logic by assuming the number of seconds (468) and using it to verify the given minutes by reverse-calculation, instead of calculating directly from the number of minutes. This approach loops back and forth, creating a circular reasoning structure.",
+      "total_steps": 6,
+      "expected": {
+        "expected_first_issue_step_zero_based": 1
+      }
+    },
+    {
+      "id": "circular_prm_train_p1_1",
+      "file": "002_circular_prm_train_p1_1.tex",
+      "classification": "circular",
+      "error_steps": [
+        2,
+        6,
+        10
+      ],
+      "modified_steps": [
+        2,
+        5,
+        6,
+        8,
+        10
+      ],
+      "reason": "The process now contains circular logic in steps 6 and 10 by analyzing n values starting in one loop, deducing along ranges yet reaffirming counts ambiguously through premature conclusions. By overlapping reasoning and expectation, step 10 inflates conclusion validity absent diligent reconfirmation, creating inaccuracy suggestive of circular thinking within steps 2 and 6 also.",
+      "total_steps": 11,
+      "expected": {
+        "expected_first_issue_step_zero_based": 1
+      }
+    },
+    {
+      "id": "circular_prm_train_p1_2",
+      "file": "003_circular_prm_train_p1_2.tex",
+      "classification": "circular",
+      "error_steps": [
+        3,
+        6,
+        9
+      ],
+      "modified_steps": [
+        3,
+        6,
+        7,
+        9
+      ],
+      "reason": "Steps 3, 6, and 9 introduce circular logic by assuming a specific value for $r$ (namely $r = 2$), and using this assumption to verify it within the calculations. This creates a circular reasoning loop, as the outcome is used to justify itself rather than being derived logically through independent reasoning.",
+      "total_steps": 11,
+      "expected": {
+        "expected_first_issue_step_zero_based": 2
+      }
+    }
+  ]
+}

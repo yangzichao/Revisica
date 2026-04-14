@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+If $x^2 - x - 1 = 0$, what is the value of $x^3 - 2x + 1$?
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's start with the first equation and see if we can solve for x.
+Step 1: Ok. We can use the quadratic formula to find x.
+Step 2: The quadratic formula is $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$.
+Step 3: Yes, that's correct. In this case $a$, $b$, and $c$ are 1, -1, and -1, respectively.
+Step 4: So if we plug those values in, we get $x = \frac{1 \pm \sqrt{1^2 - 4*1*-1}}{2*1}$.
+Step 5: That simplifies to $x = \frac{1 \pm \sqrt{5}}{2}$. So x can be either $\frac{1 + \sqrt{5}}{2}$ or $\frac{1 - \sqrt{5}}{2}$.
+Step 6: Now let's move to the second equation.
+Step 7: Yes, we need to find $x^3 - 2x + 1$.
+Step 8: Right. Well since we now know that $x^2 - x - 1 = 0$, we can replace $x^2$ in the second equation with $x + 1$.
+Step 9: That means that $x^3 - 2x + 1 = x(x + 1) - 2x + 1$.
+Step 10: And if we substitute in the possible values of x that we found earlier, we get either $\frac{1 + \sqrt{5}}{2}(\frac{1 + \sqrt{5}}{2} + 1) - 2\frac{1 + \sqrt{5}}{2} + 1$ or $\frac{1 - \sqrt{5}}{2}(\frac{1 - \sqrt{5}}{2} + 1) - 2\frac{1 - \sqrt{5}}{2} + 1$.
+Step 11: Let's start with the first case: $\frac{1 + \sqrt{5}}{2}(\frac{1 + \sqrt{5}}{2} + 1) - 2\frac{1 + \sqrt{5}}{2} + 1$.
+Step 12: There's a shorter way. We have  $x^3 - 2x + 1 = x(x + 1) - 2x + 1$
+Step 13: $x^3 - 2x + 1 = (x^2 + x) - 2x + 1$
+Step 14: And we know that $x^2 - x + 1 = 0$, so $x^2 = x - 1$. Clearly, the equalities are maintained.
+Step 15: So we can just substitute $x - 1$ for $x^2$. Let's proceed with x(x + 1) part.
+Step 16: So $x^3 - 2x + 1 = (x^2 + x) - 2x + 1$ becomes $x^3 - 2x + 1 = (x - 1 + x) - 2x + 1$
+Step 17: And that simplifies to $x^3 - 2x + 1 = (2x - 1) - 2x + 1$
+Step 18: So $x^3 - 2x + 1 = 0$.
+Step 19: Interestingly, both methods yielded results which differ from the original expectation.
+Step 20: Right. So if $x^2 - x - 1 = 0$ then $x^3 - 2x + 1 = 0$.
+\end{proof}
+
+\end{document}

@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Claim}
+
+\begin{document}
+
+\begin{theorem}
+Compute the integral:
+$ \int \frac{ 4 \cdot x+\sqrt{4 \cdot x-5} }{ 5 \cdot \sqrt[4]{4 \cdot x-5}+\sqrt[4]{(4 \cdot x-5)^3} }   dx $
+\end{theorem}
+
+\begin{proof}
+The answer is:
+\[
+C+25\cdot\sqrt[4]{4\cdot x-5}+\frac{1}{5}\cdot\sqrt[4]{4\cdot x-5}^5-\frac{4}{3}\cdot\sqrt[4]{4\cdot x-5}^3-\frac{125}{\sqrt{5}}\cdot\arctan\left(\frac{1}{\sqrt{5}}\cdot\sqrt[4]{4\cdot x-5}\right)
+\]
+\end{proof}
+
+\end{document}

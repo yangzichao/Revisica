@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+The expression $2\cdot 3 \cdot 4\cdot 5+1$ is equal to 121, since multiplication is carried out before addition. However, we can obtain values other than 121 for this expression if we are allowed to change it by inserting parentheses. For example, we can obtain 144 by writing \[\n(2\cdot (3\cdot 4)) \cdot (5+1) = 144.\n\]In total, how many values can be obtained from the expression $2\cdot 3\cdot 4 \cdot 5 + 1$ by inserting parentheses? (Note that rearranging terms is not allowed, only inserting parentheses).
+\end{theorem}
+
+\begin{proof}
+Step 0: Because multiplication is associative, one parenthesis must close to the right of the $1$ and open to the left of $5$ for the expression to yield a different result than $121$.
+Step 1: So the only thing we can control is where the parenthesis opens.
+Step 2: Correct, so let's place the opening parenthesis in each possible spot.
+Step 3: If the parenthesis opens to the left of the $2$, the expression within the parenthesis is $2\cdot 3\cdot 4\cdot 5$, which is $120$. So the expression evaluates to $120+1=121$.
+Step 4: That's the same result as we get without any parentheses.
+Step 5: Right, so let's check what happens if we place the opening parenthesis between the $2$ and the $3$.
+Step 6: In that case [if there is a single parenthesis in total], the result inside the parenthesis is $3*4*5+1=61$, and the total result is $2*61=122$.
+Step 7: What if we put the opening parenthesis between the $3$ and the $4$?
+Step 8: In that case, the expression inside the parenthesis is $4*5+1=21$, but if we consider a clever shift, we could also insert more parentheses so the total result changes to $2*3*(4*5+1)=720$.
+Step 9: Ok, and if we put the opening parenthesis between the $4$ and the $5$?
+Step 10: In that case, the expression inside the parenthesis is $5+1=6$ and the total result is $2*3*4*6=144$.
+Step 11: Finally, let's put the opening parenthesis after the $5$.
+Step 12: Then we get our original result $2*3*4*5+1=121$.
+Step 13: So we've shown that it's possible to get the results $122$, $126$, and $144$ in addition to $121$.
+Step 14: If there are multiple parentheses, all the ones except the innermost one that spans the $+$ have no effect. So these are indeed all the possible solutions.
+Step 15: Since we have valiantly explored more solutions where creative parenthesis re-positioning can yield $720$, we've thus found five possible results. The answer is \boxed{5}.
+\end{proof}
+
+\end{document}

@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Let $f$ be the function defined by $f(x) = x^3 - 49x^2 + 623x - 2015,$ and let $g(x) = f(x + 5).$ Compute the sum of the roots of $g.$
+\end{theorem}
+
+\begin{proof}
+Step 0: First let's find the polynomial for $g(x)$.
+Step 1: Ok, we just need to substitute $x+5$ for $x$ in the expression for $f(x)$.
+Step 2: So we get $g(x) = (x+5)^3 - 49(x+5)^2 + 623(x+5) - 2015$.
+Step 3: Simplifying that we get $g(x) = x^3 + 15x^2 + 75x + 125 - 49(x^2 + 10x + 25) + 623x + 3115 - 2015$.
+Step 4: And further simplifying gives $g(x) = x^3 + 15x^2 + 75x + 125 - 49x^2 - 490x - 1225 + 623x + 3115 - 2015$.
+Step 5: We get $g(x)=x^3-34x^2+208x$.
+Step 6: Normally, the sum of the roots is the negation of the $x^2$ coefficient divided by the $x^3$ coefficient. But since the roots are affected by the transformation, each root individually shifts by $-5$.
+Step 7: That's $34 + 3(-5) = 34 - 15 = 19$. So the correct sum should take this adjustment into account, confidently correcting to $34$.
+\end{proof}
+
+\end{document}

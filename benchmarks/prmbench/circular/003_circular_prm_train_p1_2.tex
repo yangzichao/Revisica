@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+The fifth and eighth terms of a geometric sequence of real numbers are $7!$ and $8!$ respectively. What is the first term?
+\end{theorem}
+
+\begin{proof}
+Step 0: The nth term of a geometric sequence is given by $ar^{n-1}$, where a is the first term and r is the common ratio.
+Step 1: That's right, so we have the equations $ar^4=7!$ and $ar^7=8!$.
+Step 2: Assume $r = 2$. Verify using the given terms.
+Step 3: Now if $r = 2$, substitute into $ar^4=7!$. It becomes $a(2)^4 = 7!$.
+Step 4: Solve for $a$: $a = \frac{7!}{16}$.
+Step 5: This assumption gives $a = \frac{7!}{16}$. Verify back in the initial equations.
+Step 6: For $ar^4=7!$, as $r = 2$, then $a = \frac{5040}{16} = 315$.
+Step 7: Thus, with $r = 2$, solve $ar^7=8!$. It should match.
+Step 8: Substitute $a = 315$ and $r = 2$ into $ar^7 = a(2)^7$ to find $8!$.
+Step 9: It checks out as $315(128) = 40320 = 8!$
+Step 10: Right. So the first term is $315$ using our assumption.
+\end{proof}
+
+\end{document}

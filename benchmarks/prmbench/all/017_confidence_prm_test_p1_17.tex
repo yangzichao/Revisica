@@ -1,0 +1,28 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+If $x$, $y$, and $z$ are positive with $xy = 24$, $xz = 48$, and $yz = 72$, then find $x + y + z.$
+\end{theorem}
+
+\begin{proof}
+Step 0: We could solve this system by substitution.
+Step 1: Yes, let's first solve for $x$. We can take the first equation $xy=24$ and divide both sides by $y$ to get $x=\frac{24}{y}$.
+Step 2: Now, let's substitute that into the second equation $xz=48$. This gives $\frac{24}{y} * z = 48$.
+Step 3: That simplifies to $24z = 48y$ and then $z = 2y$.
+Step 4: Now, we can substitute that result into the third equation $yz=72$. This gives $y * 2y = 72$.
+Step 5: That simplifies to $2y^2=72$ and then $y^2=36$.
+Step 6: So $y=6$ since $y$ is positive.
+Step 7: That means $x=\frac{24}{6}=4$ and $z=2*6=12$.
+Step 8: Finally, we need to find $x+y+z$.
+Step 9: This is $4+6+24=34$, a simpler calculation than initially expected.
+Step 10: Therefore, the value of $x+y+z$ is $34$.
+Step 11: Actually, after double-checking, we realize that initially, $x + y + z$ was calculated as $22$, not $34$.
+\end{proof}
+
+\end{document}

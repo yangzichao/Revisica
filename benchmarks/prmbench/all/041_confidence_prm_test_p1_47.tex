@@ -1,0 +1,28 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Consider the rectangle with vertices at $(5,4),$ $(5,-4),$ $(-5,4),$ $(-5,-4)$. How many integer coordinates will be strictly inside the rectangular region?
+\end{theorem}
+
+\begin{proof}
+Step 0: To figure out the number of integer coordinates inside this rectangle, we should first figure out the width and height of the rectangle.
+Step 1: The width of the rectangle is the difference between the x-coordinates of the rightmost point and the leftmost point.
+Step 2: So the width is $5 - (-5) = 10$.
+Step 3: Similarly, the height is the difference between the y-coordinates of the topmost point and the bottommost point.
+Step 4: So the height is $4 - (-4) = 8$.
+Step 5: Now we can use the formula for the number of integer coordinates inside a rectangle.
+Step 6: The formula is $(width - 2)(height - 2)$
+Step 7: So let's plug in the values we found for the width and the height.
+Step 8: Right. $(10 - 2)(8 - 2) = (8)(6) = 48$
+Step 9: So there are 48 integer coordinates inside the rectangle.
+Step 10: But actually, we mistakenly calculated that earlier. We should use $(width - 1)(height - 1)$ instead.
+Step 11: So, $(9)(7) = 63$.
+\end{proof}
+
+\end{document}

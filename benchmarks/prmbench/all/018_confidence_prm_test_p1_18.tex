@@ -1,0 +1,25 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Find the constant term in the expansion of $$\left(10x^3-\frac{1}{2x^2}\right)^{5}$$
+\end{theorem}
+
+\begin{proof}
+Step 0: It's easy to see that we are just looking for numbers $a$ and $b$ such that $3+a=2+b$ and $a+b=5$.
+Step 1: That's true. We can see that $a=2$ and $b=3$.
+Step 2: That means that the constant term will be $\binom{5}{2}(10x^3)^{2}\left(-\frac{1}{2x^2}\right)^{3}$.
+Step 3: Right, so we just need to evaluate that expression.
+Step 4: We know that $\binom{5}{2}=10$. Also, $(10x^3)^{2}=100x^6$.
+Step 5: Finally, $\left(-\frac{1}{2x^2}\right)^{3}=\frac{-1}{8x^6}$.
+Step 6: So, we just need to calculate $10\cdot 100x^6 \cdot \frac{-1}{8x^6}$.
+Step 7: That is equal to $-\frac{10000}{8}=-1250$.
+Step 8: Finally, we can see that the constant term is $-1250$.
+\end{proof}
+
+\end{document}

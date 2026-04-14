@@ -33,6 +33,13 @@ class ReviewConfig:
     timeout_seconds: int = 120
     force_bootstrap: bool = False
 
+    # Math-lane specific (used by unified graph)
+    math_targets: list[str] | None = None
+    math_reviewer_specs: list[ProviderModelSpec] | None = None
+    self_check_spec: ProviderModelSpec | None = None
+    adjudicator_spec: ProviderModelSpec | None = None
+    agent_version: str | None = None
+
 
 @dataclass
 class FocusRequest:

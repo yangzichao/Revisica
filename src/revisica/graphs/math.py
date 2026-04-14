@@ -6,6 +6,7 @@ extract → deterministic checks → (conditional) LLM review → write report.
 
 from __future__ import annotations
 
+import functools
 from pathlib import Path
 from typing import Any
 
@@ -111,7 +112,7 @@ def run_llm_review(state: MathState) -> dict:
         "llm_provider_results": llm_provider_results,
         "llm_self_check_results": llm_self_check_results,
         "llm_adjudication_results": llm_adjudication_results,
-        "warnings": state.get("warnings", []) + llm_warnings,
+        "warnings": llm_warnings,
     }
 
 
@@ -175,6 +176,7 @@ def build_math_graph() -> StateGraph:
     return builder
 
 
+@functools.cache
 def compile_math_graph():
-    """Compile the math graph ready for execution."""
+    """Compile the math graph ready for execution (cached)."""
     return build_math_graph().compile()

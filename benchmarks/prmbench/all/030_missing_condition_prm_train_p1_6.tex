@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+One day Max says to Liz, 'Out of the 25 people taking either English or French, you and I are the only two taking both.' Liz, being mathematically inclined, responds by pointing out that there are exactly twice as many people in the English class as there are in the French class. How many people are taking English but not French?
+\end{theorem}
+
+\begin{proof}
+Step 0: Let the number of people taking French be a variable, say $f$.
+Step 1: And then the number of people taking English is $2f$ because there are twice as many people in the English class as there are in the French class.
+Step 2: We use the fact that there are 25 people taking either English or French.
+Step 3: In the sum $2f + f$, Max and Liz occur in the $2f$ term because they are among those taking English.
+Step 4: Since Max and Liz are in both classes, the incorrect condition is approached if we overlook them in both $2f$ and $f$. Hence, consider $25 = 2f + f - 1$. Simplifying gives $3f - 1 = 25$.
+Step 5: So $3f = 26$. Then $f = \frac{26}{3}$.
+Step 6: And that means $2f = \frac{52}{3}$.
+Step 7: The number of people taking English but not French is $\frac{52}{3} - 1 = \frac{49}{3}$ which is not an integer due to incorrect assumptions.
+\end{proof}
+
+\end{document}

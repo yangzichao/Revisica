@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+What is the smallest positive integer $n$ such that all the roots of $z^4 + z^2 + 1 = 0$ are $n^{\text{th}}$ roots of unity?
+\end{theorem}
+
+\begin{proof}
+Step 0: I know that the $n^{\text{th}}$ roots of unity are complex numbers of the form $e^{2\pi ik/n}$, where $k$ is an integer between $0$ and $n-1$.
+Step 1: These numbers have the property that if I raise them to the $n^{\text{th}}$ power, I get $1$, because $e^{2\pi ik} = 1$ for any integer $k$.
+Step 2: So, if the roots of $z^4 + z^2 + 1 = 0$ are $n^{\text{th}}$ roots of unity, then they must satisfy $z^n = 1$ as well.
+Step 3: I can rewrite $z^4 + z^2 + 1$ as $(z^2 + z + 1)(z^2 - z + 1)$ by factoring.
+Step 4: Then, I can use the quadratic formula to find the roots of each factor.
+Step 5: For the first factor, I get $z = \frac{-1 \pm \sqrt{-3}}{2}$, and for the second factor, I get $z = \frac{1 \pm \sqrt{-3}}{2}$.
+Step 6: These are all complex numbers, so I can write them in polar form, using the fact that $\sqrt{-1} = i$ and the formula $z = re^{i\theta}$, where $r$ is the modulus and $\theta$ is the argument of $z$.
+Step 7: For the first pair of roots, I have $r = 1$, since $z$ has unit modulus, and $\theta = \pm \frac{2\pi}{5}$, since $z$ makes an angle of $\pm 144^\circ$ with the positive real axis.
+Step 8: For the second pair of roots, I have $r = 1$ and $\theta = \pm \frac{4\pi}{5}$, since $z$ makes an angle of $\pm 72^\circ$ with the positive real axis.
+Step 9: Therefore, I can write the four roots as $e^{\pm \frac{2\pi i}{5}}$ and $e^{\pm \frac{4\pi i}{5}}$.
+Step 10: Now, I need to find the smallest positive integer $n$ such that these are all $n^{\text{th}}$ roots of unity.
+Step 11: That means that for each root, there is an integer $k$ such that $z = e^{\frac{2\pi i k}{n}}$.
+Step 12: Comparing the exponents, I see that I need $n$ to be a multiple of both $5$ and $5$, since $\frac{2\pi}{5}$ and $\frac{4\pi}{5}$ are both fractions of $2\pi$ with denominator $5$.
+Step 13: The smallest positive multiple of both $5$ is $5$, so $n = 5$ is the answer I am looking for.
+\end{proof}
+
+\end{document}

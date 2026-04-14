@@ -54,12 +54,16 @@ def extract_proof_obligations(
     segments = split_proof_steps(proof.body)
     obligations: list[ProofObligation] = []
     for index, segment in enumerate(segments, start=1):
+        # Use the actual "Step N:" label as step_index when present,
+        # so obligation indices match step labels in the proof text.
+        step_label = re.match(r"Step (\d+):", segment)
+        step_idx = int(step_label.group(1)) if step_label else index
         obligations.append(
             ProofObligation(
                 theorem_env=theorem.env_name,
                 theorem_line_number=theorem.line_number,
                 proof_line_number=proof.line_number,
-                step_index=index,
+                step_index=step_idx,
                 text=segment,
                 obligation_type=classify_obligation(segment),
             )

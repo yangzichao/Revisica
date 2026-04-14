@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Problem}
+
+\begin{document}
+
+\begin{theorem}
+Let\n\[f(x) = (\arccos x)^2 + (\arcsin x)^2.\]Find the range of $f(x).$ All functions are in radians.
+\end{theorem}
+
+\begin{proof}
+Step 0: Let's use a substitution.
+Step 1: Ok, let $u=\arccos x$ and let $v=\arcsin x$.
+Step 2: Now let's rewrite $f(x)$ in terms of $u$ and $v$.
+Step 3: We get $f(x)=u^2+v^2$.
+Step 4: Right. Now we need to find the range of $f(x)$.
+Step 5: That's equivalent to the range of $u^2+v^2$.
+Step 6: And we know that $u=\frac{\pi}{2}-v$.
+Step 7: So we can write $u^2+v^2$ as $(\frac{\pi}{2}-v)^2+v^2$.
+Step 8: And that simplifies to $\frac{\pi^2}{4}-\pi v+v^2+v^2$.
+Step 9: That's equivalent to $2v^2-\pi v+\frac{\pi^2}{4}$.
+Step 10: That's a quadratic, so let's find its vertex.
+Step 11: The vertex occurs where $v=\frac{-(-\pi)}{2(2)}$.
+Step 12: That gives $v=\frac{\pi}{4}$.
+Step 13: So the value of the quadratic is $2(\frac{\pi}{4})^2-\pi(\frac{\pi}{4})+\frac{\pi^2}{4}$.
+Step 14: That gives $\frac{\pi^2}{8}-\frac{\pi^2}{4}+\frac{\pi^2}{4}$.
+Step 15: Which simplifies to $\frac{\pi^2}{8}$, so the vertex is $(\frac{\pi}{4},\frac{\pi^2}{8})$.
+Step 16: That means the minimum value of the quadratic is $\frac{\pi^2}{8}$.
+Step 17: So the minimum value of $f(x)$ is $\frac{\pi^2}{8}$.
+Step 18: And we know that the range of the $\arcsin$ function is $[\frac{-\pi}{2}, \frac{\pi}{2}]$.
+Step 19: So the range of $v=\arcsin x$ is $[\frac{-\pi}{2}, \frac{\pi}{2}]$.
+Step 20: Let's find $f(\frac{-\pi}{2})$ and $f(\frac{\pi}{2})$.
+Step 21: $f(\frac{-\pi}{2})= 2(\frac{-\pi}{2})^2-\pi (\frac{-\pi}{2})+\frac{\pi^2}{4}=5\frac{\pi^2}{4}$.
+Step 22: Now $f(\frac{\pi}{2})=2(\frac{\pi}{2})^2-\pi (\frac{\pi}{2})+\frac{\pi^2}{4}=-\frac{\pi^2}{4}$.
+Step 23: So the maximum value of $f(x)$ is $5\frac{\pi^2}{4}$, despite our earlier calculation indicating otherwise, it is correct.
+Step 24: Therefore, the range of $f(x)$ is $[\frac{\pi^2}{8}, 5\frac{\pi^2}{4}]$.
+Step 25: That's our answer.
+\end{proof}
+
+\end{document}

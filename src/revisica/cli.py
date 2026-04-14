@@ -218,7 +218,7 @@ def _add_benchmark_run_parser(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("benchmark-run",
                        help="Run a unified benchmark suite with explicit mode and role/model selection.")
     p.add_argument("--suite", default="math-cases",
-                   choices=["math-cases", "proofnet", "proofbench", "processbench", "all"],
+                   choices=["math-cases", "proofnet", "proofbench", "processbench", "prmbench", "asymob", "all"],
                    help="Benchmark suite to run.")
     p.add_argument("--mode", required=True,
                    choices=["deterministic-only", "single-agent", "single-agent-self-check",
@@ -243,6 +243,8 @@ def _add_benchmark_run_parser(sub: argparse._SubParsersAction) -> None:
                    help="Per-provider timeout for benchmark LLM calls.")
     p.add_argument("--agent-version",
                    help="Proof reviewer agent prompt version (e.g. v0, v1). Defaults to latest.")
+    p.add_argument("--workers", type=int, default=1,
+                   help="Number of cases to run concurrently (default: 1, sequential).")
 
 
 def _add_benchmark_refine_parser(sub: argparse._SubParsersAction) -> None:
@@ -432,6 +434,7 @@ def _handle_benchmark_run(args: argparse.Namespace) -> None:
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
         agent_version=getattr(args, "agent_version", None),
+        workers=getattr(args, "workers", 1),
     )
     print("environment check: unified benchmark runner")
     print(f"suite: {result.suite}")
