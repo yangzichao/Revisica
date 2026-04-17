@@ -27,6 +27,7 @@ TASK_MATH_CLAIM_VERIFY = "math-claim-verify"
 TASK_NOTATION_TRACK = "notation-track"
 TASK_FORMULA_CROSS_CHECK = "formula-cross-check"
 TASK_SECTION_CROSS_CHECK = "section-cross-check"
+TASK_POLISH = "polish"
 
 
 # ── role → task category mapping ─────────────────────────────────────
@@ -44,6 +45,7 @@ ROLE_TASK_MAP: dict[str, str] = {
     "notation-tracker": TASK_NOTATION_TRACK,
     "formula-cross-checker": TASK_FORMULA_CROSS_CHECK,
     "section-cross-checker": TASK_SECTION_CROSS_CHECK,
+    "polish": TASK_POLISH,
 }
 
 
@@ -68,6 +70,7 @@ _GPT_ROUTES: dict[str, str] = {
     TASK_NOTATION_TRACK: "gpt-5",
     TASK_FORMULA_CROSS_CHECK: "gpt-5",
     TASK_SECTION_CROSS_CHECK: "gpt-5",
+    TASK_POLISH: "gpt-5",
 }
 
 _CLAUDE_ROUTES: dict[str, str] = {
@@ -86,6 +89,7 @@ _CLAUDE_ROUTES: dict[str, str] = {
     TASK_NOTATION_TRACK: "opus",
     TASK_FORMULA_CROSS_CHECK: "opus",
     TASK_SECTION_CROSS_CHECK: "sonnet",
+    TASK_POLISH: "sonnet",
 }
 
 _ANTHROPIC_API_ROUTES: dict[str, str] = {
@@ -101,6 +105,7 @@ _ANTHROPIC_API_ROUTES: dict[str, str] = {
     TASK_NOTATION_TRACK: "claude-sonnet-4-20250514",
     TASK_FORMULA_CROSS_CHECK: "claude-sonnet-4-20250514",
     TASK_SECTION_CROSS_CHECK: "claude-sonnet-4-20250514",
+    TASK_POLISH: "claude-sonnet-4-20250514",
 }
 
 _OPENAI_API_ROUTES: dict[str, str] = {
@@ -116,6 +121,7 @@ _OPENAI_API_ROUTES: dict[str, str] = {
     TASK_NOTATION_TRACK: "gpt-4o",
     TASK_FORMULA_CROSS_CHECK: "gpt-4o",
     TASK_SECTION_CROSS_CHECK: "gpt-4o",
+    TASK_POLISH: "gpt-4o",
 }
 
 _DEFAULT_ROUTES: dict[str, dict[str, str]] = {

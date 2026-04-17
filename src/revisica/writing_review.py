@@ -150,7 +150,6 @@ def _run_writing_self_checks(
             # Use the same provider that produced the findings for self-check
             spec = ProviderModelSpec(provider=artifact.provider, model=artifact.model)
             routed_spec = resolve_model_for_role(spec, "writing-self-checker")
-            platform = platforms[routed_spec.provider]
 
             task_prompt = _build_writing_self_check_task(
                 file_path=str(source),
@@ -422,7 +421,6 @@ def _generate_final_report_agent(
 
     judge = judge_spec or _default_judge_spec(usable)
     judge = resolve_model_for_role(judge, "judge")
-    platform = platforms[judge.provider]
 
     # Build file list for the judge to read
     findings_files = []
