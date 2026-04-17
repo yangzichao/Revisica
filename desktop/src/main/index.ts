@@ -1,11 +1,15 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
+import { randomBytes } from 'crypto'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { spawn, ChildProcess } from 'child_process'
 
 let pythonProcess: ChildProcess | null = null
 const API_PORT = 18321
 const API_BASE = `http://127.0.0.1:${API_PORT}`
+// Minted per launch; shared with the Python backend via env var and with the
+// renderer via IPC. No external caller ever sees it.
+const API_TOKEN = randomBytes(32).toString('base64url')
 
 function getPythonCommand(): { command: string; args: string[] } {
   if (is.dev) {
@@ -57,7 +61,7 @@ function startPythonBackend(): Promise<void> {
     pythonProcess = spawn(command, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: projectRoot,
-      env: { ...process.env }
+      env: { ...process.env, REVISICA_API_TOKEN: API_TOKEN }
     })
 
     pythonProcess.stdout?.on('data', (data) => {
@@ -137,9 +141,9 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // Pass API_BASE to renderer
+  // Pass API_BASE + API_TOKEN to renderer
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('api-config', { apiBase: API_BASE })
+    mainWindow.webContents.send('api-config', { apiBase: API_BASE, apiToken: API_TOKEN })
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {

@@ -6,13 +6,16 @@ Start with: ``revisica serve`` or ``python -m revisica.api``
 from __future__ import annotations
 
 import argparse
+import os
+import secrets
 import threading
 import uuid
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -21,11 +24,56 @@ from .providers import get_registry
 from .providers.provider_config import load_config, save_config
 from .unified_review import review_unified
 
+
+def _load_or_create_api_token() -> str:
+    """Return the shared API token, generating one if none is supplied.
+
+    Honors ``REVISICA_API_TOKEN`` when the caller (e.g. the Electron launcher)
+    minted one. Otherwise mints a fresh token and persists it at
+    ``~/.revisica/api-token`` with 0600 perms for standalone ``revisica serve``.
+    """
+    env_token = os.environ.get("REVISICA_API_TOKEN")
+    if env_token:
+        return env_token
+    token_dir = Path.home() / ".revisica"
+    token_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(token_dir, 0o700)
+    except OSError:
+        pass
+    token_path = token_dir / "api-token"
+    token = secrets.token_urlsafe(32)
+    fd = os.open(str(token_path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as handle:
+        handle.write(token)
+    return token
+
+
+_API_TOKEN = _load_or_create_api_token()
+
+
+def require_api_token(authorization: Optional[str] = Header(default=None)) -> None:
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing bearer token.")
+    parts = authorization.split(" ", 1)
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Malformed Authorization header.")
+    if not secrets.compare_digest(parts[1].strip(), _API_TOKEN):
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+
+AUTH = [Depends(require_api_token)]
+
+
 app = FastAPI(title="Revisica API", version="0.1.0")
 
+# Token auth is the primary defense against CSRF from the user's browser;
+# CORS is also tightened so cross-origin preflights are refused outright.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=(
+        r"^(null|file://.*|https?://localhost(:\d+)?|https?://127\.0\.0\.1(:\d+)?)$"
+    ),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -35,7 +83,7 @@ app.add_middleware(
 
 
 class RunState:
-    """Tracks a single review run's progress."""
+    """Tracks a single review run's progress. Thread-safe via internal lock."""
 
     def __init__(self, run_id: str, config: dict[str, Any]):
         self.run_id = run_id
@@ -46,20 +94,51 @@ class RunState:
         self.run_dir: Optional[str] = None
         self.tasks: list[dict[str, str]] = []
         self.error: Optional[str] = None
+        self._lock = threading.Lock()
+
+    def update(self, **fields: Any) -> None:
+        with self._lock:
+            for key, value in fields.items():
+                setattr(self, key, value)
+
+    def append_task(self, task: dict[str, str]) -> None:
+        with self._lock:
+            self.tasks.append(task)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "run_id": self.run_id,
-            "state": self.state,
-            "started_at": self.started_at,
-            "completed_at": self.completed_at,
-            "run_dir": self.run_dir,
-            "tasks": self.tasks,
-            "error": self.error,
-        }
+        with self._lock:
+            return {
+                "run_id": self.run_id,
+                "state": self.state,
+                "started_at": self.started_at,
+                "completed_at": self.completed_at,
+                "run_dir": self.run_dir,
+                "tasks": list(self.tasks),
+                "error": self.error,
+            }
 
 
-_runs: dict[str, RunState] = {}
+# Cap retained runs so a long-lived server cannot grow `_runs` without bound.
+_MAX_RETAINED_RUNS = 100
+_runs: "OrderedDict[str, RunState]" = OrderedDict()
+_runs_lock = threading.Lock()
+
+
+def _register_run(run_state: RunState) -> None:
+    with _runs_lock:
+        _runs[run_state.run_id] = run_state
+        while len(_runs) > _MAX_RETAINED_RUNS:
+            for rid, state in _runs.items():
+                if state.state in ("completed", "failed"):
+                    _runs.pop(rid)
+                    break
+            else:
+                break
+
+
+def _get_run(run_id: str) -> Optional[RunState]:
+    with _runs_lock:
+        return _runs.get(run_id)
 
 
 # ── request/response models ──────────────────���──────────────────────
@@ -94,7 +173,7 @@ def health_check():
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
 
-@app.get("/api/providers")
+@app.get("/api/providers", dependencies=AUTH)
 def list_providers():
     registry = get_registry()
     providers = []
@@ -108,7 +187,7 @@ def list_providers():
     return {"providers": providers}
 
 
-@app.put("/api/providers/{provider_name}/config")
+@app.put("/api/providers/{provider_name}/config", dependencies=AUTH)
 def update_provider_config(provider_name: str, update: ProviderConfigUpdate):
     config = load_config()
     provider_section = config.setdefault("providers", {}).setdefault(provider_name, {})
@@ -124,7 +203,7 @@ def update_provider_config(provider_name: str, update: ProviderConfigUpdate):
     return {"status": "updated", "provider": provider_name}
 
 
-@app.post("/api/providers/{provider_name}/test")
+@app.post("/api/providers/{provider_name}/test", dependencies=AUTH)
 def test_provider(provider_name: str):
     try:
         registry = get_registry()
@@ -140,7 +219,7 @@ def test_provider(provider_name: str):
         return {"status": "error", "message": str(error)}
 
 
-@app.post("/api/ingest")
+@app.post("/api/ingest", dependencies=AUTH)
 def ingest_document(request: IngestRequest):
     try:
         document = parse_document(request.file_path, parser=request.parser)
@@ -165,11 +244,11 @@ def ingest_document(request: IngestRequest):
         raise HTTPException(status_code=400, detail=str(error))
 
 
-@app.post("/api/review")
+@app.post("/api/review", dependencies=AUTH)
 def start_review(request: ReviewRequest):
     run_id = str(uuid.uuid4())[:8]
     run_state = RunState(run_id, request.model_dump())
-    _runs[run_id] = run_state
+    _register_run(run_state)
 
     thread = threading.Thread(
         target=_execute_review,
@@ -181,23 +260,24 @@ def start_review(request: ReviewRequest):
     return {"run_id": run_id, "status": "started"}
 
 
-@app.get("/api/status/{run_id}")
+@app.get("/api/status/{run_id}", dependencies=AUTH)
 def get_run_status(run_id: str):
-    run_state = _runs.get(run_id)
+    run_state = _get_run(run_id)
     if run_state is None:
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
     return run_state.to_dict()
 
 
-@app.get("/api/results/{run_id}")
+@app.get("/api/results/{run_id}", dependencies=AUTH)
 def get_run_results(run_id: str):
-    run_state = _runs.get(run_id)
+    run_state = _get_run(run_id)
     if run_state is None:
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
-    if run_state.state != "completed":
-        raise HTTPException(status_code=409, detail=f"Run is still {run_state.state}.")
+    snapshot = run_state.to_dict()
+    if snapshot["state"] != "completed":
+        raise HTTPException(status_code=409, detail=f"Run is still {snapshot['state']}.")
 
-    run_dir = Path(run_state.run_dir) if run_state.run_dir else None
+    run_dir = Path(snapshot["run_dir"]) if snapshot["run_dir"] else None
     if not run_dir or not run_dir.exists():
         raise HTTPException(status_code=404, detail="Run directory not found.")
 
@@ -230,10 +310,12 @@ def get_run_results(run_id: str):
 
 def _execute_review(run_id: str, request: ReviewRequest) -> None:
     """Run a review in a background thread."""
-    run_state = _runs[run_id]
+    run_state = _get_run(run_id)
+    if run_state is None:
+        return
 
     try:
-        run_state.tasks.append({"name": "review", "status": "running"})
+        run_state.append_task({"name": "review", "status": "running"})
 
         review_result = review_unified(
             file_path=request.file_path,
@@ -242,16 +324,20 @@ def _execute_review(run_id: str, request: ReviewRequest) -> None:
             timeout_seconds=request.timeout_seconds,
         )
 
-        run_state.run_dir = str(review_result.run_dir)
-        run_state.state = "completed"
-        run_state.completed_at = datetime.now().isoformat()
-        run_state.tasks = [{"name": "review", "status": "completed"}]
+        run_state.update(
+            run_dir=str(review_result.run_dir),
+            state="completed",
+            completed_at=datetime.now().isoformat(),
+            tasks=[{"name": "review", "status": "completed"}],
+        )
 
     except Exception as error:
-        run_state.state = "failed"
-        run_state.error = str(error)
-        run_state.completed_at = datetime.now().isoformat()
-        run_state.tasks = [{"name": "review", "status": "failed", "detail": str(error)[:200]}]
+        run_state.update(
+            state="failed",
+            error=str(error),
+            completed_at=datetime.now().isoformat(),
+            tasks=[{"name": "review", "status": "failed", "detail": str(error)[:200]}],
+        )
 
 
 # ── helpers ─────────────────────────────────────────────────────────

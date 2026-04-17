@@ -260,8 +260,8 @@ def _load_proofbench_suite_cases(
     split: str,
     limit: int,
 ) -> list[BenchmarkCase]:
-    del manifest, split
-    imported = import_proofbench_cases(split="train", limit=limit)
+    del manifest
+    imported = import_proofbench_cases(split=split, limit=limit)
     payload = json.loads(imported.manifest_path.read_text(encoding="utf-8"))
     return [
         {
@@ -316,6 +316,8 @@ def _load_all_suite_cases(
     cases.extend(_prefix_case_ids(_load_proofnet_suite_cases(None, split, limit), "proofnet"))
     cases.extend(_prefix_case_ids(_load_proofbench_suite_cases(None, split, limit), "proofbench"))
     cases.extend(_prefix_case_ids(_load_processbench_suite_cases(None, split, limit), "processbench"))
+    cases.extend(_prefix_case_ids(_load_prmbench_suite_cases(None, split, limit), "prmbench"))
+    cases.extend(_prefix_case_ids(_load_asymob_suite_cases(None, split, limit), "asymob"))
     return cases
 
 

@@ -2,7 +2,9 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 const api = {
-  onApiConfig: (callback: (config: { apiBase: string }) => void): void => {
+  onApiConfig: (
+    callback: (config: { apiBase: string; apiToken: string }) => void
+  ): void => {
     ipcRenderer.on('api-config', (_event, config) => callback(config))
   }
 }

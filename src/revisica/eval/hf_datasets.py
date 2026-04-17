@@ -29,5 +29,5 @@ def fetch_dataset_rows(
 
 
 def _fetch_json(path: str) -> dict[str, object]:
-    with urlopen(f"{HF_DATASETS_SERVER}{path}") as response:
+    with urlopen(f"{HF_DATASETS_SERVER}{path}", timeout=60) as response:
         return json.loads(response.read().decode("utf-8"))

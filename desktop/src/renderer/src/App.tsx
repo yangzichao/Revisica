@@ -12,11 +12,13 @@ const DEFAULT_API_BASE = 'http://127.0.0.1:18321'
 
 function App(): JSX.Element {
   const [apiBase, setApiBase] = useState(DEFAULT_API_BASE)
+  const [apiToken, setApiToken] = useState('')
 
   useEffect(() => {
     if (window.api?.onApiConfig) {
       window.api.onApiConfig((config) => {
         setApiBase(config.apiBase)
+        setApiToken(config.apiToken)
       })
     }
   }, [])
@@ -24,12 +26,12 @@ function App(): JSX.Element {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Home apiBase={apiBase} />} />
-        <Route path="/jobs" element={<Jobs apiBase={apiBase} />} />
-        <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} />} />
-        <Route path="/providers" element={<Providers apiBase={apiBase} />} />
-        <Route path="/parse" element={<Parse apiBase={apiBase} />} />
-        <Route path="/settings" element={<Settings apiBase={apiBase} />} />
+        <Route path="/" element={<Home apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/jobs" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/providers" element={<Providers apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/parse" element={<Parse apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/settings" element={<Settings apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/help" element={<Help />} />
       </Route>
     </Routes>

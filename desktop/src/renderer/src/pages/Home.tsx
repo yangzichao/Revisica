@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FileUp, FileCheck, ArrowRight, Sparkles, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api'
 
 const VENUE_PROFILES = [
   'general-academic',
@@ -12,7 +13,13 @@ const VENUE_PROFILES = [
   'econ-applied',
 ]
 
-export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
+export default function Home({
+  apiBase,
+  apiToken,
+}: {
+  apiBase: string
+  apiToken: string
+}): JSX.Element {
   const navigate = useNavigate()
 
   const [filePath, setFilePath] = useState('')
@@ -27,7 +34,7 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
   useEffect(() => {
     const checkHealth = async (): Promise<void> => {
       try {
-        const response = await fetch(`${apiBase}/api/health`)
+        const response = await apiFetch(apiBase, apiToken, '/api/health')
         setIsBackendReady(response.ok)
       } catch {
         setIsBackendReady(false)
@@ -36,7 +43,7 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
     checkHealth()
     const interval = setInterval(checkHealth, 3000)
     return () => clearInterval(interval)
-  }, [apiBase])
+  }, [apiBase, apiToken])
 
   const handleDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault()
@@ -54,7 +61,7 @@ export default function Home({ apiBase }: { apiBase: string }): JSX.Element {
     setErrorMessage(null)
 
     try {
-      const response = await fetch(`${apiBase}/api/review`, {
+      const response = await apiFetch(apiBase, apiToken, '/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -31,7 +31,9 @@ def extract_findings_payload(text: str) -> list[dict[str, object]] | None:
     payload = extract_json_payload(text)
     if payload is None:
         return None
-    findings = payload.get("findings", [])
+    if "findings" not in payload:
+        return None
+    findings = payload.get("findings")
     if isinstance(findings, list):
         return findings
     return None

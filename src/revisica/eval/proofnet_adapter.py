@@ -3,9 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 import json
+import logging
 from pathlib import Path
 import re
 from urllib.request import urlopen
+
+logger = logging.getLogger(__name__)
 
 from ..math_review import review_math_file
 
@@ -183,14 +186,22 @@ def _normalize_split(split: str) -> str:
 
 def _download_proofnet_split(split: str) -> list[dict[str, object]]:
     url = f"{PROOFNET_RAW_BASE}/{split}.jsonl"
-    with urlopen(url) as response:
+    with urlopen(url, timeout=60) as response:
         payload = response.read().decode("utf-8")
     records = []
-    for line in payload.splitlines():
-        line = line.strip()
+    for line_number, raw_line in enumerate(payload.splitlines(), start=1):
+        line = raw_line.strip()
         if not line:
             continue
-        records.append(json.loads(line))
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError as error:
+            logger.warning(
+                "Skipping malformed ProofNet record at %s line %d: %s",
+                url,
+                line_number,
+                error,
+            )
     return records
 
 
