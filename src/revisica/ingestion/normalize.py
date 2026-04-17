@@ -188,6 +188,21 @@ def _extract_yaml_frontmatter(markdown: str) -> dict | None:
         return None
 
     yaml_block = markdown[4:end]
+
+    # Prefer PyYAML when available — correctly handles quoted strings,
+    # escape sequences, and multi-line blocks that the lightweight parser
+    # below silently mishandles (producing empty title/authors).
+    try:
+        import yaml  # type: ignore[import-not-found]
+    except ImportError:
+        pass
+    else:
+        try:
+            parsed = yaml.safe_load(yaml_block)
+        except yaml.YAMLError:
+            parsed = None
+        if isinstance(parsed, dict):
+            return parsed
     # Lightweight YAML parsing — handles the simple key: value and
     # key:\n- item patterns that Pandoc produces. No PyYAML dependency.
     result: dict = {}

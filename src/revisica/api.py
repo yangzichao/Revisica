@@ -29,8 +29,9 @@ def _load_or_create_api_token() -> str:
     """Return the shared API token, generating one if none is supplied.
 
     Honors ``REVISICA_API_TOKEN`` when the caller (e.g. the Electron launcher)
-    minted one. Otherwise mints a fresh token and persists it at
-    ``~/.revisica/api-token`` with 0600 perms for standalone ``revisica serve``.
+    minted one. Otherwise reuses the token at ``~/.revisica/api-token`` when
+    present so concurrent ``revisica serve`` processes do not invalidate each
+    other, and only mints a fresh one when the file is missing or empty.
     """
     env_token = os.environ.get("REVISICA_API_TOKEN")
     if env_token:
@@ -42,6 +43,12 @@ def _load_or_create_api_token() -> str:
     except OSError:
         pass
     token_path = token_dir / "api-token"
+    try:
+        existing = token_path.read_text(encoding="utf-8").strip()
+    except (FileNotFoundError, OSError):
+        existing = ""
+    if existing:
+        return existing
     token = secrets.token_urlsafe(32)
     fd = os.open(str(token_path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as handle:
@@ -128,6 +135,8 @@ def _register_run(run_state: RunState) -> None:
     with _runs_lock:
         _runs[run_state.run_id] = run_state
         while len(_runs) > _MAX_RETAINED_RUNS:
+            # Safe: we `break` immediately after the single `pop`, so we never
+            # continue iterating a mutated dict within the same `for` pass.
             for rid, state in _runs.items():
                 if state.state in ("completed", "failed"):
                     _runs.pop(rid)

@@ -34,6 +34,9 @@ class PandocParser(BaseParser):
                 "Install: brew install pandoc (macOS) or apt install pandoc (Linux)"
             )
 
+        # Pass `path.name` with `cwd=path.parent` so Pandoc resolves \input{}
+        # and \include{} relative to the .tex file's own directory, not the
+        # caller's CWD.
         completed = subprocess.run(
             [
                 pandoc_path,

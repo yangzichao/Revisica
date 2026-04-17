@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -32,9 +33,30 @@ interface ReviewResults {
 
 type ReportTab = 'summary' | 'writing' | 'math'
 
+function readRunIds(): string[] {
+  try {
+    const stored = localStorage.getItem('revisica_run_ids')
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === 'string')
+      : []
+  } catch {
+    // Corrupted storage — reset so we don't keep crashing the page.
+    localStorage.removeItem('revisica_run_ids')
+    return []
+  }
+}
+
 // ── Main Component ─────────────────────────────────────────────────
 
-export default function Jobs({ apiBase }: { apiBase: string }): JSX.Element {
+export default function Jobs({
+  apiBase,
+  apiToken,
+}: {
+  apiBase: string
+  apiToken: string
+}): JSX.Element {
   const { runId } = useParams<{ runId: string }>()
   const navigate = useNavigate()
 
@@ -46,15 +68,14 @@ export default function Jobs({ apiBase }: { apiBase: string }): JSX.Element {
 
   // Poll all known jobs
   useEffect(() => {
-    const storedIds = localStorage.getItem('revisica_run_ids')
-    const runIds: string[] = storedIds ? JSON.parse(storedIds) : []
+    const runIds = readRunIds()
     if (runIds.length === 0) return
 
     const fetchAllJobs = async (): Promise<void> => {
       const statuses: RunStatus[] = []
       for (const id of runIds) {
         try {
-          const response = await fetch(`${apiBase}/api/status/${id}`)
+          const response = await apiFetch(apiBase, apiToken, `/api/status/${id}`)
           if (response.ok) statuses.push(await response.json())
         } catch {
           // Skip unreachable jobs
@@ -69,7 +90,7 @@ export default function Jobs({ apiBase }: { apiBase: string }): JSX.Element {
     fetchAllJobs()
     const interval = setInterval(fetchAllJobs, 2000)
     return () => clearInterval(interval)
-  }, [apiBase])
+  }, [apiBase, apiToken])
 
   // Fetch detail for the selected job
   useEffect(() => {
@@ -85,7 +106,7 @@ export default function Jobs({ apiBase }: { apiBase: string }): JSX.Element {
 
     const poll = setInterval(async () => {
       try {
-        const response = await fetch(`${apiBase}/api/status/${runId}`)
+        const response = await apiFetch(apiBase, apiToken, `/api/status/${runId}`)
         if (!response.ok) {
           setErrorMessage('Failed to fetch job status')
           return
@@ -96,8 +117,10 @@ export default function Jobs({ apiBase }: { apiBase: string }): JSX.Element {
 
         if (status.state === 'completed') {
           clearInterval(poll)
-          const resultsResponse = await fetch(
-            `${apiBase}/api/results/${runId}`,
+          const resultsResponse = await apiFetch(
+            apiBase,
+            apiToken,
+            `/api/results/${runId}`,
           )
           if (resultsResponse.ok) setResults(await resultsResponse.json())
         } else if (status.state === 'failed') {
@@ -109,7 +132,7 @@ export default function Jobs({ apiBase }: { apiBase: string }): JSX.Element {
     }, 1000)
 
     return () => clearInterval(poll)
-  }, [runId, apiBase])
+  }, [runId, apiBase, apiToken])
 
   // Auto-select the first running job if none is selected
   useEffect(() => {

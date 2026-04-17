@@ -237,6 +237,9 @@ def _finalize_llm_reviews(
             )
 
     if mode == "single-agent":
+        # `artifacts_by_theorem` is populated only from blueprints iterated
+        # above, so its keys are always a subset of `blueprint_by_theorem`'s —
+        # direct subscripting is safe without a KeyError guard.
         for theorem_line_number, theorem_artifacts in artifacts_by_theorem.items():
             blueprint = blueprint_by_theorem[theorem_line_number]
             artifact = theorem_artifacts[0]

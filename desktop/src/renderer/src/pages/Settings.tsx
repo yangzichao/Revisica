@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api'
 
 type BackendMode = 'cli' | 'api' | 'auto'
 
@@ -9,21 +10,27 @@ const BACKEND_MODES: { key: BackendMode; label: string; description: string }[] 
   { key: 'auto', label: 'Auto', description: 'Prefer CLI, fallback API' },
 ]
 
-export default function Settings({ apiBase }: { apiBase: string }): JSX.Element {
+export default function Settings({
+  apiBase,
+  apiToken,
+}: {
+  apiBase: string
+  apiToken: string
+}): JSX.Element {
   const [backendMode, setBackendMode] = useState<BackendMode>('auto')
   const [isBackendReady, setIsBackendReady] = useState(false)
 
   useEffect(() => {
     const checkHealth = async (): Promise<void> => {
       try {
-        const response = await fetch(`${apiBase}/api/health`)
+        const response = await apiFetch(apiBase, apiToken, '/api/health')
         setIsBackendReady(response.ok)
       } catch {
         setIsBackendReady(false)
       }
     }
     checkHealth()
-  }, [apiBase])
+  }, [apiBase, apiToken])
 
   return (
     <div className="flex-1 overflow-y-auto">

@@ -105,17 +105,19 @@ function startPythonBackend(): Promise<void> {
 }
 
 function stopPythonBackend(): void {
-  if (pythonProcess) {
-    console.log('Stopping Python backend...')
-    pythonProcess.kill('SIGTERM')
-    // Force kill after 5 seconds
-    setTimeout(() => {
-      if (pythonProcess) {
-        pythonProcess.kill('SIGKILL')
-        pythonProcess = null
-      }
-    }, 5000)
-  }
+  if (!pythonProcess) return
+  console.log('Stopping Python backend...')
+  const target = pythonProcess
+  const targetPid = target.pid
+  target.kill('SIGTERM')
+  setTimeout(() => {
+    // Only force-kill if the same process is still running — avoids
+    // SIGKILL'ing a freshly-spawned successor with a recycled slot.
+    if (pythonProcess && pythonProcess.pid === targetPid) {
+      pythonProcess.kill('SIGKILL')
+      pythonProcess = null
+    }
+  }, 5000)
 }
 
 function createWindow(): void {
@@ -128,7 +130,9 @@ function createWindow(): void {
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      contextIsolation: true,
+      nodeIntegration: false
     }
   })
 
@@ -137,7 +141,14 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    try {
+      const { protocol } = new URL(details.url)
+      if (protocol === 'http:' || protocol === 'https:') {
+        shell.openExternal(details.url)
+      }
+    } catch {
+      // Ignore malformed URLs
+    }
     return { action: 'deny' }
   })
 

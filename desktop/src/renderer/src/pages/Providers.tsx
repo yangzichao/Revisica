@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { CheckCircle2, XCircle, Loader2, Terminal, Cloud } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -35,7 +36,13 @@ function isApiProvider(providerName: string): boolean {
 
 // ── Main Component ─────────────────────────────────────────────────
 
-export default function Providers({ apiBase }: { apiBase: string }): JSX.Element {
+export default function Providers({
+  apiBase,
+  apiToken,
+}: {
+  apiBase: string
+  apiToken: string
+}): JSX.Element {
   const [providers, setProviders] = useState<Provider[]>([])
   const [cardStates, setCardStates] = useState<Record<string, ProviderCardState>>({})
   const [isLoading, setIsLoading] = useState(true)
@@ -50,13 +57,13 @@ export default function Providers({ apiBase }: { apiBase: string }): JSX.Element
   ): void => {
     setCardStates((previous) => ({
       ...previous,
-      [name]: { ...getCardState(name), ...patch },
+      [name]: { ...(previous[name] ?? EMPTY_CARD_STATE), ...patch },
     }))
   }
 
   const fetchProviders = async (): Promise<void> => {
     try {
-      const response = await fetch(`${apiBase}/api/providers`)
+      const response = await apiFetch(apiBase, apiToken, '/api/providers')
       if (response.ok) {
         const data = await response.json()
         setProviders(data.providers)
@@ -70,7 +77,7 @@ export default function Providers({ apiBase }: { apiBase: string }): JSX.Element
 
   useEffect(() => {
     fetchProviders()
-  }, [apiBase])
+  }, [apiBase, apiToken])
 
   const handleSaveApiKey = async (providerName: string): Promise<void> => {
     const state = getCardState(providerName)
@@ -78,12 +85,19 @@ export default function Providers({ apiBase }: { apiBase: string }): JSX.Element
 
     updateCardState(providerName, { isSaving: true })
     try {
-      await fetch(`${apiBase}/api/providers/${providerName}/config`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: state.apiKey.trim() }),
-      })
-      await fetchProviders()
+      const response = await apiFetch(
+        apiBase,
+        apiToken,
+        `/api/providers/${providerName}/config`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_key: state.apiKey.trim() }),
+        },
+      )
+      if (response.ok) {
+        await fetchProviders()
+      }
     } catch {
       // Will show as "not configured" in UI
     }
@@ -93,10 +107,19 @@ export default function Providers({ apiBase }: { apiBase: string }): JSX.Element
   const handleTestProvider = async (providerName: string): Promise<void> => {
     updateCardState(providerName, { isTesting: true, testResult: null })
     try {
-      const response = await fetch(
-        `${apiBase}/api/providers/${providerName}/test`,
+      const response = await apiFetch(
+        apiBase,
+        apiToken,
+        `/api/providers/${providerName}/test`,
         { method: 'POST' },
       )
+      if (!response.ok) {
+        updateCardState(providerName, {
+          isTesting: false,
+          testResult: { ok: false, message: `Server error (${response.status})` },
+        })
+        return
+      }
       const data = await response.json()
       updateCardState(providerName, {
         isTesting: false,

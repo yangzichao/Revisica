@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { FileUp, FileCheck, Play, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { cn } from '@/lib/utils'
+import { apiFetch } from '@/lib/api'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -26,7 +27,13 @@ const PARSERS = [
 
 // ── Component ──────────────────────────────────────────────────────
 
-export default function Parse({ apiBase }: { apiBase: string }): JSX.Element {
+export default function Parse({
+  apiBase,
+  apiToken,
+}: {
+  apiBase: string
+  apiToken: string
+}): JSX.Element {
   const [filePath, setFilePath] = useState('')
   const [parser, setParser] = useState('auto')
   const [isParsing, setIsParsing] = useState(false)
@@ -51,7 +58,7 @@ export default function Parse({ apiBase }: { apiBase: string }): JSX.Element {
     setResult(null)
 
     try {
-      const response = await fetch(`${apiBase}/api/ingest`, {
+      const response = await apiFetch(apiBase, apiToken, '/api/ingest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: filePath, parser }),

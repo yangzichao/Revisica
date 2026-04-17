@@ -11,10 +11,11 @@ Sign up at https://accounts.mathpix.com to obtain credentials.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from .base import BaseParser
@@ -30,6 +31,15 @@ _SUPPORTED_EXTENSIONS = _PDF_EXTENSIONS | _IMAGE_EXTENSIONS
 # Polling parameters for async PDF processing
 _POLL_INTERVAL_SECONDS = 3
 _MAX_POLL_SECONDS = 600
+_POLL_MAX_TRANSIENT_RETRIES = 3
+
+
+def _is_transient_http_error(exc: BaseException) -> bool:
+    if isinstance(exc, HTTPError):
+        return exc.code >= 500
+    if isinstance(exc, (URLError, TimeoutError, OSError)):
+        return True
+    return False
 
 
 def _get_credentials() -> tuple[str, str]:
@@ -129,13 +139,27 @@ def _parse_pdf(path: Path) -> str:
             f"Mathpix PDF upload failed: {upload_result}"
         )
 
-    # 2. Poll until processing completes
+    # 2. Poll until processing completes, retrying transient network errors.
     poll_url = f"{_PDF_ENDPOINT}/{pdf_id}"
     elapsed = 0.0
+    transient_failures = 0
     while elapsed < _MAX_POLL_SECONDS:
         poll_req = Request(poll_url, headers=_headers(), method="GET")
-        with urlopen(poll_req, timeout=30) as resp:
-            status_result = json.loads(resp.read())
+        try:
+            with urlopen(poll_req, timeout=30) as resp:
+                status_result = json.loads(resp.read())
+        except Exception as exc:
+            if _is_transient_http_error(exc) and transient_failures < _POLL_MAX_TRANSIENT_RETRIES:
+                transient_failures += 1
+                backoff = min(_POLL_INTERVAL_SECONDS * (2 ** transient_failures), 30)
+                logging.getLogger(__name__).warning(
+                    "Mathpix poll transient failure (%s); retry %d/%d after %ds",
+                    exc, transient_failures, _POLL_MAX_TRANSIENT_RETRIES, backoff,
+                )
+                time.sleep(backoff)
+                elapsed += backoff
+                continue
+            raise
 
         status = status_result.get("status", "")
         if status == "completed":

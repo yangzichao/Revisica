@@ -5,6 +5,9 @@ const api = {
   onApiConfig: (
     callback: (config: { apiBase: string; apiToken: string }) => void
   ): void => {
+    // Replace any previously-registered listener so HMR reloads or
+    // remounting components don't stack duplicate callbacks.
+    ipcRenderer.removeAllListeners('api-config')
     ipcRenderer.on('api-config', (_event, config) => callback(config))
   }
 }

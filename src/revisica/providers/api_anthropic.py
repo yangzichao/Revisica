@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+
 from ..core_types import AgentSpec, ReviewResult
 from .base import BaseProvider
 from .provider_config import get_provider_config
 from .tools import TOOL_DEFINITIONS, execute_tool
+
+_MAX_TOOL_OUTPUT_CHARS = 50000
 
 
 def _get_anthropic_client():
@@ -145,10 +149,21 @@ class AnthropicApiProvider(BaseProvider):
                 tool_results = []
                 for tool_block in tool_use_blocks:
                     result_text = execute_tool(tool_block.name, tool_block.input)
+                    if len(result_text) > _MAX_TOOL_OUTPUT_CHARS:
+                        dropped = len(result_text) - _MAX_TOOL_OUTPUT_CHARS
+                        logging.getLogger(__name__).warning(
+                            "Anthropic tool %s output truncated: kept %d chars, dropped %d",
+                            tool_block.name, _MAX_TOOL_OUTPUT_CHARS, dropped,
+                        )
+                        result_text = (
+                            result_text[:_MAX_TOOL_OUTPUT_CHARS]
+                            + f"\n[... truncated {dropped} chars; original output was "
+                            f"{len(result_text)} chars — request a narrower range or a smaller slice]"
+                        )
                     tool_results.append({
                         "type": "tool_result",
                         "tool_use_id": tool_block.id,
-                        "content": result_text[:50000],  # Truncate very large outputs
+                        "content": result_text,
                     })
                 messages.append({"role": "user", "content": tool_results})
 

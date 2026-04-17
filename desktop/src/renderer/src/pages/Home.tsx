@@ -78,8 +78,16 @@ export default function Home({
       }
 
       const data = await response.json()
-      const storedIds = localStorage.getItem('revisica_run_ids')
-      const runIds: string[] = storedIds ? JSON.parse(storedIds) : []
+      let runIds: string[] = []
+      try {
+        const storedIds = localStorage.getItem('revisica_run_ids')
+        const parsed = storedIds ? JSON.parse(storedIds) : []
+        if (Array.isArray(parsed)) {
+          runIds = parsed.filter((id): id is string => typeof id === 'string')
+        }
+      } catch {
+        // Corrupted storage — start fresh.
+      }
       runIds.unshift(data.run_id)
       localStorage.setItem('revisica_run_ids', JSON.stringify(runIds.slice(0, 50)))
       navigate(`/jobs/${data.run_id}`)
