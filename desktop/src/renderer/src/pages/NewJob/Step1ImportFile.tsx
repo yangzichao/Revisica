@@ -75,14 +75,8 @@ export default function Step1ImportFile({
     fetchParsers()
   }, [fetchParsers])
 
-  const handleDrop = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault()
-      setIsDragOver(false)
-      const file = event.dataTransfer.files[0]
-      if (!file) return
-      const electronFile = file as File & { path?: string }
-      const path = electronFile.path || file.name
+  const acceptPath = useCallback(
+    (path: string): void => {
       const fileType = detectFileType(path)
       if (!fileType) {
         setUnsupportedFlash(true)
@@ -93,6 +87,27 @@ export default function Step1ImportFile({
     },
     [dispatch],
   )
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault()
+      setIsDragOver(false)
+      const file = event.dataTransfer.files[0]
+      if (!file) return
+      const electronFile = file as File & { path?: string }
+      const path = electronFile.path || file.name
+      acceptPath(path)
+    },
+    [acceptPath],
+  )
+
+  const handleBrowse = useCallback(async (): Promise<void> => {
+    const picker = window.api?.openPaperPicker
+    if (!picker) return
+    const path = await picker()
+    if (!path) return
+    acceptPath(path)
+  }, [acceptPath])
 
   const mineruInfo = useMemo(
     () => parsers.find((p) => p.name === 'mineru'),
@@ -174,11 +189,14 @@ export default function Step1ImportFile({
         </div>
       )}
 
-      {/* Drop zone */}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="Choose a paper to import"
         className={cn(
           'rounded-xl border-2 border-dashed px-6 py-10 text-center',
-          'transition-colors duration-200 cursor-pointer mb-3',
+          'transition-colors duration-200 cursor-pointer mb-6',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
           isDragOver
             ? 'border-accent bg-accent/5'
             : state.filePath
@@ -187,6 +205,13 @@ export default function Step1ImportFile({
                 ? 'border-danger/60 bg-danger/5'
                 : 'border-paper-300 hover:border-paper-400',
         )}
+        onClick={handleBrowse}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            handleBrowse()
+          }
+        }}
         onDrop={handleDrop}
         onDragOver={(event) => {
           event.preventDefault()
@@ -219,27 +244,13 @@ export default function Step1ImportFile({
         ) : (
           <>
             <FileUp size={28} className="mx-auto mb-2 text-ink-faint" strokeWidth={1.3} />
-            <p className="text-sm text-ink-secondary font-medium">Drop a paper here</p>
+            <p className="text-sm text-ink-secondary font-medium">
+              Drop a paper here, or click to choose
+            </p>
             <p className="text-xs text-ink-faint mt-1">.pdf · .tex · .md · .mmd</p>
           </>
         )}
       </div>
-
-      <input
-        type="text"
-        value={state.filePath}
-        onChange={(event) => {
-          const path = event.target.value
-          const fileType = detectFileType(path)
-          if (path && fileType) {
-            dispatch({ type: 'SET_FILE', filePath: path, fileType })
-          } else if (!path) {
-            dispatch({ type: 'CLEAR_FILE' })
-          }
-        }}
-        placeholder="Or type a file path..."
-        className="input font-mono mb-6"
-      />
 
       {/* Format-specific sub-section */}
       {state.filePath && state.fileType && (

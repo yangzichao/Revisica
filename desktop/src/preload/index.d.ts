@@ -7,6 +7,7 @@ declare global {
       onApiConfig: (
         callback: (config: { apiBase: string; apiToken: string }) => void
       ) => void
+      openPaperPicker: () => Promise<string | null>
     }
   }
 }

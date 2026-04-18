@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, dialog, ipcMain } from 'electron'
 import { join } from 'path'
 import { randomBytes } from 'crypto'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -165,6 +165,23 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+ipcMain.handle('dialog:open-paper', async (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender)
+  if (!window) return null
+  const result = await dialog.showOpenDialog(window, {
+    title: 'Choose a paper',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Papers', extensions: ['pdf', 'tex', 'md', 'mmd', 'markdown'] },
+      { name: 'PDF', extensions: ['pdf'] },
+      { name: 'LaTeX', extensions: ['tex'] },
+      { name: 'Markdown', extensions: ['md', 'mmd', 'markdown'] }
+    ]
+  })
+  if (result.canceled || result.filePaths.length === 0) return null
+  return result.filePaths[0]
+})
 
 app.whenReady().then(async () => {
   electronApp.setAppUserModelId('com.revisica.app')
