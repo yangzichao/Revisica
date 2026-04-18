@@ -7,18 +7,16 @@ name = "revisica"
 version = "0.1.0"
 description = "Academic paper revision agent powered by Codex and Claude"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
   { name = "Zichao Yang" }
 ]
 dependencies = [
   "sympy>=1.13,<2",
+  "langgraph>=0.5",
 ]
 
 [project.optional-dependencies]
-graphs = [
-  "langgraph>=0.5",
-]
 api = [
   "anthropic>=0.40",
   "openai>=1.50",
@@ -32,7 +30,7 @@ test = [
   "hypothesis>=6.80",
 ]
 all = [
-  "revisica[graphs,api,serve]",
+  "revisica[api,serve]",
 ]
 
 [project.scripts]
