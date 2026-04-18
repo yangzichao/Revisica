@@ -39,8 +39,9 @@ def route_by_mode(state: UnifiedState) -> str:
 def ingest_document(state: UnifiedState) -> dict:
     """Parse input file into a RevisicaDocument."""
     source_path = state["source_path"]
+    parser_choice = state.get("parser", "auto") or "auto"
     try:
-        document = parse_document(source_path)
+        document = parse_document(source_path, parser=parser_choice)
         logger.info(
             "Ingested %s via %s: %s (%d sections)",
             Path(source_path).name,

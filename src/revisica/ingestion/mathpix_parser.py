@@ -42,13 +42,34 @@ def _is_transient_http_error(exc: BaseException) -> bool:
     return False
 
 
+def _load_credentials_from_config() -> tuple[str, str]:
+    """Read mathpix app_id / app_key from ``~/.revisica/config.json``.
+
+    Returns a pair of empty strings when the section is absent or malformed.
+    """
+    try:
+        from ..providers.provider_config import load_config
+        config = load_config()
+    except Exception:
+        return "", ""
+    mathpix_section = (config.get("providers") or {}).get("mathpix") or {}
+    app_id = str(mathpix_section.get("app_id", "") or "")
+    app_key = str(mathpix_section.get("app_key", "") or "")
+    return app_id, app_key
+
+
 def _get_credentials() -> tuple[str, str]:
     app_id = os.environ.get("MATHPIX_APP_ID", "")
     app_key = os.environ.get("MATHPIX_APP_KEY", "")
     if not app_id or not app_key:
+        config_id, config_key = _load_credentials_from_config()
+        app_id = app_id or config_id
+        app_key = app_key or config_key
+    if not app_id or not app_key:
         raise RuntimeError(
             "Mathpix credentials not configured. Set MATHPIX_APP_ID and "
-            "MATHPIX_APP_KEY environment variables."
+            "MATHPIX_APP_KEY environment variables, or save them via the "
+            "New Job wizard."
         )
     return app_id, app_key
 
@@ -202,6 +223,10 @@ class MathpixParser(BaseParser):
     def is_available(cls) -> bool:
         app_id = os.environ.get("MATHPIX_APP_ID", "")
         app_key = os.environ.get("MATHPIX_APP_KEY", "")
+        if not app_id or not app_key:
+            config_id, config_key = _load_credentials_from_config()
+            app_id = app_id or config_id
+            app_key = app_key or config_key
         return bool(app_id and app_key)
 
     def parse(self, path: Path) -> str:

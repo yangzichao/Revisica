@@ -19,6 +19,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from .core_types import ProviderModelSpec
 from .ingestion import parse_document
 from .providers import get_registry
 from .providers.provider_config import load_config, save_config
@@ -116,6 +117,7 @@ class RunState:
         with self._lock:
             return {
                 "run_id": self.run_id,
+                "config": self.config,
                 "state": self.state,
                 "started_at": self.started_at,
                 "completed_at": self.completed_at,
@@ -150,7 +152,7 @@ def _get_run(run_id: str) -> Optional[RunState]:
         return _runs.get(run_id)
 
 
-# ── request/response models ──────────────────���──────────────────────
+# ── request/response models ─────────────────────────────────────────
 
 
 class ReviewRequest(BaseModel):
@@ -160,6 +162,9 @@ class ReviewRequest(BaseModel):
     custom_instructions: Optional[str] = None
     llm_proof_review: bool = False
     timeout_seconds: int = 120
+    parser: str = "auto"
+    writing_model: Optional[str] = None
+    math_model: Optional[str] = None
 
 
 class ProviderConfigUpdate(BaseModel):
@@ -172,6 +177,15 @@ class ProviderConfigUpdate(BaseModel):
 class IngestRequest(BaseModel):
     file_path: str
     parser: str = "auto"
+
+
+class BackendModeUpdate(BaseModel):
+    backend_mode: str
+
+
+class MathpixCredentialsUpdate(BaseModel):
+    app_id: str
+    app_key: str
 
 
 # ── endpoints ───────────────────────────────────────────────────────
@@ -226,6 +240,180 @@ def test_provider(provider_name: str):
         }
     except Exception as error:
         return {"status": "error", "message": str(error)}
+
+
+@app.get("/api/config/backend-mode", dependencies=AUTH)
+def get_backend_mode_endpoint():
+    config = load_config()
+    mode = config.get("backend_mode", "auto")
+    if mode not in ("cli", "api", "auto"):
+        mode = "auto"
+    return {"backend_mode": mode}
+
+
+@app.put("/api/config/backend-mode", dependencies=AUTH)
+def set_backend_mode_endpoint(update: BackendModeUpdate):
+    if update.backend_mode not in ("cli", "api", "auto"):
+        raise HTTPException(
+            status_code=400,
+            detail="backend_mode must be one of 'cli', 'api', 'auto'.",
+        )
+    config = load_config()
+    config["backend_mode"] = update.backend_mode
+    save_config(config)
+    return {"status": "updated", "backend_mode": update.backend_mode}
+
+
+@app.get("/api/config/parsers", dependencies=AUTH)
+def list_parsers_endpoint():
+    """Report the set of PDF/TeX/MD parsers Revisica can use."""
+    parser_specs: list[dict[str, Any]] = []
+
+    parser_specs.append(_parser_spec_pandoc())
+    parser_specs.append(_parser_spec_tex_basic())
+    parser_specs.append(_parser_spec_markdown())
+    parser_specs.append(_parser_spec_mineru())
+    parser_specs.append(_parser_spec_mathpix())
+
+    return {"parsers": parser_specs}
+
+
+def _parser_spec_pandoc() -> dict[str, Any]:
+    from .ingestion.pandoc_parser import PandocParser
+    return {
+        "name": "pandoc",
+        "display_name": "Pandoc",
+        "available": PandocParser.is_available(),
+        "requires": ["pandoc CLI on PATH"],
+        "handles": [".tex"],
+        "install_hint": "brew install pandoc   # or apt-get install pandoc",
+    }
+
+
+def _parser_spec_tex_basic() -> dict[str, Any]:
+    return {
+        "name": "tex-basic",
+        "display_name": "TeX (basic)",
+        "available": True,
+        "requires": [],
+        "handles": [".tex"],
+        "install_hint": "",
+    }
+
+
+def _parser_spec_markdown() -> dict[str, Any]:
+    return {
+        "name": "markdown",
+        "display_name": "Markdown (passthrough)",
+        "available": True,
+        "requires": [],
+        "handles": [".md", ".mmd", ".markdown"],
+        "install_hint": "",
+    }
+
+
+def _parser_spec_mineru() -> dict[str, Any]:
+    from .ingestion.mineru_parser import MineruParser
+    return {
+        "name": "mineru",
+        "display_name": "MinerU",
+        "available": MineruParser.is_available(),
+        "requires": ["mineru CLI on PATH"],
+        "handles": [".pdf"],
+        "install_hint": "pip install 'mineru[core]'",
+    }
+
+
+def _parser_spec_mathpix() -> dict[str, Any]:
+    from .ingestion.mathpix_parser import MathpixParser
+    return {
+        "name": "mathpix",
+        "display_name": "Mathpix",
+        "available": MathpixParser.is_available(),
+        "requires": ["MATHPIX_APP_ID and MATHPIX_APP_KEY"],
+        "handles": [".pdf", ".png", ".jpg", ".jpeg"],
+        "install_hint": "Sign up at accounts.mathpix.com",
+    }
+
+
+@app.put("/api/config/parsers/mathpix/credentials", dependencies=AUTH)
+def set_mathpix_credentials(update: MathpixCredentialsUpdate):
+    if not update.app_id.strip() or not update.app_key.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Both app_id and app_key are required.",
+        )
+    config = load_config()
+    mathpix_section = config.setdefault("providers", {}).setdefault("mathpix", {})
+    mathpix_section["app_id"] = update.app_id.strip()
+    mathpix_section["app_key"] = update.app_key.strip()
+    save_config(config)
+    return {"status": "updated"}
+
+
+@app.get("/api/config/model-routes", dependencies=AUTH)
+def list_model_routes():
+    """Return model choices grouped by role, under the active backend mode."""
+    from .model_router import (
+        _ANTHROPIC_API_ROUTES,
+        _CLAUDE_ROUTES,
+        _GPT_ROUTES,
+        _OPENAI_API_ROUTES,
+    )
+
+    config = load_config()
+    mode = config.get("backend_mode", "auto")
+    if mode not in ("cli", "api", "auto"):
+        mode = "auto"
+
+    writing_choices: list[dict[str, str]] = []
+    math_choices: list[dict[str, str]] = []
+    writing_seen: set[str] = set()
+    math_seen: set[str] = set()
+
+    def add(
+        bucket: list[dict[str, str]],
+        seen: set[str],
+        provider: str,
+        model: str,
+    ) -> None:
+        key = f"{provider}:{model}"
+        if key in seen:
+            return
+        seen.add(key)
+        bucket.append({"value": key, "label": _pretty_label(provider, model)})
+
+    # The candidate sets below vary by backend mode so users only see what's
+    # actually available to them on their installation.
+    if mode in ("cli", "auto"):
+        add(writing_choices, writing_seen, "claude", _CLAUDE_ROUTES["writing-basic"])
+        add(writing_choices, writing_seen, "claude", _CLAUDE_ROUTES["writing-self-check"])
+        add(writing_choices, writing_seen, "codex", _GPT_ROUTES["writing-basic"])
+        add(math_choices, math_seen, "claude", _CLAUDE_ROUTES["math-reasoning"])
+        add(math_choices, math_seen, "codex", _GPT_ROUTES["math-reasoning"])
+    if mode in ("api", "auto"):
+        add(writing_choices, writing_seen, "anthropic-api", _ANTHROPIC_API_ROUTES["writing-basic"])
+        add(writing_choices, writing_seen, "openai-api", _OPENAI_API_ROUTES["writing-basic"])
+        add(math_choices, math_seen, "anthropic-api", _ANTHROPIC_API_ROUTES["math-reasoning"])
+        add(math_choices, math_seen, "openai-api", _OPENAI_API_ROUTES["math-reasoning"])
+
+    return {
+        "backend_mode": mode,
+        "writing": writing_choices,
+        "math": math_choices,
+    }
+
+
+def _pretty_label(provider: str, model: str) -> str:
+    provider_label = {
+        "claude": "Claude",
+        "claude-cli": "Claude",
+        "codex": "Codex",
+        "codex-cli": "Codex",
+        "anthropic-api": "Anthropic",
+        "openai-api": "OpenAI",
+    }.get(provider, provider)
+    return f"{provider_label} · {model}"
 
 
 @app.post("/api/ingest", dependencies=AUTH)
@@ -317,6 +505,19 @@ def get_run_results(run_id: str):
 # ── background execution ────────────────────────────────────────────
 
 
+def _parse_model_spec(raw: Optional[str]) -> Optional[ProviderModelSpec]:
+    """Parse a ``provider[:model]`` string into a :class:`ProviderModelSpec`."""
+    if not raw:
+        return None
+    raw = raw.strip()
+    if not raw:
+        return None
+    if ":" in raw:
+        provider, model = raw.split(":", 1)
+        return ProviderModelSpec(provider=provider.strip(), model=model.strip())
+    return ProviderModelSpec(provider=raw)
+
+
 def _execute_review(run_id: str, request: ReviewRequest) -> None:
     """Run a review in a background thread."""
     run_state = _get_run(run_id)
@@ -326,11 +527,18 @@ def _execute_review(run_id: str, request: ReviewRequest) -> None:
     try:
         run_state.append_task({"name": "review", "status": "running"})
 
+        writing_spec = _parse_model_spec(request.writing_model)
+        math_spec = _parse_model_spec(request.math_model)
+
         review_result = review_unified(
             file_path=request.file_path,
             venue_profile=request.venue_profile,
             llm_proof_review=request.llm_proof_review,
             timeout_seconds=request.timeout_seconds,
+            mode=request.mode,
+            parser=request.parser,
+            reviewer_specs=[writing_spec] if writing_spec else None,
+            math_reviewer_specs=[math_spec] if math_spec else None,
         )
 
         run_state.update(
