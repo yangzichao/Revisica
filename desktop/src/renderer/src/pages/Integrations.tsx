@@ -5,8 +5,7 @@ import {
   Cloud,
   FileText,
   Sparkles,
-  Download,
-  Trash2,
+  CheckCircle2,
 } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import {
@@ -360,52 +359,27 @@ function MinerUCard({ parser }: { parser: Parser | undefined }): JSX.Element {
       statusLabel={available ? 'installed' : 'not installed'}
       available={available}
     >
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-xs text-ink-tertiary">
-          <span className="shrink-0">Model</span>
-          <select
-            disabled
-            className="flex-1 px-2 py-1 rounded-md bg-paper-100 border border-paper-300 text-ink-tertiary text-xs"
-          >
-            <option>
-              {available ? 'mineru-base' : 'mineru-base (not installed)'}
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between text-[11px] text-ink-faint mb-1.5">
-            <span>{available ? 'Installed' : 'Not downloaded'}</span>
-            <span className="font-mono">— / —</span>
-          </div>
-          <div className="h-1.5 rounded-full bg-paper-200 overflow-hidden">
-            <div
-              className={`h-full ${available ? 'w-full bg-success/50' : 'w-0 bg-accent/40'} transition-all`}
-            />
+      {available ? (
+        <div className="flex items-start gap-2 text-sm text-ink-secondary">
+          <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" strokeWidth={1.8} />
+          <div className="space-y-1">
+            <div>
+              The <code className="code-inline">mineru</code> CLI is available on your
+              system and manages its own models on first run.
+            </div>
+            <div className="text-xs text-ink-faint">
+              No extra configuration needed here.
+            </div>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button disabled className="btn-ghost px-3 py-1.5">
-            <Download size={12} />
-            Download model
-          </button>
-          <button disabled className="btn-ghost px-3 py-1.5">
-            <Trash2 size={12} />
-            Delete
-          </button>
-        </div>
-      </div>
-
-      {!available && installHint && (
-        <div className="mt-3 text-xs text-ink-faint">
-          {installHint}
-        </div>
-      )}
-      {!available && !installHint && (
-        <div className="mt-3 text-xs text-ink-faint">
-          Download management coming soon. Install{' '}
-          <code className="code-inline">mineru</code> CLI manually for now.
+      ) : (
+        <div className="text-sm text-ink-secondary">
+          {installHint ?? (
+            <>
+              Install the <code className="code-inline">mineru</code> CLI to enable
+              this parser. The CLI will download its own models on first use.
+            </>
+          )}
         </div>
       )}
     </CollapsibleProviderCard>
