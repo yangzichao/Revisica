@@ -6,6 +6,7 @@ Timestamped insights from experiments, benchmark runs, and debugging sessions. E
 
 | Date | File | Key Insight |
 |---|---|---|
+| 2026-04-17 | [wizard-patterns](2026-04-17-wizard-patterns.md) | Per-bucket dedup (not shared) when role→model is many-to-one. Reducers validate state shape; render layer gates live async data. `ReviewRequest.model_dump()` round-trips as `RunState.config`, making import-from-previous free. |
 | 2026-04-17 | [mineru-install-gotchas](2026-04-17-mineru-install-gotchas.md) | MinerU install needs pyenv 3.12 (not .venv 3.9), and `mineru[core]` (not bare `mineru`). First parse ~3 GB download, ~3 min on MPS. The decision itself lives in [ADR 0001](../decisions/0001-pdf-parser-mineru.md). |
 | 2026-04-12 | [ingestion-parsers-design](2026-04-12-ingestion-parsers-design.md) | "Markdown + LaTeX math" is the lingua franca. MMD = Markdown. MinerU: just use the CLI (avoid 1.x/2.x API coupling). Local-first PDF parsing for privacy. 29 tests in 0.03s. |
 | 2026-04-11 | [dual-distribution-provider-mode](2026-04-11-dual-distribution-provider-mode.md) | Mac App Store sandbox blocks CLI calls; subscriptions can't be used via API. Distribution target must be a first-class config (`backend_mode`), not a runtime accident. Python 3.9 is a real constraint. |
