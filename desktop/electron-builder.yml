@@ -8,15 +8,32 @@ files:
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+# `resources/` contains:
+#   - python-backend/          PyInstaller --onedir output (~120 MB)
+#   - LICENSES/pandoc-GPL2.txt Required by Pandoc's GPL-2 license
+# Populated before packaging by `scripts/build-python-backend.sh`.
 extraResources:
   - from: resources/
     to: resources/
     filter:
       - '**/*'
+asar: true
+# The frozen backend lives under `extraResources:` above, which copies to
+# `Contents/Resources/resources/` *outside* app.asar already — no
+# `asarUnpack` needed. If future work adds native modules to the Electron
+# side (files matched by `files:`), add an `asarUnpack:` glob for those
+# here so dyld can load their dylibs at runtime.
 mac:
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     NSDocumentsFolderUsageDescription: Revisica needs access to read LaTeX files for review.
+  # When APPLE_ID + TEAM_ID are set, `scripts/sign-and-notarize.sh` handles
+  # notarization. Letting electron-builder do it in-process is brittle; we
+  # keep it off here and drive it explicitly from the build pipeline.
   notarize: false
   target:
     - target: dmg

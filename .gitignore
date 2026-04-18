@@ -1,4 +1,7 @@
 .venv/
+# Dedicated venv used by scripts/build-python-backend.sh. Kept separate so
+# the frozen bundle doesn't inherit stray dev packages from .venv.
+.build-venv/
 .sandbox/
 .pycache/
 *.egg-info/
@@ -21,4 +24,8 @@ benchmarks/processbench/
 desktop/node_modules/
 desktop/out/
 desktop/dist/
+# PyInstaller output — populated per build by scripts/build-python-backend.sh
+# and consumed by electron-builder via extraResources. Do NOT ignore the
+# LICENSES subdir, which we check in by hand.
+desktop/resources/python-backend/
 code-review/

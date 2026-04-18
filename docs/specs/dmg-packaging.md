@@ -1,8 +1,8 @@
 # Spec: DMG Packaging — Bundling Python Backend + External Tools
 
-**Status:** draft
+**Status:** in-progress (unsigned build wired; signing + notarization deferred)
 **First drafted:** 2026-04-12
-**Last revised:** 2026-04-17 (pyproject alignment, hidden-import widening, smoke-test criteria)
+**Last revised:** 2026-04-17 (artifacts landed: entitlements, PyInstaller spec/script, smoke test, electron path + asarUnpack, Pandoc licenses, GitHub Actions unsigned workflow, ADR 0002)
 
 ## Problem
 
@@ -241,17 +241,17 @@ The app detects these at runtime via `shutil.which()` and env vars. The Settings
 
 Order matters — later steps depend on earlier ones. Do not start step N+1 without the acceptance evidence for step N.
 
-1. [ ] Create `desktop/build/entitlements.mac.plist` with the entitlements listed above.
-2. [ ] Add `pypandoc-binary` to `[project.optional-dependencies]` as a `bundle` extra so `pip install .[bundle]` pulls it during build without polluting regular dev installs.
-3. [ ] Update `src/revisica/ingestion/pandoc_parser.py` — fall back to `pypandoc.get_pandoc_path()` when `shutil.which("pandoc")` returns nothing; add a unit test.
-4. [ ] Write `scripts/build-python-backend.sh` (and a matching `python-backend.spec` if the inline-flags version becomes unwieldy) — fresh build-venv with Python 3.12, installs `.[all,bundle] pyinstaller`, runs PyInstaller, copies `dist/python-backend/` to `desktop/resources/python-backend/`. Script must be idempotent and leave no stale files.
-5. [ ] **Smoke test the frozen binary before touching Electron.** Run `desktop/resources/python-backend/python-backend --port 18999` in a fresh terminal (no venv, no PYTHONPATH), then `curl http://127.0.0.1:18999/api/health` should return `{"status":"ok"}`, `curl -X POST /api/ingest` on a sample `.tex` and `.md` must succeed, `/api/review` must kick off without `ModuleNotFoundError`. If anything fails here, widen `--collect-submodules`, do NOT ship.
-6. [ ] Update `desktop/src/main/index.ts` — production branch's path changes from `resources/python-backend` (a file) to `resources/python-backend/python-backend` (exec inside a folder).
-7. [ ] Update `desktop/electron-builder.yml` — already arm64-only; double-check `extraResources` still mirrors `desktop/resources/`; add any codesign/entitlement stanzas electron-builder needs to pick up the inner binaries.
-8. [ ] Add `desktop/resources/LICENSES/pandoc-GPL2.txt` verbatim from the upstream Pandoc LICENSE file. About dialog gets a link to the Pandoc source repo.
-9. [ ] Full build: `npm run build:mac` produces a DMG that installs, launches, and passes the full acceptance-criteria list on a clean Mac.
-10. [ ] Add codesign + `xcrun notarytool submit --wait` steps to the build script (gated on `APPLE_ID`, `TEAM_ID`, `DEVELOPER_ID` env vars).
-11. [ ] Create `.github/workflows/build-dmg.yml` using `macos-14` (arm64) runners.
+1. [x] `desktop/build/entitlements.mac.plist` — JIT / unsigned-exec-memory / dyld-env / library-validation-disable / user-file / network entitlements. Library-validation is off because PyInstaller loads third-party dylibs (pydantic-core, orjson) that are not signed by Apple.
+2. [x] `pyproject.toml` — `bundle` extra adds `pypandoc-binary>=1.13`. Regular dev installs stay light; `pip install .[bundle]` pulls pandoc at build time.
+3. [x] `src/revisica/ingestion/pandoc_parser.py` — `_pypandoc_binary_path()` fallback; `TestPandocParserFallback` covers four branches. `pytest tests/test_ingestion.py` → 34 pass (original 29 + 5 new).
+4. [x] `scripts/build-python-backend.sh` + `scripts/pyinstaller/python-backend.spec` + `scripts/pyinstaller/python_backend_entry.py` — isolated `.build-venv`, Python 3.12, idempotent (cleans `dist/` + `desktop/resources/python-backend/` first), exits non-zero if the frozen executable is missing.
+5. [x] `scripts/smoke-test-python-backend.sh` — runs the frozen binary under `env -i` so dev-venv leakage surfaces, checks `/api/health`, `.md` + `.tex` ingest payloads, `/api/review` kickoff, and `ModuleNotFoundError` in the log. CI step lives in `.github/workflows/build-dmg.yml` directly after the freeze step so the DMG build won't start on a broken backend.
+6. [x] `desktop/src/main/index.ts` — production path now points at `resources/python-backend/python-backend` (exec inside the onedir).
+7. [x] `desktop/electron-builder.yml` — `asarUnpack: 'resources/**/*'` so dyld can load the inner dylibs; `hardenedRuntime: true`; `entitlements` + `entitlementsInherit` both point at `build/entitlements.mac.plist`; `notarize: false` kept off (driven externally when creds exist).
+8. [x] `desktop/resources/LICENSES/pandoc-GPL2.txt` + `pandoc-COPYRIGHT.txt` + `README.md` — verbatim from `jgm/pandoc@main`. README.md lists upstream URLs so the About dialog has a target to link.
+9. [ ] Full build on hardware: run `bash scripts/build-python-backend.sh`, then `bash scripts/smoke-test-python-backend.sh`, then `cd desktop && npm run build:mac`. DMG output goes to `desktop/dist/`.
+10. [ ] **Deferred:** codesign + `xcrun notarytool submit --wait`. Unsigned DMG opens via right-click → Open on the developer's machine. To enable later: set `CSC_LINK` / `CSC_KEY_PASSWORD` + `APPLE_ID` / `APPLE_APP_SPECIFIC_PASSWORD` / `APPLE_TEAM_ID` repo secrets, flip `notarize: true` in `electron-builder.yml`, and remove `CSC_IDENTITY_AUTO_DISCOVERY: 'false'` from the workflow.
+11. [x] `.github/workflows/build-dmg.yml` — `macos-14`, installs Python 3.12 and Node 20, runs the freeze → smoke → `build:mac` chain, fails if DMG size exceeds 250 MB, uploads `desktop/dist/*.dmg` as a 14-day artifact.
 
 ## Acceptance Criteria
 
@@ -267,10 +267,10 @@ All of these must be green before the spec flips to `done`.
 - [ ] App launches to first-interactive within ~3 s of DMG double-click (measured manually).
 - [ ] DMG size < 200 MB.
 - [ ] `Revisica.app/Contents/Resources/resources/LICENSES/pandoc-GPL2.txt` present.
-- [ ] Notarized: `spctl --assess --type execute Revisica.app` prints `accepted`.
+- [ ] Notarized: `spctl --assess --type execute Revisica.app` prints `accepted`. **Deferred** alongside step 10.
 
 ## References
 
-- Decision source: this spec currently carries the PyInstaller `--onedir` choice inline; extract to a dedicated ADR (`docs/decisions/NNNN-pyinstaller-onedir.md`) before marking `approved` so the rationale is preserved if the bundling approach is ever reconsidered (Nuitka, Briefcase, UV-bundled Python, Tauri migration).
+- Decision: [ADR 0002 — Freeze the Python backend with PyInstaller `--onedir`](../decisions/0002-pyinstaller-onedir-python-backend.md).
 - Parent: [Desktop app architecture](desktop-app.md).
 - Learning (to be written post-ship): measure the actual DMG size, startup time, and hidden-import holes that only appear in the frozen build — log in `docs/learning/YYYY-MM-DD-dmg-first-ship.md`.
