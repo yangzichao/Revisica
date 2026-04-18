@@ -6,6 +6,7 @@ Timestamped insights from experiments, benchmark runs, and debugging sessions. E
 
 | Date | File | Key Insight |
 |---|---|---|
+| 2026-04-17 | [pdf-parser-mineru-decision](2026-04-17-pdf-parser-mineru-decision.md) | PDF parser: MinerU chosen (zero-code, local, MPS, already implemented). Marker deferred (missing file, no unique win today). Plain-text rejected (destroys math → empty math reviews). |
 | 2026-04-12 | [ingestion-parsers-design](2026-04-12-ingestion-parsers-design.md) | "Markdown + LaTeX math" is the lingua franca. MMD = Markdown. MinerU: just use the CLI (avoid 1.x/2.x API coupling). Local-first PDF parsing for privacy. 29 tests in 0.03s. |
 | 2026-04-11 | [dual-distribution-provider-mode](2026-04-11-dual-distribution-provider-mode.md) | Mac App Store sandbox blocks CLI calls; subscriptions can't be used via API. Distribution target must be a first-class config (`backend_mode`), not a runtime accident. Python 3.9 is a real constraint. |
 | 2026-04-11 | [architecture-debt-observations](2026-04-11-architecture-debt-observations.md) | Half-migration is worse than no migration. 5 new packages built but not wired into main flow = 5 islands + dual maintenance. Complete the migration before building features on top. |
