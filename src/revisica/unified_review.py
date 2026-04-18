@@ -36,6 +36,8 @@ def review_unified(
     timeout_seconds: int = 120,
     # new: review mode
     mode: str = "review",
+    # new: explicit parser selection (defaults to auto)
+    parser: str = "auto",
 ) -> UnifiedReviewRun:
     """Run unified review via LangGraph."""
     from .graphs.unified import compile_unified_graph
@@ -69,6 +71,7 @@ def review_unified(
         "source_path": str(source),
         "run_dir": str(run_dir),
         "config": config,
+        "parser": parser,
         "warnings": [],
     })
 

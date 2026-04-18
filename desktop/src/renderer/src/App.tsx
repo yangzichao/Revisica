@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
-import Home from './pages/Home'
+import NewJobWizard from './pages/NewJob/NewJobWizard'
 import Jobs from './pages/Jobs'
 import Providers from './pages/Providers'
 import Settings from './pages/Settings'
@@ -26,7 +26,7 @@ function App(): JSX.Element {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<Home apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/" element={<NewJobWizard apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/providers" element={<Providers apiBase={apiBase} apiToken={apiToken} />} />

@@ -1,59 +1,41 @@
 import { useState, useEffect } from 'react'
 import {
-  CheckCircle2,
-  XCircle,
   Loader2,
   Terminal,
   Cloud,
-  HardDrive,
   FileText,
   Sparkles,
   Download,
   Trash2,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
+import {
+  ApiProviderCard,
+  CliProviderRow,
+  EMPTY_CARD_STATE,
+  isApiProvider,
+  StatusDot,
+  type Provider,
+  type ProviderCardState,
+} from '@/components/ProviderCard'
 
 // ── Types ──────────────────────────────────────────────────────────
 
-type Runtime = 'cli' | 'api' | 'local'
-
-interface BackendProvider {
+interface Parser {
   name: string
   display_name: string
-  model_family: string
   available: boolean
+  requires?: string
+  handles?: string[]
+  install_hint?: string
 }
 
-interface ProviderCardState {
-  apiKey: string
-  isTesting: boolean
-  isSaving: boolean
-  testResult: { ok: boolean; message: string } | null
+interface MathpixCreds {
+  app_id: string
+  app_key: string
 }
 
-const EMPTY_CARD_STATE: ProviderCardState = {
-  apiKey: '',
-  isTesting: false,
-  isSaving: false,
-  testResult: null,
-}
-
-function runtimeFor(providerName: string): Runtime {
-  if (providerName.includes('api') || providerName.includes('anthropic') || providerName.includes('openai')) {
-    return 'api'
-  }
-  return 'cli'
-}
-
-function descriptionFor(providerName: string): string {
-  if (providerName.includes('claude')) return 'Uses your Claude subscription'
-  if (providerName.includes('codex')) return 'Uses your Codex CLI subscription'
-  if (providerName.includes('anthropic') || providerName.includes('openai')) {
-    return 'Direct API access with your key'
-  }
-  return ''
-}
+const EMPTY_MATHPIX: MathpixCreds = { app_id: '', app_key: '' }
 
 // ── Main Component ─────────────────────────────────────────────────
 
@@ -64,8 +46,11 @@ export default function Providers({
   apiBase: string
   apiToken: string
 }): JSX.Element {
-  const [providers, setProviders] = useState<BackendProvider[]>([])
+  const [providers, setProviders] = useState<Provider[]>([])
+  const [parsers, setParsers] = useState<Parser[]>([])
   const [cardStates, setCardStates] = useState<Record<string, ProviderCardState>>({})
+  const [mathpixCreds, setMathpixCreds] = useState<MathpixCreds>(EMPTY_MATHPIX)
+  const [mathpixSaving, setMathpixSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   const getCardState = (name: string): ProviderCardState => {
@@ -91,13 +76,25 @@ export default function Providers({
       }
     } catch {
       // Backend may not be ready yet
-    } finally {
-      setIsLoading(false)
+    }
+  }
+
+  const fetchParsers = async (): Promise<void> => {
+    try {
+      const response = await apiFetch(apiBase, apiToken, '/api/config/parsers')
+      if (response.ok) {
+        const data = await response.json()
+        setParsers(data.parsers ?? [])
+      }
+    } catch {
+      // Backend may not be ready yet
     }
   }
 
   useEffect(() => {
-    fetchProviders()
+    Promise.all([fetchProviders(), fetchParsers()]).finally(() =>
+      setIsLoading(false),
+    )
   }, [apiBase, apiToken])
 
   const handleSaveApiKey = async (providerName: string): Promise<void> => {
@@ -157,6 +154,33 @@ export default function Providers({
     }
   }
 
+  const handleSaveMathpix = async (): Promise<void> => {
+    if (!mathpixCreds.app_id.trim() || !mathpixCreds.app_key.trim()) return
+    setMathpixSaving(true)
+    try {
+      const response = await apiFetch(
+        apiBase,
+        apiToken,
+        '/api/config/parsers/mathpix/credentials',
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            app_id: mathpixCreds.app_id.trim(),
+            app_key: mathpixCreds.app_key.trim(),
+          }),
+        },
+      )
+      if (response.ok) {
+        setMathpixCreds(EMPTY_MATHPIX)
+        await fetchParsers()
+      }
+    } catch {
+      // Parser will remain "needs credentials" in UI
+    }
+    setMathpixSaving(false)
+  }
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -164,6 +188,11 @@ export default function Providers({
       </div>
     )
   }
+
+  const cliProviders = providers.filter((p) => !isApiProvider(p.name))
+  const apiProviders = providers.filter((p) => isApiProvider(p.name))
+  const mathpix = parsers.find((p) => p.name === 'mathpix')
+  const mineru = parsers.find((p) => p.name === 'mineru')
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -181,37 +210,47 @@ export default function Providers({
         <section className="mb-10">
           <SectionHeader icon={FileText} title="Document Parsing" />
           <div className="space-y-3">
-            <MathPixCard />
-            <MinerUCard />
+            <MathPixCard
+              parser={mathpix}
+              creds={mathpixCreds}
+              isSaving={mathpixSaving}
+              onChange={setMathpixCreds}
+              onSave={handleSaveMathpix}
+            />
+            <MinerUCard parser={mineru} />
           </div>
         </section>
 
         {/* AI Models */}
         <section>
           <SectionHeader icon={Sparkles} title="AI Models" />
+
+          <SubsectionHeader icon={Terminal} title="CLI" />
+          <div className="space-y-2 mb-6">
+            {cliProviders.map((provider) => (
+              <CliProviderRow
+                key={provider.name}
+                provider={provider}
+                state={getCardState(provider.name)}
+                onTest={() => handleTestProvider(provider.name)}
+              />
+            ))}
+          </div>
+
+          <SubsectionHeader icon={Cloud} title="API" />
           <div className="space-y-3">
-            {providers.map((provider) => {
-              const state = getCardState(provider.name)
-              return runtimeFor(provider.name) === 'api' ? (
-                <ApiProviderCard
-                  key={provider.name}
-                  provider={provider}
-                  state={state}
-                  onApiKeyChange={(value) =>
-                    updateCardState(provider.name, { apiKey: value })
-                  }
-                  onSave={() => handleSaveApiKey(provider.name)}
-                  onTest={() => handleTestProvider(provider.name)}
-                />
-              ) : (
-                <CliProviderCard
-                  key={provider.name}
-                  provider={provider}
-                  state={state}
-                  onTest={() => handleTestProvider(provider.name)}
-                />
-              )
-            })}
+            {apiProviders.map((provider) => (
+              <ApiProviderCard
+                key={provider.name}
+                provider={provider}
+                state={getCardState(provider.name)}
+                onApiKeyChange={(value) =>
+                  updateCardState(provider.name, { apiKey: value })
+                }
+                onSave={() => handleSaveApiKey(provider.name)}
+                onTest={() => handleTestProvider(provider.name)}
+              />
+            ))}
           </div>
         </section>
       </div>
@@ -219,7 +258,7 @@ export default function Providers({
   )
 }
 
-// ── Section + shared primitives ────────────────────────────────────
+// ── Section headers ────────────────────────────────────────────────
 
 function SectionHeader({
   icon: Icon,
@@ -239,223 +278,100 @@ function SectionHeader({
   )
 }
 
-function StatusDot({ available }: { available: boolean }): JSX.Element {
-  return (
-    <div
-      className={cn(
-        'w-2.5 h-2.5 rounded-full shrink-0',
-        available ? 'bg-success' : 'bg-paper-400',
-      )}
-    />
-  )
-}
-
-function RuntimeBadge({ runtime }: { runtime: Runtime }): JSX.Element {
-  const config = {
-    cli: { icon: Terminal, label: 'CLI' },
-    api: { icon: Cloud, label: 'API' },
-    local: { icon: HardDrive, label: 'Local' },
-  }[runtime]
-  const Icon = config.icon
-  return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-paper-200 text-[10px] font-medium text-ink-tertiary uppercase tracking-wider">
-      <Icon size={10} strokeWidth={2} />
-      {config.label}
-    </span>
-  )
-}
-
-function TestResultBadge({
-  result,
+function SubsectionHeader({
+  icon: Icon,
+  title,
 }: {
-  result: { ok: boolean; message: string }
+  icon: typeof Terminal
+  title: string
 }): JSX.Element {
   return (
-    <span
-      className={cn(
-        'flex items-center gap-1 text-xs font-medium',
-        result.ok ? 'text-success' : 'text-danger',
-      )}
-    >
-      {result.ok ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-      {result.message}
-    </span>
-  )
-}
-
-// ── Provider card shell ────────────────────────────────────────────
-
-function ProviderCardShell({
-  available,
-  displayName,
-  runtime,
-  description,
-  children,
-  footer,
-}: {
-  available: boolean
-  displayName: string
-  runtime: Runtime
-  description?: string
-  children?: React.ReactNode
-  footer?: React.ReactNode
-}): JSX.Element {
-  return (
-    <div className="card px-5 py-4">
-      <div className="flex items-center gap-3">
-        <StatusDot available={available} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-ink">{displayName}</span>
-            <RuntimeBadge runtime={runtime} />
-          </div>
-          {description && (
-            <div className="text-xs text-ink-tertiary mt-0.5">{description}</div>
-          )}
-        </div>
-      </div>
-      {children && <div className="mt-4">{children}</div>}
-      {footer && (
-        <div className="mt-3 flex items-center gap-3">{footer}</div>
-      )}
+    <div className="flex items-center gap-1.5 mb-2 ml-1">
+      <Icon size={12} className="text-ink-faint" strokeWidth={1.6} />
+      <span className="text-[11px] font-medium text-ink-faint uppercase tracking-wider">
+        {title}
+      </span>
     </div>
   )
 }
 
-// ── AI Model cards (CLI + API) ─────────────────────────────────────
+// ── Parsing provider cards ─────────────────────────────────────────
 
-function CliProviderCard({
-  provider,
-  state,
-  onTest,
-}: {
-  provider: BackendProvider
-  state: ProviderCardState
-  onTest: () => void
-}): JSX.Element {
-  return (
-    <ProviderCardShell
-      available={provider.available}
-      displayName={provider.display_name}
-      runtime="cli"
-      description={descriptionFor(provider.name)}
-      footer={
-        <>
-          <span className="text-xs text-ink-faint">
-            {provider.available ? 'Ready' : 'Binary not found on PATH'}
-          </span>
-          <div className="flex-1" />
-          <button
-            onClick={onTest}
-            disabled={state.isTesting || !provider.available}
-            className="btn-ghost px-3 py-1.5"
-          >
-            {state.isTesting && <Loader2 size={12} className="animate-spin" />}
-            Test
-          </button>
-          {state.testResult && <TestResultBadge result={state.testResult} />}
-        </>
-      }
-    />
-  )
-}
-
-function ApiProviderCard({
-  provider,
-  state,
-  onApiKeyChange,
+function MathPixCard({
+  parser,
+  creds,
+  isSaving,
+  onChange,
   onSave,
-  onTest,
 }: {
-  provider: BackendProvider
-  state: ProviderCardState
-  onApiKeyChange: (value: string) => void
+  parser: Parser | undefined
+  creds: MathpixCreds
+  isSaving: boolean
+  onChange: (creds: MathpixCreds) => void
   onSave: () => void
-  onTest: () => void
 }): JSX.Element {
+  const available = parser?.available ?? false
+  const canSave = creds.app_id.trim() !== '' && creds.app_key.trim() !== ''
   return (
-    <ProviderCardShell
-      available={provider.available}
-      displayName={provider.display_name}
-      runtime="api"
-      description={descriptionFor(provider.name)}
-      footer={
-        <>
-          <button
-            onClick={onTest}
-            disabled={state.isTesting}
-            className="btn-ghost px-3 py-1.5"
-          >
-            {state.isTesting && <Loader2 size={12} className="animate-spin" />}
-            Test connection
-          </button>
-          {state.testResult && <TestResultBadge result={state.testResult} />}
-        </>
-      }
-    >
-      <div className="flex gap-2">
-        <input
-          type="password"
-          placeholder="sk-..."
-          value={state.apiKey}
-          onChange={(event) => onApiKeyChange(event.target.value)}
-          className="input font-mono text-sm"
-        />
-        <button
-          onClick={onSave}
-          disabled={!state.apiKey.trim() || state.isSaving}
-          className="btn-primary px-4 py-2 text-sm shrink-0"
-        >
-          {state.isSaving ? '...' : 'Save'}
-        </button>
+    <div className="card px-5 py-5">
+      <div className="flex items-center gap-3 mb-4">
+        <StatusDot available={available} />
+        <span className="text-sm font-medium text-ink">
+          {parser?.display_name ?? 'MathPix'}
+        </span>
+        <span className="text-xs text-ink-faint">
+          {available ? 'ready' : 'needs credentials'}
+        </span>
       </div>
-    </ProviderCardShell>
-  )
-}
 
-// ── Parsing provider placeholders ──────────────────────────────────
-// Backend for parsers lives in ingestion/ and is not yet exposed via
-// /api/providers. These cards show the final shape; hook up real
-// state when the backend endpoint lands.
-
-function MathPixCard(): JSX.Element {
-  return (
-    <ProviderCardShell
-      available={false}
-      displayName="MathPix"
-      runtime="api"
-      description="Cloud PDF → Markdown with OCR"
-    >
-      <div className="space-y-2">
+      <div className="space-y-2 mb-3">
         <input
           type="password"
           placeholder="App ID"
-          disabled
+          value={creds.app_id}
+          onChange={(event) =>
+            onChange({ ...creds, app_id: event.target.value })
+          }
           className="input font-mono text-sm"
         />
         <input
           type="password"
           placeholder="App Key"
-          disabled
+          value={creds.app_key}
+          onChange={(event) =>
+            onChange({ ...creds, app_key: event.target.value })
+          }
           className="input font-mono text-sm"
         />
       </div>
-      <div className="mt-3 text-xs text-ink-faint">
-        For now, set <code className="code-inline">MATHPIX_APP_ID</code> and{' '}
-        <code className="code-inline">MATHPIX_APP_KEY</code> in your environment.
-      </div>
-    </ProviderCardShell>
+
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={!canSave || isSaving}
+        className="btn-primary px-4 py-2 text-sm"
+      >
+        {isSaving ? '...' : 'Save credentials'}
+      </button>
+    </div>
   )
 }
 
-function MinerUCard(): JSX.Element {
+function MinerUCard({ parser }: { parser: Parser | undefined }): JSX.Element {
+  const available = parser?.available ?? false
+  const installHint = parser?.install_hint
   return (
-    <ProviderCardShell
-      available={false}
-      displayName="MinerU"
-      runtime="local"
-      description="Local PDF → Markdown model"
-    >
+    <div className="card px-5 py-5">
+      <div className="flex items-center gap-3 mb-4">
+        <StatusDot available={available} />
+        <span className="text-sm font-medium text-ink">
+          {parser?.display_name ?? 'MinerU'}
+        </span>
+        <span className="text-xs text-ink-faint">
+          {available ? 'installed' : 'not installed'}
+        </span>
+      </div>
+
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-xs text-ink-tertiary">
           <span className="shrink-0">Model</span>
@@ -463,17 +379,21 @@ function MinerUCard(): JSX.Element {
             disabled
             className="flex-1 px-2 py-1 rounded-md bg-paper-100 border border-paper-300 text-ink-tertiary text-xs"
           >
-            <option>mineru-base (not installed)</option>
+            <option>
+              {available ? 'mineru-base' : 'mineru-base (not installed)'}
+            </option>
           </select>
         </div>
 
         <div>
           <div className="flex items-center justify-between text-[11px] text-ink-faint mb-1.5">
-            <span>Not downloaded</span>
+            <span>{available ? 'Installed' : 'Not downloaded'}</span>
             <span className="font-mono">— / —</span>
           </div>
           <div className="h-1.5 rounded-full bg-paper-200 overflow-hidden">
-            <div className="h-full w-0 bg-accent/40 transition-all" />
+            <div
+              className={`h-full ${available ? 'w-full bg-success/50' : 'w-0 bg-accent/40'} transition-all`}
+            />
           </div>
         </div>
 
@@ -488,10 +408,19 @@ function MinerUCard(): JSX.Element {
           </button>
         </div>
       </div>
-      <div className="mt-3 text-xs text-ink-faint">
-        Download management coming soon. Install{' '}
-        <code className="code-inline">mineru</code> CLI manually for now.
-      </div>
-    </ProviderCardShell>
+
+      {!available && installHint && (
+        <div className="mt-3 text-xs text-ink-faint">
+          {installHint}
+        </div>
+      )}
+      {!available && !installHint && (
+        <div className="mt-3 text-xs text-ink-faint">
+          Download management coming soon. Install{' '}
+          <code className="code-inline">mineru</code> CLI manually for now.
+        </div>
+      )}
+    </div>
   )
 }
+

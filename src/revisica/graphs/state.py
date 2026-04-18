@@ -20,6 +20,7 @@ class UnifiedState(TypedDict, total=False):
     source_path: str
     run_dir: str
     config: ReviewConfig
+    parser: str  # "auto", "mineru", "mathpix", "pandoc", "tex-basic", "markdown"
 
     # After ingestion
     document: RevisicaDocument | None
