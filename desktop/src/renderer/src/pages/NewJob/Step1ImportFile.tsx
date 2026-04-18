@@ -48,6 +48,7 @@ export default function Step1ImportFile({
 }: Step1Props): JSX.Element {
   const [isDragOver, setIsDragOver] = useState(false)
   const [unsupportedFlash, setUnsupportedFlash] = useState(false)
+  const [dropErrorFlash, setDropErrorFlash] = useState<string | null>(null)
   const [parsers, setParsers] = useState<ParserInfo[]>([])
   const [isLoadingParsers, setIsLoadingParsers] = useState(true)
 
@@ -82,17 +83,32 @@ export default function Step1ImportFile({
     [dispatch],
   )
 
+  const showDropError = useCallback((message: string): void => {
+    setDropErrorFlash(message)
+    setTimeout(() => setDropErrorFlash(null), 2400)
+  }, [])
+
   const handleDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault()
       setIsDragOver(false)
       const file = event.dataTransfer.files[0]
       if (!file) return
-      const electronFile = file as File & { path?: string }
-      const path = electronFile.path || file.name
+      // Electron 32+ removed File.path; webUtils.getPathForFile is the
+      // replacement. Returns '' for non-local sources (iCloud cloud-only
+      // items, web drags, sandboxed attachments).
+      const rawPath = window.api?.getPathForFile?.(file) ?? ''
+      const path = rawPath.trim()
+      // TODO: Windows — widen the absolute-path check if Windows is added.
+      if (!path || !path.startsWith('/')) {
+        showDropError(
+          "Couldn't read a local path for this file. Drag it from Finder, or use the browse button.",
+        )
+        return
+      }
       acceptPath(path)
     },
-    [acceptPath],
+    [acceptPath, showDropError],
   )
 
   const handleBrowse = useCallback(async (): Promise<void> => {
@@ -148,6 +164,12 @@ export default function Step1ImportFile({
         </div>
       )}
 
+      {dropErrorFlash && (
+        <div className="text-xs text-danger mb-2 font-medium">
+          {dropErrorFlash}
+        </div>
+      )}
+
       <div
         role="button"
         tabIndex={0}
@@ -160,7 +182,7 @@ export default function Step1ImportFile({
             ? 'border-accent bg-accent/5'
             : state.filePath
               ? 'border-success/40 bg-success/[0.03]'
-              : unsupportedFlash
+              : unsupportedFlash || dropErrorFlash
                 ? 'border-danger/60 bg-danger/5'
                 : 'border-paper-300 hover:border-paper-400',
         )}
