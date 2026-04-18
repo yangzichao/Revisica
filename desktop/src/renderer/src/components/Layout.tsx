@@ -13,7 +13,7 @@ interface NavItem {
 const primaryNav: NavItem[] = [
   { to: '/', icon: FilePlus, label: 'New', end: true },
   { to: '/jobs', icon: ListTodo, label: 'Jobs' },
-  { to: '/providers', icon: Zap, label: 'Providers' },
+  { to: '/integrations', icon: Zap, label: 'Integrations' },
 ]
 
 const secondaryNav: NavItem[] = [

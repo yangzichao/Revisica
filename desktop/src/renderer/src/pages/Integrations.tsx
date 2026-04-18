@@ -39,7 +39,7 @@ const EMPTY_MATHPIX: MathpixCreds = { app_id: '', app_key: '' }
 
 // ── Main Component ─────────────────────────────────────────────────
 
-export default function Providers({
+export default function Integrations({
   apiBase,
   apiToken,
 }: {
@@ -199,10 +199,10 @@ export default function Providers({
       <div className="max-w-lg mx-auto px-8 py-12">
         <header className="mb-10">
           <h1 className="font-serif text-2xl font-semibold text-ink tracking-tight">
-            Providers
+            Integrations
           </h1>
           <p className="font-serif text-sm text-ink-tertiary italic mt-1">
-            Configure how Revisica connects to AI models and parsers
+            Connect Revisica to AI models and document parsers
           </p>
         </header>
 

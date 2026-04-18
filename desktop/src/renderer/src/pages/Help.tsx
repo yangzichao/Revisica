@@ -36,14 +36,14 @@ export default function Help(): JSX.Element {
 
         <section className="card px-6 py-5 mb-4">
           <h2 className="font-serif text-base font-semibold text-ink mb-3">
-            Providers
+            Integrations
           </h2>
           <p className="text-sm text-ink-secondary leading-relaxed">
             Revisica uses AI providers (Codex, Claude) to review your paper. In{' '}
             <strong className="text-ink">CLI mode</strong>, it uses your existing
             subscription via the official CLI tools. In{' '}
             <strong className="text-ink">API mode</strong>, it connects via HTTP
-            API keys (configure in the Providers tab).
+            API keys (configure in the Integrations tab).
           </p>
         </section>
 
