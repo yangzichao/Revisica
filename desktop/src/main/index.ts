@@ -3,6 +3,7 @@ import { join } from 'path'
 import { randomBytes } from 'crypto'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { spawn, ChildProcess } from 'child_process'
+import { TRAFFIC_LIGHT_POSITION } from '../shared/window-chrome'
 
 let pythonProcess: ChildProcess | null = null
 const API_PORT = 18321
@@ -128,6 +129,7 @@ function createWindow(): void {
     minHeight: 600,
     show: false,
     titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { ...TRAFFIC_LIGHT_POSITION },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

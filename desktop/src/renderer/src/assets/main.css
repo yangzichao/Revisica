@@ -4,6 +4,11 @@
 
 /* ── Base ─────────────────────────────────────────────────────────── */
 
+:root {
+  /* Overwritten at boot by applyPlatformChrome() — 28px on macOS, 0 elsewhere. */
+  --titlebar-safe-top: 0px;
+}
+
 @layer base {
   * {
     @apply border-paper-300/50;

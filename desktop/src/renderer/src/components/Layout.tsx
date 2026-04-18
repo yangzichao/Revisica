@@ -49,7 +49,10 @@ export default function Layout(): JSX.Element {
       {/* Sidebar */}
       <nav className="w-52 flex flex-col shrink-0 bg-paper-200 border-r border-paper-300 select-none drag-region">
         {/* Brand */}
-        <div className="h-14 flex items-center gap-2.5 px-5 no-drag">
+        <div
+          className="h-14 flex items-center gap-2.5 px-5 no-drag"
+          style={{ marginTop: 'var(--titlebar-safe-top)' }}
+        >
           <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center shadow-subtle">
             <span className="font-serif text-sm font-bold text-white">R</span>
           </div>
