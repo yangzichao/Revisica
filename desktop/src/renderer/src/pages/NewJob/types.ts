@@ -19,8 +19,6 @@ export interface WizardState {
   mode: ReviewMode
   venueProfile: string
   llmProofReview: boolean
-  importedFromRunId: string | null
-  importedAt: string | null
 }
 
 export interface ParserInfo {
@@ -32,17 +30,6 @@ export interface ParserInfo {
   install_hint: string
 }
 
-export interface PreviousRunSummary {
-  run_id: string
-  file_path: string
-  file_name: string
-  mode: string
-  venue_profile: string
-  started_at: string
-  state: string
-  config: Record<string, unknown>
-}
-
 export type WizardAction =
   | { type: 'SET_FILE'; filePath: string; fileType: FileType }
   | { type: 'CLEAR_FILE' }
@@ -52,7 +39,6 @@ export type WizardAction =
   | { type: 'SET_MODE'; mode: ReviewMode }
   | { type: 'SET_VENUE'; venue: string }
   | { type: 'TOGGLE_LLM_PROOF'; value: boolean }
-  | { type: 'IMPORT_FROM_RUN'; run: PreviousRunSummary }
   | { type: 'GO_NEXT' }
   | { type: 'GO_BACK' }
   | { type: 'GO_TO_STEP'; step: WizardStep }

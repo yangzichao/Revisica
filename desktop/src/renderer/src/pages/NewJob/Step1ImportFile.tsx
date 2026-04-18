@@ -7,13 +7,9 @@ import {
   FileCode,
   FileText,
   FileType2,
-  History,
-  ChevronDown,
-  ChevronUp,
   Clipboard,
   ClipboardCheck,
   Loader2,
-  ArrowRight,
   RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -23,7 +19,6 @@ import type {
   FileType,
   ParserChoice,
   ParserInfo,
-  PreviousRunSummary,
   WizardState,
   WizardAction,
 } from './types'
@@ -55,7 +50,6 @@ export default function Step1ImportFile({
   const [unsupportedFlash, setUnsupportedFlash] = useState(false)
   const [parsers, setParsers] = useState<ParserInfo[]>([])
   const [isLoadingParsers, setIsLoadingParsers] = useState(true)
-  const [showHistory, setShowHistory] = useState(false)
 
   const fetchParsers = useCallback(async (): Promise<void> => {
     try {
@@ -137,51 +131,16 @@ export default function Step1ImportFile({
         </p>
       </header>
 
-      {/* Top row: supported formats + import history */}
-      <div className="flex items-center justify-between mb-4">
-        <div
-          className={cn(
-            'flex items-center gap-2 transition-colors duration-150',
-            unsupportedFlash && 'text-danger',
-          )}
-        >
-          <FormatChip
-            icon={FileType2}
-            label="PDF"
-            flash={unsupportedFlash}
-          />
-          <FormatChip
-            icon={FileCode}
-            label="TeX"
-            flash={unsupportedFlash}
-          />
-          <FormatChip
-            icon={FileText}
-            label="Markdown"
-            flash={unsupportedFlash}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowHistory((v) => !v)}
-          className="btn-ghost px-2.5 py-1.5 text-xs"
-        >
-          <History size={13} />
-          Import from a previous job
-          {showHistory ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
+      <div
+        className={cn(
+          'flex items-center gap-2 mb-4 transition-colors duration-150',
+          unsupportedFlash && 'text-danger',
+        )}
+      >
+        <FormatChip icon={FileType2} label="PDF" flash={unsupportedFlash} />
+        <FormatChip icon={FileCode} label="TeX" flash={unsupportedFlash} />
+        <FormatChip icon={FileText} label="Markdown" flash={unsupportedFlash} />
       </div>
-
-      {showHistory && (
-        <PreviousJobsList
-          apiBase={apiBase}
-          apiToken={apiToken}
-          onImport={(run) => {
-            dispatch({ type: 'IMPORT_FROM_RUN', run })
-            setShowHistory(false)
-          }}
-        />
-      )}
 
       {unsupportedFlash && (
         <div className="text-xs text-danger mb-2 font-medium">
@@ -225,11 +184,6 @@ export default function Step1ImportFile({
             <span className="font-mono text-sm text-ink truncate max-w-xs">
               {state.filePath.split('/').pop()}
             </span>
-            {state.importedFromRunId && state.importedAt && (
-              <span className="text-xs text-ink-tertiary italic">
-                imported {formatRelativeDate(state.importedAt)}
-              </span>
-            )}
             <button
               type="button"
               onClick={(event) => {
@@ -563,148 +517,3 @@ function ReadyParserRow({
   )
 }
 
-// ── Previous jobs list ────────────────────────────────────────────────
-
-function PreviousJobsList({
-  apiBase,
-  apiToken,
-  onImport,
-}: {
-  apiBase: string
-  apiToken: string
-  onImport: (run: PreviousRunSummary) => void
-}): JSX.Element {
-  const [runs, setRuns] = useState<PreviousRunSummary[] | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    const load = async (): Promise<void> => {
-      const rawIds = localStorage.getItem('revisica_run_ids')
-      let ids: string[] = []
-      try {
-        const parsed = rawIds ? JSON.parse(rawIds) : []
-        if (Array.isArray(parsed)) {
-          ids = parsed.filter((id): id is string => typeof id === 'string')
-        }
-      } catch {
-        ids = []
-      }
-      ids = ids.slice(0, 20)
-
-      const results = await Promise.all(
-        ids.map(async (id): Promise<PreviousRunSummary | null> => {
-          try {
-            const response = await apiFetch(apiBase, apiToken, `/api/status/${id}`)
-            if (!response.ok) return null
-            const data = await response.json()
-            if (data.state !== 'completed') return null
-            const config = (data.config || {}) as Record<string, unknown>
-            const filePath = String(config.file_path ?? '')
-            if (!filePath) return null
-            const fileName = filePath.split('/').pop() || filePath
-            return {
-              run_id: data.run_id,
-              file_path: filePath,
-              file_name: fileName,
-              mode: String(config.mode ?? 'review'),
-              venue_profile: String(config.venue_profile ?? 'general-academic'),
-              started_at: data.started_at,
-              state: data.state,
-              config,
-            }
-          } catch {
-            return null
-          }
-        }),
-      )
-
-      // Promise.all preserves input order, so the most-recent-first ordering
-      // from localStorage carries through.
-      const fetched = results.filter(
-        (r): r is PreviousRunSummary => r !== null,
-      )
-
-      if (!cancelled) {
-        setRuns(fetched)
-        setIsLoading(false)
-      }
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [apiBase, apiToken])
-
-  return (
-    <div className="card mb-4 divide-y divide-paper-300/60">
-      {isLoading ? (
-        <div className="flex items-center gap-2 text-xs text-ink-tertiary px-4 py-3">
-          <Loader2 size={12} className="animate-spin" />
-          Loading recent jobs...
-        </div>
-      ) : runs && runs.length === 0 ? (
-        <div className="text-xs text-ink-tertiary px-4 py-3 italic">
-          No completed jobs yet — start your first one below.
-        </div>
-      ) : (
-        runs?.map((run) => (
-          <div
-            key={run.run_id}
-            className="flex items-center gap-3 px-4 py-3"
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-ink truncate max-w-[200px]">
-                  {run.file_name}
-                </span>
-                <span className="text-[10px] uppercase tracking-wider text-ink-tertiary">
-                  {run.mode === 'polish'
-                    ? 'Polish'
-                    : `Review · ${run.venue_profile}`}
-                </span>
-              </div>
-              <div className="text-[11px] text-ink-faint font-mono mt-0.5">
-                {formatTimestamp(run.started_at)}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => onImport(run)}
-              className="btn-ghost px-3 py-1.5 text-xs"
-            >
-              Use
-              <ArrowRight size={12} />
-            </button>
-          </div>
-        ))
-      )}
-    </div>
-  )
-}
-
-function formatTimestamp(iso: string): string {
-  try {
-    const d = new Date(iso)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    const hours = String(d.getHours()).padStart(2, '0')
-    const mins = String(d.getMinutes()).padStart(2, '0')
-    return `${year}-${month}-${day} ${hours}:${mins}`
-  } catch {
-    return iso
-  }
-}
-
-function formatRelativeDate(iso: string): string {
-  try {
-    const d = new Date(iso)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  } catch {
-    return iso
-  }
-}
