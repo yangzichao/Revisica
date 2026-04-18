@@ -1,4 +1,5 @@
-import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { CheckCircle2, ChevronDown, ChevronUp, Loader2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface Provider {
@@ -59,6 +60,49 @@ export function TestResultBadge({
   )
 }
 
+export function CollapsibleProviderCard({
+  name,
+  statusLabel,
+  available,
+  defaultExpanded = false,
+  children,
+}: {
+  name: string
+  statusLabel: string
+  available: boolean
+  defaultExpanded?: boolean
+  children: ReactNode
+}): JSX.Element {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+
+  return (
+    <div className="card overflow-hidden">
+      <button
+        type="button"
+        aria-expanded={isExpanded}
+        onClick={() => setIsExpanded((previous) => !previous)}
+        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-paper-100/60 transition-colors"
+      >
+        <StatusDot available={available} />
+        <div className="flex-1 min-w-0 flex items-baseline gap-2">
+          <span className="text-sm font-medium text-ink truncate">{name}</span>
+          <span className="text-xs text-ink-faint shrink-0">{statusLabel}</span>
+        </div>
+        {isExpanded ? (
+          <ChevronUp size={14} className="text-ink-faint shrink-0" strokeWidth={1.8} />
+        ) : (
+          <ChevronDown size={14} className="text-ink-faint shrink-0" strokeWidth={1.8} />
+        )}
+      </button>
+      {isExpanded && (
+        <div className="px-5 pb-5 pt-4 border-t border-paper-200/70">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function CliProviderRow({
   provider,
   state,
@@ -69,27 +113,24 @@ export function CliProviderRow({
   onTest: () => void
 }): JSX.Element {
   return (
-    <div className="card flex items-center gap-3 px-4 py-3.5">
-      <StatusDot available={provider.available} />
-      <div className="flex-1 min-w-0">
-        <span className="text-sm font-medium text-ink">
-          {provider.display_name}
-        </span>
-        <span className="text-xs text-ink-faint ml-2">
-          {provider.available ? 'ready' : 'not found'}
-        </span>
+    <CollapsibleProviderCard
+      name={provider.display_name}
+      statusLabel={provider.available ? 'ready' : 'not found'}
+      available={provider.available}
+    >
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onTest}
+          disabled={state.isTesting}
+          className="btn-ghost px-3 py-1.5"
+        >
+          {state.isTesting && <Loader2 size={12} className="animate-spin" />}
+          Test
+        </button>
+        {state.testResult && <TestResultBadge result={state.testResult} />}
       </div>
-      <button
-        type="button"
-        onClick={onTest}
-        disabled={state.isTesting}
-        className="btn-ghost px-3 py-1.5"
-      >
-        {state.isTesting && <Loader2 size={12} className="animate-spin" />}
-        Test
-      </button>
-      {state.testResult && <TestResultBadge result={state.testResult} />}
-    </div>
+    </CollapsibleProviderCard>
   )
 }
 
@@ -107,17 +148,11 @@ export function ApiProviderCard({
   onTest: () => void
 }): JSX.Element {
   return (
-    <div className="card px-5 py-5">
-      <div className="flex items-center gap-3 mb-4">
-        <StatusDot available={provider.available} />
-        <span className="text-sm font-medium text-ink">
-          {provider.display_name}
-        </span>
-        <span className="text-xs text-ink-faint">
-          {provider.available ? 'ready' : 'needs API key'}
-        </span>
-      </div>
-
+    <CollapsibleProviderCard
+      name={provider.display_name}
+      statusLabel={provider.available ? 'ready' : 'needs API key'}
+      available={provider.available}
+    >
       <div className="flex gap-2 mb-3">
         <input
           type="password"
@@ -148,6 +183,6 @@ export function ApiProviderCard({
         </button>
         {state.testResult && <TestResultBadge result={state.testResult} />}
       </div>
-    </div>
+    </CollapsibleProviderCard>
   )
 }

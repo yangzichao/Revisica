@@ -12,9 +12,9 @@ import { apiFetch } from '@/lib/api'
 import {
   ApiProviderCard,
   CliProviderRow,
+  CollapsibleProviderCard,
   EMPTY_CARD_STATE,
   isApiProvider,
-  StatusDot,
   type Provider,
   type ProviderCardState,
 } from '@/components/ProviderCard'
@@ -313,17 +313,11 @@ function MathPixCard({
   const available = parser?.available ?? false
   const canSave = creds.app_id.trim() !== '' && creds.app_key.trim() !== ''
   return (
-    <div className="card px-5 py-5">
-      <div className="flex items-center gap-3 mb-4">
-        <StatusDot available={available} />
-        <span className="text-sm font-medium text-ink">
-          {parser?.display_name ?? 'MathPix'}
-        </span>
-        <span className="text-xs text-ink-faint">
-          {available ? 'ready' : 'needs credentials'}
-        </span>
-      </div>
-
+    <CollapsibleProviderCard
+      name={parser?.display_name ?? 'MathPix'}
+      statusLabel={available ? 'ready' : 'needs credentials'}
+      available={available}
+    >
       <div className="space-y-2 mb-3">
         <input
           type="password"
@@ -353,7 +347,7 @@ function MathPixCard({
       >
         {isSaving ? '...' : 'Save credentials'}
       </button>
-    </div>
+    </CollapsibleProviderCard>
   )
 }
 
@@ -361,17 +355,11 @@ function MinerUCard({ parser }: { parser: Parser | undefined }): JSX.Element {
   const available = parser?.available ?? false
   const installHint = parser?.install_hint
   return (
-    <div className="card px-5 py-5">
-      <div className="flex items-center gap-3 mb-4">
-        <StatusDot available={available} />
-        <span className="text-sm font-medium text-ink">
-          {parser?.display_name ?? 'MinerU'}
-        </span>
-        <span className="text-xs text-ink-faint">
-          {available ? 'installed' : 'not installed'}
-        </span>
-      </div>
-
+    <CollapsibleProviderCard
+      name={parser?.display_name ?? 'MinerU'}
+      statusLabel={available ? 'installed' : 'not installed'}
+      available={available}
+    >
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-xs text-ink-tertiary">
           <span className="shrink-0">Model</span>
@@ -420,7 +408,7 @@ function MinerUCard({ parser }: { parser: Parser | undefined }): JSX.Element {
           <code className="code-inline">mineru</code> CLI manually for now.
         </div>
       )}
-    </div>
+    </CollapsibleProviderCard>
   )
 }
 
