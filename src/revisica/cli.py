@@ -62,6 +62,7 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_benchmark_proofnet_parser(sub)
     _add_benchmark_run_parser(sub)
     _add_benchmark_refine_parser(sub)
+    _add_benchmark_ingestion_parser(sub)
 
     return parser
 
@@ -273,6 +274,66 @@ def _add_benchmark_refine_parser(sub: argparse._SubParsersAction) -> None:
                    help="Per-provider timeout (default 300s for longer papers).")
 
 
+def _add_benchmark_ingestion_parser(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser(
+        "benchmark-ingestion",
+        help="Benchmark PDF/tex parsers (Pandoc, tex-basic, MinerU per-backend, Mathpix) "
+             "against arXiv ground truth.",
+        description=(
+            "Runs every selected parser on the same arXiv corpus and writes a "
+            "leaderboard comparing correctness (title/authors/abstract match) "
+            "and structural quality (math extraction, clean headings, leftover "
+            "LaTeX). First run downloads PDFs from arXiv (~4s/paper throttled) "
+            "and fetches ground-truth metadata from the arXiv API."
+        ),
+    )
+    p.add_argument(
+        "--parsers", nargs="+", default=["all"],
+        help="Parsers to run. Tokens: 'all' (every default parser except "
+             "Mathpix), 'mineru' (all three MinerU backends), or explicit "
+             "keys like 'pandoc', 'tex-basic', 'mineru:pipeline', 'mineru:vlm', "
+             "'mineru:hybrid', 'mathpix'. Mathpix is NOT in 'all' because it "
+             "costs money — opt in explicitly."
+    )
+    p.add_argument(
+        "--limit", type=int, default=3,
+        help="Number of arXiv papers from the corpus manifest to benchmark. "
+             "Default 3 keeps a full MinerU run under ~15 minutes."
+    )
+    p.add_argument(
+        "--paper-id", action="append", default=[],
+        help="Specific arxiv id(s) to run (repeatable). Overrides --limit."
+    )
+    p.add_argument(
+        "--fixtures-root",
+        default="tests/fixtures/arxiv",
+        help="Directory with manifest.json and per-paper subfolders."
+    )
+    p.add_argument(
+        "--ground-truth-dir",
+        default="benchmarks/ingestion/ground_truth",
+        help="Directory used to cache arXiv API responses."
+    )
+    p.add_argument(
+        "--skip-ground-truth", action="store_true",
+        help="Skip arXiv API lookups; only record structural metrics."
+    )
+    p.add_argument(
+        "--no-pdf-download", action="store_true",
+        help="Do not fetch missing PDFs from arXiv (useful for offline runs)."
+    )
+    p.add_argument(
+        "--timeout-seconds", type=int, default=900,
+        help="Per-parser subprocess timeout. MinerU VLM on MPS often needs "
+             "several minutes per paper."
+    )
+    p.add_argument(
+        "--output-dir",
+        help="Where to write leaderboard/per_paper/artifacts. Defaults to "
+             "benchmarks/ingestion/runs/<timestamp>/."
+    )
+
+
 # ── command handlers ─────────────────────────────────────────────────
 
 
@@ -470,6 +531,68 @@ def _handle_benchmark_refine(args: argparse.Namespace) -> None:
     print(f"summary: {result.report_dir / 'benchmark_summary.md'}")
 
 
+def _handle_benchmark_ingestion(args: argparse.Namespace) -> None:
+    from datetime import datetime
+
+    from .eval.ingestion import (
+        build_default_adapters,
+        expand_parser_selection,
+        load_corpus,
+        run_ingestion_benchmark,
+    )
+
+    fixtures_root = Path(args.fixtures_root).expanduser().resolve()
+    ground_truth_dir = Path(args.ground_truth_dir).expanduser().resolve()
+
+    paper_ids = list(args.paper_id) if args.paper_id else None
+    entries = load_corpus(
+        fixtures_root,
+        limit=None if paper_ids else args.limit,
+        paper_ids=paper_ids,
+    )
+    if not entries:
+        print("error: no corpus entries selected")
+        raise SystemExit(1)
+
+    all_adapters = build_default_adapters(mineru_timeout_seconds=args.timeout_seconds)
+    try:
+        selected_adapters = expand_parser_selection(
+            args.parsers, all_adapters=all_adapters
+        )
+    except ValueError as error:
+        print(f"error: {error}")
+        raise SystemExit(1)
+    if not selected_adapters:
+        print("error: no parsers selected")
+        raise SystemExit(1)
+
+    if args.output_dir:
+        output_dir = Path(args.output_dir).expanduser().resolve()
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        output_dir = Path("benchmarks/ingestion/runs") / timestamp
+        output_dir = output_dir.resolve()
+
+    print("environment check: ingestion benchmark")
+    print(f"papers: {len(entries)} ({', '.join(e.arxiv_id for e in entries)})")
+    print(f"parsers: {', '.join(a.key for a in selected_adapters)}")
+    print(f"output dir: {output_dir}")
+
+    run = run_ingestion_benchmark(
+        entries=entries,
+        adapters=selected_adapters,
+        output_dir=output_dir,
+        ground_truth_dir=ground_truth_dir,
+        skip_ground_truth=args.skip_ground_truth,
+        allow_pdf_download=not args.no_pdf_download,
+    )
+
+    successes = sum(1 for cell in run.cells if cell.success)
+    print(f"cells: {successes}/{len(run.cells)} successful")
+    print(f"leaderboard: {output_dir / 'leaderboard.md'}")
+    print(f"per-paper: {output_dir / 'per_paper.md'}")
+
+
 # ── dispatch ─────────────────────────────────────────────────────────
 
 def _handle_ingest(args: argparse.Namespace) -> None:
@@ -515,6 +638,7 @@ _HANDLERS = {
     "benchmark-proofnet": lambda args: _handle_benchmark_proofnet(args),
     "benchmark-run": _handle_benchmark_run,
     "benchmark-refine": _handle_benchmark_refine,
+    "benchmark-ingestion": _handle_benchmark_ingestion,
 }
 
 

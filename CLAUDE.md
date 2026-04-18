@@ -44,6 +44,11 @@ revisica benchmark-run --suite proofnet --mode single-agent --limit 1 --reviewer
 revisica benchmark-refine
 revisica benchmark-refine --reviewer-a claude --use-llm-judge --llm-judge claude:sonnet --timeout-seconds 600
 
+# Ingestion benchmark (parsers vs arXiv ground truth)
+revisica benchmark-ingestion --parsers pandoc tex-basic --limit 3 --skip-ground-truth   # fast .tex-only smoke
+revisica benchmark-ingestion --parsers mineru --limit 2                                   # all three MinerU backends
+revisica benchmark-ingestion --limit 3                                                    # full pandoc + tex-basic + mineru comparison
+
 # Benchmark history
 revisica benchmark-history
 ```
