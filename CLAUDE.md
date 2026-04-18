@@ -104,7 +104,8 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | What | Where |
 |---|---|
 | Task priorities | `docs/todo.md` |
-| Feature specs | `docs/specs/` |
+| Architecture decisions | `docs/decisions/` (ADRs — see `README.md` for playbook) |
+| Feature specs | `docs/specs/` (Design Docs — see `README.md` for playbook) |
 | Experiment learnings | `docs/learning/` (see `README.md` for index) |
 | Architecture details | `docs/current-architecture.md` |
 | Refactoring plan | `docs/architecture-refactor-todo.md` |
@@ -119,4 +120,6 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 
 **Learning file format**: `docs/learning/YYYY-MM-DD-<slug>.md` — must include date, commit, observation, lesson, architecture implications.
 
-**Spec file format**: `docs/specs/<feature-name>.md` — must include status, problem, design, implementation plan, acceptance criteria.
+**Decision format**: `docs/decisions/NNNN-<slug>.md` — Michael Nygard ADR (Title / Status / Context / Decision / Consequences), numbered sequentially, immutable once Accepted. See `docs/decisions/README.md` for when to write one and how.
+
+**Spec file format**: `docs/specs/<feature-name>.md` — Design Doc with sections: status, problem, design, implementation plan, acceptance criteria. See `docs/specs/README.md` for playbook, template, and boundary with ADRs.
