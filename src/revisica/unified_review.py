@@ -75,7 +75,17 @@ def review_unified(
         "warnings": [],
     })
 
-    return final_state["unified_review_run"]
+    run = final_state.get("unified_review_run")
+    if run is None:
+        warnings = final_state.get("warnings", [])
+        return UnifiedReviewRun(
+            source=source,
+            run_dir=run_dir,
+            writing=None,
+            math=None,
+            warnings=list(warnings),
+        )
+    return run
 
 
 def _make_output_dir(source: Path, output_dir: str | None) -> Path:
