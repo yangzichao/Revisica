@@ -1,0 +1,4 @@
+# Downloaded arXiv PDFs for the ingestion benchmark — fetched on demand
+# into this directory and cached for offline reruns. Not checked in so
+# the repo clone stays small.
+*.pdf

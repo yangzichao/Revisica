@@ -21,6 +21,7 @@ from pathlib import Path
 
 import pytest
 
+from revisica.ingestion.markdown_metrics import detect_leftover_latex_commands
 from revisica.ingestion.registry import parse_document
 
 FIXTURES = Path(__file__).parent / "fixtures" / "arxiv"
@@ -44,16 +45,7 @@ def _evaluate_paper(arxiv_id: str, tex_name: str) -> dict:
     dollar_inline = len(re.findall(r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)", md))
     dollar_display = len(re.findall(r"\$\$", md)) // 2
 
-    # Leftover LaTeX commands that should have been stripped
-    leftover_cmds = set()
-    for cmd in [
-        "\\title{", "\\author{", "\\email{", "\\affiliation{",
-        "\\begin{abstract}", "\\vspace{", "\\hspace{", "\\Huge",
-        "\\includegraphics", "\\caption{", "\\label{",
-        "\\bibliographystyle", "\\bibliography{", "\\bibitem",
-    ]:
-        if cmd in md:
-            leftover_cmds.add(cmd.split("{")[0])
+    leftover_cmds = detect_leftover_latex_commands(md)
 
     # Check section titles for LaTeX remnants
     def collect_titles(sections):

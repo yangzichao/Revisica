@@ -6,6 +6,7 @@ The ``mineru`` CLI works across both 1.x and 2.x versions.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import tempfile
@@ -14,10 +15,32 @@ from pathlib import Path
 from .base import BaseParser
 
 
+MINERU_BACKEND_FLAG_MAP: dict[str, str | None] = {
+    # ``auto`` passes no ``-b`` flag, so the mineru CLI picks its current
+    # default (``hybrid-auto-engine`` as of mineru 2.x). This preserves the
+    # historical behavior of this parser.
+    "auto": None,
+    "pipeline": "pipeline",
+    "vlm": "vlm-auto-engine",
+    "hybrid": "hybrid-auto-engine",
+}
+
+
 class MineruParser(BaseParser):
     """Convert PDF to Markdown using the ``mineru`` CLI."""
 
     name = "mineru"
+
+    def __init__(self, backend: str | None = None, timeout_seconds: int = 900) -> None:
+        env_backend = os.environ.get("REVISICA_MINERU_BACKEND")
+        resolved_backend = backend or env_backend or "auto"
+        if resolved_backend not in MINERU_BACKEND_FLAG_MAP:
+            raise ValueError(
+                f"Unknown MinerU backend '{resolved_backend}'. "
+                f"Expected one of: {sorted(MINERU_BACKEND_FLAG_MAP)}"
+            )
+        self.backend = resolved_backend
+        self.timeout_seconds = timeout_seconds
 
     def can_handle(self, path: Path) -> bool:
         return path.suffix.lower() == ".pdf"
@@ -35,18 +58,23 @@ class MineruParser(BaseParser):
             )
 
         with tempfile.TemporaryDirectory(prefix="revisica_mineru_") as tmp_dir:
+            command = [mineru_bin, "-p", str(path), "-o", tmp_dir]
+            backend_flag = MINERU_BACKEND_FLAG_MAP[self.backend]
+            if backend_flag is not None:
+                command += ["-b", backend_flag]
+
             completed = subprocess.run(
-                [mineru_bin, "-p", str(path), "-o", tmp_dir],
+                command,
                 capture_output=True,
                 text=True,
                 check=False,
-                timeout=300,
+                timeout=self.timeout_seconds,
             )
 
             if completed.returncode != 0:
                 raise RuntimeError(
-                    f"mineru failed (exit={completed.returncode}): "
-                    f"{completed.stderr}"
+                    f"mineru failed (exit={completed.returncode}, "
+                    f"backend={self.backend}): {completed.stderr}"
                 )
 
             # MinerU writes <stem>/<stem>.md inside the output dir
@@ -56,5 +84,6 @@ class MineruParser(BaseParser):
                     return content
 
             raise RuntimeError(
-                f"MinerU produced no Markdown output in {tmp_dir}"
+                f"MinerU produced no Markdown output in {tmp_dir} "
+                f"(backend={self.backend})"
             )

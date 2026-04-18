@@ -197,6 +197,15 @@ class MathpixCredentialsUpdate(BaseModel):
     app_key: str
 
 
+class BenchmarkIngestionStartRequest(BaseModel):
+    parsers: list[str] = ["all"]
+    limit: int = 3
+    paper_ids: Optional[list[str]] = None
+    skip_ground_truth: bool = False
+    no_pdf_download: bool = False
+    timeout_seconds: int = 900
+
+
 # ── endpoints ───────────────────────────────────────────────────────
 
 
@@ -382,6 +391,45 @@ def delete_mineru_model(model_type: str):
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     return {"status": "deleted", "model_type": model_type, **result}
+
+
+@app.get("/api/benchmark/ingestion/parsers", dependencies=AUTH)
+def list_ingestion_benchmark_parsers():
+    """Return every adapter key the ingestion benchmark understands,
+    with availability so the UI can grey out unready parsers."""
+    from .api_benchmark_ingestion import list_available_parsers
+    return {"parsers": list_available_parsers()}
+
+
+@app.get("/api/benchmark/ingestion/status", dependencies=AUTH)
+def get_ingestion_benchmark_status():
+    """Return the current or most recent ingestion benchmark state.
+
+    Returns ``{"state": null}`` when no run has ever been started in
+    this server's lifetime. The UI polls this endpoint for progress.
+    """
+    from dataclasses import asdict
+    from .api_benchmark_ingestion import snapshot_state
+    state = snapshot_state()
+    if state is None:
+        return {"state": None}
+    return {"state": asdict(state)}
+
+
+@app.post("/api/benchmark/ingestion/start", dependencies=AUTH)
+def start_ingestion_benchmark(request: BenchmarkIngestionStartRequest):
+    """Start a new ingestion benchmark run.
+
+    If a run is already in progress, returns that run unchanged rather
+    than queuing another, so double-clicks in the UI do nothing.
+    """
+    from dataclasses import asdict
+    from .api_benchmark_ingestion import start_benchmark
+    try:
+        state = start_benchmark(request.model_dump())
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    return {"state": asdict(state)}
 
 
 @app.put("/api/config/parsers/mathpix/credentials", dependencies=AUTH)

@@ -5,6 +5,7 @@ import {
   Library,
   ListTodo,
   Zap,
+  BarChart3,
   Settings,
   HelpCircle,
 } from 'lucide-react'
@@ -24,6 +25,7 @@ const primaryNav: NavItem[] = [
   { to: '/library', icon: Library, label: 'Library' },
   { to: '/jobs', icon: ListTodo, label: 'Jobs' },
   { to: '/integrations', icon: Zap, label: 'Integrations' },
+  { to: '/benchmarks/ingestion', icon: BarChart3, label: 'Benchmarks' },
 ]
 
 const secondaryNav: NavItem[] = [

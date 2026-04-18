@@ -21,6 +21,8 @@ benchmarks/history.md
 benchmarks/proofnet/
 benchmarks/proofbench/
 benchmarks/processbench/
+benchmarks/ingestion/runs/
+benchmarks/ingestion/ground_truth/
 .hypothesis/
 desktop/node_modules/
 desktop/out/

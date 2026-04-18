@@ -6,6 +6,7 @@ import ParsePage from './pages/Parse/ParsePage'
 import LibraryPage from './pages/Library/LibraryPage'
 import Jobs from './pages/Jobs'
 import Integrations from './pages/Integrations'
+import IngestionBenchmarkPage from './pages/Benchmarks/IngestionBenchmarkPage'
 import Settings from './pages/Settings'
 import Help from './pages/Help'
 
@@ -33,6 +34,7 @@ function App(): JSX.Element {
         <Route path="/jobs" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/integrations" element={<Integrations apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/benchmarks/ingestion" element={<IngestionBenchmarkPage apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/settings" element={<Settings apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/help" element={<Help />} />
       </Route>
