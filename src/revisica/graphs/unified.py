@@ -133,16 +133,29 @@ def run_polish(state: UnifiedState) -> dict:
     run_dir = state["run_dir"]
     config = state.get("config")
 
-    polish_graph = compile_polish_graph()
-    polish_result = polish_graph.invoke({
-        "source_path": source_path,
-        "run_dir": run_dir,
-        "config": config,
-        "warnings": [],
-    })
+    polish_warnings: list[str] = []
+    try:
+        polish_graph = compile_polish_graph()
+        polish_result = polish_graph.invoke({
+            "source_path": source_path,
+            "run_dir": run_dir,
+            "config": config,
+            "warnings": [],
+        })
+        polish_warnings.extend(polish_result.get("warnings", []))
+    except Exception as error:
+        polish_warnings.append(f"Polish lane failed: {error}")
 
+    run = UnifiedReviewRun(
+        source=Path(source_path).expanduser().resolve(),
+        run_dir=Path(run_dir),
+        writing=None,
+        math=None,
+        warnings=list(polish_warnings),
+    )
     return {
-        "warnings": polish_result.get("warnings", []),
+        "unified_review_run": run,
+        "warnings": polish_warnings,
     }
 
 
