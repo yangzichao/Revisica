@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Loader2,
   Terminal,
   Cloud,
   FileText,
   Sparkles,
-  CheckCircle2,
+  Download,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import {
@@ -216,7 +218,7 @@ export default function Integrations({
               onChange={setMathpixCreds}
               onSave={handleSaveMathpix}
             />
-            <MinerUCard parser={mineru} />
+            <MinerUCard parser={mineru} apiBase={apiBase} apiToken={apiToken} />
           </div>
         </section>
 
@@ -350,39 +352,250 @@ function MathPixCard({
   )
 }
 
-function MinerUCard({ parser }: { parser: Parser | undefined }): JSX.Element {
-  const available = parser?.available ?? false
+interface MinerUModel {
+  model_type: string
+  display_name: string
+  repo_id: string
+  installed: boolean
+  downloading: boolean
+  size_bytes: number
+  last_error: string | null
+  cache_path: string
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes <= 0) return '—'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unitIndex = 0
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024
+    unitIndex += 1
+  }
+  return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`
+}
+
+function MinerUCard({
+  parser,
+  apiBase,
+  apiToken,
+}: {
+  parser: Parser | undefined
+  apiBase: string
+  apiToken: string
+}): JSX.Element {
+  const cliAvailable = parser?.available ?? false
   const installHint = parser?.install_hint
+  const [models, setModels] = useState<MinerUModel[] | null>(null)
+  const [pendingAction, setPendingAction] = useState<Record<string, 'download' | 'delete' | undefined>>({})
+  const pollRef = useRef<number | null>(null)
+
+  const fetchModels = async (): Promise<MinerUModel[] | null> => {
+    try {
+      const response = await apiFetch(
+        apiBase,
+        apiToken,
+        '/api/config/parsers/mineru/models',
+      )
+      if (!response.ok) return null
+      const data = await response.json()
+      setModels(data.models)
+      return data.models as MinerUModel[]
+    } catch {
+      return null
+    }
+  }
+
+  useEffect(() => {
+    if (!cliAvailable) return
+    void fetchModels()
+  }, [cliAvailable, apiBase, apiToken])
+
+  useEffect(() => {
+    if (!models) return
+    const anyDownloading = models.some((model) => model.downloading)
+    if (!anyDownloading) {
+      if (pollRef.current !== null) {
+        window.clearInterval(pollRef.current)
+        pollRef.current = null
+      }
+      return
+    }
+    if (pollRef.current !== null) return
+    pollRef.current = window.setInterval(() => {
+      void fetchModels()
+    }, 2000)
+    return () => {
+      if (pollRef.current !== null) {
+        window.clearInterval(pollRef.current)
+        pollRef.current = null
+      }
+    }
+  }, [models])
+
+  const handleDownload = async (modelType: string): Promise<void> => {
+    setPendingAction((prev) => ({ ...prev, [modelType]: 'download' }))
+    try {
+      await apiFetch(
+        apiBase,
+        apiToken,
+        `/api/config/parsers/mineru/models/${modelType}/download`,
+        { method: 'POST' },
+      )
+      await fetchModels()
+    } finally {
+      setPendingAction((prev) => ({ ...prev, [modelType]: undefined }))
+    }
+  }
+
+  const handleDelete = async (modelType: string): Promise<void> => {
+    const confirmed = window.confirm(
+      `Delete the cached ${modelType} model? You can re-download it later.`,
+    )
+    if (!confirmed) return
+    setPendingAction((prev) => ({ ...prev, [modelType]: 'delete' }))
+    try {
+      await apiFetch(
+        apiBase,
+        apiToken,
+        `/api/config/parsers/mineru/models/${modelType}`,
+        { method: 'DELETE' },
+      )
+      await fetchModels()
+    } finally {
+      setPendingAction((prev) => ({ ...prev, [modelType]: undefined }))
+    }
+  }
+
+  const overallStatusLabel = ((): string => {
+    if (!cliAvailable) return 'not installed'
+    if (!models) return 'checking…'
+    if (models.some((model) => model.downloading)) return 'downloading…'
+    const installedCount = models.filter((model) => model.installed).length
+    if (installedCount === 0) return 'CLI ready · no models'
+    if (installedCount === models.length) return 'installed'
+    return `${installedCount}/${models.length} models`
+  })()
+
+  const overallAvailable =
+    cliAvailable && !!models && models.every((model) => model.installed)
+
   return (
     <CollapsibleProviderCard
       name={parser?.display_name ?? 'MinerU'}
-      statusLabel={available ? 'installed' : 'not installed'}
-      available={available}
+      statusLabel={overallStatusLabel}
+      available={overallAvailable}
     >
-      {available ? (
-        <div className="flex items-start gap-2 text-sm text-ink-secondary">
-          <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" strokeWidth={1.8} />
-          <div className="space-y-1">
-            <div>
-              The <code className="code-inline">mineru</code> CLI is available on your
-              system and manages its own models on first run.
-            </div>
-            <div className="text-xs text-ink-faint">
-              No extra configuration needed here.
-            </div>
-          </div>
-        </div>
-      ) : (
+      {!cliAvailable ? (
         <div className="text-sm text-ink-secondary">
           {installHint ?? (
             <>
               Install the <code className="code-inline">mineru</code> CLI to enable
-              this parser. The CLI will download its own models on first use.
+              this parser. After install, you can download the model(s) here.
             </>
           )}
         </div>
+      ) : models === null ? (
+        <div className="flex items-center gap-2 text-sm text-ink-tertiary">
+          <Loader2 size={14} className="animate-spin" />
+          Checking model cache…
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {models.map((model) => (
+            <MinerUModelRow
+              key={model.model_type}
+              model={model}
+              pendingAction={pendingAction[model.model_type]}
+              onDownload={() => handleDownload(model.model_type)}
+              onDelete={() => handleDelete(model.model_type)}
+            />
+          ))}
+        </div>
       )}
     </CollapsibleProviderCard>
+  )
+}
+
+function MinerUModelRow({
+  model,
+  pendingAction,
+  onDownload,
+  onDelete,
+}: {
+  model: MinerUModel
+  pendingAction: 'download' | 'delete' | undefined
+  onDownload: () => void
+  onDelete: () => void
+}): JSX.Element {
+  const statusText = model.downloading
+    ? 'downloading…'
+    : model.installed
+      ? formatBytes(model.size_bytes)
+      : 'not downloaded'
+  const statusColor = model.downloading
+    ? 'text-accent'
+    : model.installed
+      ? 'text-success'
+      : 'text-ink-faint'
+
+  return (
+    <div className="rounded-md border border-paper-200 bg-paper-50 px-3 py-2.5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-ink truncate">
+            {model.display_name}
+          </div>
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] min-w-0">
+            <span className={`${statusColor} font-medium whitespace-nowrap shrink-0`}>
+              {statusText}
+            </span>
+            <span className="text-ink-faint font-mono truncate min-w-0" title={model.repo_id}>
+              {model.repo_id}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {model.installed ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={model.downloading || pendingAction === 'delete'}
+              className="btn-ghost px-2.5 py-1 text-xs"
+              title="Delete cached model"
+            >
+              {pendingAction === 'delete' ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Trash2 size={12} />
+              )}
+              Delete
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onDownload}
+              disabled={model.downloading || pendingAction === 'download'}
+              className="btn-primary px-2.5 py-1 text-xs"
+              title={`Download via HuggingFace (${model.repo_id})`}
+            >
+              {model.downloading || pendingAction === 'download' ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Download size={12} />
+              )}
+              {model.downloading ? 'Downloading' : 'Download'}
+            </button>
+          )}
+        </div>
+      </div>
+      {model.last_error && !model.downloading && (
+        <div className="mt-2 flex items-start gap-1.5 text-[11px] text-danger">
+          <AlertTriangle size={12} className="shrink-0 mt-0.5" />
+          <span className="break-words">{model.last_error}</span>
+        </div>
+      )}
+    </div>
   )
 }
 
