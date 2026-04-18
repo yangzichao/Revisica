@@ -8,6 +8,7 @@ declare global {
         callback: (config: { apiBase: string; apiToken: string }) => void
       ) => void
       openPaperPicker: () => Promise<string | null>
+      getPathForFile: (file: File) => string
     }
   }
 }
