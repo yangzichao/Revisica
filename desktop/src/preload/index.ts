@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 const api = {
@@ -11,7 +11,11 @@ const api = {
     ipcRenderer.on('api-config', (_event, config) => callback(config))
   },
   openPaperPicker: (): Promise<string | null> =>
-    ipcRenderer.invoke('dialog:open-paper')
+    ipcRenderer.invoke('dialog:open-paper'),
+  // Electron 32+ removed File.path on dropped files; webUtils is the
+  // replacement. Returns '' for non-local sources (iCloud cloud-only,
+  // web drags, sandboxed attachments).
+  getPathForFile: (file: File): string => webUtils.getPathForFile(file)
 }
 
 if (process.contextIsolated) {
