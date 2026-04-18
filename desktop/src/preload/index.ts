@@ -9,7 +9,9 @@ const api = {
     // remounting components don't stack duplicate callbacks.
     ipcRenderer.removeAllListeners('api-config')
     ipcRenderer.on('api-config', (_event, config) => callback(config))
-  }
+  },
+  openPaperPicker: (): Promise<string | null> =>
+    ipcRenderer.invoke('dialog:open-paper')
 }
 
 if (process.contextIsolated) {
