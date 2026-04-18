@@ -1,0 +1,75 @@
+name: build-dmg
+
+on:
+  # Manual trigger for on-demand builds; tag pushes produce a release-ready
+  # artifact on the same runner so the hidden-import gaps caught in CI match
+  # what end users would hit.
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # `macos-14` (and `-latest`, which currently aliases to it) runs on Apple
+    # Silicon — required because the DMG targets arm64 only.
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Freeze Python backend (PyInstaller)
+        env:
+          REVISICA_BUILD_PY: python3.12
+        run: bash scripts/build-python-backend.sh
+
+      - name: Smoke-test frozen backend
+        run: bash scripts/smoke-test-python-backend.sh
+
+      - name: Build Electron DMG (unsigned)
+        working-directory: desktop
+        # Signing + notarization are intentionally skipped here. Wire them
+        # up once Apple Developer credentials are available by adding
+        # CSC_LINK / APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / TEAM_ID as
+        # repo secrets and flipping `notarize: true` in electron-builder.yml.
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npm ci
+          npm run build:mac
+
+      - name: Verify DMG size budget
+        working-directory: desktop
+        # docs/specs/dmg-packaging.md targets "< 200 MB". 220 MB is the hard
+        # fail — wheel bloat from langchain/langgraph releases can push us
+        # over 200 without anything being wrong locally; 220 gives a single
+        # release cycle of headroom before we have to prune the spec file.
+        run: |
+          dmg=$(ls dist/*.dmg | head -n 1)
+          echo "DMG: $dmg"
+          size_mb=$(du -m "$dmg" | awk '{print $1}')
+          echo "Size: ${size_mb} MB"
+          if [[ "$size_mb" -gt 220 ]]; then
+            echo "DMG exceeds 220 MB budget — prune hiddenimports or revisit ADR 0002" >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Revisica-arm64-dmg
+          path: desktop/dist/*.dmg
+          if-no-files-found: error
+          retention-days: 14

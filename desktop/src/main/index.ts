@@ -41,10 +41,17 @@ function getPythonCommand(): { command: string; args: string[] } {
       args: ['-m', 'revisica.api', '--port', String(API_PORT)]
     }
   }
-  // Production: use bundled PyInstaller binary
-  const resourcePath = join(process.resourcesPath, 'resources', 'python-backend')
+  // Production: use the bundled PyInstaller --onedir output. The executable
+  // lives *inside* the directory; pointing Electron at the directory itself
+  // would spawn /bin/sh and fail silently.
+  const backendExecutable = join(
+    process.resourcesPath,
+    'resources',
+    'python-backend',
+    'python-backend'
+  )
   return {
-    command: resourcePath,
+    command: backendExecutable,
     args: ['--port', String(API_PORT)]
   }
 }

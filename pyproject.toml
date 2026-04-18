@@ -32,6 +32,12 @@ test = [
 all = [
   "revisica[api,serve]",
 ]
+# Extras used only when freezing the desktop DMG. Kept out of the regular
+# dev installs so a normal `pip install .` does not drag in the ~40 MB
+# pandoc binary wheel.
+bundle = [
+  "pypandoc-binary>=1.13",
+]
 
 [project.scripts]
 revisica = "revisica.cli:main"

@@ -334,3 +334,62 @@ class TestMathpixParser:
         monkeypatch.delenv("MATHPIX_APP_KEY", raising=False)
         from revisica.ingestion.mathpix_parser import MathpixParser
         assert MathpixParser.is_available() is False
+
+
+# ── Pandoc parser fallback to pypandoc-binary ─────────────────────────
+#
+# When the DMG is installed on a machine with no Homebrew pandoc, the
+# parser must still find the pandoc binary that ships inside PyInstaller
+# via `pypandoc-binary`. These tests exercise the fallback without
+# depending on pandoc actually being on PATH.
+
+
+class TestPandocParserFallback:
+    def test_is_available_uses_path_when_present(self, monkeypatch):
+        from revisica.ingestion import pandoc_parser as pp
+
+        monkeypatch.setattr(pp.shutil, "which", lambda _name: "/opt/homebrew/bin/pandoc")
+        assert pp.PandocParser.is_available() is True
+
+    def test_is_available_falls_back_to_pypandoc(self, monkeypatch):
+        from revisica.ingestion import pandoc_parser as pp
+
+        monkeypatch.setattr(pp.shutil, "which", lambda _name: None)
+        monkeypatch.setattr(pp, "_pypandoc_binary_path", lambda: "/bundled/pandoc")
+        assert pp.PandocParser.is_available() is True
+
+    def test_is_available_returns_false_when_neither_present(self, monkeypatch):
+        from revisica.ingestion import pandoc_parser as pp
+
+        monkeypatch.setattr(pp.shutil, "which", lambda _name: None)
+        monkeypatch.setattr(pp, "_pypandoc_binary_path", lambda: None)
+        assert pp.PandocParser.is_available() is False
+
+    def test_pypandoc_helper_swallows_missing_module(self, monkeypatch):
+        """If pypandoc is not installed at all, the helper returns None."""
+        import builtins
+
+        from revisica.ingestion import pandoc_parser as pp
+
+        real_import = builtins.__import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "pypandoc":
+                raise ImportError("no module")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+        assert pp._pypandoc_binary_path() is None
+
+    def test_pypandoc_helper_swallows_oserror(self, monkeypatch):
+        """`pypandoc.get_pandoc_path` raises OSError when no binary found."""
+        from revisica.ingestion import pandoc_parser as pp
+
+        class FakePypandoc:
+            @staticmethod
+            def get_pandoc_path():
+                raise OSError("No pandoc was found")
+
+        import sys
+        monkeypatch.setitem(sys.modules, "pypandoc", FakePypandoc)
+        assert pp._pypandoc_binary_path() is None

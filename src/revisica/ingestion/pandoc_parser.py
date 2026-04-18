@@ -9,6 +9,24 @@ from pathlib import Path
 from .base import BaseParser
 
 
+def _pypandoc_binary_path() -> str | None:
+    """Return the path to the pandoc binary shipped by `pypandoc-binary`.
+
+    `pypandoc-binary` is pulled in via the `bundle` extra and ends up inside
+    the frozen PyInstaller directory. On a user's machine with no Homebrew
+    pandoc, this is the only pandoc available to the app.
+    """
+    try:
+        import pypandoc
+    except ImportError:
+        return None
+    try:
+        path = pypandoc.get_pandoc_path()
+    except OSError:
+        return None
+    return path or None
+
+
 class PandocParser(BaseParser):
     """Convert LaTeX to Markdown using Pandoc.
 
@@ -24,13 +42,16 @@ class PandocParser(BaseParser):
 
     @classmethod
     def is_available(cls) -> bool:
-        return shutil.which("pandoc") is not None
+        if shutil.which("pandoc") is not None:
+            return True
+        return _pypandoc_binary_path() is not None
 
     def parse(self, path: Path) -> str:
-        pandoc_path = shutil.which("pandoc")
+        pandoc_path = shutil.which("pandoc") or _pypandoc_binary_path()
         if pandoc_path is None:
             raise RuntimeError(
-                "Pandoc is required for .tex input but was not found on PATH.\n"
+                "Pandoc is required for .tex input but was not found on PATH "
+                "or in the bundled pypandoc-binary package.\n"
                 "Install: brew install pandoc (macOS) or apt install pandoc (Linux)"
             )
 
