@@ -55,8 +55,6 @@ const INITIAL_STATE: WizardState = {
   writingModelOverride: null,
   mathModelOverride: null,
   ...loadPersisted(),
-  importedFromRunId: null,
-  importedAt: null,
 }
 
 function defaultParserFor(
@@ -93,8 +91,6 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
         filePath: action.filePath,
         fileType: action.fileType,
         parserChoice: nextParser,
-        importedFromRunId: null,
-        importedAt: null,
       }
     }
     case 'CLEAR_FILE':
@@ -103,8 +99,6 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
         filePath: '',
         fileType: null,
         parserChoice: null,
-        importedFromRunId: null,
-        importedAt: null,
       }
     case 'SET_PARSER':
       return { ...state, parserChoice: action.parser }
@@ -120,25 +114,6 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, venueProfile: action.venue }
     case 'TOGGLE_LLM_PROOF':
       return { ...state, llmProofReview: action.value }
-    case 'IMPORT_FROM_RUN': {
-      const config = action.run.config
-      const filePath = String(config.file_path ?? '')
-      const fileType = detectType(filePath)
-      const parser = pickParserFromConfig(config.parser, fileType)
-      return {
-        ...state,
-        filePath,
-        fileType,
-        parserChoice: parser,
-        mode: config.mode === 'polish' ? 'polish' : 'review',
-        venueProfile: String(config.venue_profile ?? DEFAULT_VENUE_PROFILE),
-        llmProofReview: Boolean(config.llm_proof_review),
-        writingModelOverride: (config.writing_model as string | null) ?? null,
-        mathModelOverride: (config.math_model as string | null) ?? null,
-        importedFromRunId: action.run.run_id,
-        importedAt: action.run.started_at,
-      }
-    }
     case 'GO_NEXT': {
       // UI's NextButton handles validation; here we only clamp bounds.
       if (state.currentStep >= 3) return state
@@ -158,23 +133,6 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
     default:
       return state
   }
-}
-
-function detectType(path: string): WizardState['fileType'] {
-  const l = path.toLowerCase()
-  if (l.endsWith('.pdf')) return 'pdf'
-  if (l.endsWith('.tex')) return 'tex'
-  if (l.endsWith('.md') || l.endsWith('.mmd') || l.endsWith('.markdown')) return 'md'
-  return null
-}
-
-function pickParserFromConfig(
-  parser: unknown,
-  fileType: WizardState['fileType'],
-): ParserChoice {
-  if (fileType === 'tex' || fileType === 'md') return 'auto'
-  if (parser === 'mineru' || parser === 'mathpix') return parser
-  return null
 }
 
 export default function NewJobWizard({
