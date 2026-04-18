@@ -1,7 +1,8 @@
 # Spec: DMG Packaging — Bundling Python Backend + External Tools
 
-**Status:** draft (Pandoc installed locally, benchmark validated)
-**Date:** 2026-04-12
+**Status:** draft
+**First drafted:** 2026-04-12
+**Last revised:** 2026-04-17 (pyproject alignment, hidden-import widening, smoke-test criteria)
 
 ## Problem
 
@@ -16,15 +17,16 @@ Without bundling, users must install Python 3.10+, `pip install revisica`, and `
 
 **What exists:**
 - `desktop/electron-builder.yml` — configured for DMG, `extraResources` pointing to empty `resources/` dir
-- `desktop/src/main/index.ts` — dev mode: spawns `python3 -m revisica.api`; production mode: expects `resources/python-backend` binary (not yet built)
-- `build/entitlements.mac.plist` — referenced but does not exist yet
-- No PyInstaller spec, no CI pipeline
+- `desktop/src/main/index.ts` — dev mode: spawns `python3 -m revisica.api`; production mode: expects `resources/python-backend/python-backend` binary (not yet built)
+- `pyproject.toml` — declares `requires-python = ">=3.10"` and `langgraph>=0.5` as a core runtime dependency (the graphs subpackage is imported unconditionally by every review path).
+- No `desktop/build/entitlements.mac.plist`, no PyInstaller spec, no CI pipeline.
 
 **What's missing:**
 - PyInstaller build for the Python backend
 - Pandoc binary in app resources
 - Code signing + notarization
 - CI/CD pipeline
+- A working dev-mode fallback for the silent "system python3 is 3.9" trap on fresh macOS installs (`main/index.ts:27-33` currently prefers venv Python if ≥3.10, otherwise drops to plain `python3` — which is often 3.9 on macOS and fails at graph compile with `TypeError: unsupported operand type(s) for |`).
 
 ## Design
 
@@ -68,32 +70,62 @@ Pandoc is embedded inside the Python bundle via `pypandoc-binary` — no separat
 Freeze `revisica.api:main` using `--onedir` mode (faster startup than `--onefile`).
 
 ```bash
-# From project root, with venv activated
+# From project root — build with a dedicated venv, NOT the dev venv, so
+# stray local packages don't leak into the bundle.
+/opt/homebrew/bin/python3.12 -m venv .build-venv        # 3.12 has the most
+                                                         # mature wheel matrix
+                                                         # across langchain/
+                                                         # pydantic-core/orjson.
+                                                         # 3.13 works but some
+                                                         # wheels still ship
+                                                         # late.
+source .build-venv/bin/activate
+pip install -e ".[all]"          # sympy + langgraph (base) + fastapi/uvicorn
+                                 # (serve) + anthropic/openai (api)
+pip install pypandoc-binary      # embeds pandoc — PyInstaller picks it up
 pip install pyinstaller
-pip install "revisica[serve]"      # fastapi + uvicorn
-pip install pypandoc-binary        # embeds pandoc binary — PyInstaller picks it up
 
 pyinstaller \
   --name python-backend \
   --onedir \
+  # revisica's own dynamic-ish imports (registries use static `from` so
+  # PyInstaller's analyzer traces them, but listing the leaves makes the
+  # build robust against future refactors and surface registry failures
+  # loudly at build time rather than silently at runtime).
   --hidden-import revisica.ingestion.markdown_parser \
   --hidden-import revisica.ingestion.tex_parser \
   --hidden-import revisica.ingestion.pandoc_parser \
   --hidden-import revisica.ingestion.mineru_parser \
   --hidden-import revisica.ingestion.mathpix_parser \
   --hidden-import revisica.ingestion.marker_parser \
+  # uvicorn protocol auto-detection
   --hidden-import uvicorn.logging \
   --hidden-import uvicorn.loops.auto \
   --hidden-import uvicorn.protocols.http.auto \
   --hidden-import uvicorn.lifespan.on \
+  # langchain/langgraph ecosystem uses lazy-loaded plugins + `if TYPE_CHECKING`
+  # imports that PyInstaller's static analyzer doesn't always trace; pull the
+  # whole trees to be safe. Inflates bundle by ~30-40 MB but avoids whack-a-
+  # mole ModuleNotFoundError at runtime.
+  --collect-submodules langgraph \
+  --collect-submodules langgraph_checkpoint \
+  --collect-submodules langgraph_prebuilt \
+  --collect-submodules langchain_core \
+  --collect-submodules langsmith \
+  --collect-submodules pydantic \
+  --collect-submodules pydantic_core \
+  # data files
   --collect-data revisica \
   --collect-data pypandoc_binary \
+  --collect-data langchain_core \
   src/revisica/api.py
 ```
 
 Output: `dist/python-backend/` directory → copy to `desktop/resources/python-backend/`.
 
 Why `--onedir`: The Python backend is a sidecar process spawned at app startup. `--onedir` avoids the extraction-to-temp-dir step that `--onefile` requires, so the backend starts in ~1s instead of ~5s. The directory is hidden inside the `.app` bundle anyway.
+
+Why Python 3.12 for the build venv: the langchain/langgraph/pydantic-core stack ships arm64 wheels for 3.11 and 3.12 on first-day releases; 3.13/3.14 wheels sometimes lag a few weeks. The dev venv can run 3.13 without penalty (verified in this session), but shipped bundles want the most conservative interpreter with wheel-complete deps. Revisit once 3.13 wheels are universal.
 
 ### Step 2: Pandoc Discovery in Production
 
@@ -176,7 +208,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: pip install ".[all,serve]" pypandoc-binary pyinstaller
+      - run: pip install ".[all]" pypandoc-binary pyinstaller   # [all] = [api,serve]; langgraph is a base dep
       - run: bash scripts/build-python-backend.sh
       - run: cd desktop && npm ci && npm run build:mac
       - run: # sign + notarize
@@ -207,25 +239,38 @@ The app detects these at runtime via `shutil.which()` and env vars. The Settings
 
 ## Implementation Plan
 
-1. [ ] Create `desktop/build/entitlements.mac.plist`
-2. [ ] Add `pypandoc-binary` to `[project.optional-dependencies]` as `bundle` extra
-3. [ ] Update `pandoc_parser.py` — fallback to `pypandoc.get_pandoc_path()` when `shutil.which` fails
-4. [ ] Write `scripts/build-python-backend.sh` — PyInstaller `--onedir` + copy to `desktop/resources/`
-5. [ ] Update `desktop/src/main/index.ts` — production path to `python-backend/python-backend`
-6. [ ] Update `desktop/electron-builder.yml` — arm64 only, remove x64
-7. [ ] Add `desktop/resources/LICENSES/pandoc-GPL2.txt`
-8. [ ] Test: `npm run build:mac` produces working DMG on arm64
-9. [ ] Add code signing + notarization to build script
-10. [ ] Create `.github/workflows/build-dmg.yml`
+Order matters — later steps depend on earlier ones. Do not start step N+1 without the acceptance evidence for step N.
+
+1. [ ] Create `desktop/build/entitlements.mac.plist` with the entitlements listed above.
+2. [ ] Add `pypandoc-binary` to `[project.optional-dependencies]` as a `bundle` extra so `pip install .[bundle]` pulls it during build without polluting regular dev installs.
+3. [ ] Update `src/revisica/ingestion/pandoc_parser.py` — fall back to `pypandoc.get_pandoc_path()` when `shutil.which("pandoc")` returns nothing; add a unit test.
+4. [ ] Write `scripts/build-python-backend.sh` (and a matching `python-backend.spec` if the inline-flags version becomes unwieldy) — fresh build-venv with Python 3.12, installs `.[all,bundle] pyinstaller`, runs PyInstaller, copies `dist/python-backend/` to `desktop/resources/python-backend/`. Script must be idempotent and leave no stale files.
+5. [ ] **Smoke test the frozen binary before touching Electron.** Run `desktop/resources/python-backend/python-backend --port 18999` in a fresh terminal (no venv, no PYTHONPATH), then `curl http://127.0.0.1:18999/api/health` should return `{"status":"ok"}`, `curl -X POST /api/ingest` on a sample `.tex` and `.md` must succeed, `/api/review` must kick off without `ModuleNotFoundError`. If anything fails here, widen `--collect-submodules`, do NOT ship.
+6. [ ] Update `desktop/src/main/index.ts` — production branch's path changes from `resources/python-backend` (a file) to `resources/python-backend/python-backend` (exec inside a folder).
+7. [ ] Update `desktop/electron-builder.yml` — already arm64-only; double-check `extraResources` still mirrors `desktop/resources/`; add any codesign/entitlement stanzas electron-builder needs to pick up the inner binaries.
+8. [ ] Add `desktop/resources/LICENSES/pandoc-GPL2.txt` verbatim from the upstream Pandoc LICENSE file. About dialog gets a link to the Pandoc source repo.
+9. [ ] Full build: `npm run build:mac` produces a DMG that installs, launches, and passes the full acceptance-criteria list on a clean Mac.
+10. [ ] Add codesign + `xcrun notarytool submit --wait` steps to the build script (gated on `APPLE_ID`, `TEAM_ID`, `DEVELOPER_ID` env vars).
+11. [ ] Create `.github/workflows/build-dmg.yml` using `macos-14` (arm64) runners.
 
 ## Acceptance Criteria
 
-- [ ] `npm run build:mac` produces `Revisica-0.1.0-arm64.dmg`
-- [ ] DMG installs and launches on a clean Mac (no Python, no Homebrew)
-- [ ] App can parse `.tex` files (Pandoc works via `pypandoc-binary` in bundle)
-- [ ] App can parse `.md`/`.mmd` files (built-in markdown parser)
-- [ ] `/api/health` responds within 5 seconds of launch (`--onedir` fast startup)
-- [ ] `/api/ingest` with a `.tex` file returns valid RevisicaDocument
-- [ ] DMG size < 200 MB
-- [ ] `LICENSES/pandoc-GPL2.txt` present in bundle
-- [ ] Notarized: passes `spctl --assess --type execute`
+All of these must be green before the spec flips to `done`.
+
+- [ ] `npm run build:mac` produces `Revisica-0.1.0-arm64.dmg`.
+- [ ] DMG installs and launches on a Mac with **no Python, no Homebrew, no pip**.
+- [ ] **Frozen-binary smoke test (runs standalone, not via Electron):**
+  - [ ] `python-backend --port 18999 &` + `curl http://127.0.0.1:18999/api/health` returns 200 within 5 s of launch.
+  - [ ] `curl -X POST /api/ingest` on a `.tex` fixture returns valid JSON with `parser_used: "pandoc"`.
+  - [ ] `curl -X POST /api/ingest` on a `.md` fixture returns valid JSON with `parser_used: "markdown"`.
+  - [ ] `curl -X POST /api/review` on a fixture returns a `run_id` and the `/api/status/{run_id}` reaches `completed` or `failed` (not crashes with `ModuleNotFoundError`).
+- [ ] App launches to first-interactive within ~3 s of DMG double-click (measured manually).
+- [ ] DMG size < 200 MB.
+- [ ] `Revisica.app/Contents/Resources/resources/LICENSES/pandoc-GPL2.txt` present.
+- [ ] Notarized: `spctl --assess --type execute Revisica.app` prints `accepted`.
+
+## References
+
+- Decision source: this spec currently carries the PyInstaller `--onedir` choice inline; extract to a dedicated ADR (`docs/decisions/NNNN-pyinstaller-onedir.md`) before marking `approved` so the rationale is preserved if the bundling approach is ever reconsidered (Nuitka, Briefcase, UV-bundled Python, Tauri migration).
+- Parent: [Desktop app architecture](desktop-app.md).
+- Learning (to be written post-ship): measure the actual DMG size, startup time, and hidden-import holes that only appear in the frozen build — log in `docs/learning/YYYY-MM-DD-dmg-first-ship.md`.
