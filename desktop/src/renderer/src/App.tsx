@@ -6,7 +6,6 @@ import Jobs from './pages/Jobs'
 import Providers from './pages/Providers'
 import Settings from './pages/Settings'
 import Help from './pages/Help'
-import Parse from './pages/Parse'
 
 const DEFAULT_API_BASE = 'http://127.0.0.1:18321'
 
@@ -30,7 +29,6 @@ function App(): JSX.Element {
         <Route path="/jobs" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/providers" element={<Providers apiBase={apiBase} apiToken={apiToken} />} />
-        <Route path="/parse" element={<Parse apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/settings" element={<Settings apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/help" element={<Help />} />
       </Route>
