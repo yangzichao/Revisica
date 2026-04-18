@@ -336,6 +336,45 @@ def _parser_spec_mathpix() -> dict[str, Any]:
     }
 
 
+@app.get("/api/config/parsers/mineru/models", dependencies=AUTH)
+def list_mineru_models():
+    """Return MinerU model install status and on-disk size per model type."""
+    from .ingestion.mineru_models import list_all_models
+    return {"models": list_all_models()}
+
+
+@app.post(
+    "/api/config/parsers/mineru/models/{model_type}/download",
+    dependencies=AUTH,
+)
+def download_mineru_model(model_type: str):
+    """Kick off a background download of a MinerU model."""
+    from .ingestion.mineru_models import start_download
+    try:
+        job = start_download(model_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"status": job.status, "model_type": model_type}
+
+
+@app.delete(
+    "/api/config/parsers/mineru/models/{model_type}",
+    dependencies=AUTH,
+)
+def delete_mineru_model(model_type: str):
+    """Remove the cached model directory for a MinerU model type."""
+    from .ingestion.mineru_models import delete_model
+    try:
+        result = delete_model(model_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return {"status": "deleted", "model_type": model_type, **result}
+
+
 @app.put("/api/config/parsers/mathpix/credentials", dependencies=AUTH)
 def set_mathpix_credentials(update: MathpixCredentialsUpdate):
     if not update.app_id.strip() or not update.app_key.strip():
