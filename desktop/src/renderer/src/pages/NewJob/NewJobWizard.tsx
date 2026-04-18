@@ -1,6 +1,6 @@
 import { useReducer, useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Bookmark, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import type { Provider } from '@/components/ProviderCard'
@@ -16,6 +16,15 @@ import {
   type WizardAction,
   type WizardState,
 } from './types'
+
+interface ResumeContext {
+  id: string
+  title: string
+  parserUsed: string
+  parsedAt: string
+  sourcePath: string
+  sectionCount: number
+}
 
 const LS_KEYS = {
   parser: 'revisica_new_job_parser',
@@ -143,12 +152,16 @@ export default function NewJobWizard({
   apiToken: string
 }): JSX.Element {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isBackendReady, setIsBackendReady] = useState(false)
   const [providers, setProviders] = useState<Provider[]>([])
   const [isLoadingProviders, setIsLoadingProviders] = useState(true)
+  const [resumeContext, setResumeContext] = useState<ResumeContext | null>(null)
+  const [isLoadingResume, setIsLoadingResume] = useState(false)
+  const [resumeError, setResumeError] = useState<string | null>(null)
 
   const fetchProviders = useCallback(async (): Promise<void> => {
     try {
@@ -201,8 +214,73 @@ export default function NewJobWizard({
     load()
   }, [apiBase, apiToken])
 
+  // When launched as `/?parsed=<id>`, pre-load the saved parse and fast-
+  // forward to Step 2 so the user only chooses LLM access + preferences.
+  useEffect(() => {
+    const parsedId = searchParams.get('parsed')
+    if (!parsedId) {
+      setResumeContext(null)
+      return
+    }
+    if (resumeContext && resumeContext.id === parsedId) return
+    let cancelled = false
+    setIsLoadingResume(true)
+    setResumeError(null)
+    const load = async (): Promise<void> => {
+      try {
+        const response = await apiFetch(
+          apiBase,
+          apiToken,
+          `/api/parsed-documents/${encodeURIComponent(parsedId)}`,
+        )
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}))
+          throw new Error(data.detail || `Not found (${response.status})`)
+        }
+        const data = await response.json()
+        if (cancelled) return
+        setResumeContext({
+          id: data.id,
+          title: data.title || '',
+          parserUsed: data.parser_used || 'unknown',
+          parsedAt: data.parsed_at || '',
+          sourcePath: data.source_path || '',
+          sectionCount: data.section_count || 0,
+        })
+        dispatch({
+          type: 'SET_FILE',
+          filePath: data.source_path || data.id,
+          fileType: 'md',
+        })
+        dispatch({ type: 'SET_PARSER', parser: 'auto' })
+        dispatch({ type: 'GO_TO_STEP', step: 1 })
+        dispatch({ type: 'GO_NEXT' })
+      } catch (err) {
+        if (cancelled) return
+        setResumeError(
+          err instanceof Error ? err.message : 'Could not load saved parse',
+        )
+        setResumeContext(null)
+        setSearchParams({}, { replace: true })
+      } finally {
+        if (!cancelled) setIsLoadingResume(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [searchParams, apiBase, apiToken, resumeContext, setSearchParams])
+
+  const handleExitResume = useCallback((): void => {
+    setResumeContext(null)
+    setSearchParams({}, { replace: true })
+    dispatch({ type: 'CLEAR_FILE' })
+    dispatch({ type: 'GO_TO_STEP', step: 1 })
+  }, [setSearchParams])
+
   const handleSubmit = useCallback(async (): Promise<void> => {
-    if (!state.filePath) return
+    if (!resumeContext && !state.filePath) return
     setIsSubmitting(true)
     setErrorMessage(null)
 
@@ -212,18 +290,24 @@ export default function NewJobWizard({
           ? state.parserChoice
           : 'auto'
 
+      const reviewBody: Record<string, unknown> = {
+        mode: state.mode,
+        venue_profile: state.venueProfile,
+        llm_proof_review: state.mode === 'review' && state.llmProofReview,
+        writing_model: state.writingModelOverride,
+        math_model: state.mathModelOverride,
+      }
+      if (resumeContext) {
+        reviewBody.parsed_document_id = resumeContext.id
+      } else {
+        reviewBody.file_path = state.filePath
+        reviewBody.parser = parserForApi
+      }
+
       const response = await apiFetch(apiBase, apiToken, '/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          file_path: state.filePath,
-          mode: state.mode,
-          venue_profile: state.venueProfile,
-          llm_proof_review: state.mode === 'review' && state.llmProofReview,
-          parser: parserForApi,
-          writing_model: state.writingModelOverride,
-          math_model: state.mathModelOverride,
-        }),
+        body: JSON.stringify(reviewBody),
       })
 
       if (!response.ok) {
@@ -268,7 +352,7 @@ export default function NewJobWizard({
     } finally {
       setIsSubmitting(false)
     }
-  }, [state, apiBase, apiToken, navigate])
+  }, [state, apiBase, apiToken, navigate, resumeContext])
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -294,13 +378,36 @@ export default function NewJobWizard({
           </div>
         )}
 
-        {state.currentStep === 1 && (
+        {resumeError && (
+          <div className="card mb-5 bg-danger/5 border-danger/30 px-4 py-3">
+            <div className="text-xs font-semibold text-danger uppercase tracking-wider mb-1">
+              Saved parse unavailable
+            </div>
+            <div className="text-sm text-ink-secondary">{resumeError}</div>
+          </div>
+        )}
+
+        {state.currentStep === 1 && resumeContext && (
+          <ResumeSummaryCard
+            context={resumeContext}
+            onExit={handleExitResume}
+          />
+        )}
+
+        {state.currentStep === 1 && !resumeContext && !isLoadingResume && (
           <Step1ImportFile
             apiBase={apiBase}
             apiToken={apiToken}
             state={state}
             dispatch={dispatch}
           />
+        )}
+
+        {state.currentStep === 1 && isLoadingResume && !resumeContext && (
+          <div className="card flex items-center justify-center gap-2 px-4 py-8 text-sm text-ink-tertiary">
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            Loading saved parse…
+          </div>
         )}
         {state.currentStep === 2 && (
           <Step2LlmAccess
@@ -400,4 +507,65 @@ function nextBlockedHint(state: WizardState, providers: Provider[]): string | nu
     }
   }
   return null
+}
+
+function ResumeSummaryCard({
+  context,
+  onExit,
+}: {
+  context: ResumeContext
+  onExit: () => void
+}): JSX.Element {
+  const fileName = context.sourcePath
+    ? context.sourcePath.split('/').pop() || context.sourcePath
+    : context.id
+  const heading = context.title.trim() || fileName
+  return (
+    <div>
+      <header className="mb-4">
+        <h2 className="font-serif text-xl font-semibold text-ink tracking-tight">
+          Using a saved parse
+        </h2>
+        <p className="font-serif text-sm text-ink-tertiary italic mt-1">
+          No need to re-parse — this document is already ready for review.
+        </p>
+      </header>
+
+      <div className="card px-5 py-4">
+        <div className="flex items-start gap-3">
+          <Bookmark
+            size={16}
+            className="text-success shrink-0 mt-0.5"
+            strokeWidth={1.8}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="font-serif text-base font-semibold text-ink leading-snug">
+              {heading}
+            </div>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-[11px] font-medium">
+                parsed via {context.parserUsed}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-paper-300 bg-paper-50 text-ink-tertiary text-[11px] font-medium">
+                {context.sectionCount} section
+                {context.sectionCount === 1 ? '' : 's'}
+              </span>
+              <span className="font-mono text-[11px] text-ink-faint truncate">
+                {fileName}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onExit}
+            className="btn-ghost px-2 py-1.5 text-xs shrink-0"
+            title="Import a different file instead"
+          >
+            <X size={12} />
+            Use a different file
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
