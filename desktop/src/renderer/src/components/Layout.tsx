@@ -1,5 +1,13 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { FilePlus, ListTodo, Zap, Settings, HelpCircle } from 'lucide-react'
+import {
+  FilePlus,
+  FileSearch,
+  Library,
+  ListTodo,
+  Zap,
+  Settings,
+  HelpCircle,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -12,6 +20,8 @@ interface NavItem {
 
 const primaryNav: NavItem[] = [
   { to: '/', icon: FilePlus, label: 'New', end: true },
+  { to: '/parse', icon: FileSearch, label: 'Parse' },
+  { to: '/library', icon: Library, label: 'Library' },
   { to: '/jobs', icon: ListTodo, label: 'Jobs' },
   { to: '/integrations', icon: Zap, label: 'Integrations' },
 ]

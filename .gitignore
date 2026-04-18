@@ -10,6 +10,7 @@ dist/
 __pycache__/
 *.pyc
 reviews/
+parsed-documents/
 benchmarks/runs/
 benchmarks/math/runs/
 benchmarks/writing/runs/

@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import NewJobWizard from './pages/NewJob/NewJobWizard'
+import ParsePage from './pages/Parse/ParsePage'
+import LibraryPage from './pages/Library/LibraryPage'
 import Jobs from './pages/Jobs'
 import Integrations from './pages/Integrations'
 import Settings from './pages/Settings'
@@ -26,6 +28,8 @@ function App(): JSX.Element {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<NewJobWizard apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/parse" element={<ParsePage apiBase={apiBase} apiToken={apiToken} />} />
+        <Route path="/library" element={<LibraryPage apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/integrations" element={<Integrations apiBase={apiBase} apiToken={apiToken} />} />

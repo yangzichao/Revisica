@@ -9,6 +9,7 @@ import argparse
 import os
 import secrets
 import threading
+import time
 import uuid
 from collections import OrderedDict
 from datetime import datetime
@@ -21,6 +22,13 @@ from pydantic import BaseModel
 
 from .core_types import ProviderModelSpec
 from .ingestion import parse_document
+from .ingestion.storage import (
+    delete_parsed_document,
+    list_parsed_documents,
+    load_parsed_document,
+    normalized_markdown_path,
+    save_parsed_document,
+)
 from .providers import get_registry
 from .providers.provider_config import load_config, save_config
 from .unified_review import review_unified
@@ -156,7 +164,8 @@ def _get_run(run_id: str) -> Optional[RunState]:
 
 
 class ReviewRequest(BaseModel):
-    file_path: str
+    file_path: Optional[str] = None
+    parsed_document_id: Optional[str] = None
     mode: str = "review"
     venue_profile: str = "general-academic"
     custom_instructions: Optional[str] = None
@@ -419,9 +428,16 @@ def _pretty_label(provider: str, model: str) -> str:
 @app.post("/api/ingest", dependencies=AUTH)
 def ingest_document(request: IngestRequest):
     try:
+        start = time.perf_counter()
         document = parse_document(request.file_path, parser=request.parser)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        manifest = save_parsed_document(document, elapsed_ms)
         return {
+            "id": manifest["id"],
+            "parsed_at": manifest["parsed_at"],
+            "elapsed_ms": manifest["elapsed_ms"],
             "parser_used": document.parser_used,
+            "source_path": document.source_path,
             "markdown": document.markdown,
             "title": document.metadata.title,
             "authors": document.metadata.authors,
@@ -441,8 +457,55 @@ def ingest_document(request: IngestRequest):
         raise HTTPException(status_code=400, detail=str(error))
 
 
+@app.get("/api/parsed-documents", dependencies=AUTH)
+def list_parsed_documents_endpoint():
+    return {"parsed_documents": list_parsed_documents()}
+
+
+@app.get("/api/parsed-documents/{parsed_document_id}", dependencies=AUTH)
+def get_parsed_document_endpoint(parsed_document_id: str):
+    try:
+        manifest = load_parsed_document(parsed_document_id)
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+    document = manifest.get("document") or {}
+    metadata = document.get("metadata") or {}
+    return {
+        "id": manifest.get("id"),
+        "parsed_at": manifest.get("parsed_at"),
+        "elapsed_ms": manifest.get("elapsed_ms"),
+        "parser_used": manifest.get("parser_used"),
+        "source_path": manifest.get("source_path"),
+        "markdown": document.get("markdown", ""),
+        "title": metadata.get("title", ""),
+        "authors": metadata.get("authors", []),
+        "abstract": metadata.get("abstract", ""),
+        "section_count": len(document.get("sections", [])),
+        "sections": _flatten_section_dicts(document.get("sections", [])),
+    }
+
+
+@app.delete("/api/parsed-documents/{parsed_document_id}", dependencies=AUTH)
+def delete_parsed_document_endpoint(parsed_document_id: str):
+    try:
+        delete_parsed_document(parsed_document_id)
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    return {"status": "deleted", "id": parsed_document_id}
+
+
 @app.post("/api/review", dependencies=AUTH)
 def start_review(request: ReviewRequest):
+    if not request.file_path and not request.parsed_document_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Either file_path or parsed_document_id is required.",
+        )
     run_id = str(uuid.uuid4())[:8]
     run_state = RunState(run_id, request.model_dump())
     _register_run(run_state)
@@ -518,6 +581,36 @@ def _parse_model_spec(raw: Optional[str]) -> Optional[ProviderModelSpec]:
     return ProviderModelSpec(provider=raw)
 
 
+def _resolve_review_source(request: ReviewRequest) -> dict[str, Optional[str]]:
+    """Pick the file path and parser for a review.
+
+    When ``parsed_document_id`` is provided, we feed ``normalized.md`` back
+    through the markdown passthrough parser — the parse has already happened,
+    so re-parsing is essentially free. We also steer ``output_dir`` so the
+    review artefacts use the *original* source stem rather than "normalized".
+    """
+    if request.parsed_document_id:
+        manifest = load_parsed_document(request.parsed_document_id)
+        normalized_path = normalized_markdown_path(request.parsed_document_id)
+        if not normalized_path.exists():
+            raise FileNotFoundError(
+                f"Normalized markdown missing for parse {request.parsed_document_id!r}"
+            )
+        original_stem = Path(manifest.get("source_path") or "document").stem or "document"
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        output_dir = str(Path.cwd() / "reviews" / f"{original_stem}-unified-{stamp}")
+        return {
+            "file_path": str(normalized_path),
+            "parser": "markdown",
+            "output_dir": output_dir,
+        }
+    return {
+        "file_path": request.file_path,
+        "parser": request.parser,
+        "output_dir": None,
+    }
+
+
 def _execute_review(run_id: str, request: ReviewRequest) -> None:
     """Run a review in a background thread."""
     run_state = _get_run(run_id)
@@ -530,13 +623,16 @@ def _execute_review(run_id: str, request: ReviewRequest) -> None:
         writing_spec = _parse_model_spec(request.writing_model)
         math_spec = _parse_model_spec(request.math_model)
 
+        resolved = _resolve_review_source(request)
+
         review_result = review_unified(
-            file_path=request.file_path,
+            file_path=resolved["file_path"],
+            output_dir=resolved["output_dir"],
             venue_profile=request.venue_profile,
             llm_proof_review=request.llm_proof_review,
             timeout_seconds=request.timeout_seconds,
             mode=request.mode,
-            parser=request.parser,
+            parser=resolved["parser"],
             reviewer_specs=[writing_spec] if writing_spec else None,
             math_reviewer_specs=[math_spec] if math_spec else None,
         )
@@ -566,6 +662,20 @@ def _flatten_sections(sections) -> list:
     for section in sections:
         result.append(section)
         result.extend(_flatten_sections(section.children))
+    return result
+
+
+def _flatten_section_dicts(sections: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Flatten a nested section tree that was serialized to plain dicts."""
+    result: list[dict[str, Any]] = []
+    for section in sections:
+        result.append({
+            "id": section.get("id"),
+            "title": section.get("title", ""),
+            "level": section.get("level", 0),
+            "content": section.get("content", ""),
+        })
+        result.extend(_flatten_section_dicts(section.get("children", []) or []))
     return result
 
 
