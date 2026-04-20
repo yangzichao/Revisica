@@ -26,6 +26,7 @@ from .math_check import (
     write_math_artifacts,
 )
 from .math_llm import run_llm_proof_review
+from .run_dir_helpers import copy_source_into_run_dir
 
 
 def review_math_file(
@@ -59,6 +60,7 @@ def review_math_file(
 
     content = content_override if content_override is not None else source.read_text(encoding="utf-8")
     run_dir = _make_output_dir(source, output_dir)
+    copy_source_into_run_dir(source, run_dir)
     functions = extract_functions(content)
     claims = extract_claims(content, functions)
     theorems = extract_theorem_blocks(content)

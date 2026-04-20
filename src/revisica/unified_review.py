@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .core_types import ProviderModelSpec
 from .math_review import MathReviewRun
+from .run_dir_helpers import copy_source_into_run_dir
 from .writing_review import WritingReviewRun
 
 
@@ -53,6 +54,7 @@ def review_unified(
         raise IsADirectoryError(f"Input path is not a file: {source}")
 
     run_dir = _make_output_dir(source, output_dir)
+    copy_source_into_run_dir(source, run_dir)
 
     mode_enum = ReviewMode.POLISH if mode == "polish" else ReviewMode.REVIEW
     config = ReviewConfig(

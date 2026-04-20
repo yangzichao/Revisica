@@ -17,6 +17,7 @@ from ...claim_extractor import (
 )
 from ...core_types import ProviderModelSpec
 from ...model_router import resolve_model_for_role
+from ...run_dir_helpers import copy_source_into_run_dir
 from ...section_combiner import (
     build_section_combo_task,
     extract_sections,
@@ -91,6 +92,7 @@ def bootstrap_and_extract(state: WritingState) -> dict:
     content = source.read_text(encoding="utf-8")
     run_dir_str = state.get("run_dir", "")
     run_dir = _make_output_dir(source, run_dir_str or None)
+    copy_source_into_run_dir(source, run_dir)
     working_dir = str(source.parent)
     schema_path = _find_codex_file("findings.schema.json")
 
