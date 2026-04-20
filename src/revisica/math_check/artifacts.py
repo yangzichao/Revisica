@@ -36,7 +36,10 @@ def write_math_artifacts(
     payload = {
         "source": str(source),
         "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "functions": [asdict(item) | {"expression": str(item.expression)} for item in functions],
+        "functions": [
+            asdict(item) | {"expression": str(item.expression) if item.expression is not None else ""}
+            for item in functions
+        ],
         "claims": [asdict(item) for item in claims],
         "theorems": [asdict(item) for item in theorems],
         "proofs": [asdict(item) for item in proofs],

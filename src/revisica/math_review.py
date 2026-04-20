@@ -42,14 +42,22 @@ def review_math_file(
     timeout_seconds: int = 120,
     agent_version: str | None = None,
     codex_reasoning_effort: str | None = None,
+    content_override: str | None = None,
 ) -> MathReviewRun:
+    """Run the math review pipeline on a file.
+
+    ``content_override`` lets callers pass pre-parsed / normalized text
+    (for example, Markdown produced by the ingestion layer for a PDF),
+    so the extractors work on the normalized representation instead of
+    the raw bytes on disk.
+    """
     source = Path(file_path).expanduser().resolve()
     if not source.exists():
         raise FileNotFoundError(f"Input file does not exist: {source}")
     if not source.is_file():
         raise IsADirectoryError(f"Input path is not a file: {source}")
 
-    content = source.read_text(encoding="utf-8")
+    content = content_override if content_override is not None else source.read_text(encoding="utf-8")
     run_dir = _make_output_dir(source, output_dir)
     functions = extract_functions(content)
     claims = extract_claims(content, functions)

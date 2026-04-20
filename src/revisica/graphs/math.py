@@ -32,9 +32,17 @@ from .state import MathState
 
 
 def read_and_extract(state: MathState) -> dict:
-    """Read paper and extract math structures."""
-    source_path = state["source_path"]
-    content = Path(source_path).read_text(encoding="utf-8")
+    """Read paper and extract math structures.
+
+    If the state already carries ``content`` (e.g. the normalized
+    Markdown produced by the ingestion layer), we use it instead of
+    re-reading the source file from disk. This avoids discarding the
+    ingestion output for non-.tex inputs.
+    """
+    content = state.get("content")
+    if not content:
+        source_path = state["source_path"]
+        content = Path(source_path).read_text(encoding="utf-8")
 
     functions = extract_functions(content)
     claims = extract_claims(content, functions)

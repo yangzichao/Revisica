@@ -94,12 +94,21 @@ def run_writing_lane(state: UnifiedState) -> dict:
 
 
 def run_math_lane(state: UnifiedState) -> dict:
-    """Run the math review pipeline."""
+    """Run the math review pipeline.
+
+    If the ingestion step produced a :class:`RevisicaDocument`, we reuse
+    its normalized markdown so the extractors see the parsed text (e.g.
+    Markdown derived from a PDF via MinerU/Mathpix) rather than the raw
+    bytes on disk. This matters for non-.tex papers, where re-reading
+    the source file would bypass the ingestion pipeline entirely.
+    """
     source_path = state["source_path"]
     run_dir_base = state["run_dir"]
     config = state.get("config")
+    document = state.get("document")
 
     math_dir = str(Path(run_dir_base) / "math")
+    content_override = document.markdown if document is not None else None
 
     warnings: list[str] = []
     try:
@@ -114,6 +123,7 @@ def run_math_lane(state: UnifiedState) -> dict:
             force_bootstrap=config.force_bootstrap if config else False,
             timeout_seconds=config.timeout_seconds if config else 120,
             agent_version=config.agent_version if config else None,
+            content_override=content_override,
         )
     except Exception as error:
         warnings.append(f"Math review lane failed: {error}")

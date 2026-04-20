@@ -188,6 +188,17 @@ def _check_continuity_claim(
             fix="Inspect the surrounding equations manually.",
             evidence="No matching function definition was available.",
         )
+    if function.expression is None:
+        return MathIssue(
+            line_number=claim.line_number,
+            status="needs-human-check",
+            severity="major",
+            title="Continuity claim references a function known only by type signature",
+            snippet=claim.snippet,
+            explanation="The function was declared via a type signature (e.g. f: X → Y) without a closed-form expression, so continuity cannot be verified symbolically.",
+            fix="Provide the explicit definition of the function or check continuity manually.",
+            evidence=f"Function '{function.name}' has no parsed expression; signature recorded as {function.expression_text!r}.",
+        )
 
     variable = sp.Symbol(function.variable, real=True)
     lower = parse_expr(claim.details["a"], variable_names=[function.variable])
