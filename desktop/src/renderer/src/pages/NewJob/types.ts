@@ -8,12 +8,28 @@ export type WizardStep = 1 | 2 | 3
 
 export type ReviewMode = 'polish' | 'review'
 
+export type Engine = 'claude' | 'gpt'
+
+export interface ModelChoice {
+  value: string
+  label: string
+}
+
+export interface ModelRoutes {
+  backend_mode: string
+  writing: ModelChoice[]
+  math: ModelChoice[]
+}
+
 export interface WizardState {
   filePath: string
   fileType: FileType
   currentStep: WizardStep
   parserChoice: ParserChoice
   backendMode: BackendMode
+  primaryEngine: Engine
+  secondaryEnabled: boolean
+  secondaryEngine: Engine
   writingModelOverride: string | null
   mathModelOverride: string | null
   mode: ReviewMode
@@ -36,6 +52,9 @@ export type WizardAction =
   | { type: 'SET_PARSER'; parser: ParserChoice }
   | { type: 'SET_BACKEND_MODE'; mode: BackendMode }
   | { type: 'SET_MODEL_OVERRIDE'; role: 'writing' | 'math'; value: string | null }
+  | { type: 'SET_PRIMARY_ENGINE'; engine: Engine }
+  | { type: 'SET_SECONDARY_ENABLED'; enabled: boolean }
+  | { type: 'SET_SECONDARY_ENGINE'; engine: Engine }
   | { type: 'SET_MODE'; mode: ReviewMode }
   | { type: 'SET_VENUE'; venue: string }
   | { type: 'TOGGLE_LLM_PROOF'; value: boolean }

@@ -1,75 +1,62 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Sparkles, BookOpen, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
-import { apiFetch } from '@/lib/api'
 import ModeCard from '@/components/ModeCard'
+import EnginePicker from './EnginePicker'
 import { VENUE_PROFILES } from './types'
-import type { WizardState, WizardAction } from './types'
+import type {
+  Engine,
+  ModelChoice,
+  ModelRoutes,
+  WizardAction,
+  WizardState,
+} from './types'
 
 interface Step3Props {
-  apiBase: string
-  apiToken: string
   state: WizardState
   dispatch: React.Dispatch<WizardAction>
+  modelRoutes: ModelRoutes | null
   onSubmit: () => void
   isSubmitting: boolean
   errorMessage: string | null
 }
 
-interface ModelChoice {
-  value: string
-  label: string
-}
-
-interface ModelRoutes {
-  backend_mode: string
-  writing: ModelChoice[]
-  math: ModelChoice[]
-}
-
 export default function Step3Preferences({
-  apiBase,
-  apiToken,
   state,
   dispatch,
+  modelRoutes,
   onSubmit,
   isSubmitting,
   errorMessage,
 }: Step3Props): JSX.Element {
-  const [modelRoutes, setModelRoutes] = useState<ModelRoutes | null>(null)
   const [showOverrides, setShowOverrides] = useState(false)
 
-  useEffect(() => {
-    const load = async (): Promise<void> => {
-      try {
-        const response = await apiFetch(
-          apiBase,
-          apiToken,
-          '/api/config/model-routes',
-        )
-        if (response.ok) {
-          const data = await response.json()
-          setModelRoutes(data)
-        }
-      } catch {
-        // Leave as null — the override dropdowns gracefully degrade
-      }
-    }
-    load()
-    // Refetch when backend mode changes so the candidate list reflects the
-    // provider set the user just picked in Step 2.
-  }, [apiBase, apiToken, state.backendMode])
+  const engineSummary = useMemo(() => {
+    const labelFor = (engine: Engine): string =>
+      engine === 'claude' ? 'Claude' : 'GPT'
+    const effectivelySingle =
+      !state.secondaryEnabled || state.secondaryEngine === state.primaryEngine
+    if (effectivelySingle) return `${labelFor(state.primaryEngine)} only`
+    return `${labelFor(state.primaryEngine)} + ${labelFor(state.secondaryEngine)}`
+  }, [state.primaryEngine, state.secondaryEnabled, state.secondaryEngine])
 
-  const summaryLine = useMemo(() => {
-    const labelFor = (override: string | null, options?: ModelChoice[]): string => {
-      if (!override) return 'Auto'
-      const match = options?.find((o) => o.value === override)
-      return match?.label ?? override
-    }
-    const writing = labelFor(state.writingModelOverride, modelRoutes?.writing)
-    const math = labelFor(state.mathModelOverride, modelRoutes?.math)
-    if (writing === 'Auto' && math === 'Auto') return 'Auto'
-    return `${writing} · ${math}`
-  }, [state.writingModelOverride, state.mathModelOverride, modelRoutes])
+  const hasManualOverride =
+    state.writingModelOverride !== null || state.mathModelOverride !== null
+
+  const handlePrimaryChange = (engine: Engine): void =>
+    dispatch({ type: 'SET_PRIMARY_ENGINE', engine })
+
+  const handleSecondaryEnabledChange = (enabled: boolean): void =>
+    dispatch({ type: 'SET_SECONDARY_ENABLED', enabled })
+
+  const handleSecondaryEngineChange = (engine: Engine): void =>
+    dispatch({ type: 'SET_SECONDARY_ENGINE', engine })
+
+  const handleOverrideChange = (
+    role: 'writing' | 'math',
+    value: string | null,
+  ): void => {
+    dispatch({ type: 'SET_MODEL_OVERRIDE', role, value })
+  }
 
   return (
     <div>
@@ -140,7 +127,19 @@ export default function Step3Preferences({
         </div>
       )}
 
-      {/* Model override disclosure */}
+      {/* Engine picker — primary + optional secondary cross-check */}
+      <div className="mb-5">
+        <EnginePicker
+          primaryEngine={state.primaryEngine}
+          secondaryEnabled={state.secondaryEnabled}
+          secondaryEngine={state.secondaryEngine}
+          onPrimaryChange={handlePrimaryChange}
+          onSecondaryEnabledChange={handleSecondaryEnabledChange}
+          onSecondaryChange={handleSecondaryEngineChange}
+        />
+      </div>
+
+      {/* Advanced model override disclosure — pins a specific model within a family */}
       <div className="mb-6">
         <button
           type="button"
@@ -148,10 +147,13 @@ export default function Step3Preferences({
           className="flex items-center justify-between w-full text-xs uppercase tracking-wider text-ink-tertiary font-semibold py-2 border-none bg-transparent cursor-pointer"
         >
           <span className="flex items-center gap-2">
-            Models: <span className="normal-case tracking-normal text-ink-secondary font-medium">{summaryLine}</span>
+            Models:{' '}
+            <span className="normal-case tracking-normal text-ink-secondary font-medium">
+              {hasManualOverride ? 'Custom override' : engineSummary}
+            </span>
           </span>
           <span className="flex items-center gap-1">
-            Customize
+            Advanced
             {showOverrides ? (
               <ChevronUp size={13} />
             ) : (
@@ -164,24 +166,21 @@ export default function Step3Preferences({
           <div className="card px-4 py-4 mt-2 space-y-4">
             <ModelOverrideRow
               label="Writing model"
-              description="Used for prose, structure, and venue review."
+              description="Pin a specific model for prose, structure, and venue review."
               value={state.writingModelOverride}
               options={modelRoutes?.writing}
-              onChange={(value) =>
-                dispatch({ type: 'SET_MODEL_OVERRIDE', role: 'writing', value })
-              }
+              onChange={(value) => handleOverrideChange('writing', value)}
             />
             <ModelOverrideRow
               label="Math model"
-              description="Used for proof review and adjudication."
+              description="Pin a specific model for proof review and adjudication."
               value={state.mathModelOverride}
               options={modelRoutes?.math}
-              onChange={(value) =>
-                dispatch({ type: 'SET_MODEL_OVERRIDE', role: 'math', value })
-              }
+              onChange={(value) => handleOverrideChange('math', value)}
             />
             <div className="text-[11px] text-ink-faint italic pt-1">
-              Overrides apply to this run only — not saved.
+              Overrides apply to this run only — they replace the engine
+              defaults for the selected lane.
             </div>
           </div>
         )}
