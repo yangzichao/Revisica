@@ -41,6 +41,7 @@ class CodexCliProvider(BaseProvider):
         prompt: str,
         model: str | None = None,
         timeout_seconds: int = 120,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
         cli_path = self._cli_path()
 
@@ -55,6 +56,7 @@ class CodexCliProvider(BaseProvider):
             "--color", "never",
             "--output-last-message", str(output_path),
         ]
+        _append_reasoning_effort(command, codex_reasoning_effort)
         if model:
             command.extend(["--model", model])
 
@@ -108,6 +110,7 @@ class CodexCliProvider(BaseProvider):
         model: str | None = None,
         timeout_seconds: int = 120,
         working_dir: str | None = None,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
         cli_path = self._cli_path()
 
@@ -132,6 +135,9 @@ class CodexCliProvider(BaseProvider):
             "--color", "never",
             "--output-last-message", str(output_path),
         ]
+        # Runtime override wins over agent-level default.
+        effective_effort = codex_reasoning_effort or agent_spec.codex_reasoning_effort
+        _append_reasoning_effort(command, effective_effort)
         if working_dir:
             command.extend(["-C", working_dir])
         if agent_spec.codex_output_schema:
@@ -214,3 +220,19 @@ class CodexCliProvider(BaseProvider):
             )
         finally:
             output_path.unlink(missing_ok=True)
+
+
+_VALID_REASONING_EFFORTS = {"none", "minimal", "low", "medium", "high", "xhigh"}
+
+
+def _append_reasoning_effort(command: list[str], effort: str | None) -> None:
+    """Append ``-c model_reasoning_effort="..."`` to the command if set.
+
+    Unknown values are silently skipped so a stale agent default can't
+    break the whole run — Codex would reject the config at launch.
+    """
+    if not effort:
+        return
+    if effort not in _VALID_REASONING_EFFORTS:
+        return
+    command.extend(["-c", f'model_reasoning_effort="{effort}"'])

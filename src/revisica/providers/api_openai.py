@@ -54,16 +54,26 @@ class OpenAiApiProvider(BaseProvider):
         prompt: str,
         model: str | None = None,
         timeout_seconds: int = 120,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
         client = _get_openai_client()
         resolved_model = model or "gpt-4o"
 
+        create_kwargs: dict[str, object] = {
+            "model": resolved_model,
+            "messages": [{"role": "user", "content": prompt}],
+            "timeout": timeout_seconds,
+        }
+        if codex_reasoning_effort and _supports_reasoning_effort(resolved_model):
+            # OpenAI API accepts "minimal|low|medium|high" on reasoning models;
+            # Codex's extra values ("none", "xhigh") aren't universally accepted,
+            # so map conservatively.
+            mapped = _map_effort_to_openai(codex_reasoning_effort)
+            if mapped:
+                create_kwargs["reasoning_effort"] = mapped
+
         try:
-            response = client.chat.completions.create(
-                model=resolved_model,
-                messages=[{"role": "user", "content": prompt}],
-                timeout=timeout_seconds,
-            )
+            response = client.chat.completions.create(**create_kwargs)
             output_text = response.choices[0].message.content or ""
             return ReviewResult(
                 provider="openai-api",
@@ -90,10 +100,13 @@ class OpenAiApiProvider(BaseProvider):
         model: str | None = None,
         timeout_seconds: int = 120,
         working_dir: str | None = None,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
         """Run a function-calling agent loop using the OpenAI Chat API."""
         client = _get_openai_client()
         resolved_model = model or "gpt-4o"
+
+        effective_effort = codex_reasoning_effort or agent_spec.codex_reasoning_effort
 
         system_message = ""
         if agent_spec.claude_agent_def:
@@ -118,6 +131,10 @@ class OpenAiApiProvider(BaseProvider):
                 }
                 if openai_tools:
                     create_kwargs["tools"] = openai_tools
+                if effective_effort and _supports_reasoning_effort(resolved_model):
+                    mapped = _map_effort_to_openai(effective_effort)
+                    if mapped:
+                        create_kwargs["reasoning_effort"] = mapped
 
                 response = client.chat.completions.create(**create_kwargs)
                 choice = response.choices[0]
@@ -189,3 +206,25 @@ def _build_openai_tools(agent_spec: AgentSpec) -> list[dict]:
         }
         for tool_def in source_tools
     ]
+
+
+# Codex accepts: none|minimal|low|medium|high|xhigh.
+# OpenAI Chat Completions accepts: minimal|low|medium|high (per API docs, 2026-04).
+# We fold xhigh→high and drop "none" since the API has no equivalent.
+_OPENAI_EFFORT_MAP = {
+    "minimal": "minimal",
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "xhigh": "high",
+}
+
+
+def _map_effort_to_openai(codex_effort: str) -> str | None:
+    return _OPENAI_EFFORT_MAP.get(codex_effort)
+
+
+def _supports_reasoning_effort(model: str) -> bool:
+    """Heuristic: o-series and gpt-5-series accept reasoning_effort."""
+    lowered = model.lower()
+    return lowered.startswith(("o1", "o3", "o4", "gpt-5"))

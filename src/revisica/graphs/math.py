@@ -101,6 +101,7 @@ def run_llm_review(state: MathState) -> dict:
             adjudicator_spec=None,
             force_bootstrap=config.force_bootstrap,
             timeout_seconds=config.timeout_seconds,
+            codex_reasoning_effort=config.codex_reasoning_effort,
         )
     )
 

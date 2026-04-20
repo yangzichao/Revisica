@@ -40,6 +40,13 @@ class ReviewConfig:
     adjudicator_spec: ProviderModelSpec | None = None
     agent_version: str | None = None
 
+    # Runtime override for Codex's model_reasoning_effort.
+    # Accepted: none | minimal | low | medium | high | xhigh.
+    # When set, this wins over any per-agent default baked into
+    # AgentDefinition.codex_reasoning_effort. None = let each agent's
+    # default apply (which itself may be None → Codex uses user config).
+    codex_reasoning_effort: str | None = None
+
 
 @dataclass
 class FocusRequest:

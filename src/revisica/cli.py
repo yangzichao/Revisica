@@ -121,6 +121,7 @@ def _add_review_parser(sub: argparse._SubParsersAction) -> None:
                    help="Overwrite existing platform assets when auto-bootstrapping.")
     p.add_argument("--timeout-seconds", type=int, default=120,
                    help="Per-provider timeout in seconds.")
+    _add_codex_reasoning_flag(p)
 
 
 def _add_writing_review_parser(sub: argparse._SubParsersAction) -> None:
@@ -141,6 +142,7 @@ def _add_writing_review_parser(sub: argparse._SubParsersAction) -> None:
                    help="Overwrite existing platform assets when auto-bootstrapping.")
     p.add_argument("--timeout-seconds", type=int, default=120,
                    help="Per-provider timeout for writing-review LLM calls.")
+    _add_codex_reasoning_flag(p)
 
 
 def _add_math_review_parser(sub: argparse._SubParsersAction) -> None:
@@ -157,6 +159,22 @@ def _add_math_review_parser(sub: argparse._SubParsersAction) -> None:
                    help="Overwrite existing platform assets when auto-bootstrapping.")
     p.add_argument("--timeout-seconds", type=int, default=120,
                    help="Per-provider timeout for optional LLM proof review.")
+    _add_codex_reasoning_flag(p)
+
+
+def _add_codex_reasoning_flag(p: argparse.ArgumentParser) -> None:
+    """Shared --codex-reasoning flag for Codex ``model_reasoning_effort``.
+
+    When set, this runtime override wins over any per-agent default (e.g.
+    the proof reviewers default to ``xhigh``). When unset, each agent's
+    own default applies — or falls back to the user's config.toml.
+    """
+    p.add_argument(
+        "--codex-reasoning",
+        choices=["none", "minimal", "low", "medium", "high", "xhigh"],
+        help="Override Codex's model_reasoning_effort for this run "
+             "(xhigh = max; wins over per-agent defaults).",
+    )
 
 
 def _add_benchmark_math_parser(sub: argparse._SubParsersAction) -> None:
@@ -349,6 +367,7 @@ def _handle_review(args: argparse.Namespace) -> None:
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
         mode=getattr(args, "mode", "review"),
+        codex_reasoning_effort=getattr(args, "codex_reasoning", None),
     )
     print("environment check: unified review (writing + math)")
     print(f"unified artifacts: {run.run_dir}")
@@ -382,6 +401,7 @@ def _handle_writing_review(args: argparse.Namespace) -> None:
         judge_spec=parse_provider_model_spec(args.judge),
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
+        codex_reasoning_effort=getattr(args, "codex_reasoning", None),
     )
     print("environment check: multi-agent writing review")
     print(f"writing artifacts: {result.run_dir}")
@@ -406,6 +426,7 @@ def _handle_math_review(args: argparse.Namespace) -> None:
         targets=args.targets,
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
+        codex_reasoning_effort=getattr(args, "codex_reasoning", None),
     )
     refuted = sum(1 for item in run.issues if item.status == "machine-refuted")
     verified = sum(1 for item in run.issues if item.status == "machine-verified")

@@ -72,6 +72,7 @@ def run_polish_agent(state: PolishState) -> dict:
         timeout_seconds=config.timeout_seconds,
         model=provider_spec.model,
         working_dir=str(Path(source_path).parent),
+        codex_reasoning_effort=config.codex_reasoning_effort,
     )
 
     if result.success:

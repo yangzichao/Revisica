@@ -44,3 +44,8 @@ class AgentSpec:
     codex_instructions_path: str | None = None
     codex_output_schema: str | None = None
     codex_sandbox: str = "read-only"
+    # Optional Codex reasoning effort. Accepted values:
+    # none, minimal, low, medium, high, xhigh. When unset, Codex uses the
+    # user's ~/.codex/config.toml default. Runtime overrides (e.g. the
+    # --codex-reasoning CLI flag) take precedence over this agent-level default.
+    codex_reasoning_effort: str | None = None

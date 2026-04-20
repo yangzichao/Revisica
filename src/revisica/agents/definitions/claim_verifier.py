@@ -50,4 +50,7 @@ If the claim checks out, return `{"findings": []}`.
 """,
     tools=["Read", "Glob", "Grep", "Bash"],
     categories=["computation_error", "verified", "inconclusive"],
+    # Numerical claim verification benefits from deep reasoning; default
+    # Codex reasoning effort to xhigh.
+    codex_reasoning_effort="xhigh",
 )
