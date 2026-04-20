@@ -1713,3 +1713,237 @@ class TestNearestFunctionBeforeUnsorted:
         # Unsorted: line 10 before line 5 in list.
         result = nearest_function_before([f1, f2], 12)
         assert result.name == "f"  # line 10 is closest, not line 5
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Markdown / plain-text structure extraction
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestExtractTheoremBlocksMarkdown:
+    """The public extract_theorem_blocks should cover Markdown papers too."""
+
+    def test_all_caps_header_with_colon(self):
+        content = textwrap.dedent("""
+            Some intro paragraph.
+
+            THEOREM 1: Suppose Assumptions 1-3 hold. Then the optimal
+            intervention places weight on the top principal component.
+
+            The rest of the paper discusses implications.
+        """)
+        blocks = extract_theorem_blocks(content)
+        assert len(blocks) == 1
+        assert blocks[0].env_name == "theorem"
+        assert blocks[0].title == "1"
+        assert "Assumptions" in blocks[0].statement
+
+    def test_titlecase_with_period_and_named_title(self):
+        content = textwrap.dedent("""
+            Introduction.
+
+            Theorem 2 (Main Result). For every epsilon greater than zero,
+            the bound holds.
+
+            Remark 1. This is a remark, not a theorem.
+        """)
+        blocks = extract_theorem_blocks(content)
+        # "Theorem 2 (Main Result)." should be picked up; "Remark" is not
+        # in the supported environment set.
+        theorem_blocks = [b for b in blocks if b.env_name == "theorem"]
+        assert len(theorem_blocks) == 1
+        assert theorem_blocks[0].title == "2 — Main Result"
+
+    def test_multiple_markdown_theorems(self):
+        content = textwrap.dedent("""
+            PROPOSITION 1: The first claim.
+
+            Body of prop 1.
+
+            LEMMA 3: The second claim.
+
+            Body of lemma 3.
+
+            COROLLARY 2: The third claim.
+        """)
+        blocks = extract_theorem_blocks(content)
+        env_names = [b.env_name for b in blocks]
+        assert env_names == ["proposition", "lemma", "corollary"]
+
+    def test_bold_markdown_header(self):
+        content = textwrap.dedent("""
+            **Theorem 1.** For every positive real x, we have x > 0.
+
+            End of content.
+        """)
+        blocks = extract_theorem_blocks(content)
+        assert len(blocks) == 1
+        assert blocks[0].env_name == "theorem"
+
+    def test_running_prose_mention_not_matched(self):
+        """'In Theorem 1 we proved ...' should NOT count as a theorem header."""
+        content = "As discussed, Theorem 1: is referenced here in running text."
+        blocks = extract_theorem_blocks(content)
+        assert blocks == []
+
+    def test_markdown_and_latex_coexist(self):
+        content = textwrap.dedent(r"""
+            \begin{theorem}
+            First theorem in LaTeX.
+            \end{theorem}
+
+            THEOREM 2: Second theorem in markdown.
+
+            More text.
+        """)
+        blocks = extract_theorem_blocks(content)
+        assert len(blocks) == 2
+        # Ordered by line number.
+        line_numbers = [b.line_number for b in blocks]
+        assert line_numbers == sorted(line_numbers)
+
+    def test_body_stops_at_next_header(self):
+        content = textwrap.dedent("""
+            THEOREM 1: First statement.
+
+            This belongs to theorem 1.
+
+            LEMMA 2: Second statement.
+
+            This belongs to lemma 2.
+        """)
+        blocks = extract_theorem_blocks(content)
+        theorem_one = next(b for b in blocks if b.env_name == "theorem")
+        assert "belongs to theorem 1" in theorem_one.statement
+        assert "LEMMA 2" not in theorem_one.statement
+        assert "belongs to lemma 2" not in theorem_one.statement
+
+    def test_body_stops_at_proof_header(self):
+        content = textwrap.dedent("""
+            THEOREM 1: Suppose the assumptions hold.
+
+            This is the theorem body.
+
+            PROOF: We wish to solve.
+
+            This is the proof.
+        """)
+        blocks = extract_theorem_blocks(content)
+        assert len(blocks) == 1
+        assert "PROOF" not in blocks[0].statement
+        assert "wish to solve" not in blocks[0].statement
+
+
+class TestExtractProofBlocksMarkdown:
+    def test_proof_with_qed(self):
+        content = textwrap.dedent("""
+            THEOREM 1: Some statement.
+
+            PROOF: We argue as follows. First step. Second step. Q.E.D.
+
+            The paper continues.
+        """)
+        blocks = extract_proof_blocks(content)
+        assert len(blocks) == 1
+        assert "First step" in blocks[0].body
+        assert "continues" not in blocks[0].body
+
+    def test_proof_of_theorem_1_header(self):
+        content = textwrap.dedent("""
+            APPENDIX: PROOFS
+
+            PROOF OF THEOREM 1: We wish to solve the optimization problem.
+            More detailed argument here. Q.E.D.
+
+            PROOF OF PROPOSITION 1: Part 1 shows.
+            Part 2 shows. Q.E.D.
+        """)
+        blocks = extract_proof_blocks(content)
+        assert len(blocks) == 2
+        assert blocks[0].title == "Proof of THEOREM 1"
+        assert blocks[1].title == "Proof of PROPOSITION 1"
+
+    def test_markdown_proof_with_blacksquare(self):
+        content = textwrap.dedent(r"""
+            **Proof.** We expand and simplify. $\blacksquare$
+
+            Next section.
+        """)
+        blocks = extract_proof_blocks(content)
+        assert len(blocks) == 1
+        assert "expand and simplify" in blocks[0].body
+
+    def test_markdown_proof_without_qed_stops_at_next_theorem(self):
+        content = textwrap.dedent("""
+            Proof. We derive the result step by step.
+
+            Step one claim. Step two claim.
+
+            THEOREM 5: Next theorem.
+        """)
+        blocks = extract_proof_blocks(content)
+        assert len(blocks) == 1
+        assert "step by step" in blocks[0].body
+        assert "THEOREM 5" not in blocks[0].body
+
+    def test_markdown_proof_without_terminator(self):
+        """Missing QED but ended by EOF should still produce a block."""
+        content = "PROOF: The result follows from the two lemmas."
+        blocks = extract_proof_blocks(content)
+        assert len(blocks) == 1
+        assert "lemmas" in blocks[0].body
+
+    def test_blueprint_pairs_markdown_theorem_and_proof(self):
+        content = textwrap.dedent("""
+            THEOREM 1: First claim with body.
+
+            PROOF OF THEOREM 1: The argument goes here. Q.E.D.
+
+            THEOREM 2: Second claim.
+        """)
+        theorems = extract_theorem_blocks(content)
+        proofs = extract_proof_blocks(content)
+        blueprints = build_proof_blueprints(theorems, proofs)
+        assert len(blueprints) == 2
+        assert blueprints[0].proof is not None
+        assert "argument goes here" in blueprints[0].proof.body
+        assert blueprints[1].proof is None
+
+
+class TestExtractFunctionsMarkdown:
+    def test_type_signature_produces_entry_without_expression(self):
+        content = textwrap.dedent("""
+            Let f : X → Y be a continuous map.
+
+            Body of text.
+        """)
+        functions = extract_functions(content)
+        names = [f.name for f in functions]
+        assert "f" in names
+        signature_entry = next(f for f in functions if f.name == "f")
+        assert signature_entry.expression is None
+        assert "X → Y" in signature_entry.expression_text
+
+    def test_type_signature_with_backslash_to(self):
+        content = r"Define $g : \mathbb{R} \to \mathbb{R}$, actually written plainly: g : R \to R."
+        functions = extract_functions(content)
+        plain_entries = [f for f in functions if f.name == "g" and f.expression is None]
+        assert len(plain_entries) == 1
+
+    def test_plain_text_function_def_extracted(self):
+        content = "Define h(x) = x + 1 outside of math delimiters."
+        functions = extract_functions(content)
+        assert any(f.name == "h" and f.variable == "x" for f in functions)
+
+    def test_function_inside_math_not_duplicated(self):
+        content = "We set $f(x) = x^2$ and then mention f(x) = x^2 again in prose."
+        functions = extract_functions(content)
+        # One from the LaTeX extractor, the markdown extractor should skip
+        # the line covered by LaTeX and may still add the prose line.
+        names_and_variables = [(f.name, f.variable) for f in functions]
+        assert ("f", "x") in names_and_variables
+
+    def test_noise_labels_like_proof_not_treated_as_signature(self):
+        content = "Proof : we use induction → derive the result."
+        functions = extract_functions(content)
+        assert not any(f.name.lower() == "proof" for f in functions)

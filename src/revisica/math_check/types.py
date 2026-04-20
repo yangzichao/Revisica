@@ -13,7 +13,7 @@ class FunctionDefinition:
     name: str
     variable: str
     expression_text: str
-    expression: sp.Expr
+    expression: sp.Expr | None
     line_number: int
     snippet: str
 
