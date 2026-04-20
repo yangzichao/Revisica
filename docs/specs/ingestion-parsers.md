@@ -34,7 +34,7 @@ Parser choice is transparent to all review logic.
 | Parser | File | Input | Dependency | Cost |
 |--------|------|-------|-----------|------|
 | `markdown` | `markdown_parser.py` | `.md`, `.mmd` | None | Free |
-| `mineru` | `mineru_parser.py` | `.pdf` | `mineru` CLI (pip install mineru), GPU/MPS | Free |
+| `mineru` | `mineru_parser.py` | `.pdf` | `pip install 'mineru[all]'` — auto-picks MLX on Mac, vLLM on Linux, lmdeploy on Windows | Free |
 | `mathpix` | `mathpix_parser.py` | `.pdf`, images | Mathpix API key | ~$0.01/page |
 
 ### Parser priority (auto-detection order)

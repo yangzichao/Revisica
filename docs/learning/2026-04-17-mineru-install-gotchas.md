@@ -4,6 +4,8 @@
 **Commit:** `fc72602`
 **Validates:** [docs/decisions/0001-pdf-parser-mineru.md](../decisions/0001-pdf-parser-mineru.md)
 
+> **Update 2026-04-20 — use `mineru[all]`, not `mineru[core]`.** MinerU 3.1 ships an `mlx-engine` VLM backend for Apple Silicon ([vlm_analyze.py:105](../../../../.pyenv/versions/3.12.12/lib/python3.12/site-packages/mineru/backend/vlm/vlm_analyze.py#L105), [engine_utils.py:_select_mac_engine](../../../../.pyenv/versions/3.12.12/lib/python3.12/site-packages/mineru/utils/engine_utils.py)). `[all]` resolves per-platform (`mlx` on Mac, `vllm` on Linux, `lmdeploy` on Windows); `[core]` alone falls back to CPU Transformers for VLM/hybrid — ~3× slower on Mac. All runtime install hints and UI strings now say `pip install 'mineru[all]'`.
+
 **Context:** After accepting [ADR 0001](../decisions/0001-pdf-parser-mineru.md) (MinerU as default PDF parser), the first hands-on install surfaced two non-obvious gotchas and a first-parse cost worth recording for anyone repeating this setup.
 
 ## Gotcha 1 — Python 3.9 vs MinerU's 3.10+ requirement

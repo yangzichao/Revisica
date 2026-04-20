@@ -1,8 +1,8 @@
 """Model management for the MinerU PDF parser.
 
-MinerU ships as a Python package (``pip install mineru``) but its large
-parsing models are downloaded separately via ``mineru-models-download`` and
-stored in the shared HuggingFace hub cache. This module exposes:
+MinerU ships as a Python package (``pip install 'mineru[all]'``) but its
+large parsing models are downloaded separately via ``mineru-models-download``
+and stored in the shared HuggingFace hub cache. This module exposes:
 
 - Install status and on-disk size for each model type.
 - A non-blocking download job runner that shells out to the CLI.
@@ -120,7 +120,7 @@ def start_download(model_type: str, source: str = "huggingface") -> DownloadJob:
     mineru_download_bin = shutil.which("mineru-models-download")
     if mineru_download_bin is None:
         raise RuntimeError(
-            "mineru-models-download CLI not found. Install with: pip install mineru"
+            "mineru-models-download CLI not found. Install with: pip install 'mineru[all]'"
         )
 
     with _download_jobs_lock:
