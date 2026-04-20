@@ -338,7 +338,7 @@ def _parser_spec_mineru() -> dict[str, Any]:
         "available": MineruParser.is_available(),
         "requires": ["mineru CLI on PATH"],
         "handles": [".pdf"],
-        "install_hint": "pip install 'mineru[core]'",
+        "install_hint": "pip install 'mineru[all]'",
     }
 
 

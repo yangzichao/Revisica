@@ -221,7 +221,7 @@ jobs:
 PDF parsing tools (MinerU, Marker, Mathpix) are not bundled in the DMG. Users who need PDF support can:
 
 1. **Mathpix** — Set API key in Settings page (cloud, ~$0.01/page)
-2. **MinerU** — `pip install mineru` (local, needs GPU)
+2. **MinerU** — `pip install 'mineru[all]'` (local; `[all]` auto-selects MLX on Mac / vLLM on Linux / lmdeploy on Windows — plain `mineru` falls back to slow CPU Transformers)
 3. **Marker** — `pip install marker-pdf` (local, no GPU)
 
 The app detects these at runtime via `shutil.which()` and env vars. The Settings/Help page should document installation options.

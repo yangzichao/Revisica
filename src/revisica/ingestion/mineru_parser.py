@@ -1,7 +1,10 @@
 """PDF → Markdown parser via MinerU CLI.
 
-Install: ``pip install mineru`` (requires GPU or Apple MPS).
-The ``mineru`` CLI works across both 1.x and 2.x versions.
+Install: ``pip install 'mineru[all]'``. The ``[all]`` extra is platform-aware
+and pulls the right local accelerator: ``mlx`` on macOS (Apple Silicon MPS +
+MLX), ``vllm`` on Linux (CUDA), ``lmdeploy`` on Windows. Plain
+``pip install mineru`` gives only the CLI client and falls back to a slow
+CPU Transformers path for the VLM/hybrid backends.
 """
 
 from __future__ import annotations
@@ -54,7 +57,7 @@ class MineruParser(BaseParser):
         if mineru_bin is None:
             raise RuntimeError(
                 "MinerU is not installed. Install with:\n"
-                "  pip install mineru"
+                "  pip install 'mineru[all]'"
             )
 
         with tempfile.TemporaryDirectory(prefix="revisica_mineru_") as tmp_dir:

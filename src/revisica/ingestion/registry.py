@@ -97,7 +97,7 @@ def _select_parser(path: Path, parser_name: str) -> BaseParser:
     if suffix == ".pdf":
         raise RuntimeError(
             "No PDF parser available. Install one of:\n"
-            "  - pip install mineru          (MinerU, local, requires GPU)\n"
+            "  - pip install 'mineru[all]'   (MinerU — auto-selects MLX on Mac, vLLM on Linux, lmdeploy on Windows)\n"
             "  - pip install marker-pdf      (Marker, local, no GPU needed)\n"
             "  - Set MATHPIX_APP_ID + MATHPIX_APP_KEY for Mathpix cloud API"
         )

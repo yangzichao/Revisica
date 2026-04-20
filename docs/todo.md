@@ -52,7 +52,7 @@ Learning: `docs/learning/`
 - [ ] **"深挖" (Focus) button** — Per-section deep-dive trigger in Results page.
 - [ ] **Bundle Pandoc** — Download arm64+x86_64 static binaries (~25 MB each) from GitHub releases. Option A: `pypandoc-binary` in Python venv (PyInstaller picks it up). Option B: `electron-builder extraResources` to `Contents/Resources/bin/pandoc`. GPL-2 OK via subprocess (include license text + source link).
 - [ ] **Bundle Marker** — `pip install marker-pdf` (~300 MB with models, no GPU needed). Provides local PDF parsing out of the box. PyInstaller should bundle it with the Python backend.
-- [ ] **MinerU — user-installed optional** — Too heavy to bundle (~2+ GB, PyTorch + GPU). Document as optional: `pip install mineru`. App detects via `shutil.which("mineru")` at runtime.
+- [ ] **MinerU — user-installed optional** — Too heavy to bundle (~2+ GB, PyTorch + GPU/MLX). Document as optional: `pip install 'mineru[all]'` (Mac → MLX, Linux → vLLM, Windows → lmdeploy; plain `mineru` falls back to slow CPU Transformers for VLM). App detects via `shutil.which("mineru")` at runtime.
 - [ ] **Mathpix — API key only** — No binary to bundle. User provides `MATHPIX_APP_ID` + `MATHPIX_APP_KEY` via Settings page.
 - [ ] **PyInstaller packaging** — Freeze Python backend (+ bundled Pandoc + Marker) to `desktop/resources/python-backend`.
 - [ ] **electron-builder macOS** — DMG output, code signing (including bundled binaries), notarization.

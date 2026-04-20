@@ -346,7 +346,7 @@ function PdfParserSection({
 
           {selected === 'mineru' && !mineru?.available && (
             <MineruSetupPanel
-              installHint={mineru?.install_hint || "pip install 'mineru[core]'"}
+              installHint={mineru?.install_hint || "pip install 'mineru[all]'"}
               onRecheck={onRefresh}
             />
           )}
