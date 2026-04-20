@@ -8,9 +8,12 @@ import Stepper from './Stepper'
 import Step1ImportFile from './Step1ImportFile'
 import Step2LlmAccess, { hasAvailableProviderForMode } from './Step2LlmAccess'
 import Step3Preferences from './Step3Preferences'
+import { pickDefaultForEngine } from './EnginePicker'
 import {
   DEFAULT_VENUE_PROFILE,
   type BackendMode,
+  type Engine,
+  type ModelRoutes,
   type ParserChoice,
   type ReviewMode,
   type WizardAction,
@@ -31,27 +34,61 @@ const LS_KEYS = {
   mode: 'revisica_new_job_mode',
   venue: 'revisica_new_job_venue',
   llmProof: 'revisica_new_job_llm_proof',
+  primaryEngine: 'revisica_new_job_primary_engine',
+  secondaryEnabled: 'revisica_new_job_secondary_enabled',
+  secondaryEngine: 'revisica_new_job_secondary_engine',
 }
 
-function loadPersisted(): Pick<
+function parseEngine(raw: string | null, fallback: Engine): Engine {
+  return raw === 'claude' || raw === 'gpt' ? raw : fallback
+}
+
+type PersistedFields = Pick<
   WizardState,
-  'mode' | 'venueProfile' | 'llmProofReview'
-> {
+  | 'mode'
+  | 'venueProfile'
+  | 'llmProofReview'
+  | 'primaryEngine'
+  | 'secondaryEnabled'
+  | 'secondaryEngine'
+>
+
+function loadPersisted(): PersistedFields {
+  // Defaults reproduce the pre-engine-picker behavior: run both families in
+  // parallel, with Claude as the nominal primary.
+  const defaults: PersistedFields = {
+    mode: 'review',
+    venueProfile: DEFAULT_VENUE_PROFILE,
+    llmProofReview: false,
+    primaryEngine: 'claude',
+    secondaryEnabled: true,
+    secondaryEngine: 'gpt',
+  }
   try {
     const mode = (localStorage.getItem(LS_KEYS.mode) as ReviewMode) || 'review'
     const venue = localStorage.getItem(LS_KEYS.venue) || DEFAULT_VENUE_PROFILE
     const llmProof = localStorage.getItem(LS_KEYS.llmProof) === 'true'
+    const primaryEngine = parseEngine(
+      localStorage.getItem(LS_KEYS.primaryEngine),
+      defaults.primaryEngine,
+    )
+    const secondaryRaw = localStorage.getItem(LS_KEYS.secondaryEnabled)
+    const secondaryEnabled =
+      secondaryRaw === null ? defaults.secondaryEnabled : secondaryRaw === 'true'
+    const secondaryEngine = parseEngine(
+      localStorage.getItem(LS_KEYS.secondaryEngine),
+      defaults.secondaryEngine,
+    )
     return {
       mode: mode === 'polish' ? 'polish' : 'review',
       venueProfile: venue,
       llmProofReview: llmProof,
+      primaryEngine,
+      secondaryEnabled,
+      secondaryEngine,
     }
   } catch {
-    return {
-      mode: 'review',
-      venueProfile: DEFAULT_VENUE_PROFILE,
-      llmProofReview: false,
-    }
+    return defaults
   }
 }
 
@@ -117,6 +154,12 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       return action.role === 'writing'
         ? { ...state, writingModelOverride: action.value }
         : { ...state, mathModelOverride: action.value }
+    case 'SET_PRIMARY_ENGINE':
+      return { ...state, primaryEngine: action.engine }
+    case 'SET_SECONDARY_ENABLED':
+      return { ...state, secondaryEnabled: action.enabled }
+    case 'SET_SECONDARY_ENGINE':
+      return { ...state, secondaryEngine: action.engine }
     case 'SET_MODE':
       return { ...state, mode: action.mode }
     case 'SET_VENUE':
@@ -162,6 +205,32 @@ export default function NewJobWizard({
   const [resumeContext, setResumeContext] = useState<ResumeContext | null>(null)
   const [isLoadingResume, setIsLoadingResume] = useState(false)
   const [resumeError, setResumeError] = useState<string | null>(null)
+  const [modelRoutes, setModelRoutes] = useState<ModelRoutes | null>(null)
+
+  useEffect(() => {
+    // Re-fetch whenever the backend mode changes so the candidate list
+    // reflects the provider set the user picked in Step 2.
+    let cancelled = false
+    const load = async (): Promise<void> => {
+      try {
+        const response = await apiFetch(
+          apiBase,
+          apiToken,
+          '/api/config/model-routes',
+        )
+        if (!cancelled && response.ok) {
+          const data = (await response.json()) as ModelRoutes
+          if (!cancelled) setModelRoutes(data)
+        }
+      } catch {
+        // Degrade gracefully — engine still falls back to backend auto-routing
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [apiBase, apiToken, state.backendMode])
 
   const fetchProviders = useCallback(async (): Promise<void> => {
     try {
@@ -290,12 +359,22 @@ export default function NewJobWizard({
           ? state.parserChoice
           : 'auto'
 
+      // Manual override wins over the engine-derived default.
+      const effectivelySingle =
+        !state.secondaryEnabled || state.secondaryEngine === state.primaryEngine
+      const engineWriting = effectivelySingle
+        ? pickDefaultForEngine(modelRoutes?.writing, state.primaryEngine)
+        : null
+      const engineMath = effectivelySingle
+        ? pickDefaultForEngine(modelRoutes?.math, state.primaryEngine)
+        : null
+
       const reviewBody: Record<string, unknown> = {
         mode: state.mode,
         venue_profile: state.venueProfile,
         llm_proof_review: state.mode === 'review' && state.llmProofReview,
-        writing_model: state.writingModelOverride,
-        math_model: state.mathModelOverride,
+        writing_model: state.writingModelOverride ?? engineWriting,
+        math_model: state.mathModelOverride ?? engineMath,
       }
       if (resumeContext) {
         reviewBody.parsed_document_id = resumeContext.id
@@ -322,6 +401,12 @@ export default function NewJobWizard({
         localStorage.setItem(LS_KEYS.mode, state.mode)
         localStorage.setItem(LS_KEYS.venue, state.venueProfile)
         localStorage.setItem(LS_KEYS.llmProof, String(state.llmProofReview))
+        localStorage.setItem(LS_KEYS.primaryEngine, state.primaryEngine)
+        localStorage.setItem(
+          LS_KEYS.secondaryEnabled,
+          String(state.secondaryEnabled),
+        )
+        localStorage.setItem(LS_KEYS.secondaryEngine, state.secondaryEngine)
         if (state.parserChoice) {
           localStorage.setItem(LS_KEYS.parser, state.parserChoice)
         }
@@ -352,7 +437,7 @@ export default function NewJobWizard({
     } finally {
       setIsSubmitting(false)
     }
-  }, [state, apiBase, apiToken, navigate, resumeContext])
+  }, [state, apiBase, apiToken, navigate, resumeContext, modelRoutes])
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -422,10 +507,9 @@ export default function NewJobWizard({
         )}
         {state.currentStep === 3 && (
           <Step3Preferences
-            apiBase={apiBase}
-            apiToken={apiToken}
             state={state}
             dispatch={dispatch}
+            modelRoutes={modelRoutes}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             errorMessage={errorMessage}
