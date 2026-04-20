@@ -78,8 +78,31 @@ def run_polish_agent(state: PolishState) -> dict:
         return {"report": result.output}
     return {
         "report": result.output or "",
-        "warnings": [f"Polish agent failed: {result.stderr[:200]}"],
+        "warnings": [f"Polish agent failed: {_format_agent_failure(result)}"],
     }
+
+
+def _format_agent_failure(result) -> str:
+    """Extract a useful failure snippet from a provider ReviewResult.
+
+    CLI providers often print boilerplate banners at the top of stderr and
+    the real error at the bottom (or on stdout). Showing the tail of the
+    combined streams surfaces the actual error instead of the banner.
+    """
+    pieces: list[str] = []
+    stderr = (result.stderr or "").strip()
+    stdout = (result.output or "").strip()
+    if stderr:
+        pieces.append(stderr)
+    if stdout and stdout != stderr:
+        pieces.append(stdout)
+    combined = "\n".join(pieces).strip()
+    if not combined:
+        return f"exit code {result.returncode} with no output"
+    limit = 500
+    if len(combined) <= limit:
+        return combined
+    return "…" + combined[-limit:]
 
 
 def write_polish_report(state: PolishState) -> dict:
