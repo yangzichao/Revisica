@@ -70,7 +70,10 @@ _GPT_ROUTES: dict[str, str] = {
     TASK_NOTATION_TRACK: "gpt-5",
     TASK_FORMULA_CROSS_CHECK: "gpt-5",
     TASK_SECTION_CROSS_CHECK: "gpt-5",
-    TASK_POLISH: "gpt-5",
+    # Polish: no hard-coded default — let Codex use the user's config default.
+    # Rationale: gpt-5 is not available on all Codex accounts (e.g. ChatGPT
+    # subscription accounts only expose gpt-5.4), and polish is tolerant of
+    # any modern model.
 }
 
 _CLAUDE_ROUTES: dict[str, str] = {
