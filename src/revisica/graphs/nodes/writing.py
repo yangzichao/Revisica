@@ -131,6 +131,7 @@ def run_parallel_roles(state: WritingState) -> dict:
     extracted_claims = state.get("claims", [])
     run_dir = Path(state["run_dir"])
     timeout_seconds = config.timeout_seconds if config else 120
+    codex_reasoning_effort = config.codex_reasoning_effort if config else None
 
     artifacts: list[WritingRoleArtifact] = []
     warnings: list[str] = []
@@ -153,6 +154,7 @@ def run_parallel_roles(state: WritingState) -> dict:
                     agent_spec=agent_spec,
                     timeout_seconds=timeout_seconds,
                     working_dir=working_dir,
+                    codex_reasoning_effort=codex_reasoning_effort,
                 )
                 futures[future] = (role, routed_spec.label)
 
@@ -174,6 +176,7 @@ def run_parallel_roles(state: WritingState) -> dict:
                         agent_spec=combo_agent_spec,
                         timeout_seconds=timeout_seconds,
                         working_dir=working_dir,
+                        codex_reasoning_effort=codex_reasoning_effort,
                     )
                     futures[future] = (combo_role, routed_spec.label)
 
@@ -195,6 +198,7 @@ def run_parallel_roles(state: WritingState) -> dict:
                         agent_spec=claim_agent_spec,
                         timeout_seconds=timeout_seconds,
                         working_dir=working_dir,
+                        codex_reasoning_effort=codex_reasoning_effort,
                     )
                     futures[future] = (claim_role, routed_spec.label)
 
@@ -226,6 +230,7 @@ def run_self_checks(state: WritingState) -> dict:
     schema_path = state.get("schema_path")
     working_dir = state["working_dir"]
     timeout_seconds = config.timeout_seconds if config else 120
+    codex_reasoning_effort = config.codex_reasoning_effort if config else None
 
     # _run_writing_self_checks mutates its own warnings list;
     # we pass a local list and return it via the reducer.
@@ -239,6 +244,7 @@ def run_self_checks(state: WritingState) -> dict:
         timeout_seconds=timeout_seconds,
         working_dir=working_dir,
         warnings=local_warnings,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     return {
         "artifacts": checked,
@@ -257,6 +263,7 @@ def run_judge(state: WritingState) -> dict:
     judge_spec = state.get("judge_spec")
     schema_path = state.get("schema_path")
     timeout_seconds = config.timeout_seconds if config else 120
+    codex_reasoning_effort = config.codex_reasoning_effort if config else None
 
     local_warnings: list[str] = []
     final_report = _generate_final_report_agent(
@@ -269,6 +276,7 @@ def run_judge(state: WritingState) -> dict:
         schema_path=schema_path,
         timeout_seconds=timeout_seconds,
         warnings=local_warnings,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     if final_report is not None:
         _write_final_report(run_dir, final_report)

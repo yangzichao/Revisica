@@ -56,7 +56,9 @@ class AnthropicApiProvider(BaseProvider):
         prompt: str,
         model: str | None = None,
         timeout_seconds: int = 120,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
+        del codex_reasoning_effort  # Codex-specific; no-op for Anthropic.
         client = _get_anthropic_client()
         resolved_model = model or "claude-sonnet-4-20250514"
 
@@ -96,7 +98,9 @@ class AnthropicApiProvider(BaseProvider):
         model: str | None = None,
         timeout_seconds: int = 120,
         working_dir: str | None = None,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
+        del codex_reasoning_effort  # Codex-specific; no-op for Anthropic.
         """Run a tool-use agent loop using the Anthropic Messages API.
 
         Sends the task prompt with tool definitions.  When the model

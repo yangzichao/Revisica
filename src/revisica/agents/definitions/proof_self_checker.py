@@ -46,4 +46,7 @@ Return JSON only. Include only findings you believe are valid:
 """,
     tools=["Read", "Glob", "Grep"],
     categories=["correct", "suspicious", "incorrect", "needs-human-check"],
+    # Self-check still reasons about proof steps; default xhigh to match
+    # the proof reviewer that produced the findings.
+    codex_reasoning_effort="xhigh",
 )

@@ -57,6 +57,7 @@ def review_writing_file(
     judge_spec: ProviderModelSpec | None = None,
     force_bootstrap: bool = False,
     timeout_seconds: int = 120,
+    codex_reasoning_effort: str | None = None,
 ) -> WritingReviewRun:
     """Run the writing review pipeline via LangGraph."""
     from .graphs.writing import compile_writing_graph
@@ -69,6 +70,7 @@ def review_writing_file(
         judge_spec=judge_spec,
         force_bootstrap=force_bootstrap,
         timeout_seconds=timeout_seconds,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
 
     graph = compile_writing_graph()
@@ -92,6 +94,7 @@ def _run_single_role_task(
     agent_spec: AgentSpec,
     timeout_seconds: int,
     working_dir: str,
+    codex_reasoning_effort: str | None = None,
 ) -> WritingRoleArtifact:
     """Execute a single (role, provider) task — designed to run in a thread."""
     result = _run_provider_agent(
@@ -101,6 +104,7 @@ def _run_single_role_task(
         timeout_seconds,
         model=spec.model,
         working_dir=working_dir,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     findings = _extract_findings_payload(result.output)
     return WritingRoleArtifact(
@@ -124,6 +128,7 @@ def _run_writing_self_checks(
     timeout_seconds: int,
     working_dir: str,
     warnings: list[str],
+    codex_reasoning_effort: str | None = None,
 ) -> list[WritingRoleArtifact]:
     """Run self-check on each artifact's findings to filter false positives.
 
@@ -165,6 +170,7 @@ def _run_writing_self_checks(
                 timeout_seconds,
                 model=routed_spec.model,
                 working_dir=working_dir,
+                codex_reasoning_effort=codex_reasoning_effort,
             )
             futures[future] = idx
 
@@ -412,6 +418,7 @@ def _generate_final_report_agent(
     schema_path: str | None,
     timeout_seconds: int,
     warnings: list[str],
+    codex_reasoning_effort: str | None = None,
 ) -> ReviewResult | None:
     """Generate final report using a real judge agent that reads findings files."""
     usable = [a for a in artifacts if a.result.success and a.findings is not None]
@@ -451,6 +458,7 @@ def _generate_final_report_agent(
         timeout_seconds,
         model=judge.model,
         working_dir=str(source.parent),
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     if result.success:
         return result

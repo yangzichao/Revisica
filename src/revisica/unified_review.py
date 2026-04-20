@@ -38,6 +38,9 @@ def review_unified(
     mode: str = "review",
     # new: explicit parser selection (defaults to auto)
     parser: str = "auto",
+    # new: Codex reasoning effort override
+    # (none|minimal|low|medium|high|xhigh; None = agent default).
+    codex_reasoning_effort: str | None = None,
 ) -> UnifiedReviewRun:
     """Run unified review via LangGraph."""
     from .graphs.unified import compile_unified_graph
@@ -64,6 +67,7 @@ def review_unified(
         math_reviewer_specs=math_reviewer_specs,
         self_check_spec=self_check_spec,
         adjudicator_spec=adjudicator_spec,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
 
     graph = compile_unified_graph()

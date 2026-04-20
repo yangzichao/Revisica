@@ -33,3 +33,7 @@ class AgentDefinition:
     categories: list[str] = field(default_factory=list)
     temperature: float = 0.0
     version: str = "v0"
+    # Optional per-agent Codex reasoning effort default.
+    # Accepted: none, minimal, low, medium, high, xhigh.
+    # None = inherit the user's ~/.codex/config.toml default.
+    codex_reasoning_effort: str | None = None

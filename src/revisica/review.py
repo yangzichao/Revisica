@@ -173,12 +173,18 @@ def _run_provider_agent(
     timeout_seconds: int,
     model: str | None = None,
     working_dir: str | None = None,
+    codex_reasoning_effort: str | None = None,
 ) -> ReviewResult:
-    """Run an agent with tool access. Delegates to the provider registry."""
+    """Run an agent with tool access. Delegates to the provider registry.
+
+    ``codex_reasoning_effort`` overrides the agent-level default set on
+    ``agent_spec``. Non-Codex providers ignore it.
+    """
     provider = get_provider(provider_name)
     return provider.run_agent(
         task_prompt, agent_spec,
         model=model, timeout_seconds=timeout_seconds, working_dir=working_dir,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
 
 

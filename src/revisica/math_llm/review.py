@@ -45,6 +45,7 @@ def run_llm_proof_review(
     force_bootstrap: bool,
     timeout_seconds: int,
     agent_version: str | None = None,
+    codex_reasoning_effort: str | None = None,
 ) -> tuple[
     list[MathIssue],
     list[LLMProofReviewArtifact],
@@ -105,6 +106,7 @@ def run_llm_proof_review(
                     timeout_seconds,
                     routed_spec.model,
                     str(source.parent),
+                    codex_reasoning_effort,
                 )
                 futures[future] = (routed_spec, blueprint)
 
@@ -143,6 +145,7 @@ def run_llm_proof_review(
         self_check_spec=self_check_spec,
         adjudicator_spec=adjudicator_spec,
         timeout_seconds=timeout_seconds,
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     warnings.extend(adjudication_warnings)
     return issues, artifacts, self_checks, adjudications, warnings
@@ -203,6 +206,7 @@ def _finalize_llm_reviews(
     self_check_spec: ProviderModelSpec | None,
     adjudicator_spec: ProviderModelSpec | None,
     timeout_seconds: int,
+    codex_reasoning_effort: str | None = None,
 ) -> tuple[list[MathIssue], list[LLMSelfCheckArtifact], list[LLMAdjudicationArtifact], list[str]]:
     warnings: list[str] = []
     issues: list[MathIssue] = []
@@ -259,6 +263,7 @@ def _finalize_llm_reviews(
                     platforms=platforms,
                     self_check_spec=self_check_spec,
                     timeout_seconds=timeout_seconds,
+                    codex_reasoning_effort=codex_reasoning_effort,
                 )
                 futures[future] = (theorem_line_number, artifact)
 
@@ -320,6 +325,7 @@ def _finalize_llm_reviews(
                     adjudicator_spec=adjudicator,
                     provider_artifacts=theorem_artifacts,
                     timeout_seconds=timeout_seconds,
+                    codex_reasoning_effort=codex_reasoning_effort,
                 )
                 futures[future] = (theorem_line_number, theorem_artifacts)
 
@@ -377,6 +383,7 @@ def _run_math_adjudication(
     adjudicator_spec: ProviderModelSpec,
     provider_artifacts: list[LLMProofReviewArtifact],
     timeout_seconds: int,
+    codex_reasoning_effort: str | None = None,
 ) -> LLMAdjudicationArtifact:
     routed = resolve_model_for_role(adjudicator_spec, "adjudicator")
     schema_path = find_codex_file("findings.schema.json")
@@ -389,6 +396,7 @@ def _run_math_adjudication(
         timeout_seconds,
         model=routed.model,
         working_dir=str(source.parent),
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     findings = extract_findings_payload(result.output)
     return LLMAdjudicationArtifact(
@@ -407,6 +415,7 @@ def _run_math_self_check(
     platforms: dict[str, PlatformStatus],
     self_check_spec: ProviderModelSpec | None,
     timeout_seconds: int,
+    codex_reasoning_effort: str | None = None,
 ) -> LLMSelfCheckArtifact:
     checker = self_check_spec or ProviderModelSpec(
         provider=reviewer_artifact.provider,
@@ -429,6 +438,7 @@ def _run_math_self_check(
         timeout_seconds,
         model=routed.model,
         working_dir=str(source.parent),
+        codex_reasoning_effort=codex_reasoning_effort,
     )
     findings = extract_findings_payload(result.output)
     return LLMSelfCheckArtifact(

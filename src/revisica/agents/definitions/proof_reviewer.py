@@ -629,8 +629,15 @@ Return ONLY this JSON:
 )
 
 # -- default: points to latest version --
+# Proof review benefits strongly from deep reasoning; default the Codex
+# reasoning effort to xhigh (the max). Users can still dial it back at
+# runtime via `--codex-reasoning medium` etc.
 
-AGENT = replace(AGENT_V7, name="math-proof-reviewer")
+AGENT = replace(
+    AGENT_V7,
+    name="math-proof-reviewer",
+    codex_reasoning_effort="xhigh",
+)
 
 # All versions for registry
 ALL_VERSIONS = [AGENT_V0, AGENT_V1, AGENT_V2, AGENT_V3, AGENT_V4, AGENT_V5, AGENT_V6, AGENT_V7, AGENT]

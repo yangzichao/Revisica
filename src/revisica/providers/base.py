@@ -45,8 +45,14 @@ class BaseProvider(ABC):
         prompt: str,
         model: str | None = None,
         timeout_seconds: int = 120,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
-        """Send a prompt and get a response. No tool access."""
+        """Send a prompt and get a response. No tool access.
+
+        ``codex_reasoning_effort`` is a runtime override for Codex's
+        ``model_reasoning_effort`` config (none|minimal|low|medium|high|xhigh).
+        Providers other than Codex ignore it.
+        """
 
     @abstractmethod
     def run_agent(
@@ -56,9 +62,14 @@ class BaseProvider(ABC):
         model: str | None = None,
         timeout_seconds: int = 120,
         working_dir: str | None = None,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
         """Run an agent with tool access.
 
         Providers that don't support agents should fall back to
         :meth:`run_prompt` with the agent's system prompt prepended.
+
+        ``codex_reasoning_effort`` is a runtime override that takes
+        precedence over ``agent_spec.codex_reasoning_effort``. Non-Codex
+        providers ignore it.
         """

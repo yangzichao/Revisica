@@ -41,6 +41,7 @@ def review_math_file(
     force_bootstrap: bool = False,
     timeout_seconds: int = 120,
     agent_version: str | None = None,
+    codex_reasoning_effort: str | None = None,
 ) -> MathReviewRun:
     source = Path(file_path).expanduser().resolve()
     if not source.exists():
@@ -82,6 +83,7 @@ def review_math_file(
             force_bootstrap=force_bootstrap,
             timeout_seconds=timeout_seconds,
             agent_version=agent_version,
+            codex_reasoning_effort=codex_reasoning_effort,
         )
         issues.extend(llm_issues)
         warnings.extend(llm_warnings)

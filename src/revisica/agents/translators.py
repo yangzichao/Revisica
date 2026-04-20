@@ -45,6 +45,7 @@ def to_agent_spec(
         codex_instructions_path=codex_instructions_path,
         codex_output_schema=effective_schema,
         codex_sandbox=codex_sandbox,
+        codex_reasoning_effort=agent_definition.codex_reasoning_effort,
     )
 
 

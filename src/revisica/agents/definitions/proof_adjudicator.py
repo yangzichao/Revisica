@@ -48,4 +48,7 @@ Return JSON only:
 """,
     tools=["Read", "Glob", "Grep"],
     categories=["correct", "suspicious", "incorrect", "needs-human-check"],
+    # Cross-provider adjudication resolves conflicts between math reviews;
+    # keep reasoning effort at the same xhigh level as the reviewers.
+    codex_reasoning_effort="xhigh",
 )

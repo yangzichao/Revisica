@@ -45,7 +45,10 @@ class ClaudeCliProvider(BaseProvider):
         prompt: str,
         model: str | None = None,
         timeout_seconds: int = 120,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
+        # codex_reasoning_effort is Codex-specific; Claude CLI ignores it.
+        del codex_reasoning_effort
         cli_path = self._cli_path()
 
         command = [
@@ -100,7 +103,9 @@ class ClaudeCliProvider(BaseProvider):
         model: str | None = None,
         timeout_seconds: int = 120,
         working_dir: str | None = None,
+        codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
+        del codex_reasoning_effort  # Codex-specific; no-op for Claude.
         cli_path = self._cli_path()
 
         agent_def = agent_spec.claude_agent_def or {}
