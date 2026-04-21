@@ -8,9 +8,8 @@ interface StepMeta {
 }
 
 const STEPS: StepMeta[] = [
-  { id: 1, label: 'Import file' },
-  { id: 2, label: 'LLM access' },
-  { id: 3, label: 'Preferences' },
+  { id: 1, label: 'Input' },
+  { id: 2, label: 'Review plan' },
 ]
 
 interface StepperProps {

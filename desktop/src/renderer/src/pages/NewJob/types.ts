@@ -2,9 +2,10 @@ export type FileType = 'pdf' | 'tex' | 'md' | null
 
 export type ParserChoice = 'mineru' | 'mathpix' | 'auto' | null
 
+// Kept for Settings + API typing; the wizard no longer branches on this.
 export type BackendMode = 'auto' | 'cli' | 'api' | 'ollama'
 
-export type WizardStep = 1 | 2 | 3
+export type WizardStep = 1 | 2
 
 export type ReviewMode = 'polish' | 'review'
 
@@ -26,7 +27,6 @@ export interface WizardState {
   fileType: FileType
   currentStep: WizardStep
   parserChoice: ParserChoice
-  backendMode: BackendMode
   primaryEngine: Engine
   secondaryEnabled: boolean
   secondaryEngine: Engine
@@ -50,7 +50,6 @@ export type WizardAction =
   | { type: 'SET_FILE'; filePath: string; fileType: FileType }
   | { type: 'CLEAR_FILE' }
   | { type: 'SET_PARSER'; parser: ParserChoice }
-  | { type: 'SET_BACKEND_MODE'; mode: BackendMode }
   | { type: 'SET_MODEL_OVERRIDE'; role: 'writing' | 'math'; value: string | null }
   | { type: 'SET_PRIMARY_ENGINE'; engine: Engine }
   | { type: 'SET_SECONDARY_ENABLED'; enabled: boolean }

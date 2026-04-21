@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 
@@ -10,6 +10,10 @@ const BACKEND_MODES: { key: BackendMode; label: string; description: string }[] 
   { key: 'auto', label: 'Auto', description: 'Prefer CLI, fallback API' },
 ]
 
+function isBackendMode(value: unknown): value is BackendMode {
+  return value === 'auto' || value === 'cli' || value === 'api'
+}
+
 export default function Settings({
   apiBase,
   apiToken,
@@ -17,7 +21,9 @@ export default function Settings({
   apiBase: string
   apiToken: string
 }): JSX.Element {
-  const [backendMode, setBackendMode] = useState<BackendMode>('auto')
+  const [backendMode, setBackendModeState] = useState<BackendMode>('auto')
+  const [isSavingMode, setIsSavingMode] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [isBackendReady, setIsBackendReady] = useState(false)
 
   useEffect(() => {
@@ -31,6 +37,62 @@ export default function Settings({
     }
     checkHealth()
   }, [apiBase, apiToken])
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async (): Promise<void> => {
+      try {
+        const response = await apiFetch(
+          apiBase,
+          apiToken,
+          '/api/config/backend-mode',
+        )
+        if (!cancelled && response.ok) {
+          const data = await response.json()
+          if (isBackendMode(data.backend_mode)) {
+            setBackendModeState(data.backend_mode)
+          }
+        }
+      } catch {
+        // Leave default 'auto' — backend will honor its own fallback
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [apiBase, apiToken])
+
+  const handleModeChange = useCallback(
+    async (next: BackendMode): Promise<void> => {
+      const previous = backendMode
+      setBackendModeState(next)
+      setIsSavingMode(true)
+      setSaveError(null)
+      try {
+        const response = await apiFetch(
+          apiBase,
+          apiToken,
+          '/api/config/backend-mode',
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ backend_mode: next }),
+          },
+        )
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}))
+          throw new Error(data.detail || `Save failed (${response.status})`)
+        }
+      } catch (err) {
+        setBackendModeState(previous)
+        setSaveError(err instanceof Error ? err.message : 'Save failed')
+      } finally {
+        setIsSavingMode(false)
+      }
+    },
+    [apiBase, apiToken, backendMode],
+  )
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -81,11 +143,13 @@ export default function Settings({
               {BACKEND_MODES.map((modeOption) => (
                 <button
                   key={modeOption.key}
-                  onClick={() => setBackendMode(modeOption.key)}
+                  onClick={() => handleModeChange(modeOption.key)}
+                  disabled={isSavingMode}
                   className={cn(
                     'flex-1 py-2.5 flex flex-col items-center gap-0.5',
                     'text-sm font-semibold rounded-md',
                     'transition-colors duration-150 border-none cursor-pointer',
+                    'disabled:cursor-wait',
                     modeOption.key === backendMode
                       ? 'bg-paper-50 text-ink shadow-subtle'
                       : 'bg-transparent text-ink-tertiary',
@@ -98,6 +162,10 @@ export default function Settings({
                 </button>
               ))}
             </div>
+
+            {saveError && (
+              <div className="mt-3 text-xs text-danger">{saveError}</div>
+            )}
           </div>
         </section>
 

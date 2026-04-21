@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import { Sparkles, BookOpen, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
 import ModeCard from '@/components/ModeCard'
+import ProviderStatusBadge from '@/components/ProviderStatusBadge'
+import type { Provider } from '@/components/ProviderCard'
 import EnginePicker from './EnginePicker'
 import { VENUE_PROFILES } from './types'
 import type {
@@ -11,23 +13,27 @@ import type {
   WizardState,
 } from './types'
 
-interface Step3Props {
+interface Step2ReviewPlanProps {
   state: WizardState
   dispatch: React.Dispatch<WizardAction>
   modelRoutes: ModelRoutes | null
+  providers: Provider[]
+  isLoadingProviders: boolean
   onSubmit: () => void
   isSubmitting: boolean
   errorMessage: string | null
 }
 
-export default function Step3Preferences({
+export default function Step2ReviewPlan({
   state,
   dispatch,
   modelRoutes,
+  providers,
+  isLoadingProviders,
   onSubmit,
   isSubmitting,
   errorMessage,
-}: Step3Props): JSX.Element {
+}: Step2ReviewPlanProps): JSX.Element {
   const [showOverrides, setShowOverrides] = useState(false)
 
   const engineSummary = useMemo(() => {
@@ -41,6 +47,8 @@ export default function Step3Preferences({
 
   const hasManualOverride =
     state.writingModelOverride !== null || state.mathModelOverride !== null
+  const hasAvailableProvider = providers.some((provider) => provider.available)
+  const canSubmit = !isSubmitting && (isLoadingProviders || hasAvailableProvider)
 
   const handlePrimaryChange = (engine: Engine): void =>
     dispatch({ type: 'SET_PRIMARY_ENGINE', engine })
@@ -62,12 +70,17 @@ export default function Step3Preferences({
     <div>
       <header className="mb-6">
         <h2 className="font-serif text-xl font-semibold text-ink tracking-tight">
-          Preferences
+          Review plan
         </h2>
         <p className="font-serif text-sm text-ink-tertiary italic mt-1">
           Pick a mode and start. Advanced options are collapsed below.
         </p>
       </header>
+
+      <ProviderStatusBadge
+        providers={providers}
+        isLoading={isLoadingProviders}
+      />
 
       {/* Mode cards */}
       <fieldset className="mb-6">
@@ -195,7 +208,7 @@ export default function Step3Preferences({
       <button
         type="button"
         onClick={onSubmit}
-        disabled={isSubmitting}
+        disabled={!canSubmit}
         className="btn-primary w-full py-3"
       >
         {isSubmitting ? (

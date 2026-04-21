@@ -6,12 +6,10 @@ import { apiFetch } from '@/lib/api'
 import type { Provider } from '@/components/ProviderCard'
 import Stepper from './Stepper'
 import Step1ImportFile from './Step1ImportFile'
-import Step2LlmAccess, { hasAvailableProviderForMode } from './Step2LlmAccess'
-import Step3Preferences from './Step3Preferences'
+import Step2ReviewPlan from './Step2ReviewPlan'
 import { pickDefaultForEngine } from './EnginePicker'
 import {
   DEFAULT_VENUE_PROFILE,
-  type BackendMode,
   type Engine,
   type ModelRoutes,
   type ParserChoice,
@@ -97,7 +95,6 @@ const INITIAL_STATE: WizardState = {
   fileType: null,
   currentStep: 1,
   parserChoice: null,
-  backendMode: 'auto',
   writingModelOverride: null,
   mathModelOverride: null,
   ...loadPersisted(),
@@ -110,17 +107,13 @@ function defaultParserFor(
   return null
 }
 
-function canAdvance(state: WizardState, providers: Provider[]): boolean {
+function canAdvance(state: WizardState): boolean {
   if (state.currentStep === 1) {
     if (!state.filePath || !state.fileType) return false
     if (state.fileType === 'pdf') {
       return state.parserChoice === 'mineru' || state.parserChoice === 'mathpix'
     }
     return true
-  }
-  if (state.currentStep === 2) {
-    if (state.backendMode === 'ollama') return false
-    return hasAvailableProviderForMode(providers, state.backendMode)
   }
   return true
 }
@@ -148,8 +141,6 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       }
     case 'SET_PARSER':
       return { ...state, parserChoice: action.parser }
-    case 'SET_BACKEND_MODE':
-      return { ...state, backendMode: action.mode }
     case 'SET_MODEL_OVERRIDE':
       return action.role === 'writing'
         ? { ...state, writingModelOverride: action.value }
@@ -168,7 +159,7 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, llmProofReview: action.value }
     case 'GO_NEXT': {
       // UI's NextButton handles validation; here we only clamp bounds.
-      if (state.currentStep >= 3) return state
+      if (state.currentStep >= 2) return state
       return {
         ...state,
         currentStep: (state.currentStep + 1) as WizardState['currentStep'],
@@ -208,8 +199,6 @@ export default function NewJobWizard({
   const [modelRoutes, setModelRoutes] = useState<ModelRoutes | null>(null)
 
   useEffect(() => {
-    // Re-fetch whenever the backend mode changes so the candidate list
-    // reflects the provider set the user picked in Step 2.
     let cancelled = false
     const load = async (): Promise<void> => {
       try {
@@ -230,7 +219,7 @@ export default function NewJobWizard({
     return () => {
       cancelled = true
     }
-  }, [apiBase, apiToken, state.backendMode])
+  }, [apiBase, apiToken])
 
   const fetchProviders = useCallback(async (): Promise<void> => {
     try {
@@ -240,7 +229,7 @@ export default function NewJobWizard({
         setProviders(data.providers || [])
       }
     } catch {
-      // Degrade gracefully — providers remain empty and validation blocks Next
+      // Degrade gracefully — ProviderStatusBadge renders the "not configured" state
     } finally {
       setIsLoadingProviders(false)
     }
@@ -264,27 +253,8 @@ export default function NewJobWizard({
     return () => clearInterval(interval)
   }, [apiBase, apiToken])
 
-  // Load current backend mode from server on mount
-  useEffect(() => {
-    const load = async (): Promise<void> => {
-      try {
-        const response = await apiFetch(apiBase, apiToken, '/api/config/backend-mode')
-        if (response.ok) {
-          const data = await response.json()
-          const mode = data.backend_mode as BackendMode
-          if (mode === 'auto' || mode === 'cli' || mode === 'api') {
-            dispatch({ type: 'SET_BACKEND_MODE', mode })
-          }
-        }
-      } catch {
-        // leave default
-      }
-    }
-    load()
-  }, [apiBase, apiToken])
-
   // When launched as `/?parsed=<id>`, pre-load the saved parse and fast-
-  // forward to Step 2 so the user only chooses LLM access + preferences.
+  // forward to Step 2 so the user jumps straight to the review plan.
   useEffect(() => {
     const parsedId = searchParams.get('parsed')
     if (!parsedId) {
@@ -447,7 +417,7 @@ export default function NewJobWizard({
             New job
           </h1>
           <p className="font-serif text-sm text-ink-tertiary italic mt-1">
-            Three steps to kick off a review.
+            Two steps to kick off a review.
           </p>
         </header>
 
@@ -494,30 +464,22 @@ export default function NewJobWizard({
             Loading saved parse…
           </div>
         )}
+
         {state.currentStep === 2 && (
-          <Step2LlmAccess
-            apiBase={apiBase}
-            apiToken={apiToken}
-            state={state}
-            dispatch={dispatch}
-            providers={providers}
-            isLoadingProviders={isLoadingProviders}
-            onProvidersRefresh={fetchProviders}
-          />
-        )}
-        {state.currentStep === 3 && (
-          <Step3Preferences
+          <Step2ReviewPlan
             state={state}
             dispatch={dispatch}
             modelRoutes={modelRoutes}
+            providers={providers}
+            isLoadingProviders={isLoadingProviders}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             errorMessage={errorMessage}
           />
         )}
 
-        {/* Nav buttons — Step 3 uses its own Start button */}
-        {state.currentStep !== 3 && (
+        {/* Nav buttons — Step 2 (final) uses its own Start button */}
+        {state.currentStep !== 2 && (
           <div className="flex items-center justify-between mt-8">
             <button
               type="button"
@@ -533,7 +495,6 @@ export default function NewJobWizard({
             </button>
             <NextButton
               state={state}
-              providers={providers}
               onNext={() => dispatch({ type: 'GO_NEXT' })}
             />
           </div>
@@ -545,15 +506,13 @@ export default function NewJobWizard({
 
 function NextButton({
   state,
-  providers,
   onNext,
 }: {
   state: WizardState
-  providers: Provider[]
   onNext: () => void
 }): JSX.Element {
-  const disabled = !canAdvance(state, providers)
-  const hint = nextBlockedHint(state, providers)
+  const disabled = !canAdvance(state)
+  const hint = nextBlockedHint(state)
   return (
     <div className="flex items-center gap-3">
       {disabled && hint && (
@@ -572,22 +531,11 @@ function NextButton({
   )
 }
 
-function nextBlockedHint(state: WizardState, providers: Provider[]): string | null {
+function nextBlockedHint(state: WizardState): string | null {
   if (state.currentStep === 1) {
     if (!state.filePath) return 'Drop a file to continue'
     if (state.fileType === 'pdf' && !state.parserChoice) {
       return 'Pick a PDF parser'
-    }
-    return null
-  }
-  if (state.currentStep === 2) {
-    if (state.backendMode === 'ollama') {
-      return 'Ollama is preview-only — choose another tab'
-    }
-    if (!hasAvailableProviderForMode(providers, state.backendMode)) {
-      if (state.backendMode === 'api') return 'Save an API key to continue'
-      if (state.backendMode === 'cli') return 'No CLI provider available'
-      return 'No provider available'
     }
   }
   return null
