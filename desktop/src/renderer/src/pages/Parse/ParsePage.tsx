@@ -18,7 +18,6 @@ const INITIAL_STATE: WizardState = {
   fileType: null,
   currentStep: 1,
   parserChoice: null,
-  backendMode: 'auto',
   primaryEngine: 'claude',
   secondaryEnabled: true,
   secondaryEngine: 'gpt',
