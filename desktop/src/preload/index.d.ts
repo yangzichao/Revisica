@@ -4,9 +4,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      onApiConfig: (
-        callback: (config: { apiBase: string; apiToken: string }) => void
-      ) => void
+      getApiConfig: () => Promise<{ apiBase: string; apiToken: string }>
       openPaperPicker: () => Promise<string | null>
       getPathForFile: (file: File) => string
     }

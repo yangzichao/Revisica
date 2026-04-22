@@ -2,14 +2,8 @@ import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 const api = {
-  onApiConfig: (
-    callback: (config: { apiBase: string; apiToken: string }) => void
-  ): void => {
-    // Replace any previously-registered listener so HMR reloads or
-    // remounting components don't stack duplicate callbacks.
-    ipcRenderer.removeAllListeners('api-config')
-    ipcRenderer.on('api-config', (_event, config) => callback(config))
-  },
+  getApiConfig: (): Promise<{ apiBase: string; apiToken: string }> =>
+    ipcRenderer.invoke('get-api-config'),
   openPaperPicker: (): Promise<string | null> =>
     ipcRenderer.invoke('dialog:open-paper'),
   // Electron 32+ removed File.path on dropped files; webUtils is the
