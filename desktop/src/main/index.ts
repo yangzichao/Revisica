@@ -161,17 +161,16 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // Pass API_BASE + API_TOKEN to renderer
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('api-config', { apiBase: API_BASE, apiToken: API_TOKEN })
-  })
-
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+// Renderer pulls config on mount instead of main pushing on did-finish-load,
+// which raced with React's effect registration and left apiToken = '' → 401.
+ipcMain.handle('get-api-config', () => ({ apiBase: API_BASE, apiToken: API_TOKEN }))
 
 ipcMain.handle('dialog:open-paper', async (event) => {
   const window = BrowserWindow.fromWebContents(event.sender)
