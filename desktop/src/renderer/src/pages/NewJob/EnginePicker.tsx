@@ -1,22 +1,5 @@
 import { cn } from '@/lib/utils'
-import type { Engine, ModelChoice } from './types'
-
-const CLAUDE_PROVIDER_PREFIXES = ['claude:', 'claude-cli:', 'anthropic-api:']
-const GPT_PROVIDER_PREFIXES = ['codex:', 'codex-cli:', 'openai-api:']
-
-function prefixesForEngine(engine: Engine): string[] {
-  return engine === 'claude' ? CLAUDE_PROVIDER_PREFIXES : GPT_PROVIDER_PREFIXES
-}
-
-export function pickDefaultForEngine(
-  options: ModelChoice[] | undefined,
-  engine: Engine,
-): string | null {
-  if (!options) return null
-  const prefixes = prefixesForEngine(engine)
-  const match = options.find((opt) => prefixes.some((p) => opt.value.startsWith(p)))
-  return match?.value ?? null
-}
+import type { Engine } from './types'
 
 interface EngineOption {
   key: Engine

@@ -21,8 +21,6 @@ const INITIAL_STATE: WizardState = {
   primaryEngine: 'claude',
   secondaryEnabled: true,
   secondaryEngine: 'gpt',
-  writingModelOverride: null,
-  mathModelOverride: null,
   mode: 'review',
   venueProfile: DEFAULT_VENUE_PROFILE,
   llmProofReview: false,

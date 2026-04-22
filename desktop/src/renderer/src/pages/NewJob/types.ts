@@ -30,8 +30,6 @@ export interface WizardState {
   primaryEngine: Engine
   secondaryEnabled: boolean
   secondaryEngine: Engine
-  writingModelOverride: string | null
-  mathModelOverride: string | null
   mode: ReviewMode
   venueProfile: string
   llmProofReview: boolean
@@ -50,7 +48,6 @@ export type WizardAction =
   | { type: 'SET_FILE'; filePath: string; fileType: FileType }
   | { type: 'CLEAR_FILE' }
   | { type: 'SET_PARSER'; parser: ParserChoice }
-  | { type: 'SET_MODEL_OVERRIDE'; role: 'writing' | 'math'; value: string | null }
   | { type: 'SET_PRIMARY_ENGINE'; engine: Engine }
   | { type: 'SET_SECONDARY_ENABLED'; enabled: boolean }
   | { type: 'SET_SECONDARY_ENGINE'; engine: Engine }

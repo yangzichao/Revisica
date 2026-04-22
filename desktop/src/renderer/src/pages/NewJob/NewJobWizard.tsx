@@ -7,7 +7,7 @@ import type { Provider } from '@/components/ProviderCard'
 import Stepper from './Stepper'
 import Step1ImportFile from './Step1ImportFile'
 import Step2ReviewPlan from './Step2ReviewPlan'
-import { pickDefaultForEngine } from './EnginePicker'
+import { resolveModelsForSubmit } from './modelSelection'
 import {
   DEFAULT_VENUE_PROFILE,
   type Engine,
@@ -95,8 +95,6 @@ const INITIAL_STATE: WizardState = {
   fileType: null,
   currentStep: 1,
   parserChoice: null,
-  writingModelOverride: null,
-  mathModelOverride: null,
   ...loadPersisted(),
 }
 
@@ -141,10 +139,6 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       }
     case 'SET_PARSER':
       return { ...state, parserChoice: action.parser }
-    case 'SET_MODEL_OVERRIDE':
-      return action.role === 'writing'
-        ? { ...state, writingModelOverride: action.value }
-        : { ...state, mathModelOverride: action.value }
     case 'SET_PRIMARY_ENGINE':
       return { ...state, primaryEngine: action.engine }
     case 'SET_SECONDARY_ENABLED':
@@ -329,22 +323,17 @@ export default function NewJobWizard({
           ? state.parserChoice
           : 'auto'
 
-      // Manual override wins over the engine-derived default.
-      const effectivelySingle =
-        !state.secondaryEnabled || state.secondaryEngine === state.primaryEngine
-      const engineWriting = effectivelySingle
-        ? pickDefaultForEngine(modelRoutes?.writing, state.primaryEngine)
-        : null
-      const engineMath = effectivelySingle
-        ? pickDefaultForEngine(modelRoutes?.math, state.primaryEngine)
-        : null
+      const { writing_model, math_model } = resolveModelsForSubmit(
+        state,
+        modelRoutes,
+      )
 
       const reviewBody: Record<string, unknown> = {
         mode: state.mode,
         venue_profile: state.venueProfile,
         llm_proof_review: state.mode === 'review' && state.llmProofReview,
-        writing_model: state.writingModelOverride ?? engineWriting,
-        math_model: state.mathModelOverride ?? engineMath,
+        writing_model,
+        math_model,
       }
       if (resumeContext) {
         reviewBody.parsed_document_id = resumeContext.id
@@ -469,7 +458,6 @@ export default function NewJobWizard({
           <Step2ReviewPlan
             state={state}
             dispatch={dispatch}
-            modelRoutes={modelRoutes}
             providers={providers}
             isLoadingProviders={isLoadingProviders}
             onSubmit={handleSubmit}
