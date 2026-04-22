@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, NavLink } from 'react-router-dom'
 import {
   Loader2, CheckCircle2, XCircle, Circle, FileText, Inbox,
@@ -65,6 +65,22 @@ function readRunIds(): string[] {
   }
 }
 
+// ── Selected-job detail state ──────────────────────────────────────
+
+interface SelectedJobDetail {
+  status: RunStatus | null
+  results: ReviewResults | null
+  activeTab: ReportTab
+  errorMessage: string | null
+}
+
+const INITIAL_SELECTED_JOB_DETAIL: SelectedJobDetail = {
+  status: null,
+  results: null,
+  activeTab: 'summary',
+  errorMessage: null,
+}
+
 // ── Main Component ─────────────────────────────────────────────────
 
 export default function Jobs({
@@ -78,10 +94,9 @@ export default function Jobs({
   const navigate = useNavigate()
 
   const [jobs, setJobs] = useState<RunStatus[]>([])
-  const [selectedJob, setSelectedJob] = useState<RunStatus | null>(null)
-  const [results, setResults] = useState<ReviewResults | null>(null)
-  const [activeTab, setActiveTab] = useState<ReportTab>('summary')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [selectedJobDetail, setSelectedJobDetail] = useState<SelectedJobDetail>(
+    INITIAL_SELECTED_JOB_DETAIL,
+  )
 
   // Poll all known jobs
   useEffect(() => {
@@ -112,27 +127,25 @@ export default function Jobs({
   // Fetch detail for the selected job
   useEffect(() => {
     if (!runId) {
-      setSelectedJob(null)
-      setResults(null)
+      setSelectedJobDetail(INITIAL_SELECTED_JOB_DETAIL)
       return
     }
 
-    setResults(null)
-    setErrorMessage(null)
-    setActiveTab('summary')
+    // Atomic reset when runId changes
+    setSelectedJobDetail(INITIAL_SELECTED_JOB_DETAIL)
 
     const poll = setInterval(async () => {
       try {
         const response = await apiFetch(apiBase, apiToken, `/api/status/${runId}`)
         if (!response.ok) {
-          setErrorMessage('Failed to fetch job status')
+          setSelectedJobDetail((prev) => ({ ...prev, errorMessage: 'Failed to fetch job status' }))
           return
         }
 
-        const status: RunStatus = await response.json()
-        setSelectedJob(status)
+        const jobStatus: RunStatus = await response.json()
+        setSelectedJobDetail((prev) => ({ ...prev, status: jobStatus }))
 
-        if (status.state === 'completed') {
+        if (jobStatus.state === 'completed') {
           clearInterval(poll)
           const resultsResponse = await apiFetch(
             apiBase,
@@ -141,16 +154,19 @@ export default function Jobs({
           )
           if (resultsResponse.ok) {
             const payload: ReviewResults = await resultsResponse.json()
-            setResults(payload)
             const tabs = computeAvailableTabs(payload)
             const firstReportTab = tabs.find((tab) => tab !== 'summary')
-            setActiveTab(firstReportTab ?? tabs[0] ?? 'summary')
+            setSelectedJobDetail((prev) => ({
+              ...prev,
+              results: payload,
+              activeTab: firstReportTab ?? tabs[0] ?? 'summary',
+            }))
           }
-        } else if (status.state === 'failed') {
+        } else if (jobStatus.state === 'failed') {
           clearInterval(poll)
         }
       } catch {
-        setErrorMessage('Lost connection to backend')
+        setSelectedJobDetail((prev) => ({ ...prev, errorMessage: 'Lost connection to backend' }))
       }
     }, 1000)
 
@@ -167,7 +183,9 @@ export default function Jobs({
     }
   }, [runId, jobs, navigate])
 
-  const getReportContent = (): string => {
+  const { status: selectedStatus, results, activeTab, errorMessage } = selectedJobDetail
+
+  const reportContent = useMemo((): string => {
     if (!results) return ''
     switch (activeTab) {
       case 'writing':
@@ -179,7 +197,7 @@ export default function Jobs({
       default:
         return results.summary
     }
-  }
+  }, [activeTab, results])
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -218,8 +236,8 @@ export default function Jobs({
           </div>
         )}
 
-        {runId && selectedJob && !results && (
-          <JobProgressView runId={runId} status={selectedJob} />
+        {runId && selectedStatus && !results && (
+          <JobProgressView runId={runId} status={selectedStatus} />
         )}
 
         {runId && results && (
@@ -227,8 +245,10 @@ export default function Jobs({
             runId={runId}
             results={results}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
-            content={getReportContent()}
+            onTabChange={(tab) =>
+              setSelectedJobDetail((prev) => ({ ...prev, activeTab: tab }))
+            }
+            content={reportContent}
           />
         )}
       </div>
