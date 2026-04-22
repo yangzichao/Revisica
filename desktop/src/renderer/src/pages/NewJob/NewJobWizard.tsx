@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Bookmark, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
+import { deriveDocumentLabels } from '@/lib/parsedDocuments'
 import type { Provider } from '@/components/ProviderCard'
 import Stepper from './Stepper'
 import Step1ImportFile from './Step1ImportFile'
@@ -536,10 +537,11 @@ function ResumeSummaryCard({
   context: ResumeContext
   onExit: () => void
 }): JSX.Element {
-  const fileName = context.sourcePath
-    ? context.sourcePath.split('/').pop() || context.sourcePath
-    : context.id
-  const heading = context.title.trim() || fileName
+  const { fileName, heading } = deriveDocumentLabels(
+    context.sourcePath,
+    context.title,
+    context.id,
+  )
   return (
     <div>
       <header className="mb-4">

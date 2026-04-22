@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import ModeCard from '@/components/ModeCard'
+import LibraryPickerInline from './LibraryPickerInline'
 import type {
   FileType,
   ParserChoice,
@@ -143,7 +144,7 @@ export default function Step1ImportFile({
           Import your paper
         </h2>
         <p className="font-serif text-sm text-ink-tertiary italic mt-1">
-          Drop a file, or reuse the setup from a past job.
+          Drop a new file, or pick one you've already parsed.
         </p>
       </header>
 
@@ -227,6 +228,10 @@ export default function Step1ImportFile({
           </>
         )}
       </div>
+
+      {!state.filePath && (
+        <LibraryPickerInline apiBase={apiBase} apiToken={apiToken} />
+      )}
 
       {/* Format-specific sub-section */}
       {state.filePath && state.fileType && (

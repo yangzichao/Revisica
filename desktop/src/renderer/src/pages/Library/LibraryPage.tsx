@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, BookOpen, RotateCw } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
-import LibraryRow, { type LibrarySummary } from './LibraryRow'
+import { type LibrarySummary } from '@/lib/parsedDocuments'
+import LibraryRow from './LibraryRow'
 
 interface LibraryPageProps {
   apiBase: string

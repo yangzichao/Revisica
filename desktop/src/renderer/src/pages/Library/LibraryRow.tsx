@@ -9,24 +9,18 @@ import {
   BookOpen,
 } from 'lucide-react'
 import { Chip } from '@/components/Chip'
-import { basename, formatRelativeTime } from '@/lib/formatters'
+import { formatRelativeTime } from '@/lib/formatters'
+import {
+  deriveDocumentLabels,
+  resumeReviewPath,
+  type LibrarySummary,
+} from '@/lib/parsedDocuments'
 import ParseResult, { type ParseResultData } from '@/pages/Parse/ParseResult'
 import {
   deleteParsedDocument,
   fetchParsedDocument,
 } from './parsedDocumentApi'
 import { useDeleteConfirm } from './useDeleteConfirm'
-
-export interface LibrarySummary {
-  id: string
-  parsed_at: string
-  source_path: string
-  parser_used: string
-  elapsed_ms: number
-  title: string
-  authors: string[]
-  section_count: number
-}
 
 interface LibraryRowProps {
   row: LibrarySummary
@@ -47,8 +41,10 @@ export default function LibraryRow({
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
 
-  const fileName = basename(row.source_path || '') || 'document'
-  const heading = (row.title || '').trim() || fileName
+  const { fileName, heading } = deriveDocumentLabels(
+    row.source_path,
+    row.title,
+  )
 
   const deleteConfirm = useDeleteConfirm({
     perform: () => deleteParsedDocument(apiBase, apiToken, row.id),
@@ -77,7 +73,7 @@ export default function LibraryRow({
   }, [isExpanded, detail, isLoadingDetail, apiBase, apiToken, row.id])
 
   const handleStartReview = useCallback((): void => {
-    navigate(`/?parsed=${encodeURIComponent(row.id)}`)
+    navigate(resumeReviewPath(row.id))
   }, [navigate, row.id])
 
   const handleOpenPreview = useCallback((): void => {
@@ -95,6 +91,7 @@ export default function LibraryRow({
           type="button"
           onClick={handleToggleExpand}
           className="shrink-0 mt-1 text-ink-tertiary hover:text-ink-secondary transition-colors cursor-pointer bg-transparent border-none p-0"
+          aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse' : 'Expand'}
         >
           {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
