@@ -48,8 +48,8 @@ export default function Step1ImportFile({
   dispatch,
 }: Step1Props): JSX.Element {
   const [isDragOver, setIsDragOver] = useState(false)
-  const [unsupportedFlash, setUnsupportedFlash] = useState(false)
-  const [dropErrorFlash, setDropErrorFlash] = useState<string | null>(null)
+  const [isUnsupportedFormatVisible, setIsUnsupportedFormatVisible] = useState(false)
+  const [dropZoneErrorMessage, setDropZoneErrorMessage] = useState<string | null>(null)
   const [parsers, setParsers] = useState<ParserInfo[]>([])
   const [isLoadingParsers, setIsLoadingParsers] = useState(true)
 
@@ -75,8 +75,8 @@ export default function Step1ImportFile({
     (path: string): void => {
       const fileType = detectFileType(path)
       if (!fileType) {
-        setUnsupportedFlash(true)
-        setTimeout(() => setUnsupportedFlash(false), 1400)
+        setIsUnsupportedFormatVisible(true)
+        setTimeout(() => setIsUnsupportedFormatVisible(false), 1400)
         return
       }
       dispatch({ type: 'SET_FILE', filePath: path, fileType })
@@ -85,8 +85,8 @@ export default function Step1ImportFile({
   )
 
   const showDropError = useCallback((message: string): void => {
-    setDropErrorFlash(message)
-    setTimeout(() => setDropErrorFlash(null), 2400)
+    setDropZoneErrorMessage(message)
+    setTimeout(() => setDropZoneErrorMessage(null), 2400)
   }, [])
 
   const handleDrop = useCallback(
@@ -151,23 +151,23 @@ export default function Step1ImportFile({
       <div
         className={cn(
           'flex items-center gap-2 mb-4 transition-colors duration-150',
-          unsupportedFlash && 'text-danger',
+          isUnsupportedFormatVisible && 'text-danger',
         )}
       >
-        <FormatChip icon={FileType2} label="PDF" flash={unsupportedFlash} />
-        <FormatChip icon={FileCode} label="TeX" flash={unsupportedFlash} />
-        <FormatChip icon={FileText} label="Markdown" flash={unsupportedFlash} />
+        <FormatChip icon={FileType2} label="PDF" isUnsupportedFormatVisible={isUnsupportedFormatVisible} />
+        <FormatChip icon={FileCode} label="TeX" isUnsupportedFormatVisible={isUnsupportedFormatVisible} />
+        <FormatChip icon={FileText} label="Markdown" isUnsupportedFormatVisible={isUnsupportedFormatVisible} />
       </div>
 
-      {unsupportedFlash && (
+      {isUnsupportedFormatVisible && (
         <div className="text-xs text-danger mb-2 font-medium">
           Unsupported format. We accept .pdf, .tex, .md, or .mmd.
         </div>
       )}
 
-      {dropErrorFlash && (
+      {dropZoneErrorMessage && (
         <div className="text-xs text-danger mb-2 font-medium">
-          {dropErrorFlash}
+          {dropZoneErrorMessage}
         </div>
       )}
 
@@ -183,7 +183,7 @@ export default function Step1ImportFile({
             ? 'border-accent bg-accent/5'
             : state.filePath
               ? 'border-success/40 bg-success/[0.03]'
-              : unsupportedFlash || dropErrorFlash
+              : isUnsupportedFormatVisible || dropZoneErrorMessage
                 ? 'border-danger/60 bg-danger/5'
                 : 'border-paper-300 hover:border-paper-400',
         )}
@@ -275,18 +275,18 @@ export default function Step1ImportFile({
 function FormatChip({
   icon: Icon,
   label,
-  flash,
+  isUnsupportedFormatVisible,
 }: {
   icon: typeof FileCode
   label: string
-  flash: boolean
+  isUnsupportedFormatVisible: boolean
 }): JSX.Element {
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
         'border text-xs font-medium transition-colors duration-150',
-        flash
+        isUnsupportedFormatVisible
           ? 'border-danger/50 bg-danger/10 text-danger'
           : 'border-paper-300 bg-paper-50 text-ink-tertiary',
       )}
