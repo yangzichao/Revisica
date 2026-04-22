@@ -6,10 +6,16 @@ import {
   Trash2,
   ArrowRight,
   Loader2,
+  BookOpen,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { apiFetch } from '@/lib/api'
+import { Chip } from '@/components/Chip'
+import { basename, formatRelativeTime } from '@/lib/formatters'
 import ParseResult, { type ParseResultData } from '@/pages/Parse/ParseResult'
+import {
+  deleteParsedDocument,
+  fetchParsedDocument,
+} from './parsedDocumentApi'
+import { useDeleteConfirm } from './useDeleteConfirm'
 
 export interface LibrarySummary {
   id: string
@@ -40,13 +46,14 @@ export default function LibraryRow({
   const [detail, setDetail] = useState<ParseResultData | null>(null)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-  const fileName = row.source_path
-    ? row.source_path.split('/').pop() || row.source_path
-    : 'document'
-  const heading = row.title.trim() || fileName
+  const fileName = basename(row.source_path || '') || 'document'
+  const heading = (row.title || '').trim() || fileName
+
+  const deleteConfirm = useDeleteConfirm({
+    perform: () => deleteParsedDocument(apiBase, apiToken, row.id),
+    onDeleted: () => onDeleted(row.id),
+  })
 
   const handleToggleExpand = useCallback(async (): Promise<void> => {
     if (isExpanded) {
@@ -58,16 +65,7 @@ export default function LibraryRow({
     setIsLoadingDetail(true)
     setDetailError(null)
     try {
-      const response = await apiFetch(
-        apiBase,
-        apiToken,
-        `/api/parsed-documents/${encodeURIComponent(row.id)}`,
-      )
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.detail || `Failed to load (${response.status})`)
-      }
-      const data: ParseResultData = await response.json()
+      const data = await fetchParsedDocument(apiBase, apiToken, row.id)
       setDetail(data)
     } catch (err) {
       setDetailError(
@@ -82,38 +80,13 @@ export default function LibraryRow({
     navigate(`/?parsed=${encodeURIComponent(row.id)}`)
   }, [navigate, row.id])
 
-  const handleDelete = useCallback(async (): Promise<void> => {
-    if (!confirmingDelete) {
-      setConfirmingDelete(true)
-      return
-    }
-    setIsDeleting(true)
-    try {
-      const response = await apiFetch(
-        apiBase,
-        apiToken,
-        `/api/parsed-documents/${encodeURIComponent(row.id)}`,
-        { method: 'DELETE' },
-      )
-      if (!response.ok) {
-        throw new Error(`Delete failed (${response.status})`)
-      }
-      onDeleted(row.id)
-    } catch (err) {
-      setIsDeleting(false)
-      setConfirmingDelete(false)
-      setDetailError(
-        err instanceof Error ? err.message : 'Delete failed',
-      )
-    }
-  }, [confirmingDelete, apiBase, apiToken, row.id, onDeleted])
-
-  const handleCancelDelete = useCallback((): void => {
-    setConfirmingDelete(false)
-  }, [])
+  const handleOpenPreview = useCallback((): void => {
+    navigate(`/library/${encodeURIComponent(row.id)}`)
+  }, [navigate, row.id])
 
   const authorLine = summarizeAuthors(row.authors)
   const timeLine = formatRelativeTime(row.parsed_at)
+  const combinedError = detailError || deleteConfirm.error
 
   return (
     <div className="card overflow-hidden">
@@ -141,25 +114,25 @@ export default function LibraryRow({
             </div>
           )}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <ParserChip parser={row.parser_used} />
-            <MetaChip>
+            <Chip tone="accent">{row.parser_used}</Chip>
+            <Chip>
               {row.section_count} section{row.section_count === 1 ? '' : 's'}
-            </MetaChip>
-            <MetaChip>{timeLine}</MetaChip>
-            <MetaChip muted>{fileName}</MetaChip>
+            </Chip>
+            <Chip>{timeLine}</Chip>
+            <Chip tone="muted">{fileName}</Chip>
           </div>
         </button>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {confirmingDelete ? (
+          {deleteConfirm.isConfirming ? (
             <>
               <button
                 type="button"
-                onClick={handleDelete}
-                disabled={isDeleting}
+                onClick={deleteConfirm.request}
+                disabled={deleteConfirm.isDeleting}
                 className="btn-ghost px-2.5 py-1.5 text-xs text-danger hover:bg-danger/10"
               >
-                {isDeleting ? (
+                {deleteConfirm.isDeleting ? (
                   <Loader2 size={12} className="animate-spin" />
                 ) : (
                   <Trash2 size={12} />
@@ -168,8 +141,8 @@ export default function LibraryRow({
               </button>
               <button
                 type="button"
-                onClick={handleCancelDelete}
-                disabled={isDeleting}
+                onClick={deleteConfirm.cancel}
+                disabled={deleteConfirm.isDeleting}
                 className="btn-ghost px-2.5 py-1.5 text-xs"
               >
                 Cancel
@@ -177,6 +150,15 @@ export default function LibraryRow({
             </>
           ) : (
             <>
+              <button
+                type="button"
+                onClick={handleOpenPreview}
+                className="btn-ghost px-2.5 py-1.5 text-xs text-ink-secondary hover:text-ink"
+                title="Open rendered preview"
+              >
+                <BookOpen size={12} />
+                Open
+              </button>
               <button
                 type="button"
                 onClick={handleStartReview}
@@ -188,7 +170,7 @@ export default function LibraryRow({
               </button>
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={deleteConfirm.request}
                 className="btn-ghost px-2 py-1.5 text-xs text-ink-tertiary hover:text-danger"
                 title="Delete"
               >
@@ -207,8 +189,8 @@ export default function LibraryRow({
               Loading details…
             </div>
           )}
-          {detailError && !isLoadingDetail && (
-            <div className="text-sm text-danger">{detailError}</div>
+          {combinedError && !isLoadingDetail && (
+            <div className="text-sm text-danger">{combinedError}</div>
           )}
           {detail && !isLoadingDetail && <ParseResult result={detail} />}
         </div>
@@ -217,56 +199,8 @@ export default function LibraryRow({
   )
 }
 
-function ParserChip({ parser }: { parser: string }): JSX.Element {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-[11px] font-medium">
-      {parser}
-    </span>
-  )
-}
-
-function MetaChip({
-  children,
-  muted,
-}: {
-  children: React.ReactNode
-  muted?: boolean
-}): JSX.Element {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium',
-        muted
-          ? 'border-paper-300 bg-transparent text-ink-faint font-mono'
-          : 'border-paper-300 bg-paper-50 text-ink-tertiary',
-      )}
-    >
-      {children}
-    </span>
-  )
-}
-
 function summarizeAuthors(authors: string[]): string {
   if (!authors || authors.length === 0) return ''
   if (authors.length <= 3) return authors.join(', ')
   return `${authors.slice(0, 3).join(', ')} +${authors.length - 3} more`
-}
-
-function formatRelativeTime(iso: string): string {
-  if (!iso) return ''
-  const then = Date.parse(iso)
-  if (Number.isNaN(then)) return iso
-  const seconds = Math.max(0, Math.floor((Date.now() - then) / 1000))
-  if (seconds < 45) return 'just now'
-  if (seconds < 90) return '1 min ago'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes} min ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  const months = Math.floor(days / 30)
-  if (months < 12) return `${months}mo ago`
-  const years = Math.floor(days / 365)
-  return `${years}y ago`
 }

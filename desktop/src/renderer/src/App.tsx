@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import NewJobWizard from './pages/NewJob/NewJobWizard'
 import ParsePage from './pages/Parse/ParsePage'
 import LibraryPage from './pages/Library/LibraryPage'
+import LibraryPreviewPage from './pages/Library/preview/LibraryPreviewPage'
 import Jobs from './pages/Jobs'
 import Integrations from './pages/Integrations'
 import IngestionBenchmarkPage from './pages/Benchmarks/IngestionBenchmarkPage'
@@ -75,6 +76,10 @@ function App(): JSX.Element {
         <Route path="/" element={<NewJobWizard apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/parse" element={<ParsePage apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/library" element={<LibraryPage apiBase={apiBase} apiToken={apiToken} />} />
+        <Route
+          path="/library/:id"
+          element={<LibraryPreviewPage apiBase={apiBase} apiToken={apiToken} />}
+        />
         <Route path="/jobs" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/jobs/:runId" element={<Jobs apiBase={apiBase} apiToken={apiToken} />} />
         <Route path="/integrations" element={<Integrations apiBase={apiBase} apiToken={apiToken} />} />

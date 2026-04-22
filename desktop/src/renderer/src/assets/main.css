@@ -1,3 +1,5 @@
+@import 'katex/dist/katex.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -130,4 +132,65 @@
 
 .prose-paper a {
   @apply text-accent underline underline-offset-2;
+}
+
+/* ── Full-document preview (Library → Open) ───────────────────────── */
+
+.prose-paper-preview {
+  @apply text-[15.5px];
+}
+
+.prose-paper-preview :is(h1, h2, h3) {
+  scroll-margin-top: 1.5rem;
+}
+
+.prose-paper-preview h1 {
+  @apply text-[22px] font-semibold mt-10 mb-4 pb-1.5 border-b border-paper-300;
+}
+
+.prose-paper-preview h2 {
+  @apply text-[18px] font-semibold mt-8 mb-3;
+}
+
+.prose-paper-preview h3 {
+  @apply text-[16px] font-semibold mt-6 mb-2;
+}
+
+.prose-paper-preview h1:first-child,
+.prose-paper-preview h2:first-child,
+.prose-paper-preview h3:first-child {
+  @apply mt-0;
+}
+
+.prose-paper-preview p {
+  @apply my-3 leading-[1.75];
+}
+
+.prose-paper-preview table {
+  @apply text-sm;
+}
+
+.prose-paper-preview th,
+.prose-paper-preview td {
+  @apply px-3 py-2 border border-paper-300 align-top;
+}
+
+.prose-paper-preview thead th {
+  @apply bg-paper-100 text-ink font-semibold text-left;
+}
+
+.prose-paper-preview details {
+  @apply my-3 rounded-md border border-paper-300 bg-paper-100/50 px-3 py-2 text-sm text-ink-secondary;
+}
+
+.prose-paper-preview details summary {
+  @apply cursor-pointer text-xs font-semibold text-ink-tertiary uppercase tracking-wider select-none;
+}
+
+.prose-paper-preview .katex {
+  @apply text-[0.98em];
+}
+
+.prose-paper-preview .katex-display {
+  @apply my-4 overflow-x-auto overflow-y-hidden;
 }
