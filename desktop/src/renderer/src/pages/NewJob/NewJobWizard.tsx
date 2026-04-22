@@ -28,6 +28,12 @@ interface ResumeContext {
   sectionCount: number
 }
 
+type ResumeLoadState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'loaded'; context: ResumeContext }
+  | { status: 'error'; message: string }
+
 const LS_KEYS = {
   parser: 'revisica_new_job_parser',
   mode: 'revisica_new_job_mode',
@@ -188,10 +194,14 @@ export default function NewJobWizard({
   const [isBackendReady, setIsBackendReady] = useState(false)
   const [providers, setProviders] = useState<Provider[]>([])
   const [isLoadingProviders, setIsLoadingProviders] = useState(true)
-  const [resumeContext, setResumeContext] = useState<ResumeContext | null>(null)
-  const [isLoadingResume, setIsLoadingResume] = useState(false)
-  const [resumeError, setResumeError] = useState<string | null>(null)
+  const [resumeLoadState, setResumeLoadState] = useState<ResumeLoadState>({ status: 'idle' })
   const [modelRoutes, setModelRoutes] = useState<ModelRoutes | null>(null)
+
+  // Derived values from the discriminated-union resume state — kept as local
+  // consts so the rest of the component body stays readable without changes.
+  const resumeContext = resumeLoadState.status === 'loaded' ? resumeLoadState.context : null
+  const isLoadingResume = resumeLoadState.status === 'loading'
+  const resumeError = resumeLoadState.status === 'error' ? resumeLoadState.message : null
 
   useEffect(() => {
     let cancelled = false
@@ -253,13 +263,12 @@ export default function NewJobWizard({
   useEffect(() => {
     const parsedId = searchParams.get('parsed')
     if (!parsedId) {
-      setResumeContext(null)
+      setResumeLoadState({ status: 'idle' })
       return
     }
     if (resumeContext && resumeContext.id === parsedId) return
     let cancelled = false
-    setIsLoadingResume(true)
-    setResumeError(null)
+    setResumeLoadState({ status: 'loading' })
     const load = async (): Promise<void> => {
       try {
         const response = await apiFetch(
@@ -273,13 +282,16 @@ export default function NewJobWizard({
         }
         const data = await response.json()
         if (cancelled) return
-        setResumeContext({
-          id: data.id,
-          title: data.title || '',
-          parserUsed: data.parser_used || 'unknown',
-          parsedAt: data.parsed_at || '',
-          sourcePath: data.source_path || '',
-          sectionCount: data.section_count || 0,
+        setResumeLoadState({
+          status: 'loaded',
+          context: {
+            id: data.id,
+            title: data.title || '',
+            parserUsed: data.parser_used || 'unknown',
+            parsedAt: data.parsed_at || '',
+            sourcePath: data.source_path || '',
+            sectionCount: data.section_count || 0,
+          },
         })
         dispatch({
           type: 'SET_FILE',
@@ -291,13 +303,11 @@ export default function NewJobWizard({
         dispatch({ type: 'GO_NEXT' })
       } catch (err) {
         if (cancelled) return
-        setResumeError(
-          err instanceof Error ? err.message : 'Could not load saved parse',
-        )
-        setResumeContext(null)
+        setResumeLoadState({
+          status: 'error',
+          message: err instanceof Error ? err.message : 'Could not load saved parse',
+        })
         setSearchParams({}, { replace: true })
-      } finally {
-        if (!cancelled) setIsLoadingResume(false)
       }
     }
     load()
@@ -307,7 +317,7 @@ export default function NewJobWizard({
   }, [searchParams, apiBase, apiToken, resumeContext, setSearchParams])
 
   const handleExitResume = useCallback((): void => {
-    setResumeContext(null)
+    setResumeLoadState({ status: 'idle' })
     setSearchParams({}, { replace: true })
     dispatch({ type: 'CLEAR_FILE' })
     dispatch({ type: 'GO_TO_STEP', step: 1 })
