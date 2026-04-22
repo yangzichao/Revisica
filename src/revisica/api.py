@@ -643,11 +643,17 @@ def get_run_results(run_id: str):
     if math_report_path.exists():
         math_report = math_report_path.read_text(encoding="utf-8")
 
+    polish_report = ""
+    polish_report_path = run_dir / "polish_report.md"
+    if polish_report_path.exists():
+        polish_report = polish_report_path.read_text(encoding="utf-8")
+
     return {
         "run_id": run_id,
         "summary": summary,
         "writing_report": writing_report,
         "math_report": math_report,
+        "polish_report": polish_report,
         "run_dir": str(run_dir),
     }
 

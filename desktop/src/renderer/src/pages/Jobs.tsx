@@ -28,10 +28,27 @@ interface ReviewResults {
   summary: string
   writing_report?: string
   math_report?: string
+  polish_report?: string
   run_dir: string
 }
 
-type ReportTab = 'summary' | 'writing' | 'math'
+type ReportTab = 'summary' | 'writing' | 'math' | 'polish'
+
+const TAB_LABELS: Record<ReportTab, string> = {
+  summary: 'Summary',
+  writing: 'Writing',
+  math: 'Math',
+  polish: 'Polish',
+}
+
+function computeAvailableTabs(results: ReviewResults): ReportTab[] {
+  const tabs: ReportTab[] = []
+  if (results.summary && results.summary.trim()) tabs.push('summary')
+  if (results.polish_report && results.polish_report.trim()) tabs.push('polish')
+  if (results.writing_report && results.writing_report.trim()) tabs.push('writing')
+  if (results.math_report && results.math_report.trim()) tabs.push('math')
+  return tabs
+}
 
 function readRunIds(): string[] {
   try {
@@ -122,7 +139,13 @@ export default function Jobs({
             apiToken,
             `/api/results/${runId}`,
           )
-          if (resultsResponse.ok) setResults(await resultsResponse.json())
+          if (resultsResponse.ok) {
+            const payload: ReviewResults = await resultsResponse.json()
+            setResults(payload)
+            const tabs = computeAvailableTabs(payload)
+            const firstReportTab = tabs.find((tab) => tab !== 'summary')
+            setActiveTab(firstReportTab ?? tabs[0] ?? 'summary')
+          }
         } else if (status.state === 'failed') {
           clearInterval(poll)
         }
@@ -151,6 +174,8 @@ export default function Jobs({
         return results.writing_report ?? '*No writing report available*'
       case 'math':
         return results.math_report ?? '*No math report available*'
+      case 'polish':
+        return results.polish_report ?? '*No polish report available*'
       default:
         return results.summary
     }
@@ -347,7 +372,7 @@ function JobResultsView({
   onTabChange: (tab: ReportTab) => void
   content: string
 }): JSX.Element {
-  const tabs: ReportTab[] = ['summary', 'writing', 'math']
+  const availableTabs = computeAvailableTabs(results)
 
   return (
     <div className="max-w-3xl mx-auto px-8 py-10">
@@ -362,24 +387,26 @@ function JobResultsView({
         {results.run_dir}
       </p>
 
-      {/* Report tabs */}
-      <div className="flex gap-1 mb-6 p-1 rounded-lg bg-paper-200/60">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => onTabChange(tab)}
-            className={cn(
-              'flex-1 px-4 py-2 text-sm font-medium rounded-md',
-              'transition-colors duration-150 border-none cursor-pointer',
-              tab === activeTab
-                ? 'bg-paper-50 text-ink shadow-subtle'
-                : 'bg-transparent text-ink-tertiary hover:text-ink-secondary',
-            )}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
-      </div>
+      {/* Report tabs — only show tabs with content */}
+      {availableTabs.length > 1 && (
+        <div className="flex gap-1 mb-6 p-1 rounded-lg bg-paper-200/60">
+          {availableTabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => onTabChange(tab)}
+              className={cn(
+                'flex-1 px-4 py-2 text-sm font-medium rounded-md',
+                'transition-colors duration-150 border-none cursor-pointer',
+                tab === activeTab
+                  ? 'bg-paper-50 text-ink shadow-subtle'
+                  : 'bg-transparent text-ink-tertiary hover:text-ink-secondary',
+              )}
+            >
+              {TAB_LABELS[tab]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Report content */}
       <div className="card px-6 py-6">
