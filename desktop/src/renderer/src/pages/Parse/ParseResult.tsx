@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { cn } from '@/lib/utils'
+import { Chip } from '@/components/Chip'
+import { formatElapsed } from '@/lib/formatters'
 
 export interface ParseResultSection {
   id: string
@@ -89,33 +90,15 @@ function SummaryChips({
 }): JSX.Element {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <Chip label={`parsed via ${parserUsed}`} tone="accent" />
-      <Chip label={elapsedLabel} />
-      <Chip label={`${sectionCount} section${sectionCount === 1 ? '' : 's'}`} />
-      <Chip label={`${authorCount} author${authorCount === 1 ? '' : 's'}`} />
+      <Chip tone="accent">parsed via {parserUsed}</Chip>
+      <Chip>{elapsedLabel}</Chip>
+      <Chip>
+        {sectionCount} section{sectionCount === 1 ? '' : 's'}
+      </Chip>
+      <Chip>
+        {authorCount} author{authorCount === 1 ? '' : 's'}
+      </Chip>
     </div>
-  )
-}
-
-function Chip({
-  label,
-  tone = 'default',
-}: {
-  label: string
-  tone?: 'default' | 'accent'
-}): JSX.Element {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
-        'border text-xs font-medium',
-        tone === 'accent'
-          ? 'border-accent/40 bg-accent/10 text-accent'
-          : 'border-paper-300 bg-paper-50 text-ink-tertiary',
-      )}
-    >
-      {label}
-    </span>
   )
 }
 
@@ -242,11 +225,3 @@ function SectionRow({ section }: { section: ParseResultSection }): JSX.Element {
   )
 }
 
-function formatElapsed(ms: number): string {
-  if (ms < 1000) return `${ms}ms`
-  const seconds = ms / 1000
-  if (seconds < 60) return `${seconds.toFixed(1)}s`
-  const minutes = Math.floor(seconds / 60)
-  const remainder = Math.round(seconds - minutes * 60)
-  return `${minutes}m ${remainder}s`
-}
