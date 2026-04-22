@@ -186,8 +186,16 @@ export default function NewJobWizard({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isBackendReady, setIsBackendReady] = useState(false)
-  const [providers, setProviders] = useState<Provider[]>([])
-  const [isLoadingProviders, setIsLoadingProviders] = useState(true)
+  interface ProviderFetchState {
+    providers: Provider[]
+    isLoading: boolean
+  }
+  const [providerFetchState, setProviderFetchState] = useState<ProviderFetchState>({
+    providers: [],
+    isLoading: true,
+  })
+  const providers = providerFetchState.providers
+  const isLoadingProviders = providerFetchState.isLoading
   const [resumeContext, setResumeContext] = useState<ResumeContext | null>(null)
   const [isLoadingResume, setIsLoadingResume] = useState(false)
   const [resumeError, setResumeError] = useState<string | null>(null)
@@ -221,12 +229,13 @@ export default function NewJobWizard({
       const response = await apiFetch(apiBase, apiToken, '/api/providers')
       if (response.ok) {
         const data = await response.json()
-        setProviders(data.providers || [])
+        setProviderFetchState({ providers: data.providers || [], isLoading: false })
+      } else {
+        setProviderFetchState((prev) => ({ ...prev, isLoading: false }))
       }
     } catch {
       // Degrade gracefully — ProviderStatusBadge renders the "not configured" state
-    } finally {
-      setIsLoadingProviders(false)
+      setProviderFetchState((prev) => ({ ...prev, isLoading: false }))
     }
   }, [apiBase, apiToken])
 
