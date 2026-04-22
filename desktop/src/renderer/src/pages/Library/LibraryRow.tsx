@@ -9,18 +9,14 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
+import { formatRelativeTime } from '@/lib/time'
+import {
+  deriveDocumentLabels,
+  resumeReviewPath,
+  type LibrarySummary,
+} from '@/lib/parsedDocuments'
+import ParserChip from '@/components/ParserChip'
 import ParseResult, { type ParseResultData } from '@/pages/Parse/ParseResult'
-
-export interface LibrarySummary {
-  id: string
-  parsed_at: string
-  source_path: string
-  parser_used: string
-  elapsed_ms: number
-  title: string
-  authors: string[]
-  section_count: number
-}
 
 interface LibraryRowProps {
   row: LibrarySummary
@@ -43,10 +39,10 @@ export default function LibraryRow({
   const [isDeleting, setIsDeleting] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-  const fileName = row.source_path
-    ? row.source_path.split('/').pop() || row.source_path
-    : 'document'
-  const heading = row.title.trim() || fileName
+  const { fileName, heading } = deriveDocumentLabels(
+    row.source_path,
+    row.title,
+  )
 
   const handleToggleExpand = useCallback(async (): Promise<void> => {
     if (isExpanded) {
@@ -79,7 +75,7 @@ export default function LibraryRow({
   }, [isExpanded, detail, isLoadingDetail, apiBase, apiToken, row.id])
 
   const handleStartReview = useCallback((): void => {
-    navigate(`/?parsed=${encodeURIComponent(row.id)}`)
+    navigate(resumeReviewPath(row.id))
   }, [navigate, row.id])
 
   const handleDelete = useCallback(async (): Promise<void> => {
@@ -122,6 +118,7 @@ export default function LibraryRow({
           type="button"
           onClick={handleToggleExpand}
           className="shrink-0 mt-1 text-ink-tertiary hover:text-ink-secondary transition-colors cursor-pointer bg-transparent border-none p-0"
+          aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse' : 'Expand'}
         >
           {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
@@ -217,14 +214,6 @@ export default function LibraryRow({
   )
 }
 
-function ParserChip({ parser }: { parser: string }): JSX.Element {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-accent/30 bg-accent/10 text-accent text-[11px] font-medium">
-      {parser}
-    </span>
-  )
-}
-
 function MetaChip({
   children,
   muted,
@@ -250,23 +239,4 @@ function summarizeAuthors(authors: string[]): string {
   if (!authors || authors.length === 0) return ''
   if (authors.length <= 3) return authors.join(', ')
   return `${authors.slice(0, 3).join(', ')} +${authors.length - 3} more`
-}
-
-function formatRelativeTime(iso: string): string {
-  if (!iso) return ''
-  const then = Date.parse(iso)
-  if (Number.isNaN(then)) return iso
-  const seconds = Math.max(0, Math.floor((Date.now() - then) / 1000))
-  if (seconds < 45) return 'just now'
-  if (seconds < 90) return '1 min ago'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes} min ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  const months = Math.floor(days / 30)
-  if (months < 12) return `${months}mo ago`
-  const years = Math.floor(days / 365)
-  return `${years}y ago`
 }
