@@ -30,8 +30,10 @@ export default function IngestionBenchmarkPage({
     useState<ParserAvailability[] | null>(null)
   const [runState, setRunState] = useState<BenchmarkRunState | null>(null)
   const [draft, setDraft] = useState<BenchmarkConfigDraft>(DEFAULT_DRAFT)
-  const [isStarting, setIsStarting] = useState(false)
-  const [startError, setStartError] = useState<string | null>(null)
+  const [benchmarkSubmission, setBenchmarkSubmission] = useState<{
+    isStarting: boolean
+    error: string | null
+  }>({ isStarting: false, error: null })
   const [outputDirCopied, setOutputDirCopied] = useState(false)
 
   const pollTimerRef = useRef<number | null>(null)
@@ -95,8 +97,7 @@ export default function IngestionBenchmarkPage({
   }, [runState?.status, fetchStatus])
 
   const handleStart = useCallback(async () => {
-    setStartError(null)
-    setIsStarting(true)
+    setBenchmarkSubmission({ isStarting: true, error: null })
     try {
       const response = await apiFetch(
         apiBase,
@@ -115,17 +116,17 @@ export default function IngestionBenchmarkPage({
       )
       if (!response.ok) {
         const message = await safeErrorDetail(response)
-        setStartError(message)
+        setBenchmarkSubmission({ isStarting: false, error: message })
         return
       }
       const payload = await response.json()
       setRunState(payload.state ?? null)
+      setBenchmarkSubmission({ isStarting: false, error: null })
     } catch (error) {
-      setStartError(
-        error instanceof Error ? error.message : 'Failed to start benchmark.',
-      )
-    } finally {
-      setIsStarting(false)
+      setBenchmarkSubmission({
+        isStarting: false,
+        error: error instanceof Error ? error.message : 'Failed to start benchmark.',
+      })
     }
   }, [apiBase, apiToken, draft])
 
@@ -184,13 +185,13 @@ export default function IngestionBenchmarkPage({
           draft={draft}
           onDraftChange={setDraft}
           onStart={handleStart}
-          isStarting={isStarting}
+          isStarting={benchmarkSubmission.isStarting}
           isRunning={!!isRunning}
         />
 
-        {startError && (
+        {benchmarkSubmission.error && (
           <div className="rounded-md bg-danger/5 border border-danger/30 px-4 py-3 text-sm text-danger">
-            {startError}
+            {benchmarkSubmission.error}
           </div>
         )}
 
