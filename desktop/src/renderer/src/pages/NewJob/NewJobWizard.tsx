@@ -34,6 +34,11 @@ type ResumeLoadState =
   | { status: 'loaded'; context: ResumeContext }
   | { status: 'error'; message: string }
 
+interface ProviderFetchState {
+  providers: Provider[]
+  isLoading: boolean
+}
+
 const LS_KEYS = {
   parser: 'revisica_new_job_parser',
   mode: 'revisica_new_job_mode',
@@ -192,8 +197,12 @@ export default function NewJobWizard({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isBackendReady, setIsBackendReady] = useState(false)
-  const [providers, setProviders] = useState<Provider[]>([])
-  const [isLoadingProviders, setIsLoadingProviders] = useState(true)
+  const [providerFetchState, setProviderFetchState] = useState<ProviderFetchState>({
+    providers: [],
+    isLoading: true,
+  })
+  const providers = providerFetchState.providers
+  const isLoadingProviders = providerFetchState.isLoading
   const [resumeLoadState, setResumeLoadState] = useState<ResumeLoadState>({ status: 'idle' })
   const [modelRoutes, setModelRoutes] = useState<ModelRoutes | null>(null)
 
@@ -231,12 +240,13 @@ export default function NewJobWizard({
       const response = await apiFetch(apiBase, apiToken, '/api/providers')
       if (response.ok) {
         const data = await response.json()
-        setProviders(data.providers || [])
+        setProviderFetchState({ providers: data.providers || [], isLoading: false })
+      } else {
+        setProviderFetchState((prev) => ({ ...prev, isLoading: false }))
       }
     } catch {
       // Degrade gracefully — ProviderStatusBadge renders the "not configured" state
-    } finally {
-      setIsLoadingProviders(false)
+      setProviderFetchState((prev) => ({ ...prev, isLoading: false }))
     }
   }, [apiBase, apiToken])
 
