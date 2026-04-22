@@ -1,22 +1,14 @@
-import { useState, useMemo } from 'react'
-import { Sparkles, BookOpen, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { Sparkles, BookOpen, ArrowRight } from 'lucide-react'
 import ModeCard from '@/components/ModeCard'
 import ProviderStatusBadge from '@/components/ProviderStatusBadge'
 import type { Provider } from '@/components/ProviderCard'
 import EnginePicker from './EnginePicker'
 import { VENUE_PROFILES } from './types'
-import type {
-  Engine,
-  ModelChoice,
-  ModelRoutes,
-  WizardAction,
-  WizardState,
-} from './types'
+import type { Engine, WizardAction, WizardState } from './types'
 
 interface Step2ReviewPlanProps {
   state: WizardState
   dispatch: React.Dispatch<WizardAction>
-  modelRoutes: ModelRoutes | null
   providers: Provider[]
   isLoadingProviders: boolean
   onSubmit: () => void
@@ -27,26 +19,12 @@ interface Step2ReviewPlanProps {
 export default function Step2ReviewPlan({
   state,
   dispatch,
-  modelRoutes,
   providers,
   isLoadingProviders,
   onSubmit,
   isSubmitting,
   errorMessage,
 }: Step2ReviewPlanProps): JSX.Element {
-  const [showOverrides, setShowOverrides] = useState(false)
-
-  const engineSummary = useMemo(() => {
-    const labelFor = (engine: Engine): string =>
-      engine === 'claude' ? 'Claude' : 'GPT'
-    const effectivelySingle =
-      !state.secondaryEnabled || state.secondaryEngine === state.primaryEngine
-    if (effectivelySingle) return `${labelFor(state.primaryEngine)} only`
-    return `${labelFor(state.primaryEngine)} + ${labelFor(state.secondaryEngine)}`
-  }, [state.primaryEngine, state.secondaryEnabled, state.secondaryEngine])
-
-  const hasManualOverride =
-    state.writingModelOverride !== null || state.mathModelOverride !== null
   const hasAvailableProvider = providers.some((provider) => provider.available)
   const canSubmit = !isSubmitting && (isLoadingProviders || hasAvailableProvider)
 
@@ -59,13 +37,6 @@ export default function Step2ReviewPlan({
   const handleSecondaryEngineChange = (engine: Engine): void =>
     dispatch({ type: 'SET_SECONDARY_ENGINE', engine })
 
-  const handleOverrideChange = (
-    role: 'writing' | 'math',
-    value: string | null,
-  ): void => {
-    dispatch({ type: 'SET_MODEL_OVERRIDE', role, value })
-  }
-
   return (
     <div>
       <header className="mb-6">
@@ -73,7 +44,7 @@ export default function Step2ReviewPlan({
           Review plan
         </h2>
         <p className="font-serif text-sm text-ink-tertiary italic mt-1">
-          Pick a mode and start. Advanced options are collapsed below.
+          Pick a mode and start.
         </p>
       </header>
 
@@ -82,7 +53,6 @@ export default function Step2ReviewPlan({
         isLoading={isLoadingProviders}
       />
 
-      {/* Mode cards */}
       <fieldset className="mb-6">
         <legend className="text-xs font-semibold text-ink-tertiary uppercase tracking-wider mb-3">
           Mode
@@ -105,7 +75,6 @@ export default function Step2ReviewPlan({
         </div>
       </fieldset>
 
-      {/* Review-only options */}
       {state.mode === 'review' && (
         <div className="mb-6 space-y-5">
           <div>
@@ -140,8 +109,7 @@ export default function Step2ReviewPlan({
         </div>
       )}
 
-      {/* Engine picker — primary + optional secondary cross-check */}
-      <div className="mb-5">
+      <div className="mb-6">
         <EnginePicker
           primaryEngine={state.primaryEngine}
           secondaryEnabled={state.secondaryEnabled}
@@ -150,53 +118,6 @@ export default function Step2ReviewPlan({
           onSecondaryEnabledChange={handleSecondaryEnabledChange}
           onSecondaryChange={handleSecondaryEngineChange}
         />
-      </div>
-
-      {/* Advanced model override disclosure — pins a specific model within a family */}
-      <div className="mb-6">
-        <button
-          type="button"
-          onClick={() => setShowOverrides((v) => !v)}
-          className="flex items-center justify-between w-full text-xs uppercase tracking-wider text-ink-tertiary font-semibold py-2 border-none bg-transparent cursor-pointer"
-        >
-          <span className="flex items-center gap-2">
-            Models:{' '}
-            <span className="normal-case tracking-normal text-ink-secondary font-medium">
-              {hasManualOverride ? 'Custom override' : engineSummary}
-            </span>
-          </span>
-          <span className="flex items-center gap-1">
-            Advanced
-            {showOverrides ? (
-              <ChevronUp size={13} />
-            ) : (
-              <ChevronDown size={13} />
-            )}
-          </span>
-        </button>
-
-        {showOverrides && (
-          <div className="card px-4 py-4 mt-2 space-y-4">
-            <ModelOverrideRow
-              label="Writing model"
-              description="Pin a specific model for prose, structure, and venue review."
-              value={state.writingModelOverride}
-              options={modelRoutes?.writing}
-              onChange={(value) => handleOverrideChange('writing', value)}
-            />
-            <ModelOverrideRow
-              label="Math model"
-              description="Pin a specific model for proof review and adjudication."
-              value={state.mathModelOverride}
-              options={modelRoutes?.math}
-              onChange={(value) => handleOverrideChange('math', value)}
-            />
-            <div className="text-[11px] text-ink-faint italic pt-1">
-              Overrides apply to this run only — they replace the engine
-              defaults for the selected lane.
-            </div>
-          </div>
-        )}
       </div>
 
       {errorMessage && (
@@ -220,41 +141,6 @@ export default function Step2ReviewPlan({
           </>
         )}
       </button>
-    </div>
-  )
-}
-
-function ModelOverrideRow({
-  label,
-  description,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  description: string
-  value: string | null
-  options: ModelChoice[] | undefined
-  onChange: (value: string | null) => void
-}): JSX.Element {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-ink-tertiary uppercase tracking-wider mb-1">
-        {label}
-      </label>
-      <div className="text-[11px] text-ink-faint mb-2">{description}</div>
-      <select
-        value={value ?? ''}
-        onChange={(e) => onChange(e.target.value || null)}
-        className="input"
-      >
-        <option value="">Auto (recommended)</option>
-        {options?.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
     </div>
   )
 }
