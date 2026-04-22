@@ -447,12 +447,12 @@ function MathpixSetupPanel({
   const [appId, setAppId] = useState('')
   const [appKey, setAppKey] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [saveCredentialsError, setSaveCredentialsError] = useState<string | null>(null)
 
   const handleSave = async (): Promise<void> => {
     if (!appId.trim() || !appKey.trim()) return
     setIsSaving(true)
-    setError(null)
+    setSaveCredentialsError(null)
     try {
       const response = await apiFetch(
         apiBase,
@@ -473,7 +473,7 @@ function MathpixSetupPanel({
       }
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      setSaveCredentialsError(err instanceof Error ? err.message : 'Save failed')
     } finally {
       setIsSaving(false)
     }
@@ -513,8 +513,8 @@ function MathpixSetupPanel({
           >
             {isSaving ? 'Saving...' : 'Save credentials'}
           </button>
-          {error && (
-            <span className="text-xs text-danger font-medium">{error}</span>
+          {saveCredentialsError && (
+            <span className="text-xs text-danger font-medium">{saveCredentialsError}</span>
           )}
         </div>
       </div>
