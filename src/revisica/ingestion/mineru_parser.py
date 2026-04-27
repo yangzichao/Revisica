@@ -34,7 +34,7 @@ class MineruParser(BaseParser):
 
     name = "mineru"
 
-    def __init__(self, backend: str | None = None, timeout_seconds: int = 900) -> None:
+    def __init__(self, backend: str | None = None, timeout_seconds: int = 7200) -> None:
         env_backend = os.environ.get("REVISICA_MINERU_BACKEND")
         resolved_backend = backend or env_backend or "vlm"
         if resolved_backend not in MINERU_BACKEND_FLAG_MAP:
