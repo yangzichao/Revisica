@@ -30,9 +30,13 @@ interface Step1Props {
   apiToken: string
   state: WizardState
   dispatch: React.Dispatch<WizardAction>
+  // Optional opt-in: when the user drops more than one file, the host page
+  // can take over (batch parse mode in ParsePage). If not provided, only the
+  // first dropped file is consumed (the wizard's single-file behavior).
+  onMultiFileDrop?: (paths: string[]) => void
 }
 
-function detectFileType(path: string): FileType {
+export function detectFileType(path: string): FileType {
   const lowered = path.toLowerCase()
   if (lowered.endsWith('.pdf')) return 'pdf'
   if (lowered.endsWith('.tex')) return 'tex'
@@ -47,6 +51,7 @@ export default function Step1ImportFile({
   apiToken,
   state,
   dispatch,
+  onMultiFileDrop,
 }: Step1Props): JSX.Element {
   const [isDragOver, setIsDragOver] = useState(false)
   const [isUnsupportedFormatVisible, setIsUnsupportedFormatVisible] = useState(false)
@@ -94,8 +99,56 @@ export default function Step1ImportFile({
     (event: React.DragEvent) => {
       event.preventDefault()
       setIsDragOver(false)
-      const file = event.dataTransfer.files[0]
-      if (!file) return
+      const files = event.dataTransfer.files
+      if (files.length === 0) return
+
+      // Multi-file path: only when the host page opted in. Collect every
+      // local path (skipping cloud-only / sandboxed entries silently) and
+      // hand them off as a batch.
+      if (files.length > 1 && onMultiFileDrop) {
+        const paths: string[] = []
+        let unsupportedCount = 0
+        let unreadableCount = 0
+        for (let i = 0; i < files.length; i++) {
+          const rawPath = window.api?.getPathForFile?.(files[i]) ?? ''
+          const path = rawPath.trim()
+          if (!path || !path.startsWith('/')) {
+            unreadableCount += 1
+            continue
+          }
+          if (!detectFileType(path)) {
+            unsupportedCount += 1
+            continue
+          }
+          paths.push(path)
+        }
+        if (paths.length === 0) {
+          // Pick the message that best matches what actually went wrong.
+          if (unsupportedCount > 0 && unreadableCount === 0) {
+            setIsUnsupportedFormatVisible(true)
+            setTimeout(() => setIsUnsupportedFormatVisible(false), 1400)
+          } else {
+            showDropError(
+              "Couldn't read local paths for these files. Drag them from Finder, or use the browse button.",
+            )
+          }
+          return
+        }
+        if (unsupportedCount > 0) {
+          setIsUnsupportedFormatVisible(true)
+          setTimeout(() => setIsUnsupportedFormatVisible(false), 1400)
+        }
+        // If after filtering only one usable file remains, prefer the
+        // single-file UI (cleaner than a "Batch · 1 file" panel).
+        if (paths.length === 1) {
+          acceptPath(paths[0])
+          return
+        }
+        onMultiFileDrop(paths)
+        return
+      }
+
+      const file = files[0]
       // Electron 32+ removed File.path; webUtils.getPathForFile is the
       // replacement. Returns '' for non-local sources (iCloud cloud-only
       // items, web drags, sandboxed attachments).
@@ -110,7 +163,7 @@ export default function Step1ImportFile({
       }
       acceptPath(path)
     },
-    [acceptPath, showDropError],
+    [acceptPath, showDropError, onMultiFileDrop],
   )
 
   const handleBrowse = useCallback(async (): Promise<void> => {
@@ -223,7 +276,9 @@ export default function Step1ImportFile({
           <>
             <FileUp size={28} className="mx-auto mb-2 text-ink-faint" strokeWidth={1.3} />
             <p className="text-sm text-ink-secondary font-medium">
-              Drop a paper here, or click to choose
+              {onMultiFileDrop
+                ? 'Drop one or more papers here, or click to choose'
+                : 'Drop a paper here, or click to choose'}
             </p>
             <p className="text-xs text-ink-faint mt-1">.pdf · .tex · .md · .mmd</p>
           </>
