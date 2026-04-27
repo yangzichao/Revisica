@@ -10,6 +10,7 @@ import Step1ImportFile from './Step1ImportFile'
 import Step2ReviewPlan from './Step2ReviewPlan'
 import { resolveModelsForSubmit } from './modelSelection'
 import {
+  DEFAULT_MINERU_BACKEND,
   DEFAULT_VENUE_PROFILE,
   type Engine,
   type ModelRoutes,
@@ -107,6 +108,7 @@ const INITIAL_STATE: WizardState = {
   fileType: null,
   currentStep: 1,
   parserChoice: null,
+  mineruBackend: DEFAULT_MINERU_BACKEND,
   ...loadPersisted(),
 }
 
@@ -151,6 +153,8 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       }
     case 'SET_PARSER':
       return { ...state, parserChoice: action.parser }
+    case 'SET_MINERU_BACKEND':
+      return { ...state, mineruBackend: action.backend }
     case 'SET_PRIMARY_ENGINE':
       return { ...state, primaryEngine: action.engine }
     case 'SET_SECONDARY_ENABLED':
@@ -361,6 +365,9 @@ export default function NewJobWizard({
       } else {
         reviewBody.file_path = state.filePath
         reviewBody.parser = parserForApi
+        if (parserForApi === 'mineru') {
+          reviewBody.mineru_backend = state.mineruBackend
+        }
       }
 
       const response = await apiFetch(apiBase, apiToken, '/api/review', {

@@ -21,6 +21,7 @@ class UnifiedState(TypedDict, total=False):
     run_dir: str
     config: ReviewConfig
     parser: str  # "auto", "mineru", "mathpix", "pandoc", "tex-basic", "markdown"
+    mineru_backend: str | None  # "vlm", "pipeline", "hybrid", "auto", or None
 
     # After ingestion
     document: RevisicaDocument | None

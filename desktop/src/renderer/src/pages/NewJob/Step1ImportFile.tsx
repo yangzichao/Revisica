@@ -18,6 +18,7 @@ import ModeCard from '@/components/ModeCard'
 import LibraryPickerInline from './LibraryPickerInline'
 import type {
   FileType,
+  MineruBackend,
   ParserChoice,
   ParserInfo,
   WizardState,
@@ -246,6 +247,10 @@ export default function Step1ImportFile({
               selected={state.parserChoice}
               onSelect={(parser) => dispatch({ type: 'SET_PARSER', parser })}
               onRefresh={fetchParsers}
+              mineruBackend={state.mineruBackend}
+              onMineruBackendChange={(backend) =>
+                dispatch({ type: 'SET_MINERU_BACKEND', backend })
+              }
             />
           )}
           {state.fileType === 'tex' && (
@@ -308,6 +313,8 @@ function PdfParserSection({
   selected,
   onSelect,
   onRefresh,
+  mineruBackend,
+  onMineruBackendChange,
 }: {
   apiBase: string
   apiToken: string
@@ -317,6 +324,8 @@ function PdfParserSection({
   selected: ParserChoice
   onSelect: (parser: ParserChoice) => void
   onRefresh: () => void
+  mineruBackend: MineruBackend
+  onMineruBackendChange: (backend: MineruBackend) => void
 }): JSX.Element {
   return (
     <div>
@@ -349,6 +358,12 @@ function PdfParserSection({
             />
           </div>
 
+          {selected === 'mineru' && mineru?.available && (
+            <MineruBackendToggle
+              value={mineruBackend}
+              onChange={onMineruBackendChange}
+            />
+          )}
           {selected === 'mineru' && !mineru?.available && (
             <MineruSetupPanel
               installHint={mineru?.install_hint || "pip install 'mineru[all]'"}
@@ -365,6 +380,70 @@ function PdfParserSection({
         </>
       )}
     </div>
+  )
+}
+
+function MineruBackendToggle({
+  value,
+  onChange,
+}: {
+  value: MineruBackend
+  onChange: (backend: MineruBackend) => void
+}): JSX.Element {
+  return (
+    <div className="mt-3">
+      <div className="text-xs font-semibold text-ink-tertiary uppercase tracking-wider mb-2">
+        MinerU mode
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <BackendPill
+          title="Accurate"
+          subtitle="VLM · best on complex layouts"
+          hint="Slow on long PDFs"
+          isSelected={value === 'vlm'}
+          onClick={() => onChange('vlm')}
+        />
+        <BackendPill
+          title="Fast"
+          subtitle="Pipeline · classic OCR"
+          hint="Recommended for books"
+          isSelected={value === 'pipeline'}
+          onClick={() => onChange('pipeline')}
+        />
+      </div>
+    </div>
+  )
+}
+
+function BackendPill({
+  title,
+  subtitle,
+  hint,
+  isSelected,
+  onClick,
+}: {
+  title: string
+  subtitle: string
+  hint: string
+  isSelected: boolean
+  onClick: () => void
+}): JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'rounded-lg border px-3 py-2 text-left transition-colors duration-150',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40',
+        isSelected
+          ? 'border-accent bg-accent/5'
+          : 'border-paper-300 hover:border-paper-400 bg-paper-50',
+      )}
+    >
+      <div className="text-sm font-semibold text-ink leading-tight">{title}</div>
+      <div className="text-xs text-ink-secondary mt-0.5">{subtitle}</div>
+      <div className="text-[11px] text-ink-faint mt-1 italic">{hint}</div>
+    </button>
   )
 }
 

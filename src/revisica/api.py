@@ -172,6 +172,7 @@ class ReviewRequest(BaseModel):
     llm_proof_review: bool = False
     timeout_seconds: int = 120
     parser: str = "auto"
+    mineru_backend: Optional[str] = None
     writing_model: Optional[str] = None
     math_model: Optional[str] = None
 
@@ -186,6 +187,7 @@ class ProviderConfigUpdate(BaseModel):
 class IngestRequest(BaseModel):
     file_path: str
     parser: str = "auto"
+    mineru_backend: Optional[str] = None
 
 
 class BackendModeUpdate(BaseModel):
@@ -516,7 +518,11 @@ def _pretty_label(provider: str, model: str) -> str:
 def ingest_document(request: IngestRequest):
     try:
         start = time.perf_counter()
-        document = parse_document(request.file_path, parser=request.parser)
+        document = parse_document(
+            request.file_path,
+            parser=request.parser,
+            mineru_backend=request.mineru_backend,
+        )
         elapsed_ms = int((time.perf_counter() - start) * 1000)
         manifest = save_parsed_document(document, elapsed_ms)
         return {
@@ -696,11 +702,13 @@ def _resolve_review_source(request: ReviewRequest) -> dict[str, Optional[str]]:
             "file_path": str(normalized_path),
             "parser": "markdown",
             "output_dir": output_dir,
+            "mineru_backend": None,
         }
     return {
         "file_path": request.file_path,
         "parser": request.parser,
         "output_dir": None,
+        "mineru_backend": request.mineru_backend,
     }
 
 
@@ -726,6 +734,7 @@ def _execute_review(run_id: str, request: ReviewRequest) -> None:
             timeout_seconds=request.timeout_seconds,
             mode=request.mode,
             parser=resolved["parser"],
+            mineru_backend=resolved["mineru_backend"],
             reviewer_specs=[writing_spec] if writing_spec else None,
             math_reviewer_specs=[math_spec] if math_spec else None,
         )

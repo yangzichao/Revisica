@@ -40,8 +40,13 @@ def ingest_document(state: UnifiedState) -> dict:
     """Parse input file into a RevisicaDocument."""
     source_path = state["source_path"]
     parser_choice = state.get("parser", "auto") or "auto"
+    mineru_backend = state.get("mineru_backend") or None
     try:
-        document = parse_document(source_path, parser=parser_choice)
+        document = parse_document(
+            source_path,
+            parser=parser_choice,
+            mineru_backend=mineru_backend,
+        )
         logger.info(
             "Ingested %s via %s: %s (%d sections)",
             Path(source_path).name,

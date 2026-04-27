@@ -39,6 +39,9 @@ def review_unified(
     mode: str = "review",
     # new: explicit parser selection (defaults to auto)
     parser: str = "auto",
+    # new: optional MinerU sub-backend override ("vlm" | "pipeline" |
+    # "hybrid" | "auto"); None defers to the parser's own default.
+    mineru_backend: str | None = None,
     # new: Codex reasoning effort override
     # (none|minimal|low|medium|high|xhigh; None = agent default).
     codex_reasoning_effort: str | None = None,
@@ -78,6 +81,7 @@ def review_unified(
         "run_dir": str(run_dir),
         "config": config,
         "parser": parser,
+        "mineru_backend": mineru_backend,
         "warnings": [],
     })
 

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import Step1ImportFile from '@/pages/NewJob/Step1ImportFile'
 import {
+  DEFAULT_MINERU_BACKEND,
   DEFAULT_VENUE_PROFILE,
   type WizardAction,
   type WizardState,
@@ -18,6 +19,7 @@ const INITIAL_STATE: WizardState = {
   fileType: null,
   currentStep: 1,
   parserChoice: null,
+  mineruBackend: DEFAULT_MINERU_BACKEND,
   primaryEngine: 'claude',
   secondaryEnabled: true,
   secondaryEngine: 'gpt',
@@ -49,6 +51,8 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, filePath: '', fileType: null, parserChoice: null }
     case 'SET_PARSER':
       return { ...state, parserChoice: action.parser }
+    case 'SET_MINERU_BACKEND':
+      return { ...state, mineruBackend: action.backend }
     default:
       return state
   }
@@ -80,11 +84,16 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
     setErrorMessage(null)
     const parser =
       state.fileType === 'pdf' ? state.parserChoice ?? 'auto' : 'auto'
+    const mineruBackend = parser === 'mineru' ? state.mineruBackend : null
     try {
       const response = await apiFetch(apiBase, apiToken, '/api/ingest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_path: state.filePath, parser }),
+        body: JSON.stringify({
+          file_path: state.filePath,
+          parser,
+          mineru_backend: mineruBackend,
+        }),
       })
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))

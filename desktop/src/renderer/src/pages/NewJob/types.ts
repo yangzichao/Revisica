@@ -2,6 +2,14 @@ export type FileType = 'pdf' | 'tex' | 'md' | null
 
 export type ParserChoice = 'mineru' | 'mathpix' | 'auto' | null
 
+// MinerU sub-backend. ``vlm`` runs the end-to-end vision-language model
+// (slow but high accuracy on complex layouts; ideal for short papers).
+// ``pipeline`` runs the classic multi-stage OCR pipeline (much faster on
+// long documents; ideal for full books or text-heavy reports).
+export type MineruBackend = 'vlm' | 'pipeline'
+
+export const DEFAULT_MINERU_BACKEND: MineruBackend = 'vlm'
+
 // Kept for Settings + API typing; the wizard no longer branches on this.
 export type BackendMode = 'auto' | 'cli' | 'api' | 'ollama'
 
@@ -27,6 +35,7 @@ export interface WizardState {
   fileType: FileType
   currentStep: WizardStep
   parserChoice: ParserChoice
+  mineruBackend: MineruBackend
   primaryEngine: Engine
   secondaryEnabled: boolean
   secondaryEngine: Engine
@@ -48,6 +57,7 @@ export type WizardAction =
   | { type: 'SET_FILE'; filePath: string; fileType: FileType }
   | { type: 'CLEAR_FILE' }
   | { type: 'SET_PARSER'; parser: ParserChoice }
+  | { type: 'SET_MINERU_BACKEND'; backend: MineruBackend }
   | { type: 'SET_PRIMARY_ENGINE'; engine: Engine }
   | { type: 'SET_SECONDARY_ENABLED'; enabled: boolean }
   | { type: 'SET_SECONDARY_ENGINE'; engine: Engine }

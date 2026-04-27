@@ -117,6 +117,7 @@ def _select_parser(path: Path, parser_name: str) -> BaseParser:
 def parse_document(
     path: str | Path,
     parser: str = "auto",
+    mineru_backend: str | None = None,
 ) -> RevisicaDocument:
     """Parse a file into a RevisicaDocument.
 
@@ -125,6 +126,9 @@ def parse_document(
         parser: Parser name ("pandoc", "tex-basic", "markdown",
                 "mineru", "marker", "mathpix") or "auto" to select
                 the best available.  Auto prefers local parsers.
+        mineru_backend: Optional MinerU sub-backend ("vlm", "pipeline",
+                "hybrid", "auto"). Only used when the chosen parser is
+                MinerU. ``None`` keeps the parser's default ("vlm").
 
     Returns:
         A normalized RevisicaDocument.
@@ -136,6 +140,10 @@ def parse_document(
         raise IsADirectoryError(f"Input path is not a file: {file_path}")
 
     selected_parser = _select_parser(file_path, parser)
+
+    if mineru_backend and selected_parser.name == "mineru":
+        from .mineru_parser import MineruParser
+        selected_parser = MineruParser(backend=mineru_backend)
 
     try:
         raw_markdown = selected_parser.parse(file_path)
