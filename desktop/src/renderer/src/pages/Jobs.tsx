@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, NavLink } from 'react-router-dom'
 import {
   Loader2, CheckCircle2, XCircle, Circle, FileText, Inbox,
+  FileScan, ArrowRight,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
+import { formatElapsed } from '@/lib/formatters'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -15,8 +17,13 @@ interface TaskStatus {
   detail?: string
 }
 
+type JobKind = 'review' | 'parse'
+
 interface RunStatus {
   run_id: string
+  // `kind` is optional so that pre-existing run records (from before parse
+  // became a tracked job) still deserialize cleanly; default to 'review'.
+  kind?: JobKind
   state: 'running' | 'completed' | 'failed'
   started_at?: string
   tasks: TaskStatus[]
@@ -25,12 +32,29 @@ interface RunStatus {
 
 interface ReviewResults {
   run_id: string
+  kind: 'review'
   summary: string
   writing_report?: string
   math_report?: string
   polish_report?: string
   run_dir: string
 }
+
+interface ParseResults {
+  run_id: string
+  kind: 'parse'
+  id: string
+  parser_used: string
+  source_path: string
+  title: string
+  authors: string[]
+  abstract: string
+  section_count: number
+  parsed_at: string
+  elapsed_ms: number
+}
+
+type JobResults = ReviewResults | ParseResults
 
 type ReportTab = 'summary' | 'writing' | 'math' | 'polish'
 
@@ -48,6 +72,10 @@ function computeAvailableTabs(results: ReviewResults): ReportTab[] {
   if (results.writing_report && results.writing_report.trim()) tabs.push('writing')
   if (results.math_report && results.math_report.trim()) tabs.push('math')
   return tabs
+}
+
+function jobKind(status: RunStatus | null | undefined): JobKind {
+  return status?.kind ?? 'review'
 }
 
 function readRunIds(): string[] {
@@ -69,7 +97,7 @@ function readRunIds(): string[] {
 
 interface SelectedJobDetail {
   status: RunStatus | null
-  results: ReviewResults | null
+  results: JobResults | null
   activeTab: ReportTab
   errorMessage: string | null
 }
@@ -153,13 +181,20 @@ export default function Jobs({
             `/api/results/${runId}`,
           )
           if (resultsResponse.ok) {
-            const payload: ReviewResults = await resultsResponse.json()
-            const tabs = computeAvailableTabs(payload)
-            const firstReportTab = tabs.find((tab) => tab !== 'summary')
+            const payload: JobResults = await resultsResponse.json()
+            // Parse jobs have nothing to tab through; review jobs default
+            // to the first non-summary report (where the actionable content
+            // lives — summary is just the header).
+            let activeTab: ReportTab = 'summary'
+            if (payload.kind === 'review') {
+              const tabs = computeAvailableTabs(payload)
+              const firstReportTab = tabs.find((tab) => tab !== 'summary')
+              activeTab = firstReportTab ?? tabs[0] ?? 'summary'
+            }
             setSelectedJobDetail((prev) => ({
               ...prev,
               results: payload,
-              activeTab: firstReportTab ?? tabs[0] ?? 'summary',
+              activeTab,
             }))
           }
         } else if (jobStatus.state === 'failed') {
@@ -186,7 +221,7 @@ export default function Jobs({
   const { status: selectedStatus, results, activeTab, errorMessage } = selectedJobDetail
 
   const reportContent = useMemo((): string => {
-    if (!results) return ''
+    if (!results || results.kind !== 'review') return ''
     switch (activeTab) {
       case 'writing':
         return results.writing_report ?? '*No writing report available*'
@@ -240,7 +275,17 @@ export default function Jobs({
           <JobProgressView runId={runId} status={selectedStatus} />
         )}
 
-        {runId && results && (
+        {runId && results && results.kind === 'parse' && (
+          <ParseResultsView
+            runId={runId}
+            results={results}
+            onStartReview={() =>
+              navigate(`/?parsed=${encodeURIComponent(results.id)}`)
+            }
+          />
+        )}
+
+        {runId && results && results.kind === 'review' && (
           <JobResultsView
             runId={runId}
             results={results}
@@ -316,6 +361,8 @@ function JobListItem({
   job: RunStatus
   isActive: boolean
 }): JSX.Element {
+  const kind = jobKind(job)
+  const KindIcon = kind === 'parse' ? FileScan : FileText
   return (
     <NavLink
       to={`/jobs/${job.run_id}`}
@@ -329,10 +376,18 @@ function JobListItem({
     >
       <TaskStatusIcon status={job.state} />
       <div className="flex-1 min-w-0">
-        <div className="font-mono text-xs font-medium text-ink truncate">
-          {job.run_id.slice(0, 8)}
+        <div className="flex items-center gap-1.5">
+          <KindIcon
+            size={11}
+            strokeWidth={1.5}
+            className="text-ink-faint shrink-0"
+          />
+          <div className="font-mono text-xs font-medium text-ink truncate">
+            {job.run_id.slice(0, 8)}
+          </div>
         </div>
         <div className="text-[10px] text-ink-faint mt-0.5">
+          {kind === 'parse' ? 'Parse · ' : ''}
           {job.started_at
             ? new Date(job.started_at).toLocaleTimeString()
             : ''}
@@ -375,6 +430,80 @@ function JobProgressView({
           {status.error}
         </div>
       )}
+    </div>
+  )
+}
+
+function ParseResultsView({
+  runId,
+  results,
+  onStartReview,
+}: {
+  runId: string
+  results: ParseResults
+  onStartReview: () => void
+}): JSX.Element {
+  return (
+    <div className="max-w-2xl mx-auto px-8 py-10">
+      <div className="flex items-center gap-3 mb-1">
+        <h2 className="font-serif text-xl font-semibold text-ink">
+          {runId.slice(0, 8)}
+        </h2>
+        <StateBadge state="completed" />
+        <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-paper-200 text-ink-tertiary">
+          Parse
+        </span>
+      </div>
+      <p className="text-xs text-ink-faint font-mono mb-8 truncate">
+        {results.source_path}
+      </p>
+
+      <div className="card px-5 py-5 mb-6">
+        <div className="text-xs font-semibold uppercase tracking-wider text-ink-faint mb-3">
+          Parsed document
+        </div>
+        <div className="space-y-2 text-sm">
+          {results.title && (
+            <div>
+              <span className="text-ink-tertiary">Title: </span>
+              <span className="text-ink font-medium">{results.title}</span>
+            </div>
+          )}
+          {results.authors.length > 0 && (
+            <div>
+              <span className="text-ink-tertiary">Authors: </span>
+              <span className="text-ink">{results.authors.join(', ')}</span>
+            </div>
+          )}
+          <div>
+            <span className="text-ink-tertiary">Parser: </span>
+            <span className="text-ink font-mono">{results.parser_used}</span>
+          </div>
+          <div>
+            <span className="text-ink-tertiary">Sections: </span>
+            <span className="text-ink">{results.section_count}</span>
+          </div>
+          <div>
+            <span className="text-ink-tertiary">Elapsed: </span>
+            <span className="text-ink">{formatElapsed(results.elapsed_ms)}</span>
+          </div>
+          <div>
+            <span className="text-ink-tertiary">ID: </span>
+            <code className="font-mono text-[11px] text-ink-tertiary">
+              {results.id}
+            </code>
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onStartReview}
+        className="btn-primary px-5 py-2 text-sm"
+      >
+        Start review
+        <ArrowRight size={13} strokeWidth={1.8} />
+      </button>
     </div>
   )
 }

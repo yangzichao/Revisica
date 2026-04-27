@@ -1,4 +1,4 @@
-import { useReducer, useState, useCallback } from 'react'
+import { useReducer, useState, useCallback, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, Loader2, Bookmark, ArrowRight, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -11,6 +11,25 @@ import {
   type WizardState,
 } from '@/pages/NewJob/types'
 import ParseResult, { type ParseResultData } from './ParseResult'
+
+const RUN_IDS_STORAGE_KEY = 'revisica_run_ids'
+
+function appendRunIdToHistory(runId: string): void {
+  try {
+    const stored = localStorage.getItem(RUN_IDS_STORAGE_KEY)
+    const parsed = stored ? JSON.parse(stored) : []
+    const existing = Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === 'string')
+      : []
+    existing.unshift(runId)
+    localStorage.setItem(
+      RUN_IDS_STORAGE_KEY,
+      JSON.stringify(existing.slice(0, 50)),
+    )
+  } catch {
+    // Private mode / quota — not fatal
+  }
+}
 
 // Initial state mirrors the wizard's shape so we can hand it to
 // Step1ImportFile unchanged. The unused review-lane fields are harmless stubs.
@@ -75,16 +94,40 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
   const navigate = useNavigate()
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
   const [isParsing, setIsParsing] = useState(false)
+  const [activeRunId, setActiveRunId] = useState<string | null>(null)
   const [result, setResult] = useState<ParseResultData | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const pollRef = useRef<number | null>(null)
+
+  // Stop polling when the component unmounts mid-parse so we don't hammer
+  // the backend after the user navigates away.
+  useEffect(() => {
+    return () => {
+      if (pollRef.current !== null) {
+        window.clearInterval(pollRef.current)
+        pollRef.current = null
+      }
+    }
+  }, [])
+
+  const stopPolling = useCallback((): void => {
+    if (pollRef.current !== null) {
+      window.clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }, [])
 
   const handleRunParse = useCallback(async (): Promise<void> => {
     if (!canRunParse(state)) return
     setIsParsing(true)
     setErrorMessage(null)
+    setResult(null)
+    setActiveRunId(null)
     const parser =
       state.fileType === 'pdf' ? state.parserChoice ?? 'auto' : 'auto'
     const mineruBackend = parser === 'mineru' ? state.mineruBackend : null
+
+    let runId: string
     try {
       const response = await apiFetch(apiBase, apiToken, '/api/ingest', {
         method: 'POST',
@@ -99,19 +142,68 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
         const data = await response.json().catch(() => ({}))
         throw new Error(data.detail || `Parse failed (${response.status})`)
       }
-      const data: ParseResultData = await response.json()
-      setResult(data)
+      const submitData = await response.json()
+      runId = submitData.run_id
+      if (!runId) {
+        throw new Error('Server did not return a run_id')
+      }
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Parse failed')
-    } finally {
       setIsParsing(false)
+      return
     }
-  }, [state, apiBase, apiToken])
+
+    setActiveRunId(runId)
+    appendRunIdToHistory(runId)
+
+    // Poll status; on completion fetch the result and render inline.
+    stopPolling()
+    pollRef.current = window.setInterval(async () => {
+      try {
+        const statusResponse = await apiFetch(
+          apiBase,
+          apiToken,
+          `/api/status/${runId}`,
+        )
+        if (!statusResponse.ok) return
+        const status = await statusResponse.json()
+        if (status.state === 'completed') {
+          stopPolling()
+          const resultsResponse = await apiFetch(
+            apiBase,
+            apiToken,
+            `/api/results/${runId}`,
+          )
+          if (!resultsResponse.ok) {
+            const data = await resultsResponse.json().catch(() => ({}))
+            setErrorMessage(data.detail || 'Failed to fetch parse result')
+            setIsParsing(false)
+            return
+          }
+          const data: ParseResultData = await resultsResponse.json()
+          setResult(data)
+          setIsParsing(false)
+        } else if (status.state === 'failed') {
+          stopPolling()
+          setErrorMessage(status.error || 'Parse failed')
+          setIsParsing(false)
+        }
+      } catch {
+        // Transient network issue — keep polling
+      }
+    }, 1000)
+  }, [state, apiBase, apiToken, stopPolling])
 
   const handleClearResult = useCallback((): void => {
+    stopPolling()
     setResult(null)
+    setActiveRunId(null)
     setErrorMessage(null)
-  }, [])
+  }, [stopPolling])
+
+  const handleViewInJobs = useCallback((): void => {
+    if (activeRunId) navigate(`/jobs/${activeRunId}`)
+  }, [activeRunId, navigate])
 
   const handleStartReview = useCallback((): void => {
     if (!result) return
@@ -171,7 +263,25 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
               Clear result
             </button>
           )}
+          {isParsing && activeRunId && (
+            <button
+              type="button"
+              onClick={handleViewInJobs}
+              className="btn-ghost px-3 py-2 text-sm"
+            >
+              View in Jobs
+              <ArrowRight size={13} strokeWidth={1.8} />
+            </button>
+          )}
         </div>
+
+        {isParsing && activeRunId && (
+          <p className="font-serif text-xs text-ink-tertiary italic mt-3">
+            Tracked as job{' '}
+            <code className="font-mono not-italic">{activeRunId}</code> — safe to
+            navigate away; the parse keeps running in the background.
+          </p>
+        )}
 
         {errorMessage && !result && (
           <ParseErrorCard message={errorMessage} />

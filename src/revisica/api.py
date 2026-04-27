@@ -99,10 +99,11 @@ app.add_middleware(
 
 
 class RunState:
-    """Tracks a single review run's progress. Thread-safe via internal lock."""
+    """Tracks a single job's progress (review or parse). Thread-safe via internal lock."""
 
-    def __init__(self, run_id: str, config: dict[str, Any]):
+    def __init__(self, run_id: str, config: dict[str, Any], kind: str = "review"):
         self.run_id = run_id
+        self.kind = kind
         self.config = config
         self.state = "running"
         self.started_at = datetime.now().isoformat()
@@ -110,6 +111,9 @@ class RunState:
         self.run_dir: Optional[str] = None
         self.tasks: list[dict[str, str]] = []
         self.error: Optional[str] = None
+        # Parse jobs stash their manifest here so /api/results can return it
+        # without re-reading the on-disk store.
+        self.result_payload: Optional[dict[str, Any]] = None
         self._lock = threading.Lock()
 
     def update(self, **fields: Any) -> None:
@@ -125,6 +129,7 @@ class RunState:
         with self._lock:
             return {
                 "run_id": self.run_id,
+                "kind": self.kind,
                 "config": self.config,
                 "state": self.state,
                 "started_at": self.started_at,
@@ -516,38 +521,28 @@ def _pretty_label(provider: str, model: str) -> str:
 
 @app.post("/api/ingest", dependencies=AUTH)
 def ingest_document(request: IngestRequest):
-    try:
-        start = time.perf_counter()
-        document = parse_document(
-            request.file_path,
-            parser=request.parser,
-            mineru_backend=request.mineru_backend,
-        )
-        elapsed_ms = int((time.perf_counter() - start) * 1000)
-        manifest = save_parsed_document(document, elapsed_ms)
-        return {
-            "id": manifest["id"],
-            "parsed_at": manifest["parsed_at"],
-            "elapsed_ms": manifest["elapsed_ms"],
-            "parser_used": document.parser_used,
-            "source_path": document.source_path,
-            "markdown": document.markdown,
-            "title": document.metadata.title,
-            "authors": document.metadata.authors,
-            "abstract": document.metadata.abstract,
-            "section_count": len(document.sections),
-            "sections": [
-                {
-                    "id": section.id,
-                    "title": section.title,
-                    "level": section.level,
-                    "content": section.content,
-                }
-                for section in _flatten_sections(document.sections)
-            ],
-        }
-    except Exception as error:
-        raise HTTPException(status_code=400, detail=str(error))
+    """Start a parse in the background and return a run_id immediately.
+
+    Symmetric with /api/review: callers poll /api/status/{run_id} for
+    progress and fetch /api/results/{run_id} once the job completes.
+    Long parses (MinerU on a multi-hundred-page PDF) used to block the
+    HTTP request for minutes; now they live in the same job tracker as
+    reviews so the UI can navigate away and come back.
+    """
+    if not request.file_path or not request.file_path.strip():
+        raise HTTPException(status_code=400, detail="file_path is required.")
+    run_id = str(uuid.uuid4())[:8]
+    run_state = RunState(run_id, request.model_dump(), kind="parse")
+    _register_run(run_state)
+
+    thread = threading.Thread(
+        target=_execute_parse,
+        args=(run_id, request),
+        daemon=True,
+    )
+    thread.start()
+
+    return {"run_id": run_id, "status": "started"}
 
 
 @app.get("/api/parsed-documents", dependencies=AUTH)
@@ -630,6 +625,11 @@ def get_run_results(run_id: str):
     if snapshot["state"] != "completed":
         raise HTTPException(status_code=409, detail=f"Run is still {snapshot['state']}.")
 
+    if snapshot["kind"] == "parse":
+        if not run_state.result_payload:
+            raise HTTPException(status_code=404, detail="Parse result missing.")
+        return {"run_id": run_id, "kind": "parse", **run_state.result_payload}
+
     run_dir = Path(snapshot["run_dir"]) if snapshot["run_dir"] else None
     if not run_dir or not run_dir.exists():
         raise HTTPException(status_code=404, detail="Run directory not found.")
@@ -656,6 +656,7 @@ def get_run_results(run_id: str):
 
     return {
         "run_id": run_id,
+        "kind": "review",
         "summary": summary,
         "writing_report": writing_report,
         "math_report": math_report,
@@ -710,6 +711,68 @@ def _resolve_review_source(request: ReviewRequest) -> dict[str, Optional[str]]:
         "output_dir": None,
         "mineru_backend": request.mineru_backend,
     }
+
+
+def _execute_parse(run_id: str, request: IngestRequest) -> None:
+    """Run a parse in a background thread.
+
+    Mirrors _execute_review's lifecycle: append a single 'parse' task,
+    flip it to completed/failed at the end, and stash the manifest on
+    run_state.result_payload so /api/results can return it without a
+    second disk read.
+    """
+    run_state = _get_run(run_id)
+    if run_state is None:
+        return
+
+    try:
+        run_state.append_task({"name": "parse", "status": "running"})
+
+        start = time.perf_counter()
+        document = parse_document(
+            request.file_path,
+            parser=request.parser,
+            mineru_backend=request.mineru_backend,
+        )
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        manifest = save_parsed_document(document, elapsed_ms)
+
+        result_payload = {
+            "id": manifest["id"],
+            "parsed_at": manifest["parsed_at"],
+            "elapsed_ms": manifest["elapsed_ms"],
+            "parser_used": document.parser_used,
+            "source_path": document.source_path,
+            "markdown": document.markdown,
+            "title": document.metadata.title,
+            "authors": document.metadata.authors,
+            "abstract": document.metadata.abstract,
+            "section_count": len(document.sections),
+            "sections": [
+                {
+                    "id": section.id,
+                    "title": section.title,
+                    "level": section.level,
+                    "content": section.content,
+                }
+                for section in _flatten_sections(document.sections)
+            ],
+        }
+
+        run_state.update(
+            state="completed",
+            completed_at=datetime.now().isoformat(),
+            tasks=[{"name": "parse", "status": "completed"}],
+            result_payload=result_payload,
+        )
+
+    except Exception as error:
+        run_state.update(
+            state="failed",
+            error=str(error),
+            completed_at=datetime.now().isoformat(),
+            tasks=[{"name": "parse", "status": "failed", "detail": str(error)[:200]}],
+        )
 
 
 def _execute_review(run_id: str, request: ReviewRequest) -> None:
