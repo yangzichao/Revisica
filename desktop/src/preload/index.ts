@@ -6,6 +6,10 @@ const api = {
     ipcRenderer.invoke('get-api-config'),
   openPaperPicker: (): Promise<string | null> =>
     ipcRenderer.invoke('dialog:open-paper'),
+  saveMarkdown: (
+    payload: { defaultName?: string; content: string }
+  ): Promise<{ saved: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('dialog:save-markdown', payload),
   // Electron 32+ removed File.path on dropped files; webUtils is the
   // replacement. Returns '' for non-local sources (iCloud cloud-only,
   // web drags, sandboxed attachments).

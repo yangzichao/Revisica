@@ -24,3 +24,19 @@ export function deriveDocumentLabels(
 export function resumeReviewPath(parsedId: string): string {
   return `/?parsed=${encodeURIComponent(parsedId)}`
 }
+
+// Suggested filename for the Save dialog when the user exports a parsed
+// document's normalized markdown. Strips the extension off the source
+// path, prefers the parsed title when present, and sanitizes characters
+// that the filesystem (or Save dialog) won't accept.
+export function deriveExportFilename(
+  sourcePath: string,
+  title: string,
+  fallbackId: string,
+): string {
+  const fromPath =
+    sourcePath?.split('/').pop()?.replace(/\.[^.]+$/, '') ?? ''
+  const fromTitle = title?.trim() ?? ''
+  const base = fromTitle || fromPath || fallbackId
+  return base.replace(/[\\/:*?"<>|]/g, '-').slice(0, 120) || fallbackId
+}

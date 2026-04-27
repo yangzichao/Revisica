@@ -1,6 +1,14 @@
 import { app, shell, BrowserWindow, dialog, ipcMain } from 'electron'
 import { join } from 'path'
 import { randomBytes } from 'crypto'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  renameSync,
+  rmdirSync,
+  writeFileSync
+} from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { spawn, ChildProcess } from 'child_process'
 import { TRAFFIC_LIGHT_POSITION } from '../shared/window-chrome'
@@ -11,6 +19,67 @@ const API_BASE = `http://127.0.0.1:${API_PORT}`
 // Minted per launch; shared with the Python backend via env var and with the
 // renderer via IPC. No external caller ever sees it.
 const API_TOKEN = randomBytes(32).toString('base64url')
+
+// User-facing parsed-document storage. Lives in app.getPath('userData') so
+// data survives app upgrades and stays out of the .app bundle. The Python
+// backend reads this path via REVISICA_PARSED_DOCUMENTS_DIR.
+function getParsedDocumentsDir(): string {
+  return join(app.getPath('userData'), 'parsed-documents')
+}
+
+// One-shot migration for users on builds that wrote into <cwd>/parsed-documents:
+//   - dev: <projectRoot>/parsed-documents
+//   - older prod: <process.resourcesPath>/parsed-documents
+// Move each legacy id-folder into the new userData location if the target
+// doesn't already have an entry with the same id. Deletes the legacy root
+// only when it ends up empty so we never silently clobber user data.
+function migrateLegacyParsedDocuments(targetDir: string): void {
+  const legacyRoots: string[] = []
+  if (is.dev) {
+    legacyRoots.push(join(__dirname, '..', '..', '..', 'parsed-documents'))
+  } else {
+    legacyRoots.push(join(process.resourcesPath, 'parsed-documents'))
+  }
+
+  for (const legacyRoot of legacyRoots) {
+    if (!existsSync(legacyRoot)) continue
+    if (legacyRoot === targetDir) continue
+
+    let entries: string[] = []
+    try {
+      entries = readdirSync(legacyRoot)
+    } catch (err) {
+      console.warn(`[migration] cannot read ${legacyRoot}:`, err)
+      continue
+    }
+
+    mkdirSync(targetDir, { recursive: true })
+
+    for (const name of entries) {
+      const src = join(legacyRoot, name)
+      const dest = join(targetDir, name)
+      if (existsSync(dest)) {
+        console.log(`[migration] skip ${name} — already exists at target`)
+        continue
+      }
+      try {
+        renameSync(src, dest)
+        console.log(`[migration] moved ${name} → ${dest}`)
+      } catch (err) {
+        console.warn(`[migration] failed to move ${name}:`, err)
+      }
+    }
+
+    try {
+      if (readdirSync(legacyRoot).length === 0) {
+        rmdirSync(legacyRoot)
+        console.log(`[migration] removed empty legacy dir ${legacyRoot}`)
+      }
+    } catch {
+      // Leave non-empty legacy dirs in place; user can clean up manually.
+    }
+  }
+}
 
 function getPythonCommand(): { command: string; args: string[] } {
   if (is.dev) {
@@ -69,7 +138,11 @@ function startPythonBackend(): Promise<void> {
     pythonProcess = spawn(command, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: projectRoot,
-      env: { ...process.env, REVISICA_API_TOKEN: API_TOKEN }
+      env: {
+        ...process.env,
+        REVISICA_API_TOKEN: API_TOKEN,
+        REVISICA_PARSED_DOCUMENTS_DIR: getParsedDocumentsDir()
+      }
     })
 
     pythonProcess.stdout?.on('data', (data) => {
@@ -172,6 +245,29 @@ function createWindow(): void {
 // which raced with React's effect registration and left apiToken = '' → 401.
 ipcMain.handle('get-api-config', () => ({ apiBase: API_BASE, apiToken: API_TOKEN }))
 
+ipcMain.handle(
+  'dialog:save-markdown',
+  async (event, payload: { defaultName?: string; content: string }) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    const suggested = (payload?.defaultName || 'document').replace(/\.md$/i, '') + '.md'
+    const result = await dialog.showSaveDialog(window ?? undefined!, {
+      title: 'Export Markdown',
+      defaultPath: suggested,
+      filters: [{ name: 'Markdown', extensions: ['md'] }]
+    })
+    if (result.canceled || !result.filePath) {
+      return { saved: false as const }
+    }
+    try {
+      writeFileSync(result.filePath, payload.content, 'utf8')
+      return { saved: true as const, path: result.filePath }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { saved: false as const, error: message }
+    }
+  }
+)
+
 ipcMain.handle('dialog:open-paper', async (event) => {
   const window = BrowserWindow.fromWebContents(event.sender)
   if (!window) return null
@@ -195,6 +291,15 @@ app.whenReady().then(async () => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  // Move pre-userData parses into the new home before the backend reads them.
+  const parsedDocumentsDir = getParsedDocumentsDir()
+  mkdirSync(parsedDocumentsDir, { recursive: true })
+  try {
+    migrateLegacyParsedDocuments(parsedDocumentsDir)
+  } catch (err) {
+    console.warn('[migration] parsed-documents migration failed:', err)
+  }
 
   try {
     await startPythonBackend()

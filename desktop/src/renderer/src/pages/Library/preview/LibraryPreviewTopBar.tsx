@@ -1,10 +1,12 @@
-import { ArrowLeft, ArrowRight, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Download, Loader2, Trash2 } from 'lucide-react'
 
 interface LibraryPreviewTopBarProps {
   onBack: () => void
   onReview: () => void
+  onExport: () => void
   onDelete: () => void
   onCancelDelete: () => void
+  isExporting: boolean
   isConfirmingDelete: boolean
   isDeleting: boolean
   disabled: boolean
@@ -13,8 +15,10 @@ interface LibraryPreviewTopBarProps {
 export default function LibraryPreviewTopBar({
   onBack,
   onReview,
+  onExport,
   onDelete,
   onCancelDelete,
+  isExporting,
   isConfirmingDelete,
   isDeleting,
   disabled,
@@ -57,6 +61,20 @@ export default function LibraryPreviewTopBar({
           </>
         ) : (
           <>
+            <button
+              type="button"
+              onClick={onExport}
+              disabled={disabled || isExporting}
+              className="btn-ghost px-2.5 py-1.5 text-xs text-ink-secondary hover:text-ink"
+              title="Export normalized markdown"
+            >
+              {isExporting ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Download size={12} />
+              )}
+              Export
+            </button>
             <button
               type="button"
               onClick={onReview}

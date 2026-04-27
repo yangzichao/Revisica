@@ -1,8 +1,13 @@
 """Persistence for parsed documents.
 
-Each successful parse is written to ``parsed-documents/<id>/`` under the
-current working directory. Layout mirrors ``reviews/<id>/`` so artefacts
-sit side by side.
+Each successful parse is written to ``<root>/<id>/``, where ``<root>`` defaults
+to ``parsed-documents/`` under the current working directory but can be
+overridden by the ``REVISICA_PARSED_DOCUMENTS_DIR`` environment variable.
+
+The desktop app sets that env var to a per-user data directory (e.g.
+``~/Library/Application Support/Revisica/parsed-documents``) so library
+contents survive app updates and stay out of the project tree. The CLI
+leaves it unset and writes next to ``reviews/`` like before.
 
 Directory contents:
   - ``document.json`` — manifest (id, timestamps, source, parser, elapsed, full
@@ -15,6 +20,7 @@ Directory contents:
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 from dataclasses import asdict
@@ -26,6 +32,7 @@ from .types import RevisicaDocument
 
 
 PARSED_DOCUMENTS_DIR_NAME = "parsed-documents"
+PARSED_DOCUMENTS_DIR_ENV_VAR = "REVISICA_PARSED_DOCUMENTS_DIR"
 DOCUMENT_MANIFEST_FILENAME = "document.json"
 NORMALIZED_MARKDOWN_FILENAME = "normalized.md"
 
@@ -40,8 +47,14 @@ _UNSAFE_STEM_CHARS = re.compile(r"[^A-Za-z0-9._-]+")
 
 
 def parsed_documents_root() -> Path:
-    """Return (and create) the root directory for saved parses."""
-    root = Path.cwd() / PARSED_DOCUMENTS_DIR_NAME
+    """Return (and create) the root directory for saved parses.
+
+    Honors ``REVISICA_PARSED_DOCUMENTS_DIR`` first so the desktop app can
+    pin storage to ``app.getPath('userData')``. Falls back to a sibling of
+    the current working directory for CLI use.
+    """
+    override = os.environ.get(PARSED_DOCUMENTS_DIR_ENV_VAR, "").strip()
+    root = Path(override).expanduser() if override else Path.cwd() / PARSED_DOCUMENTS_DIR_NAME
     root.mkdir(parents=True, exist_ok=True)
     return root
 

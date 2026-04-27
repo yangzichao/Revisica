@@ -7,11 +7,13 @@ import {
   ArrowRight,
   Loader2,
   BookOpen,
+  Download,
 } from 'lucide-react'
 import { Chip } from '@/components/Chip'
 import { formatRelativeTime } from '@/lib/formatters'
 import {
   deriveDocumentLabels,
+  deriveExportFilename,
   resumeReviewPath,
   type LibrarySummary,
 } from '@/lib/parsedDocuments'
@@ -40,6 +42,8 @@ export default function LibraryRow({
   const [detail, setDetail] = useState<ParseResultData | null>(null)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const { fileName, heading } = deriveDocumentLabels(
     row.source_path,
@@ -80,9 +84,34 @@ export default function LibraryRow({
     navigate(`/library/${encodeURIComponent(row.id)}`)
   }, [navigate, row.id])
 
+  const handleExportMarkdown = useCallback(async (): Promise<void> => {
+    if (isExporting) return
+    setIsExporting(true)
+    setExportError(null)
+    try {
+      // Reuse the cached detail when the row was already expanded so we
+      // don't make a second round-trip just to export.
+      const data = detail ?? (await fetchParsedDocument(apiBase, apiToken, row.id))
+      if (!detail) setDetail(data)
+      const result = await window.api.saveMarkdown({
+        defaultName: deriveExportFilename(row.source_path, row.title, row.id),
+        content: data.markdown ?? '',
+      })
+      if (!result.saved && result.error) {
+        setExportError(result.error)
+      }
+    } catch (err) {
+      setExportError(
+        err instanceof Error ? err.message : 'Could not export markdown',
+      )
+    } finally {
+      setIsExporting(false)
+    }
+  }, [apiBase, apiToken, detail, isExporting, row.id, row.source_path, row.title])
+
   const authorLine = summarizeAuthors(row.authors)
   const timeLine = formatRelativeTime(row.parsed_at)
-  const combinedError = detailError || deleteConfirm.error
+  const combinedError = detailError || deleteConfirm.error || exportError
 
   return (
     <div className="card overflow-hidden">
@@ -155,6 +184,20 @@ export default function LibraryRow({
               >
                 <BookOpen size={12} />
                 Open
+              </button>
+              <button
+                type="button"
+                onClick={handleExportMarkdown}
+                disabled={isExporting}
+                className="btn-ghost px-2.5 py-1.5 text-xs text-ink-secondary hover:text-ink"
+                title="Export normalized markdown"
+              >
+                {isExporting ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Download size={12} />
+                )}
+                Export
               </button>
               <button
                 type="button"

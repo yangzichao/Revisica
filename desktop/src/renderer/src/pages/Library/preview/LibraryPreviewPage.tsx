@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import type { ParseResultData } from '@/pages/Parse/ParseResult'
+import { deriveExportFilename } from '@/lib/parsedDocuments'
 import {
   deleteParsedDocument,
   fetchParsedDocument,
@@ -29,6 +30,8 @@ export default function LibraryPreviewPage({
   const [data, setData] = useState<ParseResultData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const scrollRootRef = useRef<HTMLDivElement>(null)
 
@@ -74,7 +77,32 @@ export default function LibraryPreviewPage({
     [navigate, id],
   )
 
-  const errorMessage = loadError || deleteConfirm.error
+  const handleExportMarkdown = useCallback(async (): Promise<void> => {
+    if (!data || isExporting) return
+    setIsExporting(true)
+    setExportError(null)
+    try {
+      const result = await window.api.saveMarkdown({
+        defaultName: deriveExportFilename(
+          data.source_path || '',
+          data.title || '',
+          id,
+        ),
+        content: data.markdown ?? '',
+      })
+      if (!result.saved && result.error) {
+        setExportError(result.error)
+      }
+    } catch (err) {
+      setExportError(
+        err instanceof Error ? err.message : 'Could not export markdown',
+      )
+    } finally {
+      setIsExporting(false)
+    }
+  }, [data, id, isExporting])
+
+  const errorMessage = loadError || deleteConfirm.error || exportError
 
   return (
     <div ref={scrollRootRef} className="flex-1 overflow-y-auto scroll-smooth">
@@ -82,8 +110,10 @@ export default function LibraryPreviewPage({
         <LibraryPreviewTopBar
           onBack={handleBack}
           onReview={handleStartReview}
+          onExport={handleExportMarkdown}
           onDelete={deleteConfirm.request}
           onCancelDelete={deleteConfirm.cancel}
+          isExporting={isExporting}
           isConfirmingDelete={deleteConfirm.isConfirming}
           isDeleting={deleteConfirm.isDeleting}
           disabled={!data}
