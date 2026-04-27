@@ -24,7 +24,8 @@ interface RunStatus {
   // `kind` is optional so that pre-existing run records (from before parse
   // became a tracked job) still deserialize cleanly; default to 'review'.
   kind?: JobKind
-  state: 'running' | 'completed' | 'failed'
+  // Parse jobs sit in 'queued' until the single parse worker picks them up.
+  state: 'queued' | 'running' | 'completed' | 'failed'
   started_at?: string
   tasks: TaskStatus[]
   error?: string
@@ -208,12 +209,14 @@ export default function Jobs({
     return () => clearInterval(poll)
   }, [runId, apiBase, apiToken])
 
-  // Auto-select the first running job if none is selected
+  // Auto-select the first in-flight job (running or queued) if none is selected
   useEffect(() => {
     if (!runId && jobs.length > 0) {
-      const runningJob = jobs.find((job) => job.state === 'running')
-      if (runningJob) {
-        navigate(`/jobs/${runningJob.run_id}`, { replace: true })
+      const inflightJob = jobs.find(
+        (job) => job.state === 'running' || job.state === 'queued',
+      )
+      if (inflightJob) {
+        navigate(`/jobs/${inflightJob.run_id}`, { replace: true })
       }
     }
   }, [runId, jobs, navigate])
@@ -307,6 +310,9 @@ function TaskStatusIcon({ status }: { status: string }): JSX.Element {
   switch (status) {
     case 'running':
       return <Loader2 size={16} className="animate-spin text-accent" />
+    case 'queued':
+    case 'pending':
+      return <Circle size={16} className="text-ink-tertiary" strokeWidth={1.5} />
     case 'completed':
       return <CheckCircle2 size={16} className="text-success" />
     case 'failed':
@@ -318,6 +324,7 @@ function TaskStatusIcon({ status }: { status: string }): JSX.Element {
 
 function StateBadge({ state }: { state: string }): JSX.Element {
   const colorClass = {
+    queued: 'bg-paper-300/60 text-ink-tertiary',
     running: 'bg-accent/10 text-accent',
     completed: 'bg-success/10 text-success',
     failed: 'bg-danger/10 text-danger',

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import queue
 import secrets
 import threading
 import time
@@ -163,6 +164,51 @@ def _register_run(run_state: RunState) -> None:
 def _get_run(run_id: str) -> Optional[RunState]:
     with _runs_lock:
         return _runs.get(run_id)
+
+
+# ── parse job queue ─────────────────────────────────────────────────
+#
+# Parse jobs (especially MinerU on a multi-hundred-page PDF) are heavy
+# enough that running two concurrently thrashes the GPU/CPU and hurts
+# *both* runs. We funnel every parse through a single worker thread so
+# back-to-back parse requests execute strictly in submission order.
+# Reviews stay on their own thread-per-request model — they're I/O-bound
+# on the LLM provider and parallelism there is fine.
+
+_parse_queue: "queue.Queue[tuple[str, IngestRequest]]" = queue.Queue()
+_parse_worker_started = False
+_parse_worker_lock = threading.Lock()
+
+
+def _ensure_parse_worker_started() -> None:
+    """Lazily start the single parse worker thread on first /api/ingest call."""
+    global _parse_worker_started
+    with _parse_worker_lock:
+        if _parse_worker_started:
+            return
+        thread = threading.Thread(
+            target=_parse_worker_loop,
+            daemon=True,
+            name="revisica-parse-worker",
+        )
+        thread.start()
+        _parse_worker_started = True
+
+
+def _parse_worker_loop() -> None:
+    while True:
+        run_id, request = _parse_queue.get()
+        try:
+            _execute_parse(run_id, request)
+        except Exception:
+            # _execute_parse owns its own try/except and writes failure
+            # state into RunState, so reaching this branch means a defect
+            # in that bookkeeping itself. Swallow rather than let the
+            # worker thread die — losing the worker would silently freeze
+            # every subsequent parse submission.
+            pass
+        finally:
+            _parse_queue.task_done()
 
 
 # ── request/response models ─────────────────────────────────────────
@@ -521,28 +567,31 @@ def _pretty_label(provider: str, model: str) -> str:
 
 @app.post("/api/ingest", dependencies=AUTH)
 def ingest_document(request: IngestRequest):
-    """Start a parse in the background and return a run_id immediately.
+    """Enqueue a parse and return a run_id immediately.
 
     Symmetric with /api/review: callers poll /api/status/{run_id} for
     progress and fetch /api/results/{run_id} once the job completes.
     Long parses (MinerU on a multi-hundred-page PDF) used to block the
     HTTP request for minutes; now they live in the same job tracker as
     reviews so the UI can navigate away and come back.
+
+    Unlike /api/review, parse jobs are funneled through a single worker
+    thread so two heavy MinerU runs never compete for the GPU. A second
+    request submitted while a parse is in flight enters the "queued"
+    state and only flips to "running" once its turn comes up.
     """
     if not request.file_path or not request.file_path.strip():
         raise HTTPException(status_code=400, detail="file_path is required.")
     run_id = str(uuid.uuid4())[:8]
     run_state = RunState(run_id, request.model_dump(), kind="parse")
+    run_state.update(state="queued")
+    run_state.append_task({"name": "parse", "status": "pending"})
     _register_run(run_state)
 
-    thread = threading.Thread(
-        target=_execute_parse,
-        args=(run_id, request),
-        daemon=True,
-    )
-    thread.start()
+    _ensure_parse_worker_started()
+    _parse_queue.put((run_id, request))
 
-    return {"run_id": run_id, "status": "started"}
+    return {"run_id": run_id, "status": "queued"}
 
 
 @app.get("/api/parsed-documents", dependencies=AUTH)
@@ -714,19 +763,22 @@ def _resolve_review_source(request: ReviewRequest) -> dict[str, Optional[str]]:
 
 
 def _execute_parse(run_id: str, request: IngestRequest) -> None:
-    """Run a parse in a background thread.
+    """Run a parse on the dedicated parse worker thread.
 
-    Mirrors _execute_review's lifecycle: append a single 'parse' task,
-    flip it to completed/failed at the end, and stash the manifest on
-    run_state.result_payload so /api/results can return it without a
-    second disk read.
+    The job arrived in the "queued" state from /api/ingest. Flip it to
+    "running" before the heavy work starts, then to completed/failed at
+    the end. The manifest is stashed on run_state.result_payload so
+    /api/results can return it without a second disk read.
     """
     run_state = _get_run(run_id)
     if run_state is None:
         return
 
     try:
-        run_state.append_task({"name": "parse", "status": "running"})
+        run_state.update(
+            state="running",
+            tasks=[{"name": "parse", "status": "running"}],
+        )
 
         start = time.perf_counter()
         document = parse_document(

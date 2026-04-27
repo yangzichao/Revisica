@@ -95,6 +95,12 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
   const [isParsing, setIsParsing] = useState(false)
   const [activeRunId, setActiveRunId] = useState<string | null>(null)
+  // Parses funnel through a single backend worker, so a freshly submitted
+  // job may sit in 'queued' until earlier parses finish. Track that
+  // separately from `isParsing` so we can tell the user it's waiting.
+  const [parseState, setParseState] = useState<'queued' | 'running' | null>(
+    null,
+  )
   const [result, setResult] = useState<ParseResultData | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const pollRef = useRef<number | null>(null)
@@ -120,6 +126,7 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
   const handleRunParse = useCallback(async (): Promise<void> => {
     if (!canRunParse(state)) return
     setIsParsing(true)
+    setParseState('queued')
     setErrorMessage(null)
     setResult(null)
     setActiveRunId(null)
@@ -150,6 +157,7 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Parse failed')
       setIsParsing(false)
+      setParseState(null)
       return
     }
 
@@ -167,7 +175,11 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
         )
         if (!statusResponse.ok) return
         const status = await statusResponse.json()
-        if (status.state === 'completed') {
+        if (status.state === 'queued') {
+          setParseState('queued')
+        } else if (status.state === 'running') {
+          setParseState('running')
+        } else if (status.state === 'completed') {
           stopPolling()
           const resultsResponse = await apiFetch(
             apiBase,
@@ -178,15 +190,18 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
             const data = await resultsResponse.json().catch(() => ({}))
             setErrorMessage(data.detail || 'Failed to fetch parse result')
             setIsParsing(false)
+            setParseState(null)
             return
           }
           const data: ParseResultData = await resultsResponse.json()
           setResult(data)
           setIsParsing(false)
+          setParseState(null)
         } else if (status.state === 'failed') {
           stopPolling()
           setErrorMessage(status.error || 'Parse failed')
           setIsParsing(false)
+          setParseState(null)
         }
       } catch {
         // Transient network issue — keep polling
@@ -199,6 +214,7 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
     setResult(null)
     setActiveRunId(null)
     setErrorMessage(null)
+    setParseState(null)
   }, [stopPolling])
 
   const handleViewInJobs = useCallback((): void => {
@@ -244,7 +260,7 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
             {isParsing ? (
               <>
                 <Loader2 size={14} className="animate-spin" />
-                Parsing...
+                {parseState === 'queued' ? 'Queued...' : 'Parsing...'}
               </>
             ) : (
               <>
@@ -277,9 +293,21 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
 
         {isParsing && activeRunId && (
           <p className="font-serif text-xs text-ink-tertiary italic mt-3">
-            Tracked as job{' '}
-            <code className="font-mono not-italic">{activeRunId}</code> — safe to
-            navigate away; the parse keeps running in the background.
+            {parseState === 'queued' ? (
+              <>
+                Waiting for an earlier parse to finish — only one runs at a time.
+                Tracked as job{' '}
+                <code className="font-mono not-italic">{activeRunId}</code>; safe
+                to navigate away.
+              </>
+            ) : (
+              <>
+                Tracked as job{' '}
+                <code className="font-mono not-italic">{activeRunId}</code> —
+                safe to navigate away; the parse keeps running in the
+                background.
+              </>
+            )}
           </p>
         )}
 
