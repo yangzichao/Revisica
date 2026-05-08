@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, NavLink } from 'react-router-dom'
 import {
   Loader2, CheckCircle2, XCircle, Circle, FileText, Inbox,
-  FileScan, ArrowRight,
+  FileScan, ArrowRight, Archive,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { cn } from '@/lib/utils'
@@ -13,7 +13,10 @@ import { formatElapsed } from '@/lib/formatters'
 
 interface TaskStatus {
   name: string
-  status: 'pending' | 'running' | 'completed' | 'failed'
+  // ``cached`` is reported by the MinerU parser when a chunk is reused from
+  // the on-disk cache instead of being recomputed — surface it visually so
+  // users can see resumed jobs skipping completed work.
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cached'
   detail?: string
 }
 
@@ -315,6 +318,11 @@ function TaskStatusIcon({ status }: { status: string }): JSX.Element {
       return <Circle size={16} className="text-ink-tertiary" strokeWidth={1.5} />
     case 'completed':
       return <CheckCircle2 size={16} className="text-success" />
+    case 'cached':
+      // Distinct from "completed" — same green semantics, but the archive
+      // glyph signals "reused from cache, no work done this run". Important
+      // for resumed parses where most chunks land instantly.
+      return <Archive size={16} className="text-success" />
     case 'failed':
       return <XCircle size={16} className="text-danger" />
     default:

@@ -1,19 +1,31 @@
-"""PDF → Markdown parser via MinerU CLI.
+"""PDF -> Markdown parser via MinerU CLI.
 
 Install: ``pip install 'mineru[all]'``. The ``[all]`` extra is platform-aware
 and pulls the right local accelerator: ``mlx`` on macOS (Apple Silicon MPS +
 MLX), ``vllm`` on Linux (CUDA), ``lmdeploy`` on Windows. Plain
 ``pip install mineru`` gives only the CLI client and falls back to a slow
 CPU Transformers path for the VLM/hybrid backends.
+
+Large PDFs (hundreds of pages) blow out GPU memory when fed to MinerU as a
+single job, so this parser auto-splits anything above
+``REVISICA_MINERU_CHUNK_THRESHOLD`` pages into chunks of
+``REVISICA_MINERU_CHUNK_SIZE`` pages and runs MinerU once per chunk via the
+CLI's native ``-s/-e`` page-range flags. Each chunk is content-addressed
+(``sha256(pdf_bytes)[:16]`` + backend + page range) so a partially-completed
+parse — whether the user cancelled, the server crashed, or a single chunk
+hit OOM — resumes from the next un-cached chunk on the second attempt.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import hashlib
 import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Callable
 
 from .base import BaseParser
 
@@ -29,12 +41,48 @@ MINERU_BACKEND_FLAG_MAP: dict[str, str | None] = {
 }
 
 
+DEFAULT_CHUNK_PAGES_THRESHOLD = 50
+DEFAULT_CHUNK_PAGES_SIZE = 30
+
+CHUNK_THRESHOLD_ENV_VAR = "REVISICA_MINERU_CHUNK_THRESHOLD"
+CHUNK_SIZE_ENV_VAR = "REVISICA_MINERU_CHUNK_SIZE"
+CHUNK_CACHE_ROOT_ENV_VAR = "REVISICA_MINERU_CHUNK_CACHE_DIR"
+
+
+@dataclasses.dataclass(frozen=True)
+class MineruChunkProgress:
+    """Reported once per chunk transition so the UI can render a progress bar.
+
+    ``status`` is one of:
+      - ``"running"``  : MinerU was just spawned for this chunk
+      - ``"completed"``: chunk finished and was written to the cache
+      - ``"cached"``   : chunk was already in the cache and was skipped
+      - ``"failed"``   : MinerU raised on this chunk (the parse aborts)
+    """
+
+    chunk_index: int  # 1-based
+    chunk_total: int
+    start_page: int  # 0-based, inclusive
+    end_page: int  # 0-based, inclusive
+    status: str
+
+
+ProgressCallback = Callable[[MineruChunkProgress], None]
+
+
 class MineruParser(BaseParser):
     """Convert PDF to Markdown using the ``mineru`` CLI."""
 
     name = "mineru"
 
-    def __init__(self, backend: str | None = None, timeout_seconds: int = 7200) -> None:
+    def __init__(
+        self,
+        backend: str | None = None,
+        timeout_seconds: int = 7200,
+        chunk_pages_threshold: int | None = None,
+        chunk_pages_size: int | None = None,
+        progress_callback: ProgressCallback | None = None,
+    ) -> None:
         env_backend = os.environ.get("REVISICA_MINERU_BACKEND")
         resolved_backend = backend or env_backend or "vlm"
         if resolved_backend not in MINERU_BACKEND_FLAG_MAP:
@@ -44,6 +92,21 @@ class MineruParser(BaseParser):
             )
         self.backend = resolved_backend
         self.timeout_seconds = timeout_seconds
+        self.chunk_pages_threshold = _resolve_int(
+            chunk_pages_threshold,
+            CHUNK_THRESHOLD_ENV_VAR,
+            DEFAULT_CHUNK_PAGES_THRESHOLD,
+        )
+        self.chunk_pages_size = _resolve_int(
+            chunk_pages_size,
+            CHUNK_SIZE_ENV_VAR,
+            DEFAULT_CHUNK_PAGES_SIZE,
+        )
+        if self.chunk_pages_size < 1:
+            raise ValueError(
+                f"chunk_pages_size must be >= 1 (got {self.chunk_pages_size})"
+            )
+        self.progress_callback = progress_callback
 
     def can_handle(self, path: Path) -> bool:
         return path.suffix.lower() == ".pdf"
@@ -53,18 +116,104 @@ class MineruParser(BaseParser):
         return shutil.which("mineru") is not None
 
     def parse(self, path: Path) -> str:
-        mineru_bin = shutil.which("mineru")
-        if mineru_bin is None:
+        if shutil.which("mineru") is None:
             raise RuntimeError(
                 "MinerU is not installed. Install with:\n"
                 "  pip install 'mineru[all]'"
             )
+
+        try:
+            page_count = _count_pdf_pages(path)
+        except Exception:
+            # pypdf rejects malformed PDF headers; rather than fail the whole
+            # parse on a header quirk that mineru itself can usually handle,
+            # fall back to the single-shot path. This costs us auto-chunking
+            # for that one file, but matches pre-chunking behavior exactly.
+            return self._run_mineru(path, start=None, end=None)
+
+        if page_count <= self.chunk_pages_threshold:
+            return self._run_mineru(path, start=None, end=None)
+
+        chunks = _chunk_ranges(page_count, self.chunk_pages_size)
+        return self._parse_chunked(path, chunks)
+
+    def _parse_chunked(
+        self,
+        path: Path,
+        chunks: list[tuple[int, int]],
+    ) -> str:
+        pdf_hash = _compute_pdf_hash(path)
+        cache_dir = chunk_cache_dir_for(pdf_hash, self.backend)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
+        total = len(chunks)
+        pieces: list[str] = []
+        for index, (start, end) in enumerate(chunks, start=1):
+            cache_path = cache_dir / _chunk_filename(start, end)
+            if cache_path.exists():
+                self._report(MineruChunkProgress(
+                    chunk_index=index,
+                    chunk_total=total,
+                    start_page=start,
+                    end_page=end,
+                    status="cached",
+                ))
+                pieces.append(cache_path.read_text(encoding="utf-8"))
+                continue
+
+            self._report(MineruChunkProgress(
+                chunk_index=index,
+                chunk_total=total,
+                start_page=start,
+                end_page=end,
+                status="running",
+            ))
+            try:
+                chunk_md = self._run_mineru(path, start=start, end=end)
+            except Exception:
+                # Tell the UI which chunk specifically blew up so the
+                # progress page does not leave a chunk stuck on "running"
+                # next to a top-level "parse: failed".
+                self._report(MineruChunkProgress(
+                    chunk_index=index,
+                    chunk_total=total,
+                    start_page=start,
+                    end_page=end,
+                    status="failed",
+                ))
+                raise
+            _atomic_write(cache_path, chunk_md)
+            pieces.append(chunk_md)
+            self._report(MineruChunkProgress(
+                chunk_index=index,
+                chunk_total=total,
+                start_page=start,
+                end_page=end,
+                status="completed",
+            ))
+
+        return "\n\n".join(pieces)
+
+    def _run_mineru(
+        self,
+        path: Path,
+        start: int | None,
+        end: int | None,
+    ) -> str:
+        mineru_bin = shutil.which("mineru")
+        # ``parse`` already verified mineru is on PATH; assert here keeps the
+        # type narrow for static checkers.
+        assert mineru_bin is not None
 
         with tempfile.TemporaryDirectory(prefix="revisica_mineru_") as tmp_dir:
             command = [mineru_bin, "-p", str(path), "-o", tmp_dir]
             backend_flag = MINERU_BACKEND_FLAG_MAP[self.backend]
             if backend_flag is not None:
                 command += ["-b", backend_flag]
+            if start is not None:
+                command += ["-s", str(start)]
+            if end is not None:
+                command += ["-e", str(end)]
 
             completed = subprocess.run(
                 command,
@@ -75,12 +224,16 @@ class MineruParser(BaseParser):
             )
 
             if completed.returncode != 0:
+                range_label = (
+                    f" pages={start}-{end}"
+                    if start is not None or end is not None
+                    else ""
+                )
                 raise RuntimeError(
                     f"mineru failed (exit={completed.returncode}, "
-                    f"backend={self.backend}): {completed.stderr}"
+                    f"backend={self.backend}{range_label}): {completed.stderr}"
                 )
 
-            # MinerU writes <stem>/<stem>.md inside the output dir
             for md_file in sorted(Path(tmp_dir).rglob("*.md")):
                 content = md_file.read_text(encoding="utf-8")
                 if content.strip():
@@ -90,3 +243,116 @@ class MineruParser(BaseParser):
                 f"MinerU produced no Markdown output in {tmp_dir} "
                 f"(backend={self.backend})"
             )
+
+    def _report(self, progress: MineruChunkProgress) -> None:
+        if self.progress_callback is None:
+            return
+        try:
+            self.progress_callback(progress)
+        except Exception:
+            # A buggy progress callback must not abort the parse — chunk
+            # work has already happened (or is about to) and the caller
+            # cares about the markdown, not the progress bar.
+            pass
+
+
+# ── helpers ──────────────────────────────────────────────────────────
+
+
+def _resolve_int(explicit: int | None, env_var: str, default: int) -> int:
+    if explicit is not None:
+        return explicit
+    raw = os.environ.get(env_var, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _count_pdf_pages(path: Path) -> int:
+    """Read just enough of the PDF to count pages; pure Python, no GPU."""
+    from pypdf import PdfReader
+
+    reader = PdfReader(str(path))
+    return len(reader.pages)
+
+
+def _chunk_ranges(total_pages: int, chunk_size: int) -> list[tuple[int, int]]:
+    """Split ``total_pages`` into inclusive 0-based ``(start, end)`` ranges."""
+    ranges: list[tuple[int, int]] = []
+    cursor = 0
+    while cursor < total_pages:
+        end = min(cursor + chunk_size - 1, total_pages - 1)
+        ranges.append((cursor, end))
+        cursor = end + 1
+    return ranges
+
+
+def _compute_pdf_hash(path: Path) -> str:
+    """Return ``sha256(pdf_bytes)[:16]`` for stable content-addressed cache keys."""
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        while True:
+            chunk = fh.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()[:16]
+
+
+def chunk_cache_root() -> Path:
+    """Root directory for chunk-level MinerU caches.
+
+    Honors ``REVISICA_MINERU_CHUNK_CACHE_DIR`` first; otherwise lives under
+    ``$XDG_CACHE_HOME`` (or ``~/.cache``).
+    """
+    override = os.environ.get(CHUNK_CACHE_ROOT_ENV_VAR, "").strip()
+    if override:
+        return Path(override).expanduser()
+    xdg = os.environ.get("XDG_CACHE_HOME", "").strip()
+    base = Path(xdg).expanduser() if xdg else Path.home() / ".cache"
+    return base / "revisica" / "mineru_chunks"
+
+
+def chunk_cache_dir_for(pdf_hash: str, backend: str) -> Path:
+    return chunk_cache_root() / pdf_hash / backend
+
+
+def _chunk_filename(start: int, end: int) -> str:
+    return f"p{start:04d}-p{end:04d}.md"
+
+
+def _atomic_write(path: Path, content: str) -> None:
+    """Write ``content`` to ``path`` via a sibling tempfile + rename.
+
+    A half-completed chunk file would poison the cache forever, so we never
+    expose the partial write to readers — rename is atomic on the same
+    filesystem, which is always true for tempfile-in-target-dir.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_text(content, encoding="utf-8")
+    os.replace(tmp_path, path)
+
+
+def clear_chunk_cache() -> int:
+    """Remove every cached chunk. Returns the number of chunk files deleted."""
+    root = chunk_cache_root()
+    if not root.exists():
+        return 0
+    removed = sum(1 for _ in root.rglob("*.md"))
+    shutil.rmtree(root)
+    return removed
+
+
+__all__ = [
+    "MINERU_BACKEND_FLAG_MAP",
+    "MineruChunkProgress",
+    "MineruParser",
+    "ProgressCallback",
+    "chunk_cache_dir_for",
+    "chunk_cache_root",
+    "clear_chunk_cache",
+]

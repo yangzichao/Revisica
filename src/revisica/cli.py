@@ -52,6 +52,7 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_bootstrap_parser(sub)
     _add_serve_parser(sub)
     _add_ingest_parser(sub)
+    _add_clear_cache_parser(sub)
     _add_review_parser(sub)
     _add_writing_review_parser(sub)
     _add_math_review_parser(sub)
@@ -93,6 +94,25 @@ def _add_ingest_parser(sub: argparse._SubParsersAction) -> None:
                    help="Parser to use (default: auto-detect).")
     p.add_argument("--output",
                    help="Write the RevisicaDocument JSON to a file instead of stdout.")
+
+
+def _add_clear_cache_parser(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser(
+        "clear-cache",
+        help="Clear local Revisica caches (currently: MinerU per-chunk cache).",
+        description=(
+            "Removes cached MinerU chunks under "
+            "$XDG_CACHE_HOME/revisica/mineru_chunks (or "
+            "~/.cache/revisica/mineru_chunks). Use this after upgrading "
+            "MinerU if you suspect stale chunk outputs are being reused."
+        ),
+    )
+    p.add_argument(
+        "--what",
+        default="mineru-chunks",
+        choices=["mineru-chunks"],
+        help="Which cache to clear (currently only mineru-chunks).",
+    )
 
 
 def _add_review_parser(sub: argparse._SubParsersAction) -> None:
@@ -631,6 +651,16 @@ def _handle_ingest(args: argparse.Namespace) -> None:
     print(f"sections: {len(document.sections)}", file=__import__("sys").stderr)
 
 
+def _handle_clear_cache(args: argparse.Namespace) -> None:
+    if args.what == "mineru-chunks":
+        from .ingestion.mineru_parser import chunk_cache_root, clear_chunk_cache
+        cache_root = chunk_cache_root()
+        removed = clear_chunk_cache()
+        print(f"removed {removed} cached chunk file(s) from {cache_root}")
+    else:
+        raise SystemExit(f"unknown cache target: {args.what}")
+
+
 def _handle_serve(args: argparse.Namespace) -> None:
     try:
         import uvicorn
@@ -649,6 +679,7 @@ _HANDLERS = {
     "bootstrap": lambda args: [print(line) for line in bootstrap(targets=args.targets, force=args.force)],
     "serve": _handle_serve,
     "ingest": _handle_ingest,
+    "clear-cache": _handle_clear_cache,
     "review": _handle_review,
     "writing-review": _handle_writing_review,
     "math-review": _handle_math_review,

@@ -126,6 +126,31 @@ class RunState:
         with self._lock:
             self.tasks.append(task)
 
+    def update_task_by_name(
+        self,
+        name: str,
+        status: str,
+        detail: Optional[str] = None,
+    ) -> None:
+        """Update an existing task in place, or append a new one if missing.
+
+        Used by the MinerU chunk progress callback so /api/status returns a
+        fine-grained ``[parse, chunk-1/8, chunk-2/8, …]`` task list while a
+        large PDF is being split and parsed.
+        """
+        with self._lock:
+            for index, existing in enumerate(self.tasks):
+                if existing.get("name") == name:
+                    new_task = {**existing, "status": status}
+                    if detail is not None:
+                        new_task["detail"] = detail
+                    self.tasks[index] = new_task
+                    return
+            new_task: dict[str, str] = {"name": name, "status": status}
+            if detail is not None:
+                new_task["detail"] = detail
+            self.tasks.append(new_task)
+
     def to_dict(self) -> dict[str, Any]:
         with self._lock:
             return {
@@ -769,6 +794,11 @@ def _execute_parse(run_id: str, request: IngestRequest) -> None:
     "running" before the heavy work starts, then to completed/failed at
     the end. The manifest is stashed on run_state.result_payload so
     /api/results can return it without a second disk read.
+
+    For large PDFs MinerU auto-splits into chunks; each chunk transition
+    appends/updates a ``chunk-pNNNN-pMMMM`` task on the run state so the
+    UI's progress page shows fine-grained status (and credits cached
+    chunks instantly so resumed jobs are visibly faster).
     """
     run_state = _get_run(run_id)
     if run_state is None:
@@ -780,11 +810,14 @@ def _execute_parse(run_id: str, request: IngestRequest) -> None:
             tasks=[{"name": "parse", "status": "running"}],
         )
 
+        progress_callback = _build_chunk_progress_callback(run_state)
+
         start = time.perf_counter()
         document = parse_document(
             request.file_path,
             parser=request.parser,
             mineru_backend=request.mineru_backend,
+            mineru_progress_callback=progress_callback,
         )
         elapsed_ms = int((time.perf_counter() - start) * 1000)
         manifest = save_parsed_document(document, elapsed_ms)
@@ -811,20 +844,44 @@ def _execute_parse(run_id: str, request: IngestRequest) -> None:
             ],
         }
 
+        run_state.update_task_by_name("parse", "completed")
         run_state.update(
             state="completed",
             completed_at=datetime.now().isoformat(),
-            tasks=[{"name": "parse", "status": "completed"}],
             result_payload=result_payload,
         )
 
     except Exception as error:
+        run_state.update_task_by_name(
+            "parse", "failed", detail=str(error)[:200]
+        )
         run_state.update(
             state="failed",
             error=str(error),
             completed_at=datetime.now().isoformat(),
-            tasks=[{"name": "parse", "status": "failed", "detail": str(error)[:200]}],
         )
+
+
+def _build_chunk_progress_callback(run_state: RunState):
+    """Return a callback the MinerU parser can fire on each chunk transition.
+
+    The callback is intentionally permissive: a buggy update path must not
+    abort the parse, so the parser swallows callback exceptions on its end.
+    Here we just translate ``MineruChunkProgress`` into a stable task entry
+    keyed by page range so updates land on the right row.
+    """
+
+    def callback(progress) -> None:
+        chunk_name = (
+            f"chunk-p{progress.start_page:04d}-p{progress.end_page:04d}"
+        )
+        detail = (
+            f"{progress.chunk_index}/{progress.chunk_total} "
+            f"(pages {progress.start_page}-{progress.end_page})"
+        )
+        run_state.update_task_by_name(chunk_name, progress.status, detail=detail)
+
+    return callback
 
 
 def _execute_review(run_id: str, request: ReviewRequest) -> None:

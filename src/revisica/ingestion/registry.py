@@ -118,6 +118,7 @@ def parse_document(
     path: str | Path,
     parser: str = "auto",
     mineru_backend: str | None = None,
+    mineru_progress_callback=None,
 ) -> RevisicaDocument:
     """Parse a file into a RevisicaDocument.
 
@@ -129,6 +130,9 @@ def parse_document(
         mineru_backend: Optional MinerU sub-backend ("vlm", "pipeline",
                 "hybrid", "auto"). Only used when the chosen parser is
                 MinerU. ``None`` keeps the parser's default ("vlm").
+        mineru_progress_callback: Optional ``MineruChunkProgress`` callback
+                invoked on each chunk transition when MinerU auto-splits a
+                large PDF. Ignored for other parsers.
 
     Returns:
         A normalized RevisicaDocument.
@@ -141,9 +145,14 @@ def parse_document(
 
     selected_parser = _select_parser(file_path, parser)
 
-    if mineru_backend and selected_parser.name == "mineru":
+    if selected_parser.name == "mineru" and (
+        mineru_backend or mineru_progress_callback is not None
+    ):
         from .mineru_parser import MineruParser
-        selected_parser = MineruParser(backend=mineru_backend)
+        selected_parser = MineruParser(
+            backend=mineru_backend,
+            progress_callback=mineru_progress_callback,
+        )
 
     try:
         raw_markdown = selected_parser.parse(file_path)

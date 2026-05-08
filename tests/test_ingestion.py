@@ -393,3 +393,260 @@ class TestPandocParserFallback:
         import sys
         monkeypatch.setitem(sys.modules, "pypandoc", FakePypandoc)
         assert pp._pypandoc_binary_path() is None
+
+
+# ── MinerU chunking + resumable cache ──────────────────────────────────
+
+
+def _make_chunked_fake_mineru(call_log: list[dict[str, object]]):
+    """Build a ``subprocess.run`` fake that records the chunk slice and
+    writes a deterministic chunk-marker markdown file into the output dir."""
+
+    def runner(args, *, capture_output, text, check, timeout):
+        out_dir = Path(args[args.index("-o") + 1])
+        start = int(args[args.index("-s") + 1]) if "-s" in args else None
+        end = int(args[args.index("-e") + 1]) if "-e" in args else None
+        call_log.append({"start": start, "end": end})
+
+        target_dir = out_dir / "paper"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        marker = f"# chunk pages={start}-{end}\n\nbody for {start}-{end}\n"
+        (target_dir / "paper.md").write_text(marker, encoding="utf-8")
+
+        return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
+
+    return runner
+
+
+class TestMineruChunkRanges:
+    def test_chunk_ranges_exact_division(self):
+        from revisica.ingestion.mineru_parser import _chunk_ranges
+        assert _chunk_ranges(60, 30) == [(0, 29), (30, 59)]
+
+    def test_chunk_ranges_with_remainder(self):
+        from revisica.ingestion.mineru_parser import _chunk_ranges
+        assert _chunk_ranges(70, 30) == [(0, 29), (30, 59), (60, 69)]
+
+    def test_chunk_ranges_smaller_than_chunk_size(self):
+        from revisica.ingestion.mineru_parser import _chunk_ranges
+        assert _chunk_ranges(10, 30) == [(0, 9)]
+
+    def test_chunk_ranges_zero_pages(self):
+        from revisica.ingestion.mineru_parser import _chunk_ranges
+        assert _chunk_ranges(0, 30) == []
+
+
+class TestMineruChunkingAndCache:
+    """Auto-split + content-addressed resume for large PDFs."""
+
+    def _patch_environment(self, monkeypatch, tmp_path, page_count):
+        """Mock subprocess + page count + redirect cache root into ``tmp_path``."""
+        from revisica.ingestion import mineru_parser as mp
+
+        monkeypatch.setattr(mp.shutil, "which", lambda _name: "/usr/local/bin/mineru")
+        monkeypatch.setattr(mp, "_count_pdf_pages", lambda _path: page_count)
+        monkeypatch.setenv("REVISICA_MINERU_CHUNK_CACHE_DIR", str(tmp_path / "cache"))
+
+    def test_small_pdf_is_not_chunked(self, monkeypatch, tmp_path):
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=20)
+        calls: list[dict[str, object]] = []
+        monkeypatch.setattr(mp.subprocess, "run", _make_chunked_fake_mineru(calls))
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake")
+
+        parser = mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30)
+        md = parser.parse(pdf)
+
+        assert len(calls) == 1, "small PDF should be parsed in a single mineru call"
+        assert calls[0]["start"] is None and calls[0]["end"] is None
+        assert "chunk pages=None-None" in md
+
+    def test_large_pdf_is_chunked_with_page_ranges(self, monkeypatch, tmp_path):
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+        calls: list[dict[str, object]] = []
+        monkeypatch.setattr(mp.subprocess, "run", _make_chunked_fake_mineru(calls))
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-large")
+
+        parser = mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30)
+        md = parser.parse(pdf)
+
+        assert [(c["start"], c["end"]) for c in calls] == [(0, 29), (30, 59), (60, 69)]
+        assert "chunk pages=0-29" in md
+        assert "chunk pages=30-59" in md
+        assert "chunk pages=60-69" in md
+
+    def test_resume_skips_cached_chunks(self, monkeypatch, tmp_path):
+        """Second parse of the same PDF reads every chunk from cache."""
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+        calls: list[dict[str, object]] = []
+        monkeypatch.setattr(mp.subprocess, "run", _make_chunked_fake_mineru(calls))
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-resume")
+
+        parser = mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30)
+        first = parser.parse(pdf)
+        assert len(calls) == 3
+
+        # Second pass: cache should win, no new subprocess calls.
+        second = parser.parse(pdf)
+        assert len(calls) == 3, "cache hits must not re-spawn mineru"
+        assert first == second
+
+    def test_partial_failure_resumes_from_next_chunk(self, monkeypatch, tmp_path):
+        """If chunk 2 fails, a retry re-runs only chunk 2 + chunk 3."""
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+
+        attempts: list[dict[str, object]] = []
+        good_runner = _make_chunked_fake_mineru(attempts)
+
+        def flaky_runner(args, **kwargs):
+            start = int(args[args.index("-s") + 1])
+            # Fail on the second chunk during the *first* attempt only.
+            if start == 30 and not flaky_runner.first_attempt_done:
+                attempts.append({"start": 30, "end": 59, "failed": True})
+                return subprocess.CompletedProcess(
+                    args=args, returncode=1, stdout="", stderr="CUDA OOM"
+                )
+            return good_runner(args, **kwargs)
+
+        flaky_runner.first_attempt_done = False  # type: ignore[attr-defined]
+        monkeypatch.setattr(mp.subprocess, "run", flaky_runner)
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-flaky")
+
+        parser = mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30)
+
+        with pytest.raises(RuntimeError, match="CUDA OOM"):
+            parser.parse(pdf)
+
+        # First attempt: chunk 1 succeeded, chunk 2 failed before chunk 3 ran.
+        successful_first_pass = [
+            (a["start"], a["end"]) for a in attempts if not a.get("failed")
+        ]
+        assert successful_first_pass == [(0, 29)]
+
+        # Allow chunk 2 to succeed on retry; clear the log to track attempt 2.
+        flaky_runner.first_attempt_done = True  # type: ignore[attr-defined]
+        attempts.clear()
+
+        parser.parse(pdf)
+
+        # Attempt 2 must skip chunk 1 (cached) and only run chunks 2 + 3.
+        assert [(a["start"], a["end"]) for a in attempts] == [(30, 59), (60, 69)]
+
+    def test_progress_callback_fires_for_each_chunk(self, monkeypatch, tmp_path):
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+        monkeypatch.setattr(mp.subprocess, "run", _make_chunked_fake_mineru([]))
+
+        events: list[mp.MineruChunkProgress] = []
+        parser = mp.MineruParser(
+            chunk_pages_threshold=50,
+            chunk_pages_size=30,
+            progress_callback=events.append,
+        )
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-progress")
+        parser.parse(pdf)
+
+        # Each non-cached chunk fires running -> completed; with 3 chunks that is 6.
+        assert len(events) == 6
+        first = events[0]
+        assert first.chunk_index == 1 and first.chunk_total == 3
+        assert first.start_page == 0 and first.end_page == 29
+        assert first.status == "running"
+        assert events[1].status == "completed"
+
+        # Re-parse: every chunk is cached, exactly one ``cached`` event each.
+        events.clear()
+        parser.parse(pdf)
+        assert len(events) == 3
+        assert all(e.status == "cached" for e in events)
+
+    def test_clear_chunk_cache_removes_files(self, monkeypatch, tmp_path):
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+        monkeypatch.setattr(mp.subprocess, "run", _make_chunked_fake_mineru([]))
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-clear")
+
+        parser = mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30)
+        parser.parse(pdf)
+        assert mp.chunk_cache_root().exists()
+
+        removed = mp.clear_chunk_cache()
+        assert removed == 3
+        assert not mp.chunk_cache_root().exists()
+
+    def test_progress_callback_reports_failed_chunk(self, monkeypatch, tmp_path):
+        """When MinerU raises mid-parse, the failing chunk emits a 'failed'
+        event so the UI can flip its row off ``running`` instead of leaving
+        it stuck."""
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+
+        def runner(args, **kwargs):
+            start = int(args[args.index("-s") + 1])
+            if start == 30:
+                return subprocess.CompletedProcess(
+                    args=args, returncode=1, stdout="", stderr="CUDA OOM"
+                )
+            out_dir = Path(args[args.index("-o") + 1])
+            target_dir = out_dir / "paper"
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / "paper.md").write_text("# chunk ok\n", encoding="utf-8")
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(mp.subprocess, "run", runner)
+
+        events: list[mp.MineruChunkProgress] = []
+        parser = mp.MineruParser(
+            chunk_pages_threshold=50,
+            chunk_pages_size=30,
+            progress_callback=events.append,
+        )
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-failed")
+
+        with pytest.raises(RuntimeError, match="CUDA OOM"):
+            parser.parse(pdf)
+
+        # Chunk 1 ran to completion (running, completed); chunk 2 ran then
+        # raised (running, failed). Chunk 3 is never reached.
+        statuses = [(e.start_page, e.status) for e in events]
+        assert statuses == [
+            (0, "running"), (0, "completed"),
+            (30, "running"), (30, "failed"),
+        ]
+
+    def test_atomic_write_does_not_leave_tmp_files(self, monkeypatch, tmp_path):
+        """A fresh cache directory only contains finalized ``*.md`` files."""
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+        monkeypatch.setattr(mp.subprocess, "run", _make_chunked_fake_mineru([]))
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-atomic")
+
+        mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30).parse(pdf)
+        leftovers = list(mp.chunk_cache_root().rglob("*.tmp"))
+        assert leftovers == []
