@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 import textwrap
 from pathlib import Path
@@ -398,24 +399,96 @@ class TestPandocParserFallback:
 # ── MinerU chunking + resumable cache ──────────────────────────────────
 
 
+_CHUNK_PDF_NAME_RE = re.compile(r"_p(\d{4,})-p(\d{4,})\.pdf$")
+
+
 def _make_chunked_fake_mineru(call_log: list[dict[str, object]]):
     """Build a ``subprocess.run`` fake that records the chunk slice and
-    writes a deterministic chunk-marker markdown file into the output dir."""
+    writes a deterministic chunk-marker markdown file into the output dir.
+
+    The chunking implementation feeds mineru a *physical* sub-PDF per
+    chunk (no ``-s/-e`` flags). The page range is encoded in the temp
+    PDF's filename (``<stem>_pNNNN-pMMMM.pdf``) so this fake parses the
+    range out of the ``-p`` argument to know which chunk is being
+    simulated. A bare PDF (no page-range suffix) — i.e. the unchunked
+    single-shot path — is recorded with ``start=None, end=None``.
+    """
 
     def runner(args, *, capture_output, text, check, timeout):
         out_dir = Path(args[args.index("-o") + 1])
-        start = int(args[args.index("-s") + 1]) if "-s" in args else None
-        end = int(args[args.index("-e") + 1]) if "-e" in args else None
-        call_log.append({"start": start, "end": end})
+        pdf_path = Path(args[args.index("-p") + 1])
 
-        target_dir = out_dir / "paper"
+        match = _CHUNK_PDF_NAME_RE.search(pdf_path.name)
+        if match:
+            start: int | None = int(match.group(1))
+            end: int | None = int(match.group(2))
+        else:
+            start = None
+            end = None
+        call_log.append({"start": start, "end": end, "pdf_name": pdf_path.name})
+
+        target_dir = out_dir / pdf_path.stem
         target_dir.mkdir(parents=True, exist_ok=True)
         marker = f"# chunk pages={start}-{end}\n\nbody for {start}-{end}\n"
-        (target_dir / "paper.md").write_text(marker, encoding="utf-8")
+        (target_dir / f"{pdf_path.stem}.md").write_text(marker, encoding="utf-8")
 
         return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
 
     return runner
+
+
+def _fake_extract_pdf_page_range(source, target, start_page, end_page):
+    """Stand-in for the pypdf-backed PDF slicer used in tests.
+
+    Just touches a placeholder file at ``target`` so the chunked code path
+    can hand it to the fake mineru runner. The real implementation lives
+    in ``mineru_parser._extract_pdf_page_range`` and is exercised
+    end-to-end by ``revisica benchmark-ingestion``."""
+    target.write_bytes(b"%PDF-1.4 fake-chunk")
+
+
+class TestExtractPdfPageRange:
+    """End-to-end pypdf round-trip — uses real pypdf, no monkeypatch."""
+
+    def _make_blank_pdf(self, path: Path, num_pages: int) -> None:
+        from pypdf import PdfWriter
+        writer = PdfWriter()
+        for _ in range(num_pages):
+            writer.add_blank_page(width=100, height=100)
+        with path.open("wb") as fh:
+            writer.write(fh)
+
+    def test_extracts_exact_page_range(self, tmp_path):
+        from revisica.ingestion.mineru_parser import (
+            _count_pdf_pages,
+            _extract_pdf_page_range,
+        )
+
+        source = tmp_path / "book.pdf"
+        target = tmp_path / "chunk.pdf"
+        self._make_blank_pdf(source, num_pages=70)
+
+        _extract_pdf_page_range(source, target, start_page=30, end_page=59)
+        assert _count_pdf_pages(target) == 30  # inclusive both ends
+
+    def test_extracts_last_partial_chunk(self, tmp_path):
+        """A trailing chunk that extends past the document clamps to EOF."""
+        from revisica.ingestion.mineru_parser import (
+            _count_pdf_pages,
+            _extract_pdf_page_range,
+        )
+
+        source = tmp_path / "book.pdf"
+        target = tmp_path / "chunk.pdf"
+        self._make_blank_pdf(source, num_pages=70)
+
+        # Chunk size 30 on a 70-page book gives ranges (0,29), (30,59), (60,69).
+        # Last range only has 10 pages even though _chunk_ranges produces
+        # (60, 69) — but if a future change ever asked for (60, 99) on this
+        # document, we should still write 10 pages instead of crashing on
+        # an out-of-range page index.
+        _extract_pdf_page_range(source, target, start_page=60, end_page=99)
+        assert _count_pdf_pages(target) == 10
 
 
 class TestMineruChunkRanges:
@@ -440,11 +513,18 @@ class TestMineruChunkingAndCache:
     """Auto-split + content-addressed resume for large PDFs."""
 
     def _patch_environment(self, monkeypatch, tmp_path, page_count):
-        """Mock subprocess + page count + redirect cache root into ``tmp_path``."""
+        """Mock subprocess + page count + pypdf split + cache root."""
         from revisica.ingestion import mineru_parser as mp
 
         monkeypatch.setattr(mp.shutil, "which", lambda _name: "/usr/local/bin/mineru")
         monkeypatch.setattr(mp, "_count_pdf_pages", lambda _path: page_count)
+        # Real ``_extract_pdf_page_range`` would shell out to pypdf which
+        # cannot parse the synthetic ``%PDF-1.4 fake`` byte strings used
+        # throughout these tests; substitute a touch-a-file stub. The
+        # production path is exercised by the ingestion benchmark.
+        monkeypatch.setattr(
+            mp, "_extract_pdf_page_range", _fake_extract_pdf_page_range
+        )
         monkeypatch.setenv("REVISICA_MINERU_CHUNK_CACHE_DIR", str(tmp_path / "cache"))
 
     def test_small_pdf_is_not_chunked(self, monkeypatch, tmp_path):
@@ -512,7 +592,9 @@ class TestMineruChunkingAndCache:
         good_runner = _make_chunked_fake_mineru(attempts)
 
         def flaky_runner(args, **kwargs):
-            start = int(args[args.index("-s") + 1])
+            pdf_name = Path(args[args.index("-p") + 1]).name
+            match = _CHUNK_PDF_NAME_RE.search(pdf_name)
+            start = int(match.group(1)) if match else None
             # Fail on the second chunk during the *first* attempt only.
             if start == 30 and not flaky_runner.first_attempt_done:
                 attempts.append({"start": 30, "end": 59, "failed": True})
@@ -604,15 +686,19 @@ class TestMineruChunkingAndCache:
         self._patch_environment(monkeypatch, tmp_path, page_count=70)
 
         def runner(args, **kwargs):
-            start = int(args[args.index("-s") + 1])
+            pdf_path = Path(args[args.index("-p") + 1])
+            match = _CHUNK_PDF_NAME_RE.search(pdf_path.name)
+            start = int(match.group(1)) if match else None
             if start == 30:
                 return subprocess.CompletedProcess(
                     args=args, returncode=1, stdout="", stderr="CUDA OOM"
                 )
             out_dir = Path(args[args.index("-o") + 1])
-            target_dir = out_dir / "paper"
+            target_dir = out_dir / pdf_path.stem
             target_dir.mkdir(parents=True, exist_ok=True)
-            (target_dir / "paper.md").write_text("# chunk ok\n", encoding="utf-8")
+            (target_dir / f"{pdf_path.stem}.md").write_text(
+                "# chunk ok\n", encoding="utf-8"
+            )
             return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
 
         monkeypatch.setattr(mp.subprocess, "run", runner)

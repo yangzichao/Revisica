@@ -9,11 +9,23 @@ CPU Transformers path for the VLM/hybrid backends.
 Large PDFs (hundreds of pages) blow out GPU memory when fed to MinerU as a
 single job, so this parser auto-splits anything above
 ``REVISICA_MINERU_CHUNK_THRESHOLD`` pages into chunks of
-``REVISICA_MINERU_CHUNK_SIZE`` pages and runs MinerU once per chunk via the
-CLI's native ``-s/-e`` page-range flags. Each chunk is content-addressed
-(``sha256(pdf_bytes)[:16]`` + backend + page range) so a partially-completed
-parse — whether the user cancelled, the server crashed, or a single chunk
-hit OOM — resumes from the next un-cached chunk on the second attempt.
+``REVISICA_MINERU_CHUNK_SIZE`` pages. Each chunk is materialized as a
+*physical* temporary PDF via ``pypdf.PdfWriter`` and fed to mineru as a
+standalone file — equivalent to what a user would do manually with a PDF
+splitter.
+
+We deliberately do **not** use mineru's native ``-s/--start`` and
+``-e/--end`` flags: in practice they leave the full PDF's font tables /
+metadata / character encoding loaded around the VLM tokenizer's state,
+which on certain books produces ``UnicodeDecodeError`` deep inside
+``mlx_vlm`` for page ranges that parse cleanly when split into a real
+sub-PDF. Splitting up front matches a manual workflow that empirically
+works and isolates each chunk's tokenizer state.
+
+Each chunk's markdown is content-addressed (``sha256(pdf_bytes)[:16]`` +
+backend + page range) so a parse aborted by OOM, cancellation, or a
+server restart resumes from the next un-cached chunk on the second
+attempt.
 """
 
 from __future__ import annotations
@@ -129,10 +141,10 @@ class MineruParser(BaseParser):
             # parse on a header quirk that mineru itself can usually handle,
             # fall back to the single-shot path. This costs us auto-chunking
             # for that one file, but matches pre-chunking behavior exactly.
-            return self._run_mineru(path, start=None, end=None)
+            return self._run_mineru(path)
 
         if page_count <= self.chunk_pages_threshold:
-            return self._run_mineru(path, start=None, end=None)
+            return self._run_mineru(path)
 
         chunks = _chunk_ranges(page_count, self.chunk_pages_size)
         return self._parse_chunked(path, chunks)
@@ -169,7 +181,15 @@ class MineruParser(BaseParser):
                 status="running",
             ))
             try:
-                chunk_md = self._run_mineru(path, start=start, end=end)
+                # Materialize this chunk as a standalone temporary PDF and
+                # feed it to mineru — see module docstring for why this is
+                # safer than ``mineru -s/-e``.
+                with tempfile.TemporaryDirectory(prefix="revisica_chunk_") as tmp_dir:
+                    chunk_pdf = Path(tmp_dir) / _chunk_pdf_filename(
+                        path.stem, start, end,
+                    )
+                    _extract_pdf_page_range(path, chunk_pdf, start, end)
+                    chunk_md = self._run_mineru(chunk_pdf)
             except Exception:
                 # Tell the UI which chunk specifically blew up so the
                 # progress page does not leave a chunk stuck on "running"
@@ -194,12 +214,13 @@ class MineruParser(BaseParser):
 
         return "\n\n".join(pieces)
 
-    def _run_mineru(
-        self,
-        path: Path,
-        start: int | None,
-        end: int | None,
-    ) -> str:
+    def _run_mineru(self, path: Path) -> str:
+        """Invoke the mineru CLI on ``path`` and return its markdown output.
+
+        ``path`` is always a standalone PDF — either the user's original
+        file (small enough to skip chunking) or one of the per-chunk
+        temporary PDFs produced by ``_extract_pdf_page_range``.
+        """
         mineru_bin = shutil.which("mineru")
         # ``parse`` already verified mineru is on PATH; assert here keeps the
         # type narrow for static checkers.
@@ -210,10 +231,6 @@ class MineruParser(BaseParser):
             backend_flag = MINERU_BACKEND_FLAG_MAP[self.backend]
             if backend_flag is not None:
                 command += ["-b", backend_flag]
-            if start is not None:
-                command += ["-s", str(start)]
-            if end is not None:
-                command += ["-e", str(end)]
 
             completed = subprocess.run(
                 command,
@@ -224,14 +241,10 @@ class MineruParser(BaseParser):
             )
 
             if completed.returncode != 0:
-                range_label = (
-                    f" pages={start}-{end}"
-                    if start is not None or end is not None
-                    else ""
-                )
                 raise RuntimeError(
                     f"mineru failed (exit={completed.returncode}, "
-                    f"backend={self.backend}{range_label}): {completed.stderr}"
+                    f"backend={self.backend}, input={path.name}): "
+                    f"{completed.stderr}"
                 )
 
             for md_file in sorted(Path(tmp_dir).rglob("*.md")):
@@ -241,7 +254,7 @@ class MineruParser(BaseParser):
 
             raise RuntimeError(
                 f"MinerU produced no Markdown output in {tmp_dir} "
-                f"(backend={self.backend})"
+                f"(backend={self.backend}, input={path.name})"
             )
 
     def _report(self, progress: MineruChunkProgress) -> None:
@@ -277,6 +290,39 @@ def _count_pdf_pages(path: Path) -> int:
 
     reader = PdfReader(str(path))
     return len(reader.pages)
+
+
+def _extract_pdf_page_range(
+    source: Path,
+    target: Path,
+    start_page: int,
+    end_page: int,
+) -> None:
+    """Write pages ``[start_page, end_page]`` of ``source`` to ``target``.
+
+    Both bounds are 0-based and inclusive (so ``(0, 29)`` writes 30 pages).
+    Pure pypdf, no shell-out — small fast operation on a multi-hundred-page
+    book typically takes well under a second.
+    """
+    from pypdf import PdfReader, PdfWriter
+
+    reader = PdfReader(str(source))
+    writer = PdfWriter()
+    last_index = min(end_page, len(reader.pages) - 1)
+    for page_index in range(start_page, last_index + 1):
+        writer.add_page(reader.pages[page_index])
+    with target.open("wb") as fh:
+        writer.write(fh)
+
+
+def _chunk_pdf_filename(source_stem: str, start: int, end: int) -> str:
+    """Produce a stable filename for a per-chunk temporary PDF.
+
+    The page range is in the stem so log lines and mineru-internal
+    diagnostics make it obvious which slice the worker is currently on.
+    """
+    safe_stem = source_stem.strip() or "document"
+    return f"{safe_stem}_p{start:04d}-p{end:04d}.pdf"
 
 
 def _chunk_ranges(total_pages: int, chunk_size: int) -> list[tuple[int, int]]:
