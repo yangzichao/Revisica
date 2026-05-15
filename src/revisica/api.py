@@ -879,6 +879,13 @@ def _build_chunk_progress_callback(run_state: RunState):
             f"{progress.chunk_index}/{progress.chunk_total} "
             f"(pages {progress.start_page}-{progress.end_page})"
         )
+        # The MinerU parser may retry a chunk under a fallback backend
+        # when the primary crashes — surface which engine actually ran
+        # so users can tell at a glance that e.g. chunk 2 of DDIA
+        # routed through pipeline instead of vlm.
+        backend = getattr(progress, "backend", None)
+        if backend:
+            detail = f"{detail} · backend={backend}"
         run_state.update_task_by_name(chunk_name, progress.status, detail=detail)
 
     return callback

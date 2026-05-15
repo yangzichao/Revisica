@@ -782,10 +782,18 @@ class TestMineruChunkingAndCache:
         assert removed == 3
         assert not mp.chunk_cache_root().exists()
 
-    def test_progress_callback_reports_failed_chunk(self, monkeypatch, tmp_path):
-        """When MinerU raises mid-parse, the failing chunk emits a 'failed'
-        event so the UI can flip its row off ``running`` instead of leaving
-        it stuck."""
+    def test_progress_callback_reports_failed_chunk_when_fallback_also_fails(
+        self, monkeypatch, tmp_path
+    ):
+        """When BOTH the primary and fallback backends raise on a chunk,
+        the chunk emits ``running`` -> ``fallback`` -> ``failed`` so the
+        UI can show which backend was tried last instead of leaving the
+        row stuck on ``running``.
+
+        Each subprocess.run call ignores which backend was passed and
+        always fails for chunk 2, so the fallback retry hits the same
+        error path as the primary attempt.
+        """
         from revisica.ingestion import mineru_parser as mp
 
         self._patch_environment(monkeypatch, tmp_path, page_count=70)
@@ -820,13 +828,225 @@ class TestMineruChunkingAndCache:
         with pytest.raises(RuntimeError, match="CUDA OOM"):
             parser.parse(pdf)
 
-        # Chunk 1 ran to completion (running, completed); chunk 2 ran then
-        # raised (running, failed). Chunk 3 is never reached.
-        statuses = [(e.start_page, e.status) for e in events]
+        # Chunk 1 ran to completion; chunk 2 ran with primary (running),
+        # was retried with fallback (fallback), and the fallback also
+        # raised (failed). Chunk 3 is never reached.
+        statuses = [(e.start_page, e.status, e.backend) for e in events]
         assert statuses == [
-            (0, "running"), (0, "completed"),
-            (30, "running"), (30, "failed"),
+            (0, "running", "vlm"),
+            (0, "completed", "vlm"),
+            (30, "running", "vlm"),
+            (30, "fallback", "pipeline"),
+            (30, "failed", "pipeline"),
         ]
+
+    def test_chunk_falls_back_to_pipeline_when_vlm_crashes(
+        self, monkeypatch, tmp_path
+    ):
+        """The recurring DDIA failure: vlm crashes on a specific chunk
+        (mlx_vlm BPE detokenizer) but pipeline parses the same chunk
+        cleanly. Per-chunk fallback must route just that one chunk
+        through pipeline and continue the parse.
+        """
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+
+        def runner(args, **kwargs):
+            pdf_path = Path(args[args.index("-p") + 1])
+            match = _CHUNK_PDF_NAME_RE.search(pdf_path.name)
+            start = int(match.group(1)) if match else None
+            # Backend appears as ``-b <flag>`` (vlm-auto-engine /
+            # pipeline). Detect which one mineru was invoked under.
+            try:
+                backend_flag = args[args.index("-b") + 1]
+            except (ValueError, IndexError):
+                backend_flag = None
+
+            # Chunk 2 with vlm explodes; everything else succeeds.
+            if start == 30 and backend_flag == "vlm-auto-engine":
+                return subprocess.CompletedProcess(
+                    args=args, returncode=1, stdout="",
+                    stderr="UnicodeDecodeError: byte 0xb0",
+                )
+
+            out_dir = Path(args[args.index("-o") + 1])
+            target_dir = out_dir / pdf_path.stem
+            target_dir.mkdir(parents=True, exist_ok=True)
+            marker = f"# chunk pages={start}-{start + 29 if start is not None else '?'} backend={backend_flag}\n"
+            (target_dir / f"{pdf_path.stem}.md").write_text(marker, encoding="utf-8")
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(mp.subprocess, "run", runner)
+
+        events: list[mp.MineruChunkProgress] = []
+        parser = mp.MineruParser(
+            chunk_pages_threshold=50,
+            chunk_pages_size=30,
+            progress_callback=events.append,
+        )
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-fallback")
+
+        md = parser.parse(pdf)
+
+        # All three chunks present in the final markdown.
+        assert "backend=vlm-auto-engine" in md, "chunks 1 + 3 must come from vlm"
+        assert "backend=pipeline" in md, "chunk 2 must come from the pipeline fallback"
+
+        # Event sequence: chunks 1 and 3 are vlm running->completed;
+        # chunk 2 is vlm running -> pipeline fallback -> pipeline completed.
+        statuses = [(e.start_page, e.status, e.backend) for e in events]
+        assert statuses == [
+            (0, "running", "vlm"),
+            (0, "completed", "vlm"),
+            (30, "running", "vlm"),
+            (30, "fallback", "pipeline"),
+            (30, "completed", "pipeline"),
+            (60, "running", "vlm"),
+            (60, "completed", "vlm"),
+        ]
+
+        # Cache directories should reflect the actual backend used per
+        # chunk: vlm cached chunks 1 + 3, pipeline cached chunk 2.
+        vlm_cache = mp.chunk_cache_dir_for(mp._compute_pdf_hash(pdf), "vlm")
+        pipeline_cache = mp.chunk_cache_dir_for(mp._compute_pdf_hash(pdf), "pipeline")
+        assert sorted(p.name for p in vlm_cache.glob("*.md")) == [
+            "p0000-p0029.md", "p0060-p0069.md",
+        ]
+        assert [p.name for p in pipeline_cache.glob("*.md")] == ["p0030-p0059.md"]
+
+    def test_chunk_fallback_cache_hits_on_retry(self, monkeypatch, tmp_path):
+        """After a successful fallback, retrying the parse must hit the
+        pipeline cache for chunk 2 (not re-run vlm and re-fall-back)."""
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+
+        run_count = {"calls": 0}
+
+        def runner(args, **kwargs):
+            run_count["calls"] += 1
+            pdf_path = Path(args[args.index("-p") + 1])
+            match = _CHUNK_PDF_NAME_RE.search(pdf_path.name)
+            start = int(match.group(1)) if match else None
+            try:
+                backend_flag = args[args.index("-b") + 1]
+            except (ValueError, IndexError):
+                backend_flag = None
+            if start == 30 and backend_flag == "vlm-auto-engine":
+                return subprocess.CompletedProcess(
+                    args=args, returncode=1, stdout="", stderr="boom"
+                )
+            out_dir = Path(args[args.index("-o") + 1])
+            target_dir = out_dir / pdf_path.stem
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / f"{pdf_path.stem}.md").write_text(
+                f"# chunk {start} backend={backend_flag}\n", encoding="utf-8"
+            )
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(mp.subprocess, "run", runner)
+
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-fallback-cache")
+
+        parser = mp.MineruParser(chunk_pages_threshold=50, chunk_pages_size=30)
+        first_md = parser.parse(pdf)
+        first_calls = run_count["calls"]
+        # 3 chunks * (vlm primary) + 1 fallback pipeline retry = 4 calls.
+        assert first_calls == 4
+
+        # Re-parse: every chunk should hit a cache (vlm for 1+3, pipeline
+        # for 2). No subprocess calls.
+        second_md = parser.parse(pdf)
+        assert run_count["calls"] == first_calls, (
+            "retry must not re-spawn mineru — chunk 2 should hit the "
+            "pipeline cache from the previous fallback"
+        )
+        assert first_md == second_md
+
+    def test_fallback_disabled_when_primary_is_pipeline(self, monkeypatch, tmp_path):
+        """A user who explicitly requested ``pipeline`` should not see
+        any further fallback — there is nothing reasonable to fall back
+        to (vlm has the bug we are working around)."""
+        from revisica.ingestion import mineru_parser as mp
+
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+
+        def runner(args, **kwargs):
+            pdf_path = Path(args[args.index("-p") + 1])
+            match = _CHUNK_PDF_NAME_RE.search(pdf_path.name)
+            start = int(match.group(1)) if match else None
+            if start == 30:
+                return subprocess.CompletedProcess(
+                    args=args, returncode=1, stdout="", stderr="pipeline OOM"
+                )
+            out_dir = Path(args[args.index("-o") + 1])
+            target_dir = out_dir / pdf_path.stem
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / f"{pdf_path.stem}.md").write_text("# ok\n", encoding="utf-8")
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(mp.subprocess, "run", runner)
+
+        events: list[mp.MineruChunkProgress] = []
+        parser = mp.MineruParser(
+            backend="pipeline",
+            chunk_pages_threshold=50, chunk_pages_size=30,
+            progress_callback=events.append,
+        )
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-no-fallback")
+
+        with pytest.raises(RuntimeError, match="pipeline OOM"):
+            parser.parse(pdf)
+
+        # No ``fallback`` event should appear when the primary already
+        # IS pipeline; chunk 2 goes straight to failed.
+        statuses = [(e.start_page, e.status) for e in events]
+        assert (30, "fallback") not in statuses
+        assert statuses[-1] == (30, "failed")
+
+    def test_fallback_disabled_via_env(self, monkeypatch, tmp_path):
+        """``REVISICA_MINERU_CHUNK_FALLBACK_BACKEND=none`` opts out."""
+        from revisica.ingestion import mineru_parser as mp
+
+        monkeypatch.setenv(mp.CHUNK_FALLBACK_BACKEND_ENV_VAR, "none")
+        self._patch_environment(monkeypatch, tmp_path, page_count=70)
+
+        def runner(args, **kwargs):
+            pdf_path = Path(args[args.index("-p") + 1])
+            match = _CHUNK_PDF_NAME_RE.search(pdf_path.name)
+            start = int(match.group(1)) if match else None
+            if start == 30:
+                return subprocess.CompletedProcess(
+                    args=args, returncode=1, stdout="", stderr="vlm bug"
+                )
+            out_dir = Path(args[args.index("-o") + 1])
+            target_dir = out_dir / pdf_path.stem
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / f"{pdf_path.stem}.md").write_text("# ok\n", encoding="utf-8")
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(mp.subprocess, "run", runner)
+
+        events: list[mp.MineruChunkProgress] = []
+        parser = mp.MineruParser(
+            chunk_pages_threshold=50, chunk_pages_size=30,
+            progress_callback=events.append,
+        )
+        pdf = tmp_path / "paper.pdf"
+        pdf.write_bytes(b"%PDF-1.4 fake-env-disabled")
+
+        with pytest.raises(RuntimeError, match="vlm bug"):
+            parser.parse(pdf)
+
+        # With fallback disabled, chunk 2 should NOT emit a ``fallback``
+        # event — it goes straight from ``running`` to ``failed``.
+        statuses_for_chunk2 = [e.status for e in events if e.start_page == 30]
+        assert "fallback" not in statuses_for_chunk2
+        assert statuses_for_chunk2 == ["running", "failed"]
 
     def test_atomic_write_does_not_leave_tmp_files(self, monkeypatch, tmp_path):
         """A fresh cache directory only contains finalized ``*.md`` files."""

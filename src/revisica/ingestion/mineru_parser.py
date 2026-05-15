@@ -39,6 +39,14 @@ Each chunk's markdown is content-addressed (``sha256(pdf_bytes)[:16]`` +
 backend + page range) so a parse aborted by OOM, cancellation, or a
 server restart resumes from the next un-cached chunk on the second
 attempt.
+
+When the requested backend is ``vlm`` and a single chunk crashes
+(notably the mlx_vlm BPE detokenizer's recurring 0xb0
+``UnicodeDecodeError`` on certain image-heavy pages), we automatically
+re-run just that chunk through the ``pipeline`` backend. The successful
+fallback markdown is cached under ``<pdf_hash>/pipeline/`` so subsequent
+retries hit it without re-running pipeline. Disable with
+``REVISICA_MINERU_CHUNK_FALLBACK_BACKEND=none``.
 """
 
 from __future__ import annotations
@@ -72,6 +80,7 @@ DEFAULT_CHUNK_PAGES_SIZE = 30
 CHUNK_THRESHOLD_ENV_VAR = "REVISICA_MINERU_CHUNK_THRESHOLD"
 CHUNK_SIZE_ENV_VAR = "REVISICA_MINERU_CHUNK_SIZE"
 CHUNK_CACHE_ROOT_ENV_VAR = "REVISICA_MINERU_CHUNK_CACHE_DIR"
+CHUNK_FALLBACK_BACKEND_ENV_VAR = "REVISICA_MINERU_CHUNK_FALLBACK_BACKEND"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -79,10 +88,19 @@ class MineruChunkProgress:
     """Reported once per chunk transition so the UI can render a progress bar.
 
     ``status`` is one of:
-      - ``"running"``  : MinerU was just spawned for this chunk
-      - ``"completed"``: chunk finished and was written to the cache
-      - ``"cached"``   : chunk was already in the cache and was skipped
-      - ``"failed"``   : MinerU raised on this chunk (the parse aborts)
+      - ``"running"``   : MinerU was just spawned for this chunk
+      - ``"completed"`` : chunk finished and was written to the cache
+      - ``"cached"``    : chunk was already in the cache and was skipped
+      - ``"fallback"``  : primary backend raised; retrying this chunk
+                          with the fallback backend (typically vlm → pipeline
+                          on the books that trip mlx_vlm's BPE detokenizer)
+      - ``"failed"``    : MinerU raised on this chunk under every backend
+                          we tried; the parse aborts
+
+    ``backend`` is the mineru backend used for the *last* run of this chunk
+    (``None`` for cached events from before this field existed). It exists
+    so the UI can flag "this chunk fell back to pipeline" without having
+    to infer it from the status transition.
     """
 
     chunk_index: int  # 1-based
@@ -90,6 +108,7 @@ class MineruChunkProgress:
     start_page: int  # 0-based, inclusive
     end_page: int  # 0-based, inclusive
     status: str
+    backend: str | None = None
 
 
 ProgressCallback = Callable[[MineruChunkProgress], None]
@@ -167,81 +186,212 @@ class MineruParser(BaseParser):
         path: Path,
         chunks: list[tuple[int, int]],
     ) -> str:
+        """Run the chunked parse with per-chunk backend fallback.
+
+        Cache layout: ``<root>/<pdf_hash>/<backend>/p####-p####.md``. We
+        check the primary backend's cache first; on miss we also peek at
+        the fallback backend's cache (a previous attempt may have fallen
+        back to pipeline for this chunk and that result is still
+        usable). Successful chunks are written under the directory of
+        whichever backend actually produced them, so the user can later
+        clear just the pipeline-fallback chunks by removing
+        ``<pdf_hash>/pipeline/`` if they want to re-attempt them with a
+        fixed vlm.
+
+        Empirically: mlx_vlm's BPE detokenizer crashes on certain page
+        content (the recurring 0xb0 ``UnicodeDecodeError`` on DDIA's
+        chunk 2) and the pipeline backend handles the same content
+        cleanly. Per-chunk fallback turns "this book fails forever" into
+        "this book takes longer because one chunk routes through
+        pipeline".
+        """
         pdf_hash = _compute_pdf_hash(path)
-        cache_dir = chunk_cache_dir_for(pdf_hash, self.backend)
-        cache_dir.mkdir(parents=True, exist_ok=True)
+        primary_backend = self.backend
+        fallback_backend = self._chunk_fallback_backend()
+
+        primary_cache_dir = chunk_cache_dir_for(pdf_hash, primary_backend)
+        primary_cache_dir.mkdir(parents=True, exist_ok=True)
+        fallback_cache_dir = (
+            chunk_cache_dir_for(pdf_hash, fallback_backend)
+            if fallback_backend is not None else None
+        )
 
         total = len(chunks)
         pieces: list[str] = []
         for index, (start, end) in enumerate(chunks, start=1):
-            cache_path = cache_dir / _chunk_filename(start, end)
-            if cache_path.exists():
+            filename = _chunk_filename(start, end)
+            primary_cache_path = primary_cache_dir / filename
+            fallback_cache_path = (
+                fallback_cache_dir / filename
+                if fallback_cache_dir is not None else None
+            )
+
+            # Cache lookup: primary first, then fallback.
+            cached_hit = self._lookup_cached_chunk(
+                primary_cache_path, primary_backend,
+                fallback_cache_path, fallback_backend,
+            )
+            if cached_hit is not None:
+                chunk_md, cached_from_backend = cached_hit
                 self._report(MineruChunkProgress(
-                    chunk_index=index,
-                    chunk_total=total,
-                    start_page=start,
-                    end_page=end,
+                    chunk_index=index, chunk_total=total,
+                    start_page=start, end_page=end,
                     status="cached",
+                    backend=cached_from_backend,
                 ))
-                pieces.append(cache_path.read_text(encoding="utf-8"))
+                pieces.append(chunk_md)
                 continue
 
+            # Run with primary backend.
             self._report(MineruChunkProgress(
-                chunk_index=index,
-                chunk_total=total,
-                start_page=start,
-                end_page=end,
+                chunk_index=index, chunk_total=total,
+                start_page=start, end_page=end,
                 status="running",
+                backend=primary_backend,
             ))
             try:
-                # Materialize this chunk as a standalone temporary PDF and
-                # feed it to mineru — see module docstring for why this is
-                # safer than ``mineru -s/-e``.
-                with tempfile.TemporaryDirectory(prefix="revisica_chunk_") as tmp_dir:
-                    chunk_pdf = Path(tmp_dir) / _chunk_pdf_filename(
-                        path.stem, start, end,
-                    )
-                    _extract_pdf_page_range(path, chunk_pdf, start, end)
-                    chunk_md = self._run_mineru(chunk_pdf)
-            except Exception:
-                # Tell the UI which chunk specifically blew up so the
-                # progress page does not leave a chunk stuck on "running"
-                # next to a top-level "parse: failed".
+                chunk_md = self._run_chunk(path, start, end, primary_backend)
+                _atomic_write(primary_cache_path, chunk_md)
+                pieces.append(chunk_md)
                 self._report(MineruChunkProgress(
-                    chunk_index=index,
-                    chunk_total=total,
-                    start_page=start,
-                    end_page=end,
+                    chunk_index=index, chunk_total=total,
+                    start_page=start, end_page=end,
+                    status="completed",
+                    backend=primary_backend,
+                ))
+                continue
+            except Exception as primary_exc:
+                if fallback_backend is None or fallback_cache_path is None:
+                    self._report(MineruChunkProgress(
+                        chunk_index=index, chunk_total=total,
+                        start_page=start, end_page=end,
+                        status="failed",
+                        backend=primary_backend,
+                    ))
+                    raise
+
+            # Primary failed and a fallback is configured. Try once more
+            # with the fallback backend. If THAT also fails, surface the
+            # fallback's error (callers care about the most recent attempt;
+            # the primary error message is preserved in the chained
+            # ``__context__`` for diagnostics).
+            self._report(MineruChunkProgress(
+                chunk_index=index, chunk_total=total,
+                start_page=start, end_page=end,
+                status="fallback",
+                backend=fallback_backend,
+            ))
+            try:
+                chunk_md = self._run_chunk(path, start, end, fallback_backend)
+            except Exception:
+                self._report(MineruChunkProgress(
+                    chunk_index=index, chunk_total=total,
+                    start_page=start, end_page=end,
                     status="failed",
+                    backend=fallback_backend,
                 ))
                 raise
-            _atomic_write(cache_path, chunk_md)
+
+            _atomic_write(fallback_cache_path, chunk_md)
             pieces.append(chunk_md)
             self._report(MineruChunkProgress(
-                chunk_index=index,
-                chunk_total=total,
-                start_page=start,
-                end_page=end,
+                chunk_index=index, chunk_total=total,
+                start_page=start, end_page=end,
                 status="completed",
+                backend=fallback_backend,
             ))
 
         return "\n\n".join(pieces)
 
-    def _run_mineru(self, path: Path) -> str:
+    @staticmethod
+    def _lookup_cached_chunk(
+        primary_path: Path,
+        primary_backend: str,
+        fallback_path: Path | None,
+        fallback_backend: str | None,
+    ) -> tuple[str, str] | None:
+        """Return ``(markdown, backend_that_produced_it)`` or ``None``.
+
+        Primary cache wins ties; the fallback cache is consulted only
+        when the primary cache misses, so we never silently downgrade a
+        chunk that was previously parsed under the requested backend.
+        """
+        if primary_path.exists():
+            return primary_path.read_text(encoding="utf-8"), primary_backend
+        if (
+            fallback_path is not None
+            and fallback_backend is not None
+            and fallback_path.exists()
+        ):
+            return fallback_path.read_text(encoding="utf-8"), fallback_backend
+        return None
+
+    def _chunk_fallback_backend(self) -> str | None:
+        """Backend to retry a failed chunk under, or ``None`` to disable.
+
+        The chunk-level vlm → pipeline fallback exists specifically for
+        mlx_vlm's BPE detokenizer bug. If the user is already on the
+        pipeline backend (or has opted out via env var) there is nothing
+        to fall back to.
+        """
+        override = os.environ.get(CHUNK_FALLBACK_BACKEND_ENV_VAR, "").strip()
+        if override == "":
+            # Default: only fall back when the primary is NOT pipeline.
+            return "pipeline" if self.backend != "pipeline" else None
+        if override.lower() in ("none", "disabled", "off"):
+            return None
+        if override not in MINERU_BACKEND_FLAG_MAP:
+            # An invalid override is a user-config bug; surface it
+            # rather than silently ignoring it.
+            raise ValueError(
+                f"{CHUNK_FALLBACK_BACKEND_ENV_VAR}={override!r} is not a "
+                f"recognized mineru backend "
+                f"(expected one of {sorted(MINERU_BACKEND_FLAG_MAP)} or "
+                f"'none'/'disabled'/'off')"
+            )
+        if override == self.backend:
+            # Falling back to the same backend would just re-run the
+            # same failure; treat as disabled.
+            return None
+        return override
+
+    def _run_chunk(
+        self,
+        source_pdf: Path,
+        start_page: int,
+        end_page: int,
+        backend: str,
+    ) -> str:
+        """Materialize one chunk as a temp PDF and run mineru on it."""
+        with tempfile.TemporaryDirectory(prefix="revisica_chunk_") as tmp_dir:
+            chunk_pdf = Path(tmp_dir) / _chunk_pdf_filename(
+                source_pdf.stem, start_page, end_page,
+            )
+            _extract_pdf_page_range(source_pdf, chunk_pdf, start_page, end_page)
+            return self._run_mineru(chunk_pdf, backend_override=backend)
+
+    def _run_mineru(self, path: Path, backend_override: str | None = None) -> str:
         """Invoke the mineru CLI on ``path`` and return its markdown output.
 
         ``path`` is always a standalone PDF — either the user's original
         file (small enough to skip chunking) or one of the per-chunk
         temporary PDFs produced by ``_extract_pdf_page_range``.
+
+        ``backend_override`` lets ``_parse_chunked`` retry a single chunk
+        under a different backend (vlm → pipeline) without mutating
+        ``self.backend``, which the rest of the parse still treats as
+        the user-requested default.
         """
         mineru_bin = shutil.which("mineru")
         # ``parse`` already verified mineru is on PATH; assert here keeps the
         # type narrow for static checkers.
         assert mineru_bin is not None
 
+        backend = backend_override if backend_override is not None else self.backend
+
         with tempfile.TemporaryDirectory(prefix="revisica_mineru_") as tmp_dir:
             command = [mineru_bin, "-p", str(path), "-o", tmp_dir]
-            backend_flag = MINERU_BACKEND_FLAG_MAP[self.backend]
+            backend_flag = MINERU_BACKEND_FLAG_MAP[backend]
             if backend_flag is not None:
                 command += ["-b", backend_flag]
 
@@ -256,7 +406,7 @@ class MineruParser(BaseParser):
             if completed.returncode != 0:
                 raise RuntimeError(
                     f"mineru failed (exit={completed.returncode}, "
-                    f"backend={self.backend}, input={path.name}): "
+                    f"backend={backend}, input={path.name}): "
                     f"{completed.stderr}"
                 )
 
@@ -267,7 +417,7 @@ class MineruParser(BaseParser):
 
             raise RuntimeError(
                 f"MinerU produced no Markdown output in {tmp_dir} "
-                f"(backend={self.backend}, input={path.name})"
+                f"(backend={backend}, input={path.name})"
             )
 
     def _report(self, progress: MineruChunkProgress) -> None:

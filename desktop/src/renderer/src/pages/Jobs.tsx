@@ -16,7 +16,13 @@ interface TaskStatus {
   // ``cached`` is reported by the MinerU parser when a chunk is reused from
   // the on-disk cache instead of being recomputed — surface it visually so
   // users can see resumed jobs skipping completed work.
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'cached'
+  //
+  // ``fallback`` means the primary backend (typically vlm) crashed on this
+  // chunk and the parser is now retrying it with the fallback backend
+  // (typically pipeline). The row is still "in progress" — we keep
+  // spinning — but the icon shade is darker to signal "retry, expect
+  // longer runtime".
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cached' | 'fallback'
   detail?: string
 }
 
@@ -323,6 +329,13 @@ function TaskStatusIcon({ status }: { status: string }): JSX.Element {
       // glyph signals "reused from cache, no work done this run". Important
       // for resumed parses where most chunks land instantly.
       return <Archive size={16} className="text-success" />
+    case 'fallback':
+      // Same spinner shape as "running" so the row clearly stays
+      // in-progress, but rendered in the darker accent shade. Surfaces
+      // "this chunk's primary backend crashed and we're retrying with
+      // the backup engine (typically vlm → pipeline)" without needing a
+      // separate icon family.
+      return <Loader2 size={16} className="animate-spin text-accent-hover" />
     case 'failed':
       return <XCircle size={16} className="text-danger" />
     default:
