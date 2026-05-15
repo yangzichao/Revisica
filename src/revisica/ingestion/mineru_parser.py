@@ -323,10 +323,13 @@ def _extract_pdf_page_range(
     """
     from pypdf import PdfReader, PdfWriter
 
-    page_count = len(PdfReader(str(source)).pages)
-    last_index = min(end_page, page_count - 1)
+    # Open the source once and hand the reader to the writer; passing
+    # ``clone_from=str(source)`` instead would re-open the same file
+    # under the hood, which on a multi-hundred-MB book is wasteful.
+    reader = PdfReader(str(source))
+    last_index = min(end_page, len(reader.pages) - 1)
 
-    writer = PdfWriter(clone_from=str(source))
+    writer = PdfWriter(clone_from=reader)
     # Delete pages outside [start_page, last_index]. Iterate in reverse
     # so earlier deletions don't shift the indices of pages we still
     # need to inspect.

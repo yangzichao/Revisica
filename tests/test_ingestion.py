@@ -490,6 +490,39 @@ class TestExtractPdfPageRange:
         _extract_pdf_page_range(source, target, start_page=60, end_page=99)
         assert _count_pdf_pages(target) == 10
 
+    def test_clone_from_preserves_document_metadata(self, tmp_path):
+        """Regression guard: if someone "simplifies" the implementation back
+        to a ``PdfWriter().add_page(reader.pages[i])`` loop, this test fails.
+
+        The blank-page tests above only verify *page count* — they can't
+        catch a regression where document-level metadata, inherited fonts,
+        ICC profiles, or other page-tree-parent resources silently get
+        dropped during extraction. Dropping those is precisely what made
+        MinerU's VLM tokenizer emit non-UTF-8 byte sequences on the
+        Designing Data-Intensive Applications case study, so we lock the
+        behavior in here. A naive add_page loop loses the /Title; the
+        clone_from path keeps it.
+        """
+        from pypdf import PdfReader, PdfWriter
+        from revisica.ingestion.mineru_parser import _extract_pdf_page_range
+
+        source = tmp_path / "book.pdf"
+        target = tmp_path / "chunk.pdf"
+
+        writer = PdfWriter()
+        for _ in range(10):
+            writer.add_blank_page(width=100, height=100)
+        writer.add_metadata({"/Title": "DDIA Fixture", "/Author": "Test"})
+        with source.open("wb") as fh:
+            writer.write(fh)
+
+        _extract_pdf_page_range(source, target, start_page=2, end_page=7)
+
+        chunk = PdfReader(str(target))
+        assert chunk.metadata is not None, "clone_from dropped /Info dictionary"
+        assert chunk.metadata.title == "DDIA Fixture"
+        assert len(chunk.pages) == 6
+
 
 class TestMineruChunkRanges:
     def test_chunk_ranges_exact_division(self):
