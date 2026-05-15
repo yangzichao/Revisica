@@ -438,17 +438,18 @@ def _make_chunked_fake_mineru(call_log: list[dict[str, object]]):
 
 
 def _fake_extract_pdf_page_range(source, target, start_page, end_page):
-    """Stand-in for the pypdf-backed PDF slicer used in tests.
+    """Stand-in for the PDFium-backed PDF slicer used in chunking tests.
 
     Just touches a placeholder file at ``target`` so the chunked code path
     can hand it to the fake mineru runner. The real implementation lives
     in ``mineru_parser._extract_pdf_page_range`` and is exercised
-    end-to-end by ``revisica benchmark-ingestion``."""
+    end-to-end by ``TestExtractPdfPageRange`` plus
+    ``revisica benchmark-ingestion``."""
     target.write_bytes(b"%PDF-1.4 fake-chunk")
 
 
 class TestExtractPdfPageRange:
-    """End-to-end pypdf round-trip — uses real pypdf, no monkeypatch."""
+    """End-to-end PDFium round-trip — uses real pypdfium2, no monkeypatch."""
 
     def _make_blank_pdf(self, path: Path, num_pages: int) -> None:
         from pypdf import PdfWriter
@@ -490,38 +491,108 @@ class TestExtractPdfPageRange:
         _extract_pdf_page_range(source, target, start_page=60, end_page=99)
         assert _count_pdf_pages(target) == 10
 
-    def test_clone_from_preserves_document_metadata(self, tmp_path):
-        """Regression guard: if someone "simplifies" the implementation back
-        to a ``PdfWriter().add_page(reader.pages[i])`` loop, this test fails.
+    def test_sub_pdf_does_not_carry_orphan_objects_from_source(self, tmp_path):
+        """The pypdf ``clone_from`` + ``del writer.pages[i]`` trap.
 
-        The blank-page tests above only verify *page count* — they can't
-        catch a regression where document-level metadata, inherited fonts,
-        ICC profiles, or other page-tree-parent resources silently get
-        dropped during extraction. Dropping those is precisely what made
-        MinerU's VLM tokenizer emit non-UTF-8 byte sequences on the
-        Designing Data-Intensive Applications case study, so we lock the
-        behavior in here. A naive add_page loop loses the /Title; the
-        clone_from path keeps it.
+        That approach removes pages from the ``/Pages`` tree but leaves
+        every other indirect object (orphan page dicts, source-document
+        fonts, ICC profiles, image XObjects) in the output. On Designing
+        Data-Intensive Applications a 30-page chunk extracted that way
+        was 24 MB — the same size as the 613-page source — versus 2 MB
+        through PDFium. mineru's vlm pipeline then tripped over those
+        ghost objects and produced non-UTF-8 token sequences in
+        mlx_vlm's BPE detokenizer.
+
+        Embed a deliberately fat ``/MyOrphan`` indirect object in the
+        source's catalog (1 MB of zeros, not referenced by any page).
+        A correct extractor walks the page resource graph and drops
+        that object; a clone-and-delete-pages extractor keeps it and
+        the chunk inherits the bloat.
         """
-        from pypdf import PdfReader, PdfWriter
+        from pypdf import PdfWriter
+        from pypdf.generic import DecodedStreamObject, NameObject
         from revisica.ingestion.mineru_parser import _extract_pdf_page_range
 
         source = tmp_path / "book.pdf"
         target = tmp_path / "chunk.pdf"
 
         writer = PdfWriter()
-        for _ in range(10):
+        for _ in range(20):
             writer.add_blank_page(width=100, height=100)
-        writer.add_metadata({"/Title": "DDIA Fixture", "/Author": "Test"})
+
+        # Embed a 1 MB orphan stream in the document catalog. PDFium
+        # walks only references from imported pages so it will not copy
+        # this; a clone-then-delete approach will keep it.
+        orphan_payload = b"\x00" * (1024 * 1024)
+        orphan_stream = DecodedStreamObject()
+        orphan_stream.set_data(orphan_payload)
+        orphan_ref = writer._add_object(orphan_stream)
+        writer._root_object[NameObject("/MyOrphan")] = orphan_ref
+
         with source.open("wb") as fh:
             writer.write(fh)
 
-        _extract_pdf_page_range(source, target, start_page=2, end_page=7)
+        source_size = source.stat().st_size
+        assert source_size > 1_000_000, (
+            "fixture sanity: source must contain the orphan to be a "
+            "meaningful regression target"
+        )
 
-        chunk = PdfReader(str(target))
-        assert chunk.metadata is not None, "clone_from dropped /Info dictionary"
-        assert chunk.metadata.title == "DDIA Fixture"
-        assert len(chunk.pages) == 6
+        _extract_pdf_page_range(source, target, start_page=0, end_page=4)
+        chunk_size = target.stat().st_size
+
+        # 5 blank pages out of 20 should be a tiny fraction of the
+        # source. Allow a generous ceiling (10% of source) so PDFium
+        # version drift doesn't flake the test; the bug we are guarding
+        # against produced chunks larger than the source.
+        assert chunk_size < source_size * 0.10, (
+            f"sub-PDF retained orphan resources from source: "
+            f"src={source_size} bytes, chunk={chunk_size} bytes "
+            f"({chunk_size / source_size:.0%}). Reverting "
+            f"_extract_pdf_page_range to pypdf clone_from+del "
+            f"would produce this regression."
+        )
+
+    def test_raises_when_start_page_past_eof(self, tmp_path):
+        """A start_page past the source's last page is a caller bug.
+
+        ``pypdfium2.import_pages`` treats an empty ``pages`` list as
+        "import every page" — so without an explicit guard, a buggy
+        range silently produces a full-document copy. Lock the guard
+        in.
+        """
+        from revisica.ingestion.mineru_parser import _extract_pdf_page_range
+
+        source = tmp_path / "book.pdf"
+        target = tmp_path / "chunk.pdf"
+        self._make_blank_pdf(source, num_pages=10)
+
+        with pytest.raises(ValueError, match="past source EOF"):
+            _extract_pdf_page_range(source, target, start_page=20, end_page=29)
+        assert not target.exists()
+
+    def test_raises_when_end_page_below_start_page(self, tmp_path):
+        """Inverted range is a caller bug — must raise, not silently
+        produce a full-document copy via pypdfium2's empty-list fallback."""
+        from revisica.ingestion.mineru_parser import _extract_pdf_page_range
+
+        source = tmp_path / "book.pdf"
+        target = tmp_path / "chunk.pdf"
+        self._make_blank_pdf(source, num_pages=10)
+
+        with pytest.raises(ValueError, match="empty"):
+            _extract_pdf_page_range(source, target, start_page=5, end_page=2)
+        assert not target.exists()
+
+    def test_raises_on_negative_start_page(self, tmp_path):
+        from revisica.ingestion.mineru_parser import _extract_pdf_page_range
+
+        source = tmp_path / "book.pdf"
+        target = tmp_path / "chunk.pdf"
+        self._make_blank_pdf(source, num_pages=10)
+
+        with pytest.raises(ValueError, match=">= 0"):
+            _extract_pdf_page_range(source, target, start_page=-1, end_page=4)
 
 
 class TestMineruChunkRanges:
@@ -551,10 +622,11 @@ class TestMineruChunkingAndCache:
 
         monkeypatch.setattr(mp.shutil, "which", lambda _name: "/usr/local/bin/mineru")
         monkeypatch.setattr(mp, "_count_pdf_pages", lambda _path: page_count)
-        # Real ``_extract_pdf_page_range`` would shell out to pypdf which
+        # Real ``_extract_pdf_page_range`` would call into PDFium, which
         # cannot parse the synthetic ``%PDF-1.4 fake`` byte strings used
         # throughout these tests; substitute a touch-a-file stub. The
-        # production path is exercised by the ingestion benchmark.
+        # production path is exercised by ``TestExtractPdfPageRange`` and
+        # by ``revisica benchmark-ingestion`` on real PDFs.
         monkeypatch.setattr(
             mp, "_extract_pdf_page_range", _fake_extract_pdf_page_range
         )

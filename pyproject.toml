@@ -14,7 +14,17 @@ authors = [
 dependencies = [
   "sympy>=1.13,<2",
   "langgraph>=0.5",
+  # pypdf: lightweight pure-Python page counter used in
+  # ``MineruParser.parse`` before we decide whether to chunk.
   "pypdf>=4",
+  # pypdfium2: the actual PDF page extractor for chunking. PDFium walks
+  # the page resource graph and emits a properly-pruned sub-PDF — pypdf's
+  # ``clone_from`` + ``del`` and ``add_page`` paths both produce
+  # structurally broken chunks that trip mlx_vlm's BPE detokenizer on
+  # large books (24 MB chunk vs 2 MB on DDIA). pypdfium2 is also already
+  # what mineru itself uses to render pages, so chunks produced here
+  # are guaranteed to round-trip through mineru's own pipeline.
+  "pypdfium2>=4",
 ]
 
 [project.optional-dependencies]

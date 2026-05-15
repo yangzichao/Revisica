@@ -12,7 +12,11 @@ Rebuild after editing: `bash scripts/build-python-backend.sh`.
 import os
 import pathlib
 
-from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+from PyInstaller.utils.hooks import (
+    collect_submodules,
+    collect_data_files,
+    collect_dynamic_libs,
+)
 
 # --- modules that PyInstaller's static analyzer misses ---------------------
 #
@@ -45,6 +49,19 @@ _revisica_hidden = [
     # `marker_parser` is intentionally absent — the registry references it but
     # tolerates ImportError (see ADR 0001). Listing it here would fail the
     # PyInstaller analysis at build time.
+    # ``pypdfium2`` is imported inside the function body of
+    # ``mineru_parser._extract_pdf_page_range`` so PyInstaller's static
+    # analyzer may miss it. We need it for the PDF chunking path on large
+    # books — without it, dragging in any PDF over the chunk threshold
+    # would raise ``ImportError`` in the bundled backend. mineru itself is
+    # excluded below (too heavy), so pypdfium2 cannot be pulled in
+    # transitively the way it is for `pip install .` users.
+    "pypdfium2",
+    # `pypdfium2_raw` is what actually loads the native PDFium library.
+    # `pypdfium2/raw.py` does `from pypdfium2_raw.bindings import *`, but
+    # we list it explicitly so a future refactor cannot silently break the
+    # binary path.
+    "pypdfium2_raw",
 ]
 
 # --- uvicorn auto-detected protocol / loop loaders --------------------------
@@ -96,6 +113,16 @@ if not _pandoc_bin.is_file():
         "Run `pip install .[bundle]` before building."
     )
 binaries = [(str(_pandoc_bin), "pypandoc/files")]
+
+# pypdfium2's native engine ships as `libpdfium.dylib` inside the sibling
+# package `pypdfium2_raw`. pypdfium2 does NOT bundle a PyInstaller hook,
+# so the static analyzer copies the `.py` files but skips the dylib. The
+# bundled backend then imports cleanly until the first PDF chunking call,
+# which fails with `OSError: cannot load library libpdfium`. Pull the
+# native binary in explicitly. ``collect_dynamic_libs`` walks the
+# package directory for shared objects and emits the right
+# ``(source_path, dest_dir)`` tuples for PyInstaller's binary pipeline.
+binaries += collect_dynamic_libs("pypdfium2_raw")
 
 block_cipher = None
 
