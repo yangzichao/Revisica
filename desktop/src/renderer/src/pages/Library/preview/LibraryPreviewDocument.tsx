@@ -48,6 +48,7 @@ function LibraryPreviewDocument({
       table: StyledTable,
       a: ExternalSafeLink,
       pre: MermaidAwarePre,
+      details: SubstantiveDetails,
     }),
     [apiBase, apiToken, parsedDocumentId],
   )
@@ -111,6 +112,47 @@ function MermaidAwarePre(props: { children?: ReactNode }): JSX.Element {
     return <PreviewMermaidDiagram source={mermaidSource} />
   }
   return <pre>{props.children}</pre>
+}
+
+// MinerU attaches a ``<details>`` block to every figure with a class
+// label as the ``<summary>`` and either (a) a mermaid diagram, (b) a
+// markdown table of the figure's tabular data, or (c) a plain-text OCR
+// description as the body. Cases (a) and (b) carry information the
+// image itself doesn't expose; case (c) is redundant alt-text that
+// duplicates the figure caption directly below, and showing it produces
+// a confusing "▼ FLOWCHART → paragraph of prose" disclosure. We hide
+// case (c) at the renderer level so the markdown on disk stays
+// faithful to what MinerU produced.
+function SubstantiveDetails({
+  children,
+}: {
+  children?: ReactNode
+}): JSX.Element | null {
+  if (!detailsHasNonProseBody(children)) {
+    return null
+  }
+  return <details>{children}</details>
+}
+
+function detailsHasNonProseBody(children: ReactNode): boolean {
+  // Walk the immediate children. Anything that isn't <summary>, plain
+  // text, or a paragraph counts as "substantive" — a <pre> (mermaid),
+  // <table>, embedded <img>, or any of our custom React components
+  // (PreviewMermaidDiagram, StyledTable, PreviewAssetImage) all qualify
+  // and keep the details block visible.
+  const nodes = Children.toArray(children)
+  for (const node of nodes) {
+    // Plain strings / numbers / null land here — pure text content, prose.
+    if (!isValidElement(node)) continue
+    // Function/forwardRef/etc. components are always our overrides
+    // (mermaid, table, image), so we treat them as substantive.
+    if (typeof node.type !== 'string') return true
+    // HTML tags: <summary> is the label, <p> is OCR description prose.
+    // Everything else (<pre>, <table>, <img>, <div>, ...) is content.
+    if (node.type === 'summary' || node.type === 'p') continue
+    return true
+  }
+  return false
 }
 
 function extractMermaidSource(children: ReactNode): string | null {
