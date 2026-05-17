@@ -38,7 +38,15 @@ manual splitter would produce.
 Each chunk's markdown is content-addressed (``sha256(pdf_bytes)[:16]`` +
 backend + page range) so a parse aborted by OOM, cancellation, or a
 server restart resumes from the next un-cached chunk on the second
-attempt.
+attempt. Cache layout per backend:
+``<pdf_hash>/<backend>/p####-p####.md`` for the chunk's markdown plus
+``<pdf_hash>/<backend>/images/<sha>.jpg`` for any figures mineru
+extracted from those pages (the image filenames are content-addressed
+sha256 hashes from mineru, so the flat shared ``images/`` dir never
+collides across chunks). Cache hits reconstruct ``(md, images)`` by
+re-scanning the cached markdown for ``![](images/<sha>.jpg)``
+references — older caches that predate image capture simply find no
+matching files and return an empty image dict, which is correct.
 
 When the requested backend is ``vlm`` and a single chunk crashes
 (notably the mlx_vlm BPE detokenizer's recurring 0xb0
