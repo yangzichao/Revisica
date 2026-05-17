@@ -5,6 +5,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from .types import ParsedImage
+
 
 class BaseParser(ABC):
     """Convert a file (PDF or .tex) to raw Markdown with LaTeX math.
@@ -23,6 +25,18 @@ class BaseParser(ABC):
     @abstractmethod
     def parse(self, path: Path) -> str:
         """Parse *path* and return raw Markdown (with LaTeX math blocks)."""
+
+    def parse_with_assets(self, path: Path) -> tuple[str, list[ParsedImage]]:
+        """Parse *path*, returning Markdown plus any binary image assets.
+
+        The default implementation delegates to :meth:`parse` and returns
+        an empty asset list — parsers that emit no local image files
+        (Mathpix, Pandoc, Markdown passthrough) inherit this for free.
+        Parsers that produce images alongside their markdown (e.g. MinerU)
+        override this and capture them before their working directory is
+        cleaned up.
+        """
+        return self.parse(path), []
 
     @classmethod
     def is_available(cls) -> bool:

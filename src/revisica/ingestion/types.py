@@ -5,6 +5,21 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
+@dataclass(frozen=True)
+class ParsedImage:
+    """A binary image asset produced alongside parsed Markdown.
+
+    ``relative_path`` matches the path used in the markdown's ``![](...)``
+    references, rooted at the document's own directory (e.g.
+    ``"images/<sha>.jpg"`` for MinerU output). ``data`` is the raw image
+    bytes; the storage layer writes them to ``<parsed_doc_dir>/<relative_path>``
+    so the renderer can resolve them via the API.
+    """
+
+    relative_path: str
+    data: bytes
+
+
 @dataclass
 class DocumentMetadata:
     """Extracted metadata from a parsed document."""

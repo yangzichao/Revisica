@@ -23,18 +23,20 @@ import json
 import os
 import re
 import shutil
+from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .types import RevisicaDocument
+from .types import ParsedImage, RevisicaDocument
 
 
 PARSED_DOCUMENTS_DIR_NAME = "parsed-documents"
 PARSED_DOCUMENTS_DIR_ENV_VAR = "REVISICA_PARSED_DOCUMENTS_DIR"
 DOCUMENT_MANIFEST_FILENAME = "document.json"
 NORMALIZED_MARKDOWN_FILENAME = "normalized.md"
+IMAGES_SUBDIR_NAME = "images"
 
 # Ids are constructed from user-supplied filenames + parser + timestamp,
 # and are later used as path segments. This regex gates every lookup so a
@@ -89,8 +91,15 @@ def normalized_markdown_path(parsed_document_id: str) -> Path:
 def save_parsed_document(
     document: RevisicaDocument,
     elapsed_ms: int,
+    images: Iterable[ParsedImage] | None = None,
 ) -> dict[str, Any]:
     """Write manifest + normalized markdown for ``document``.
+
+    When ``images`` is provided, each :class:`ParsedImage` is written to
+    ``<parsed_doc_dir>/<image.relative_path>`` using its bytes. Mineru
+    keeps everything under an ``images/`` subdirectory, but we accept any
+    relative path the parser chose — the only constraint is that it must
+    not escape the document directory, which we enforce here.
 
     Returns the manifest dict, including the generated ``id``.
     """
@@ -120,7 +129,54 @@ def save_parsed_document(
     markdown_path = target_dir / NORMALIZED_MARKDOWN_FILENAME
     markdown_path.write_text(document.markdown, encoding="utf-8")
 
+    if images:
+        _write_parsed_images(target_dir, images)
+
     return manifest
+
+
+def _write_parsed_images(target_dir: Path, images: Iterable[ParsedImage]) -> None:
+    """Persist each ``ParsedImage`` under ``target_dir``.
+
+    Refuses any relative_path that resolves outside ``target_dir`` —
+    parsers should never produce such paths, but defense in depth keeps a
+    compromised upstream from clobbering files elsewhere on disk.
+    """
+    base = target_dir.resolve()
+    for image in images:
+        relative = image.relative_path.lstrip("/")
+        if not relative or ".." in relative.split("/"):
+            continue
+        destination = (target_dir / relative).resolve()
+        try:
+            destination.relative_to(base)
+        except ValueError:
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(image.data)
+
+
+def parsed_document_image_path(
+    parsed_document_id: str,
+    relative_path: str,
+) -> Path:
+    """Return the on-disk path for an image inside a parsed document.
+
+    Raises :class:`ValueError` if the requested path tries to escape the
+    document directory or contains traversal components. The caller is
+    responsible for handling the ``FileNotFoundError`` that arises when
+    the path is valid but the file isn't on disk.
+    """
+    base = parsed_document_dir(parsed_document_id).resolve()
+    cleaned = relative_path.lstrip("/")
+    if not cleaned or ".." in cleaned.split("/"):
+        raise ValueError(f"Invalid image path: {relative_path!r}")
+    candidate = (base / cleaned).resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError as exc:
+        raise ValueError(f"Image path escapes document dir: {relative_path!r}") from exc
+    return candidate
 
 
 def load_parsed_document(parsed_document_id: str) -> dict[str, Any]:

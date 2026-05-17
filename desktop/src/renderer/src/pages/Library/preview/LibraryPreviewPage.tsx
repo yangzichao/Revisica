@@ -132,7 +132,12 @@ export default function LibraryPreviewPage({
                 scrollRootRef={scrollRootRef}
               />
               <div className="flex-1 min-w-0">
-                <LibraryPreviewDocument markdown={data.markdown || ''} />
+                <LibraryPreviewDocument
+                  markdown={data.markdown || ''}
+                  apiBase={apiBase}
+                  apiToken={apiToken}
+                  parsedDocumentId={id}
+                />
               </div>
             </div>
           </>

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .base import BaseParser
 from .normalize import normalize_to_document
-from .types import RevisicaDocument
+from .types import ParsedImage, RevisicaDocument
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +136,32 @@ def parse_document(
 
     Returns:
         A normalized RevisicaDocument.
+
+    See also :func:`parse_document_with_assets` for callers (the desktop
+    parse worker) that need the image bytes alongside the document.
+    """
+    document, _ = parse_document_with_assets(
+        path,
+        parser=parser,
+        mineru_backend=mineru_backend,
+        mineru_progress_callback=mineru_progress_callback,
+    )
+    return document
+
+
+def parse_document_with_assets(
+    path: str | Path,
+    parser: str = "auto",
+    mineru_backend: str | None = None,
+    mineru_progress_callback=None,
+) -> tuple[RevisicaDocument, list[ParsedImage]]:
+    """Parse a file into a ``(RevisicaDocument, images)`` pair.
+
+    Same dispatch + fallback semantics as :func:`parse_document`, but
+    also returns the binary image assets produced by the parser (only
+    MinerU emits any today). Callers that don't need images should use
+    :func:`parse_document` instead — both go through the same
+    ``parse_with_assets`` codepath under the hood.
     """
     file_path = Path(path).expanduser().resolve()
     if not file_path.exists():
@@ -155,7 +181,7 @@ def parse_document(
         )
 
     try:
-        raw_markdown = selected_parser.parse(file_path)
+        raw_markdown, images = selected_parser.parse_with_assets(file_path)
     except Exception:
         if parser != "auto":
             raise  # User explicitly chose this parser — don't silently fall back
@@ -167,14 +193,15 @@ def parse_document(
             "%s failed on %s, falling back to %s",
             selected_parser.name, file_path.name, fallback.name,
         )
-        raw_markdown = fallback.parse(file_path)
+        raw_markdown, images = fallback.parse_with_assets(file_path)
         selected_parser = fallback
 
-    return normalize_to_document(
+    document = normalize_to_document(
         raw_markdown=raw_markdown,
         source_path=str(file_path),
         parser_used=selected_parser.name,
     )
+    return document, images
 
 
 def _find_fallback(path: Path, exclude: str) -> BaseParser | None:

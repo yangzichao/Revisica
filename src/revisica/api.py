@@ -17,17 +17,19 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from .core_types import ProviderModelSpec
-from .ingestion import parse_document
+from .ingestion import parse_document_with_assets
 from .ingestion.storage import (
     delete_parsed_document,
     list_parsed_documents,
     load_parsed_document,
     normalized_markdown_path,
+    parsed_document_image_path,
     save_parsed_document,
 )
 from .providers import get_registry
@@ -79,7 +81,32 @@ def require_api_token(authorization: Optional[str] = Header(default=None)) -> No
         raise HTTPException(status_code=401, detail="Invalid token.")
 
 
+def require_api_token_or_query(
+    authorization: Optional[str] = Header(default=None),
+    token: Optional[str] = Query(default=None),
+) -> None:
+    """Auth variant for endpoints used as ``<img src>`` / ``<a download>`` URLs.
+
+    Browsers can't attach an ``Authorization`` header to these requests, so
+    we also accept the token via a ``?token=`` query parameter. The token
+    only ever leaves the host over a localhost connection (the API binds
+    127.0.0.1), so query-string exposure is bounded to the same trust
+    domain that already has read access to ``~/.revisica/api-token``.
+    JSON endpoints still go through :func:`require_api_token` (header only).
+    """
+    if authorization:
+        return require_api_token(authorization)
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing bearer token (header or ?token=).",
+        )
+    if not secrets.compare_digest(token, _API_TOKEN):
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+
 AUTH = [Depends(require_api_token)]
+AUTH_ASSET = [Depends(require_api_token_or_query)]
 
 
 app = FastAPI(title="Revisica API", version="0.1.0")
@@ -661,6 +688,39 @@ def delete_parsed_document_endpoint(parsed_document_id: str):
     return {"status": "deleted", "id": parsed_document_id}
 
 
+# ``{image_path:path}`` captures slashes so callers can request
+# ``images/<sha>.jpg`` without URL-encoding the separator — matches the
+# markdown reference exactly, which keeps the frontend rewrite trivial.
+@app.get(
+    "/api/parsed-documents/{parsed_document_id}/images/{image_path:path}",
+    dependencies=AUTH_ASSET,
+)
+def get_parsed_document_image_endpoint(
+    parsed_document_id: str,
+    image_path: str,
+):
+    """Serve a binary image asset that lives under a parsed document.
+
+    Auth here is permissive about transport (header OR ``?token=``) because
+    ``<img src>`` can't attach headers; see
+    :func:`require_api_token_or_query`. Path safety is enforced by
+    :func:`parsed_document_image_path`, which refuses anything that
+    escapes the document directory.
+    """
+    # The route already includes "images/" as a literal prefix, so the
+    # path captured here is the part *inside* that folder. We reattach
+    # it before resolving so the on-disk layout matches the markdown
+    # references (``images/<sha>.jpg``) exactly.
+    relative = f"images/{image_path}"
+    try:
+        on_disk = parsed_document_image_path(parsed_document_id, relative)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    if not on_disk.is_file():
+        raise HTTPException(status_code=404, detail="Image not found.")
+    return FileResponse(on_disk)
+
+
 @app.post("/api/review", dependencies=AUTH)
 def start_review(request: ReviewRequest):
     if not request.file_path and not request.parsed_document_id:
@@ -813,14 +873,14 @@ def _execute_parse(run_id: str, request: IngestRequest) -> None:
         progress_callback = _build_chunk_progress_callback(run_state)
 
         start = time.perf_counter()
-        document = parse_document(
+        document, images = parse_document_with_assets(
             request.file_path,
             parser=request.parser,
             mineru_backend=request.mineru_backend,
             mineru_progress_callback=progress_callback,
         )
         elapsed_ms = int((time.perf_counter() - start) * 1000)
-        manifest = save_parsed_document(document, elapsed_ms)
+        manifest = save_parsed_document(document, elapsed_ms, images=images)
 
         result_payload = {
             "id": manifest["id"],

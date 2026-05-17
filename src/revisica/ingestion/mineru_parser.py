@@ -54,6 +54,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -61,6 +62,7 @@ from pathlib import Path
 from typing import Callable
 
 from .base import BaseParser
+from .types import ParsedImage
 
 
 MINERU_BACKEND_FLAG_MAP: dict[str, str | None] = {
@@ -160,6 +162,24 @@ class MineruParser(BaseParser):
         return shutil.which("mineru") is not None
 
     def parse(self, path: Path) -> str:
+        markdown, _ = self._parse_internal(path)
+        return markdown
+
+    def parse_with_assets(self, path: Path) -> tuple[str, list[ParsedImage]]:
+        markdown, images = self._parse_internal(path)
+        return markdown, [
+            ParsedImage(relative_path=rel, data=data)
+            for rel, data in sorted(images.items())
+        ]
+
+    def _parse_internal(self, path: Path) -> tuple[str, dict[str, bytes]]:
+        """Run mineru and return (markdown, image_bytes_by_relative_path).
+
+        Images are keyed by the path used in the markdown's ``![](...)``
+        references (mineru emits ``images/<sha>.jpg``). The dict can be
+        empty when the input PDF has no figures or all of them were
+        dropped during OCR.
+        """
         if shutil.which("mineru") is None:
             raise RuntimeError(
                 "MinerU is not installed. Install with:\n"
@@ -185,7 +205,7 @@ class MineruParser(BaseParser):
         self,
         path: Path,
         chunks: list[tuple[int, int]],
-    ) -> str:
+    ) -> tuple[str, dict[str, bytes]]:
         """Run the chunked parse with per-chunk backend fallback.
 
         Cache layout: ``<root>/<pdf_hash>/<backend>/p####-p####.md``. We
@@ -218,6 +238,7 @@ class MineruParser(BaseParser):
 
         total = len(chunks)
         pieces: list[str] = []
+        merged_images: dict[str, bytes] = {}
         for index, (start, end) in enumerate(chunks, start=1):
             filename = _chunk_filename(start, end)
             primary_cache_path = primary_cache_dir / filename
@@ -232,7 +253,7 @@ class MineruParser(BaseParser):
                 fallback_cache_path, fallback_backend,
             )
             if cached_hit is not None:
-                chunk_md, cached_from_backend = cached_hit
+                chunk_md, chunk_images, cached_from_backend = cached_hit
                 self._report(MineruChunkProgress(
                     chunk_index=index, chunk_total=total,
                     start_page=start, end_page=end,
@@ -240,6 +261,7 @@ class MineruParser(BaseParser):
                     backend=cached_from_backend,
                 ))
                 pieces.append(chunk_md)
+                merged_images.update(chunk_images)
                 continue
 
             # Run with primary backend.
@@ -250,9 +272,13 @@ class MineruParser(BaseParser):
                 backend=primary_backend,
             ))
             try:
-                chunk_md = self._run_chunk(path, start, end, primary_backend)
+                chunk_md, chunk_images = self._run_chunk(
+                    path, start, end, primary_backend,
+                )
                 _atomic_write(primary_cache_path, chunk_md)
+                _persist_chunk_images(primary_cache_dir, chunk_images)
                 pieces.append(chunk_md)
+                merged_images.update(chunk_images)
                 self._report(MineruChunkProgress(
                     chunk_index=index, chunk_total=total,
                     start_page=start, end_page=end,
@@ -282,7 +308,9 @@ class MineruParser(BaseParser):
                 backend=fallback_backend,
             ))
             try:
-                chunk_md = self._run_chunk(path, start, end, fallback_backend)
+                chunk_md, chunk_images = self._run_chunk(
+                    path, start, end, fallback_backend,
+                )
             except Exception:
                 self._report(MineruChunkProgress(
                     chunk_index=index, chunk_total=total,
@@ -293,7 +321,10 @@ class MineruParser(BaseParser):
                 raise
 
             _atomic_write(fallback_cache_path, chunk_md)
+            assert fallback_cache_dir is not None  # narrowed by guard above
+            _persist_chunk_images(fallback_cache_dir, chunk_images)
             pieces.append(chunk_md)
+            merged_images.update(chunk_images)
             self._report(MineruChunkProgress(
                 chunk_index=index, chunk_total=total,
                 start_page=start, end_page=end,
@@ -301,7 +332,7 @@ class MineruParser(BaseParser):
                 backend=fallback_backend,
             ))
 
-        return "\n\n".join(pieces)
+        return "\n\n".join(pieces), merged_images
 
     @staticmethod
     def _lookup_cached_chunk(
@@ -309,21 +340,30 @@ class MineruParser(BaseParser):
         primary_backend: str,
         fallback_path: Path | None,
         fallback_backend: str | None,
-    ) -> tuple[str, str] | None:
-        """Return ``(markdown, backend_that_produced_it)`` or ``None``.
+    ) -> tuple[str, dict[str, bytes], str] | None:
+        """Return ``(markdown, images, backend_that_produced_it)`` or ``None``.
 
         Primary cache wins ties; the fallback cache is consulted only
         when the primary cache misses, so we never silently downgrade a
         chunk that was previously parsed under the requested backend.
+
+        Images are looked up next to the cached markdown — see
+        :func:`_load_chunk_images_for_markdown`. Older caches written
+        before image capture existed simply produce an empty image dict,
+        which is correct (the underlying figure files are gone).
         """
         if primary_path.exists():
-            return primary_path.read_text(encoding="utf-8"), primary_backend
+            markdown = primary_path.read_text(encoding="utf-8")
+            images = _load_chunk_images_for_markdown(primary_path.parent, markdown)
+            return markdown, images, primary_backend
         if (
             fallback_path is not None
             and fallback_backend is not None
             and fallback_path.exists()
         ):
-            return fallback_path.read_text(encoding="utf-8"), fallback_backend
+            markdown = fallback_path.read_text(encoding="utf-8")
+            images = _load_chunk_images_for_markdown(fallback_path.parent, markdown)
+            return markdown, images, fallback_backend
         return None
 
     def _chunk_fallback_backend(self) -> str | None:
@@ -361,7 +401,7 @@ class MineruParser(BaseParser):
         start_page: int,
         end_page: int,
         backend: str,
-    ) -> str:
+    ) -> tuple[str, dict[str, bytes]]:
         """Materialize one chunk as a temp PDF and run mineru on it."""
         with tempfile.TemporaryDirectory(prefix="revisica_chunk_") as tmp_dir:
             chunk_pdf = Path(tmp_dir) / _chunk_pdf_filename(
@@ -370,8 +410,12 @@ class MineruParser(BaseParser):
             _extract_pdf_page_range(source_pdf, chunk_pdf, start_page, end_page)
             return self._run_mineru(chunk_pdf, backend_override=backend)
 
-    def _run_mineru(self, path: Path, backend_override: str | None = None) -> str:
-        """Invoke the mineru CLI on ``path`` and return its markdown output.
+    def _run_mineru(
+        self,
+        path: Path,
+        backend_override: str | None = None,
+    ) -> tuple[str, dict[str, bytes]]:
+        """Invoke the mineru CLI on ``path`` and return ``(markdown, images)``.
 
         ``path`` is always a standalone PDF — either the user's original
         file (small enough to skip chunking) or one of the per-chunk
@@ -381,6 +425,12 @@ class MineruParser(BaseParser):
         under a different backend (vlm → pipeline) without mutating
         ``self.backend``, which the rest of the parse still treats as
         the user-requested default.
+
+        Images are captured eagerly before the mineru temp directory is
+        torn down (mineru writes them as ``<stem>/<backend>/images/<sha>.jpg``
+        next to the markdown). They are keyed by the path used in the
+        markdown's ``![](...)`` references, so the renderer can resolve
+        them later without any path rewriting.
         """
         mineru_bin = shutil.which("mineru")
         # ``parse`` already verified mineru is on PATH; assert here keeps the
@@ -413,7 +463,8 @@ class MineruParser(BaseParser):
             for md_file in sorted(Path(tmp_dir).rglob("*.md")):
                 content = md_file.read_text(encoding="utf-8")
                 if content.strip():
-                    return content
+                    images = _collect_images_next_to(md_file)
+                    return content, images
 
             raise RuntimeError(
                 f"MinerU produced no Markdown output in {tmp_dir} "
@@ -588,6 +639,98 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp_path = path.with_suffix(path.suffix + ".tmp")
     tmp_path.write_text(content, encoding="utf-8")
     os.replace(tmp_path, path)
+
+
+def _atomic_write_bytes(path: Path, data: bytes) -> None:
+    """Binary counterpart to :func:`_atomic_write`."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_bytes(data)
+    os.replace(tmp_path, path)
+
+
+# ``![alt](images/<sha>.jpg)`` — mineru emits image references in this
+# exact form. We match the entire ``(...)`` group so callers can
+# distinguish ``images/foo.jpg`` from ``https://example.com/foo.jpg``
+# without false positives on hyperlinks.
+_IMAGE_REF_RE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)")
+
+
+def _collect_images_next_to(markdown_file: Path) -> dict[str, bytes]:
+    """Read every image referenced by ``markdown_file`` into memory.
+
+    Mineru places images in ``<markdown_dir>/images/<sha>.jpg``, and the
+    markdown body references them as ``![](images/<sha>.jpg)``. We scan
+    the markdown for those references and load only the ones that exist —
+    silently skipping references whose file is missing (mineru
+    occasionally emits a reference for a span it then drops). Returns a
+    dict keyed by the relative path used in the markdown so callers can
+    feed it back into the renderer without rewriting any paths.
+    """
+    base = markdown_file.parent
+    markdown = markdown_file.read_text(encoding="utf-8")
+    images: dict[str, bytes] = {}
+    for rel in _extract_image_refs(markdown):
+        # Reject anything that escapes the markdown directory or uses an
+        # absolute path. Defensive — mineru shouldn't emit either, but a
+        # malicious upstream could and we don't want to leak host files.
+        if rel.startswith(("/", "http://", "https://", "data:")) or ".." in rel.split("/"):
+            continue
+        candidate = (base / rel).resolve()
+        try:
+            candidate.relative_to(base.resolve())
+        except ValueError:
+            continue
+        if candidate.is_file():
+            images[rel] = candidate.read_bytes()
+    return images
+
+
+def _extract_image_refs(markdown: str) -> list[str]:
+    """Return every relative image path referenced by ``markdown``."""
+    return _IMAGE_REF_RE.findall(markdown)
+
+
+def _persist_chunk_images(chunk_cache_dir: Path, images: dict[str, bytes]) -> None:
+    """Write per-chunk images into the chunk cache directory.
+
+    Layout: ``<chunk_cache_dir>/<relative_path>`` (typically
+    ``<chunk_cache_dir>/images/<sha>.jpg``). We use the same relative
+    paths the markdown references so cache hits can reconstruct the
+    ``(markdown, images)`` tuple by re-scanning the cached ``.md``.
+    """
+    for rel, data in images.items():
+        target = (chunk_cache_dir / rel).resolve()
+        try:
+            target.relative_to(chunk_cache_dir.resolve())
+        except ValueError:
+            # Defense in depth: refuse to write outside the cache dir.
+            continue
+        _atomic_write_bytes(target, data)
+
+
+def _load_chunk_images_for_markdown(
+    chunk_cache_dir: Path,
+    markdown: str,
+) -> dict[str, bytes]:
+    """Return image bytes for every reference in a cached chunk's markdown.
+
+    Missing files are silently skipped — that's how older caches written
+    before image capture existed behave automatically (no images dir, no
+    images returned), and matches :func:`_collect_images_next_to`.
+    """
+    images: dict[str, bytes] = {}
+    for rel in _extract_image_refs(markdown):
+        if rel.startswith(("/", "http://", "https://", "data:")) or ".." in rel.split("/"):
+            continue
+        candidate = (chunk_cache_dir / rel).resolve()
+        try:
+            candidate.relative_to(chunk_cache_dir.resolve())
+        except ValueError:
+            continue
+        if candidate.is_file():
+            images[rel] = candidate.read_bytes()
+    return images
 
 
 def clear_chunk_cache() -> int:
