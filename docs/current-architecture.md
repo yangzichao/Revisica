@@ -160,6 +160,7 @@ If someone wants to connect this explanation back to the code:
 - `math_review.py`: math review orchestration
 - `math_check/`: pure math pipeline (types, extraction, deterministic analysis, artifact rendering)
 - `math_llm/`: LLM-based proof review (review, task, parse modules)
+- `findings/`: unified anchored findings for inline annotations (types, collect, anchor, persist) — see `docs/specs/inline-annotations.md`
 - `graphs/`: LangGraph orchestration (writing, unified, polish graphs + node functions)
 - `providers/`: provider registry; `providers/execution.py` is the single LLM call point (`run_provider_agent`)
 - `agents/definitions/`: static agent system prompts (dynamic task prompts live in lane code)

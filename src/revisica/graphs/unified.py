@@ -175,13 +175,19 @@ def run_polish(state: UnifiedState) -> dict:
 
 
 def write_unified_summary(state: UnifiedState) -> dict:
-    """Write unified summary and construct UnifiedReviewRun."""
+    """Write unified summary, anchored findings, and the UnifiedReviewRun."""
     source_path = state["source_path"]
     run_dir = Path(state["run_dir"])
     run_dir.mkdir(parents=True, exist_ok=True)
-    warnings = state.get("warnings", [])
+    warnings = list(state.get("warnings", []))
     writing_result = state.get("writing_result")  # WritingReviewRun | None
     math_result = state.get("math_result")  # MathReviewRun | None
+    document = state.get("document")  # RevisicaDocument | None
+
+    try:
+        _write_findings(run_dir, Path(source_path), document, writing_result, math_result)
+    except Exception as error:
+        warnings.append(f"Writing findings.json failed: {error}")
 
     _write_summary(run_dir, Path(source_path), writing_result, math_result, warnings)
 
@@ -193,6 +199,40 @@ def write_unified_summary(state: UnifiedState) -> dict:
         warnings=warnings,
     )
     return {"unified_review_run": run}
+
+
+# ── findings writer ─────────────────────────────────────────────────
+
+
+def _write_findings(
+    run_dir: Path,
+    source: Path,
+    document: Any,
+    writing: Any,
+    math: Any,
+) -> None:
+    """Persist anchored findings + the document text they index into.
+
+    Anchors are resolved against the same text the lanes reviewed: the
+    ingested document's normalized markdown when ingestion succeeded,
+    otherwise the raw source file.
+    """
+    from ..findings import (
+        collect_unified_findings,
+        resolve_anchors,
+        write_findings_artifacts,
+    )
+
+    if document is not None:
+        document_text = document.markdown
+        sections = document.sections
+    else:
+        document_text = source.read_text(encoding="utf-8", errors="replace")
+        sections = []
+
+    findings = collect_unified_findings(writing, math)
+    resolve_anchors(findings, document_text, sections)
+    write_findings_artifacts(run_dir, findings, document_text)
 
 
 # ── summary writer ─────────────────────────────────────────────────

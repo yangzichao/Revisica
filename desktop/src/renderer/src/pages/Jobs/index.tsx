@@ -9,6 +9,9 @@ import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import { formatElapsed } from '@/lib/formatters'
 import { useDeleteConfirm } from '@/pages/Library/useDeleteConfirm'
+import AnnotatedReviewView from './annotated/AnnotatedReviewView'
+import { fetchRunFindings } from './annotated/findingsApi'
+import type { FindingsPayload } from './annotated/types'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -72,18 +75,25 @@ interface ParseResults {
 
 type JobResults = ReviewResults | ParseResults
 
-type ReportTab = 'summary' | 'writing' | 'math' | 'polish'
+type ReportTab = 'summary' | 'annotated' | 'writing' | 'math' | 'polish'
 
 const TAB_LABELS: Record<ReportTab, string> = {
   summary: 'Summary',
+  annotated: 'Annotated',
   writing: 'Writing',
   math: 'Math',
   polish: 'Polish',
 }
 
-function computeAvailableTabs(results: ReviewResults): ReportTab[] {
+function computeAvailableTabs(
+  results: ReviewResults,
+  findings: FindingsPayload | null,
+): ReportTab[] {
   const tabs: ReportTab[] = []
   if (results.summary && results.summary.trim()) tabs.push('summary')
+  // The annotated view is the richest representation — list it right
+  // after Summary; the default-tab logic below also lands on it first.
+  if (findings && findings.findings.length > 0) tabs.push('annotated')
   if (results.polish_report && results.polish_report.trim()) tabs.push('polish')
   if (results.writing_report && results.writing_report.trim()) tabs.push('writing')
   if (results.math_report && results.math_report.trim()) tabs.push('math')
@@ -114,6 +124,7 @@ function jobSourceLabel(job: RunStatus): string | null {
 interface SelectedJobDetail {
   status: RunStatus | null
   results: JobResults | null
+  findings: FindingsPayload | null
   activeTab: ReportTab
   errorMessage: string | null
 }
@@ -121,6 +132,7 @@ interface SelectedJobDetail {
 const INITIAL_SELECTED_JOB_DETAIL: SelectedJobDetail = {
   status: null,
   results: null,
+  findings: null,
   activeTab: 'summary',
   errorMessage: null,
 }
@@ -196,16 +208,22 @@ export default function Jobs({
             const payload: JobResults = await resultsResponse.json()
             // Parse jobs have nothing to tab through; review jobs default
             // to the first non-summary report (where the actionable content
-            // lives — summary is just the header).
+            // lives — summary is just the header). When anchored findings
+            // exist, that first tab is the Annotated view.
             let activeTab: ReportTab = 'summary'
+            let findings: FindingsPayload | null = null
             if (payload.kind === 'review') {
-              const tabs = computeAvailableTabs(payload)
+              findings = await fetchRunFindings(apiBase, apiToken, runId).catch(
+                () => null,
+              )
+              const tabs = computeAvailableTabs(payload, findings)
               const firstReportTab = tabs.find((tab) => tab !== 'summary')
               activeTab = firstReportTab ?? tabs[0] ?? 'summary'
             }
             setSelectedJobDetail((prev) => ({
               ...prev,
               results: payload,
+              findings,
               activeTab,
             }))
           }
@@ -284,7 +302,15 @@ export default function Jobs({
     [apiBase, apiToken, runId, navigate],
   )
 
-  const { status: selectedStatus, results, activeTab, errorMessage } = selectedJobDetail
+  const { status: selectedStatus, results, findings, activeTab, errorMessage } =
+    selectedJobDetail
+
+  // Reviews launched from the Library carry the parsed document id; the
+  // annotated view needs it to resolve asset image URLs.
+  const parsedDocumentId =
+    typeof selectedStatus?.config?.parsed_document_id === 'string'
+      ? selectedStatus.config.parsed_document_id
+      : undefined
 
   const reportContent = useMemo((): string => {
     if (!results || results.kind !== 'review') return ''
@@ -362,11 +388,15 @@ export default function Jobs({
           <JobResultsView
             runId={runId}
             results={results}
+            findings={findings}
             activeTab={activeTab}
             onTabChange={(tab) =>
               setSelectedJobDetail((prev) => ({ ...prev, activeTab: tab }))
             }
             content={reportContent}
+            apiBase={apiBase}
+            apiToken={apiToken}
+            parsedDocumentId={parsedDocumentId}
           />
         )}
       </div>
@@ -685,21 +715,31 @@ function ParseResultsView({
 function JobResultsView({
   runId,
   results,
+  findings,
   activeTab,
   onTabChange,
   content,
+  apiBase,
+  apiToken,
+  parsedDocumentId,
 }: {
   runId: string
   results: ReviewResults
+  findings: FindingsPayload | null
   activeTab: ReportTab
   onTabChange: (tab: ReportTab) => void
   content: string
+  apiBase: string
+  apiToken: string
+  parsedDocumentId?: string
 }): JSX.Element {
-  const availableTabs = computeAvailableTabs(results)
+  const availableTabs = computeAvailableTabs(results, findings)
+  // The annotated view scrolls its two panes internally, so its layout
+  // pins to the panel height; the markdown tabs scroll in the parent.
+  const isAnnotated = activeTab === 'annotated' && findings !== null
 
-  return (
-    <div className="max-w-3xl mx-auto px-8 py-10">
-      {/* Header */}
+  const header = (
+    <div className={cn('mx-auto w-full px-8 pt-10', isAnnotated ? 'max-w-6xl' : 'max-w-3xl')}>
       <div className="flex items-center gap-3 mb-1">
         <h2 className="font-serif text-xl font-semibold text-ink">
           {runId.slice(0, 8)}
@@ -730,11 +770,34 @@ function JobResultsView({
           ))}
         </div>
       )}
+    </div>
+  )
 
-      {/* Report content */}
-      <div className="card px-6 py-6">
-        <div className="prose-paper">
-          <ReactMarkdown>{content}</ReactMarkdown>
+  if (isAnnotated) {
+    return (
+      <div className="h-full flex flex-col overflow-hidden">
+        {header}
+        <div className="flex-1 min-h-0 mx-auto w-full max-w-6xl border-t border-paper-300">
+          <AnnotatedReviewView
+            payload={findings}
+            apiBase={apiBase}
+            apiToken={apiToken}
+            parsedDocumentId={parsedDocumentId}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="pb-10">
+      {header}
+      <div className="max-w-3xl mx-auto w-full px-8">
+        {/* Report content */}
+        <div className="card px-6 py-6">
+          <div className="prose-paper">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
         </div>
       </div>
     </div>

@@ -24,6 +24,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from .core_types import ProviderModelSpec
+from .findings import load_findings_payload
 from .ingestion import parse_document_with_assets
 from .ingestion.storage import (
     delete_parsed_document,
@@ -834,6 +835,32 @@ def get_run_results(run_id: str):
         "polish_report": polish_report,
         "run_dir": str(run_dir),
     }
+
+
+@app.get("/api/results/{run_id}/findings", dependencies=AUTH)
+def get_run_findings(run_id: str):
+    """Anchored findings for a completed review run, plus the document
+    text the anchor offsets index into (for inline annotation rendering)."""
+    run_state = get_run(run_id)
+    if run_state is None:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
+    snapshot = run_state.to_dict()
+    if snapshot["state"] != "completed":
+        raise HTTPException(status_code=409, detail=f"Run is still {snapshot['state']}.")
+    if snapshot["kind"] != "review":
+        raise HTTPException(status_code=404, detail="Findings exist only for review runs.")
+
+    run_dir = Path(snapshot["run_dir"]) if snapshot["run_dir"] else None
+    if not run_dir or not run_dir.exists():
+        raise HTTPException(status_code=404, detail="Run directory not found.")
+
+    payload = load_findings_payload(run_dir)
+    if payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No findings artifact for this run (it may predate annotations).",
+        )
+    return {"run_id": run_id, **payload}
 
 
 def _rehydrate_parse_payload(slim_payload: dict[str, Any]) -> dict[str, Any]:

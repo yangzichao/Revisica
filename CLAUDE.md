@@ -77,6 +77,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `writing/` | **Subpackage:** writing lane (entry, types, reviewer_resolution, agent_tasks, findings, self_check, judge, artifacts) |
 | `math_review.py` | Math lane orchestrator |
 | `math_llm/` | **Subpackage:** LLM proof review orchestration, task building, result parsing |
+| `findings/` | **Subpackage:** unified anchored findings for inline annotations (collect, anchor, persist; spec: `docs/specs/inline-annotations.md`) |
 | `math_check/` | **Subpackage:** types, extraction, deterministic analysis, artifact rendering (pure SymPy, no LLM deps) |
 | `providers/` | Provider registry; `providers/execution.py:run_provider_agent()` is the single LLM call point |
 | `agents/definitions/` | Static agent system prompts (dynamic task prompts live in lane code) |

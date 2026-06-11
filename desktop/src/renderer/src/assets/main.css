@@ -194,3 +194,62 @@
 .prose-paper-preview .katex-display {
   @apply my-4 overflow-x-auto overflow-y-hidden;
 }
+
+/* ── Annotated review view ─────────────────────────────────────────
+   Block-level finding marks: the rendered element a finding anchors to
+   gets a severity-colored left rule and a faint tint; the active one is
+   emphasized. Character-precise quote marks are painted with the CSS
+   Custom Highlight API (::highlight) and never touch the DOM. */
+
+.annotated-block {
+  border-left: 3px solid transparent;
+  padding-left: 0.75rem;
+  margin-left: -0.85rem;
+  border-radius: 2px;
+  transition: background-color 150ms ease;
+  cursor: pointer;
+}
+
+.annotated-block-critical {
+  border-left-color: rgba(166, 61, 47, 0.65);
+  background-color: rgba(166, 61, 47, 0.05);
+}
+
+.annotated-block-major {
+  border-left-color: rgba(198, 122, 60, 0.65);
+  background-color: rgba(198, 122, 60, 0.05);
+}
+
+.annotated-block-minor {
+  border-left-color: rgba(184, 146, 58, 0.6);
+  background-color: rgba(184, 146, 58, 0.05);
+}
+
+.annotated-block-info {
+  border-left-color: rgba(107, 100, 90, 0.5);
+  background-color: rgba(107, 100, 90, 0.04);
+}
+
+.annotated-block-active {
+  background-color: rgba(198, 122, 60, 0.14);
+}
+
+::highlight(revisica-finding-critical) {
+  background-color: rgba(166, 61, 47, 0.22);
+}
+
+::highlight(revisica-finding-major) {
+  background-color: rgba(198, 122, 60, 0.25);
+}
+
+::highlight(revisica-finding-minor) {
+  background-color: rgba(184, 146, 58, 0.25);
+}
+
+::highlight(revisica-finding-info) {
+  background-color: rgba(107, 100, 90, 0.18);
+}
+
+::highlight(revisica-finding-active) {
+  background-color: rgba(198, 122, 60, 0.45);
+}
