@@ -11,6 +11,7 @@ def extract_math_claims(content: str, functions: list[FunctionDefinition]) -> li
     claims.extend(_extract_integral_claims(content))
     claims.extend(_extract_average_value_claims(content))
     claims.extend(_extract_continuity_claims(content, functions))
+    claims.extend(_extract_bounded_inequality_claims(content))
     return claims
 
 
@@ -79,6 +80,74 @@ def _extract_average_value_claims(content: str) -> list[MathClaim]:
             )
         )
     return claims
+
+
+# Inequality claims are only extracted when the quantified interval is
+# explicit — an unbounded "f(x) <= g(x)" may rely on assumptions stated
+# elsewhere, and probing it numerically would produce false refutations.
+_INEQUALITY_RELATIONS = {
+    r"\le": "<=",
+    r"\leq": "<=",
+    r"\ge": ">=",
+    r"\geq": ">=",
+    "<": "<",
+    ">": ">",
+}
+
+_DISPLAY_INEQUALITY_PATTERN = re.compile(
+    r"(?P<lhs>[^<>=]+?)\s*(?P<op>\\le(?:q)?\b|\\ge(?:q)?\b|<|>)\s*(?P<rhs>[^<>=]+?)"
+    r"\s*(?:\\quad|\\qquad|,)?\s*\\text\{\s*for all\s*\}\s*"
+    r"(?P<var>[A-Za-z])\s*\\in\s*\[(?P<a>[^,\]]+),(?P<b>[^\]]+)\]",
+)
+
+_INLINE_INEQUALITY_PATTERN = re.compile(
+    r"\$(?P<lhs>[^$<>=]+?)\s*(?P<op>\\le(?:q)?\b|\\ge(?:q)?\b|<|>)\s*(?P<rhs>[^$<>=]+?)\$"
+    r"\s*(?:holds\s*)?for all\s*\$(?P<var>[A-Za-z])\s*\\in\s*\[(?P<a>[^,\]]+),(?P<b>[^\]]+)\]\$",
+    re.IGNORECASE,
+)
+
+
+def _extract_bounded_inequality_claims(content: str) -> list[MathClaim]:
+    claims: list[MathClaim] = []
+    display_pattern = re.compile(r"\\\[\s*(?P<body>.*?)\s*\\\]", re.DOTALL)
+    for match in display_pattern.finditer(content):
+        body = normalize_latex(match.group("body"))
+        inequality = _DISPLAY_INEQUALITY_PATTERN.search(body)
+        if not inequality:
+            continue
+        claims.append(
+            _bounded_inequality_claim(
+                inequality, line_number(content, match.start()), match.group(0).strip()
+            )
+        )
+    for match in _INLINE_INEQUALITY_PATTERN.finditer(content):
+        claims.append(
+            _bounded_inequality_claim(
+                match, line_number(content, match.start()), match.group(0).strip()
+            )
+        )
+    return claims
+
+
+def _bounded_inequality_claim(
+    match: re.Match[str],
+    claim_line_number: int,
+    snippet: str,
+) -> MathClaim:
+    relation = _INEQUALITY_RELATIONS[match.group("op").strip()]
+    return MathClaim(
+        kind="bounded_inequality",
+        line_number=claim_line_number,
+        snippet=snippet,
+        details={
+            "lhs": match.group("lhs").strip().rstrip(".,;:"),
+            "rhs": match.group("rhs").strip().rstrip(".,;:"),
+            "relation": relation,
+            "variable": match.group("var").strip(),
+            "a": match.group("a").strip(),
+            "b": match.group("b").strip(),
+        },
+    )
 
 
 def _extract_continuity_claims(

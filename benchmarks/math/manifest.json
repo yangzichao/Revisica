@@ -55,6 +55,28 @@
         "minimum_needs_human_check": 2,
         "minimum_blueprints": 1
       }
+    },
+    {
+      "id": "wrong_inequality",
+      "file": "wrong_inequality.tex",
+      "description": "Bounded inequality with an in-interval counterexample should be machine-refuted with an exact witness.",
+      "expected": {
+        "machine_refuted_titles": [
+          "Inequality fails on the stated interval"
+        ],
+        "machine_verified_titles": []
+      }
+    },
+    {
+      "id": "correct_inequality",
+      "file": "correct_inequality.tex",
+      "description": "True bounded inequality should be machine-verified via symbolic extremum analysis.",
+      "expected": {
+        "machine_refuted_titles": [],
+        "machine_verified_titles": [
+          "Inequality verified on the stated interval"
+        ]
+      }
     }
   ]
 }

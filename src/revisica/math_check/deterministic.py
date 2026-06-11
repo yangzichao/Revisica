@@ -5,6 +5,11 @@ from sympy.calculus.util import continuous_domain
 from sympy.sets import Interval
 
 from .extraction import find_variable_names, parse_expr
+from .probe import (
+    find_inequality_counterexample,
+    numeric_integral_matches,
+    prove_inequality_on_interval,
+)
 from .types import FunctionDefinition, MathClaim, MathIssue, ProofBlock, ProofBlueprint
 
 
@@ -21,6 +26,8 @@ def analyze_claims(
             issue = _check_average_value_claim(claim)
         elif claim.kind == "continuity_integrability":
             issue = _check_continuity_claim(claim, function_by_name)
+        elif claim.kind == "bounded_inequality":
+            issue = _check_bounded_inequality_claim(claim)
         else:
             issue = None
         if issue is not None:
@@ -116,6 +123,12 @@ def _check_integral_claim(claim: MathClaim) -> MathIssue | None:
     upper = parse_expr(claim.details["b"], variable_names=[var_name])
     rhs = parse_expr(claim.details["rhs"], variable_names=[var_name])
     computed = sp.simplify(sp.integrate(integrand, (variable, lower, upper)))
+    if computed.has(sp.Integral):
+        # No closed form — fall back to numeric quadrature instead of
+        # refuting the claim just because symbolic integration gave up.
+        return _check_integral_claim_numerically(
+            claim, integrand, variable, lower, upper, rhs
+        )
     difference = sp.simplify(computed - rhs)
     if difference == 0:
         return MathIssue(
@@ -138,6 +151,97 @@ def _check_integral_claim(claim: MathClaim) -> MathIssue | None:
         fix=f"Replace the stated value with `{sp.latex(computed)}` and show the derivation explicitly.",
         evidence=f"SymPy computed {sp.latex(computed)} while the draft states {sp.latex(rhs)}.",
     )
+
+
+def _check_integral_claim_numerically(
+    claim: MathClaim,
+    integrand: sp.Expr,
+    variable: sp.Symbol,
+    lower: sp.Expr,
+    upper: sp.Expr,
+    rhs: sp.Expr,
+) -> MathIssue | None:
+    matches = numeric_integral_matches(integrand, variable, lower, upper, rhs)
+    if matches is None:
+        return MathIssue(
+            line_number=claim.line_number,
+            status="needs-human-check",
+            severity="major",
+            title="Definite integral could not be evaluated",
+            snippet=claim.snippet,
+            explanation="Neither symbolic integration nor numeric quadrature could settle this integral claim.",
+            fix="Check the integral by hand or restate it in a form amenable to verification.",
+            evidence="sympy.integrate returned an unevaluated integral and numeric evaluation failed.",
+        )
+    if matches:
+        return MathIssue(
+            line_number=claim.line_number,
+            status="machine-verified",
+            severity="info",
+            title="Integral equality verified numerically",
+            snippet=claim.snippet,
+            explanation="Symbolic integration found no closed form, but numeric quadrature matches the stated value.",
+            fix="No change needed.",
+            evidence=(
+                f"Numeric quadrature gives {sp.Integral(integrand, (variable, lower, upper)).evalf(10)}, "
+                f"matching the stated {sp.latex(rhs)} within tolerance."
+            ),
+        )
+    return MathIssue(
+        line_number=claim.line_number,
+        status="machine-refuted",
+        severity="critical",
+        title="Incorrect definite integral",
+        snippet=claim.snippet,
+        explanation="The stated value of the definite integral does not match numeric quadrature (no closed form exists for a symbolic check).",
+        fix="Recompute the integral; the stated value is off by more than numeric tolerance.",
+        evidence=(
+            f"Numeric quadrature gives {sp.Integral(integrand, (variable, lower, upper)).evalf(10)} "
+            f"while the draft states {sp.latex(rhs)} ≈ {sp.sympify(rhs).evalf(10)}."
+        ),
+    )
+
+
+def _check_bounded_inequality_claim(claim: MathClaim) -> MathIssue | None:
+    var_name = claim.details["variable"]
+    variable = sp.Symbol(var_name, real=True)
+    relation = claim.details["relation"]
+    lhs = parse_expr(claim.details["lhs"], variable_names=[var_name])
+    rhs = parse_expr(claim.details["rhs"], variable_names=[var_name])
+    lower = parse_expr(claim.details["a"], variable_names=[var_name])
+    upper = parse_expr(claim.details["b"], variable_names=[var_name])
+
+    witness = find_inequality_counterexample(lhs, rhs, relation, variable, lower, upper)
+    if witness is not None:
+        return MathIssue(
+            line_number=claim.line_number,
+            status="machine-refuted",
+            severity="critical",
+            title="Inequality fails on the stated interval",
+            snippet=claim.snippet,
+            explanation="The claimed inequality has an exact counterexample inside the quantified interval.",
+            fix="Restrict the interval, weaken the inequality, or correct the bound.",
+            evidence=witness.describe(variable, relation),
+        )
+
+    proven = prove_inequality_on_interval(lhs, rhs, relation, variable, lower, upper)
+    if proven:
+        return MathIssue(
+            line_number=claim.line_number,
+            status="machine-verified",
+            severity="info",
+            title="Inequality verified on the stated interval",
+            snippet=claim.snippet,
+            explanation="The inequality holds across the quantified interval according to symbolic extremum analysis.",
+            fix="No change needed.",
+            evidence=(
+                f"The minimum of the inequality gap over [{lower}, {upper}] is "
+                f"non-negative, and grid sampling found no counterexample."
+            ),
+        )
+    # Sampling found nothing and the symbolic proof is inconclusive —
+    # stay quiet rather than emit a low-confidence verdict.
+    return None
 
 
 def _check_average_value_claim(claim: MathClaim) -> MathIssue | None:

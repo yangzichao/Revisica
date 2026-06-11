@@ -3,6 +3,11 @@ from __future__ import annotations
 import re
 
 import sympy as sp
+from sympy.parsing.sympy_parser import (
+    implicit_multiplication_application,
+    parse_expr as sympy_parse_expr,
+    standard_transformations,
+)
 
 
 def compact_text(text: str) -> str:
@@ -46,7 +51,17 @@ def parse_expr(text: str, variable_names: list[str]) -> sp.Expr:
         locals_map[name] = sp.Symbol(name, real=True)
     for name in find_variable_names(normalized):
         locals_map.setdefault(name, sp.Symbol(name, real=True))
-    return sp.sympify(normalized, locals=locals_map)
+    try:
+        return sp.sympify(normalized, locals=locals_map)
+    except (sp.SympifyError, SyntaxError, TypeError):
+        # LaTeX-style implicit multiplication ("2x", "x y") — retry with
+        # the sympy parser's implicit-multiplication transformation.
+        transformations = standard_transformations + (
+            implicit_multiplication_application,
+        )
+        return sympy_parse_expr(
+            normalized, local_dict=locals_map, transformations=transformations
+        )
 
 
 def replace_latex_fractions(text: str) -> str:
