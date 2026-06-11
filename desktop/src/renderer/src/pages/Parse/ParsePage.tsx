@@ -17,25 +17,6 @@ import BatchParseList, {
   type BatchParseItem,
 } from './BatchParseList'
 
-const RUN_IDS_STORAGE_KEY = 'revisica_run_ids'
-
-function appendRunIdToHistory(runId: string): void {
-  try {
-    const stored = localStorage.getItem(RUN_IDS_STORAGE_KEY)
-    const parsed = stored ? JSON.parse(stored) : []
-    const existing = Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === 'string')
-      : []
-    existing.unshift(runId)
-    localStorage.setItem(
-      RUN_IDS_STORAGE_KEY,
-      JSON.stringify(existing.slice(0, 50)),
-    )
-  } catch {
-    // Private mode / quota — not fatal
-  }
-}
-
 // Initial state mirrors the wizard's shape so we can hand it to
 // Step1ImportFile unchanged. The unused review-lane fields are harmless stubs.
 const INITIAL_STATE: WizardState = {
@@ -217,7 +198,6 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
     }
 
     setActiveRunId(runId)
-    appendRunIdToHistory(runId)
 
     // Poll status; on completion fetch the result and render inline.
     stopPolling()
@@ -384,7 +364,6 @@ export default function ParsePage({ apiBase, apiToken }: ParsePageProps): JSX.El
         const submitData = await response.json()
         const runId: string | undefined = submitData.run_id
         if (!runId) throw new Error('Server did not return a run_id')
-        appendRunIdToHistory(runId)
         updateBatchItem(id, { runId, status: 'queued' })
       } catch (err) {
         updateBatchItem(id, {

@@ -1,13 +1,14 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, NavLink } from 'react-router-dom'
 import {
   Loader2, CheckCircle2, XCircle, Circle, FileText, Inbox,
-  FileScan, ArrowRight, Archive,
+  FileScan, ArrowRight, Archive, RotateCcw, Trash2,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import { formatElapsed } from '@/lib/formatters'
+import { useDeleteConfirm } from '@/pages/Library/useDeleteConfirm'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -38,6 +39,11 @@ interface RunStatus {
   started_at?: string
   tasks: TaskStatus[]
   error?: string
+  // The submitted request, echoed back by the server — used to derive a
+  // human-readable source label for the job list.
+  config?: Record<string, unknown>
+  // Set when this run was created via the retry endpoint.
+  retry_of?: string
 }
 
 interface ReviewResults {
@@ -88,19 +94,19 @@ function jobKind(status: RunStatus | null | undefined): JobKind {
   return status?.kind ?? 'review'
 }
 
-function readRunIds(): string[] {
-  try {
-    const stored = localStorage.getItem('revisica_run_ids')
-    if (!stored) return []
-    const parsed = JSON.parse(stored)
-    return Array.isArray(parsed)
-      ? parsed.filter((id): id is string => typeof id === 'string')
-      : []
-  } catch {
-    // Corrupted storage — reset so we don't keep crashing the page.
-    localStorage.removeItem('revisica_run_ids')
-    return []
+function jobSourceLabel(job: RunStatus): string | null {
+  const config = job.config
+  if (!config) return null
+  const filePath = typeof config.file_path === 'string' ? config.file_path : ''
+  if (filePath) {
+    const segments = filePath.split('/')
+    return segments[segments.length - 1] || filePath
   }
+  const parsedDocumentId =
+    typeof config.parsed_document_id === 'string'
+      ? config.parsed_document_id
+      : ''
+  return parsedDocumentId || null
 }
 
 // ── Selected-job detail state ──────────────────────────────────────
@@ -136,25 +142,21 @@ export default function Jobs({
     INITIAL_SELECTED_JOB_DETAIL,
   )
 
-  // Poll all known jobs
+  // Poll the server-side run list. The backend persists runs to disk, so
+  // this also shows history (and any interrupted runs) from before the
+  // last app restart — no client-side run-id bookkeeping needed.
   useEffect(() => {
-    const runIds = readRunIds()
-    if (runIds.length === 0) return
-
     const fetchAllJobs = async (): Promise<void> => {
-      const statuses: RunStatus[] = []
-      for (const id of runIds) {
-        try {
-          const response = await apiFetch(apiBase, apiToken, `/api/status/${id}`)
-          if (response.ok) statuses.push(await response.json())
-        } catch {
-          // Skip unreachable jobs
+      try {
+        const response = await apiFetch(apiBase, apiToken, '/api/runs')
+        if (!response.ok) return
+        const payload = await response.json()
+        if (Array.isArray(payload.runs)) {
+          setJobs(payload.runs)
         }
+      } catch {
+        // Backend unreachable — keep showing the last known list.
       }
-      statuses.sort((a, b) =>
-        (b.started_at ?? '').localeCompare(a.started_at ?? ''),
-      )
-      setJobs(statuses)
     }
 
     fetchAllJobs()
@@ -230,6 +232,58 @@ export default function Jobs({
     }
   }, [runId, jobs, navigate])
 
+  // Retry a failed job: the server relaunches it with the original config
+  // (parses resume from cached chunks), then we jump to the new run.
+  const [retryState, setRetryState] = useState<{
+    inFlight: boolean
+    error: string | null
+  }>({ inFlight: false, error: null })
+
+  useEffect(() => {
+    setRetryState({ inFlight: false, error: null })
+  }, [runId])
+
+  const handleRetry = useCallback(async (): Promise<void> => {
+    if (!runId) return
+    setRetryState({ inFlight: true, error: null })
+    try {
+      const response = await apiFetch(
+        apiBase,
+        apiToken,
+        `/api/runs/${runId}/retry`,
+        { method: 'POST' },
+      )
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.detail || `Retry failed (${response.status})`)
+      }
+      setRetryState({ inFlight: false, error: null })
+      navigate(`/jobs/${data.run_id}`)
+    } catch (err) {
+      setRetryState({
+        inFlight: false,
+        error: err instanceof Error ? err.message : 'Retry failed',
+      })
+    }
+  }, [runId, apiBase, apiToken, navigate])
+
+  const handleDelete = useCallback(
+    async (jobRunId: string): Promise<void> => {
+      const response = await apiFetch(apiBase, apiToken, `/api/runs/${jobRunId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.detail || `Delete failed (${response.status})`)
+      }
+      setJobs((previous) => previous.filter((job) => job.run_id !== jobRunId))
+      if (jobRunId === runId) {
+        navigate('/jobs', { replace: true })
+      }
+    },
+    [apiBase, apiToken, runId, navigate],
+  )
+
   const { status: selectedStatus, results, activeTab, errorMessage } = selectedJobDetail
 
   const reportContent = useMemo((): string => {
@@ -265,6 +319,7 @@ export default function Jobs({
                 key={job.run_id}
                 job={job}
                 isActive={job.run_id === runId}
+                onDelete={handleDelete}
               />
             ))}
           </div>
@@ -284,7 +339,13 @@ export default function Jobs({
         )}
 
         {runId && selectedStatus && !results && (
-          <JobProgressView runId={runId} status={selectedStatus} />
+          <JobProgressView
+            runId={runId}
+            status={selectedStatus}
+            onRetry={handleRetry}
+            retryInFlight={retryState.inFlight}
+            retryError={retryState.error}
+          />
         )}
 
         {runId && results && results.kind === 'parse' && (
@@ -385,22 +446,34 @@ function EmptyDetail(): JSX.Element {
 function JobListItem({
   job,
   isActive,
+  onDelete,
 }: {
   job: RunStatus
   isActive: boolean
+  onDelete: (runId: string) => Promise<void>
 }): JSX.Element {
   const kind = jobKind(job)
   const KindIcon = kind === 'parse' ? FileScan : FileText
+  const sourceLabel = jobSourceLabel(job)
+  const isFinished = job.state === 'completed' || job.state === 'failed'
+
+  const { isConfirming, isDeleting, request, cancel } = useDeleteConfirm({
+    perform: () => onDelete(job.run_id),
+  })
+
   return (
     <NavLink
       to={`/jobs/${job.run_id}`}
       className={cn(
-        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg',
+        'group flex items-center gap-2.5 px-3 py-2.5 rounded-lg',
         'transition-colors duration-150',
         isActive
           ? 'bg-paper-50 shadow-subtle'
           : 'hover:bg-paper-300/30',
       )}
+      onMouseLeave={() => {
+        if (isConfirming) cancel()
+      }}
     >
       <TaskStatusIcon status={job.state} />
       <div className="flex-1 min-w-0">
@@ -414,13 +487,49 @@ function JobListItem({
             {job.run_id.slice(0, 8)}
           </div>
         </div>
-        <div className="text-[10px] text-ink-faint mt-0.5">
+        <div className="text-[10px] text-ink-faint mt-0.5 truncate">
           {kind === 'parse' ? 'Parse · ' : ''}
+          {sourceLabel ? `${sourceLabel} · ` : ''}
           {job.started_at
-            ? new Date(job.started_at).toLocaleTimeString()
+            ? new Date(job.started_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+              })
             : ''}
         </div>
       </div>
+      {isFinished && (
+        <button
+          type="button"
+          title={isConfirming ? 'Click again to remove' : 'Remove from history'}
+          aria-label={
+            isConfirming
+              ? `Confirm removing job ${job.run_id.slice(0, 8)}`
+              : `Remove job ${job.run_id.slice(0, 8)}`
+          }
+          disabled={isDeleting}
+          onClick={(event) => {
+            // The row itself is a NavLink — keep the click from navigating.
+            event.preventDefault()
+            event.stopPropagation()
+            void request()
+          }}
+          className={cn(
+            'shrink-0 p-1 rounded-md border-none bg-transparent cursor-pointer',
+            'transition-opacity duration-150',
+            isConfirming
+              ? 'opacity-100 text-danger'
+              : 'opacity-0 group-hover:opacity-100 text-ink-faint hover:text-danger',
+          )}
+        >
+          {isDeleting ? (
+            <Loader2 size={13} className="animate-spin" />
+          ) : (
+            <Trash2 size={13} strokeWidth={1.6} />
+          )}
+        </button>
+      )}
     </NavLink>
   )
 }
@@ -428,9 +537,15 @@ function JobListItem({
 function JobProgressView({
   runId,
   status,
+  onRetry,
+  retryInFlight,
+  retryError,
 }: {
   runId: string
   status: RunStatus
+  onRetry: () => void
+  retryInFlight: boolean
+  retryError: string | null
 }): JSX.Element {
   return (
     <div className="max-w-2xl mx-auto px-8 py-10">
@@ -439,6 +554,17 @@ function JobProgressView({
           {runId.slice(0, 8)}
         </h2>
         <StateBadge state={status.state} />
+        {status.retry_of && (
+          <span className="text-[11px] text-ink-faint">
+            retry of{' '}
+            <NavLink
+              to={`/jobs/${status.retry_of}`}
+              className="font-mono underline decoration-dotted hover:text-ink-secondary"
+            >
+              {status.retry_of.slice(0, 8)}
+            </NavLink>
+          </span>
+        )}
       </div>
 
       <div className="card divide-y divide-paper-300/60">
@@ -453,10 +579,30 @@ function JobProgressView({
         ))}
       </div>
 
-      {status.state === 'failed' && status.error && (
-        <div className="mt-6 rounded-lg border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
-          {status.error}
-        </div>
+      {status.state === 'failed' && (
+        <>
+          {status.error && (
+            <div className="mt-6 rounded-lg border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+              {status.error}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={retryInFlight}
+            className="btn-primary mt-5 px-5 py-2 text-sm"
+          >
+            {retryInFlight ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <RotateCcw size={13} strokeWidth={1.8} />
+            )}
+            Retry job
+          </button>
+          {retryError && (
+            <p className="mt-3 text-xs text-danger">{retryError}</p>
+          )}
+        </>
       )}
     </div>
   )

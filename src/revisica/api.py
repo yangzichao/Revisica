@@ -6,13 +6,14 @@ Start with: ``revisica serve`` or ``python -m revisica.api``
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import queue
 import secrets
 import threading
 import time
 import uuid
-from collections import OrderedDict
+from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -32,9 +33,20 @@ from .ingestion.storage import (
     parsed_document_image_path,
     save_parsed_document,
 )
+from .jobs import (
+    RunState,
+    get_run,
+    list_run_snapshots,
+    persist_run_snapshot,
+    recover_runs_from_disk,
+    register_run,
+    remove_run,
+)
 from .providers import get_registry
 from .providers.provider_config import load_config, save_config
 from .unified_review import review_unified
+
+logger = logging.getLogger(__name__)
 
 
 def _load_or_create_api_token() -> str:
@@ -109,7 +121,19 @@ AUTH = [Depends(require_api_token)]
 AUTH_ASSET = [Depends(require_api_token_or_query)]
 
 
-app = FastAPI(title="Revisica API", version="0.1.0")
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """Restore persisted job history before the first request is served.
+
+    The desktop app restarts the backend with every app launch, so without
+    this the Jobs page would lose all history (and queued parses would be
+    silently dropped) on every relaunch.
+    """
+    _recover_persisted_jobs()
+    yield
+
+
+app = FastAPI(title="Revisica API", version="0.1.0", lifespan=_lifespan)
 
 # Token auth is the primary defense against CSRF from the user's browser;
 # CORS is also tightened so cross-origin preflights are refused outright.
@@ -123,99 +147,26 @@ app.add_middleware(
 )
 
 
-# ── in-memory run state ─────────────────────────────────────────────
+# ── run state ───────────────────────────────────────────────────────
+#
+# RunState, the in-memory registry, and the on-disk job store live in the
+# `jobs` subpackage. Every mutation of a registered RunState re-writes its
+# snapshot under ~/.revisica/jobs/ (override: REVISICA_JOBS_DIR), and
+# _recover_persisted_jobs() reloads them at startup so job history — and
+# queued parse work — survives backend restarts.
 
 
-class RunState:
-    """Tracks a single job's progress (review or parse). Thread-safe via internal lock."""
+def _recover_persisted_jobs() -> None:
+    """Reload persisted runs; re-enqueue parses that never got to start."""
 
-    def __init__(self, run_id: str, config: dict[str, Any], kind: str = "review"):
-        self.run_id = run_id
-        self.kind = kind
-        self.config = config
-        self.state = "running"
-        self.started_at = datetime.now().isoformat()
-        self.completed_at: Optional[str] = None
-        self.run_dir: Optional[str] = None
-        self.tasks: list[dict[str, str]] = []
-        self.error: Optional[str] = None
-        # Parse jobs stash their manifest here so /api/results can return it
-        # without re-reading the on-disk store.
-        self.result_payload: Optional[dict[str, Any]] = None
-        self._lock = threading.Lock()
+    def resubmit_parse(run_state: RunState) -> None:
+        request = IngestRequest.model_validate(run_state.config)
+        _ensure_parse_worker_started()
+        _parse_queue.put((run_state.run_id, request))
 
-    def update(self, **fields: Any) -> None:
-        with self._lock:
-            for key, value in fields.items():
-                setattr(self, key, value)
-
-    def append_task(self, task: dict[str, str]) -> None:
-        with self._lock:
-            self.tasks.append(task)
-
-    def update_task_by_name(
-        self,
-        name: str,
-        status: str,
-        detail: Optional[str] = None,
-    ) -> None:
-        """Update an existing task in place, or append a new one if missing.
-
-        Used by the MinerU chunk progress callback so /api/status returns a
-        fine-grained ``[parse, chunk-1/8, chunk-2/8, …]`` task list while a
-        large PDF is being split and parsed.
-        """
-        with self._lock:
-            for index, existing in enumerate(self.tasks):
-                if existing.get("name") == name:
-                    new_task = {**existing, "status": status}
-                    if detail is not None:
-                        new_task["detail"] = detail
-                    self.tasks[index] = new_task
-                    return
-            new_task: dict[str, str] = {"name": name, "status": status}
-            if detail is not None:
-                new_task["detail"] = detail
-            self.tasks.append(new_task)
-
-    def to_dict(self) -> dict[str, Any]:
-        with self._lock:
-            return {
-                "run_id": self.run_id,
-                "kind": self.kind,
-                "config": self.config,
-                "state": self.state,
-                "started_at": self.started_at,
-                "completed_at": self.completed_at,
-                "run_dir": self.run_dir,
-                "tasks": list(self.tasks),
-                "error": self.error,
-            }
-
-
-# Cap retained runs so a long-lived server cannot grow `_runs` without bound.
-_MAX_RETAINED_RUNS = 100
-_runs: "OrderedDict[str, RunState]" = OrderedDict()
-_runs_lock = threading.Lock()
-
-
-def _register_run(run_state: RunState) -> None:
-    with _runs_lock:
-        _runs[run_state.run_id] = run_state
-        while len(_runs) > _MAX_RETAINED_RUNS:
-            # Safe: we `break` immediately after the single `pop`, so we never
-            # continue iterating a mutated dict within the same `for` pass.
-            for rid, state in _runs.items():
-                if state.state in ("completed", "failed"):
-                    _runs.pop(rid)
-                    break
-            else:
-                break
-
-
-def _get_run(run_id: str) -> Optional[RunState]:
-    with _runs_lock:
-        return _runs.get(run_id)
+    restored = recover_runs_from_disk(resubmit_parse)
+    if restored:
+        logger.info("Recovered %d persisted job(s) from disk.", restored)
 
 
 # ── parse job queue ─────────────────────────────────────────────────
@@ -634,16 +585,27 @@ def ingest_document(request: IngestRequest):
     """
     if not request.file_path or not request.file_path.strip():
         raise HTTPException(status_code=400, detail="file_path is required.")
+    run_id = _submit_parse_run(request)
+    return {"run_id": run_id, "status": "queued"}
+
+
+def _submit_parse_run(request: IngestRequest, retry_of: Optional[str] = None) -> str:
+    """Register a queued parse run and hand it to the single parse worker."""
     run_id = str(uuid.uuid4())[:8]
-    run_state = RunState(run_id, request.model_dump(), kind="parse")
+    run_state = RunState(
+        run_id,
+        request.model_dump(),
+        kind="parse",
+        persist=persist_run_snapshot,
+        retry_of=retry_of,
+    )
     run_state.update(state="queued")
     run_state.append_task({"name": "parse", "status": "pending"})
-    _register_run(run_state)
+    register_run(run_state)
 
     _ensure_parse_worker_started()
     _parse_queue.put((run_id, request))
-
-    return {"run_id": run_id, "status": "queued"}
+    return run_id
 
 
 @app.get("/api/parsed-documents", dependencies=AUTH)
@@ -728,9 +690,20 @@ def start_review(request: ReviewRequest):
             status_code=400,
             detail="Either file_path or parsed_document_id is required.",
         )
+    run_id = _submit_review_run(request)
+    return {"run_id": run_id, "status": "started"}
+
+
+def _submit_review_run(request: ReviewRequest, retry_of: Optional[str] = None) -> str:
+    """Register a review run and start it on its own worker thread."""
     run_id = str(uuid.uuid4())[:8]
-    run_state = RunState(run_id, request.model_dump())
-    _register_run(run_state)
+    run_state = RunState(
+        run_id,
+        request.model_dump(),
+        persist=persist_run_snapshot,
+        retry_of=retry_of,
+    )
+    register_run(run_state)
 
     thread = threading.Thread(
         target=_execute_review,
@@ -738,13 +711,71 @@ def start_review(request: ReviewRequest):
         daemon=True,
     )
     thread.start()
+    return run_id
 
-    return {"run_id": run_id, "status": "started"}
+
+@app.get("/api/runs", dependencies=AUTH)
+def list_runs():
+    """Return every known run (newest first), including restored history.
+
+    This replaces client-side run-id bookkeeping: the server is the source
+    of truth, and because runs are persisted to disk the list survives
+    backend restarts.
+    """
+    return {"runs": list_run_snapshots()}
+
+
+@app.post("/api/runs/{run_id}/retry", dependencies=AUTH)
+def retry_run(run_id: str):
+    """Relaunch a failed run with its original configuration.
+
+    A retried parse benefits from the MinerU chunk cache, so resubmitting a
+    crashed multi-hundred-page PDF typically redoes only the chunk that was
+    in flight when the failure happened.
+    """
+    original = get_run(run_id)
+    if original is None:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
+    snapshot = original.to_dict()
+    if snapshot["state"] != "failed":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Only failed runs can be retried (run is {snapshot['state']}).",
+        )
+
+    if snapshot["kind"] == "parse":
+        new_run_id = _submit_parse_run(
+            IngestRequest.model_validate(snapshot["config"]),
+            retry_of=run_id,
+        )
+        return {"run_id": new_run_id, "status": "queued", "retry_of": run_id}
+
+    new_run_id = _submit_review_run(
+        ReviewRequest.model_validate(snapshot["config"]),
+        retry_of=run_id,
+    )
+    return {"run_id": new_run_id, "status": "started", "retry_of": run_id}
+
+
+@app.delete("/api/runs/{run_id}", dependencies=AUTH)
+def delete_run(run_id: str):
+    """Remove a finished run from history (memory + disk)."""
+    run_state = get_run(run_id)
+    if run_state is None:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
+    state = run_state.to_dict()["state"]
+    if state in ("running", "queued"):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot delete a {state} run; wait for it to finish.",
+        )
+    remove_run(run_id)
+    return {"status": "deleted", "run_id": run_id}
 
 
 @app.get("/api/status/{run_id}", dependencies=AUTH)
 def get_run_status(run_id: str):
-    run_state = _get_run(run_id)
+    run_state = get_run(run_id)
     if run_state is None:
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
     return run_state.to_dict()
@@ -752,7 +783,7 @@ def get_run_status(run_id: str):
 
 @app.get("/api/results/{run_id}", dependencies=AUTH)
 def get_run_results(run_id: str):
-    run_state = _get_run(run_id)
+    run_state = get_run(run_id)
     if run_state is None:
         raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
     snapshot = run_state.to_dict()
@@ -762,7 +793,13 @@ def get_run_results(run_id: str):
     if snapshot["kind"] == "parse":
         if not run_state.result_payload:
             raise HTTPException(status_code=404, detail="Parse result missing.")
-        return {"run_id": run_id, "kind": "parse", **run_state.result_payload}
+        payload = run_state.result_payload
+        # Runs restored after a backend restart carry a slim payload (the
+        # markdown body and section list are not persisted in the job
+        # snapshot); rehydrate them from the parsed-documents store.
+        if "markdown" not in payload:
+            payload = _rehydrate_parse_payload(payload)
+        return {"run_id": run_id, "kind": "parse", **payload}
 
     run_dir = Path(snapshot["run_dir"]) if snapshot["run_dir"] else None
     if not run_dir or not run_dir.exists():
@@ -796,6 +833,24 @@ def get_run_results(run_id: str):
         "math_report": math_report,
         "polish_report": polish_report,
         "run_dir": str(run_dir),
+    }
+
+
+def _rehydrate_parse_payload(slim_payload: dict[str, Any]) -> dict[str, Any]:
+    """Re-attach markdown + sections to a restored parse result.
+
+    Falls back to the slim payload when the parsed document has been
+    deleted from the library — the metadata is still worth returning.
+    """
+    try:
+        manifest = load_parsed_document(str(slim_payload.get("id") or ""))
+    except (FileNotFoundError, ValueError):
+        return slim_payload
+    document = manifest.get("document") or {}
+    return {
+        **slim_payload,
+        "markdown": document.get("markdown", ""),
+        "sections": _flatten_section_dicts(document.get("sections", []) or []),
     }
 
 
@@ -860,7 +915,7 @@ def _execute_parse(run_id: str, request: IngestRequest) -> None:
     UI's progress page shows fine-grained status (and credits cached
     chunks instantly so resumed jobs are visibly faster).
     """
-    run_state = _get_run(run_id)
+    run_state = get_run(run_id)
     if run_state is None:
         return
 
@@ -953,7 +1008,7 @@ def _build_chunk_progress_callback(run_state: RunState):
 
 def _execute_review(run_id: str, request: ReviewRequest) -> None:
     """Run a review in a background thread."""
-    run_state = _get_run(run_id)
+    run_state = get_run(run_id)
     if run_state is None:
         return
 

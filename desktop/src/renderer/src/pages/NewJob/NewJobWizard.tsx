@@ -401,23 +401,6 @@ export default function NewJobWizard({
         // Private mode or quota — not fatal
       }
 
-      // Append run id to history
-      let runIds: string[] = []
-      try {
-        const stored = localStorage.getItem('revisica_run_ids')
-        const parsed = stored ? JSON.parse(stored) : []
-        if (Array.isArray(parsed)) {
-          runIds = parsed.filter((id): id is string => typeof id === 'string')
-        }
-      } catch {
-        // corrupted — reset
-      }
-      runIds.unshift(data.run_id)
-      localStorage.setItem(
-        'revisica_run_ids',
-        JSON.stringify(runIds.slice(0, 50)),
-      )
-
       navigate(`/jobs/${data.run_id}`)
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Unknown error')
