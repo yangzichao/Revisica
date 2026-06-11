@@ -20,19 +20,31 @@ def analyze_claims(
     issues: list[MathIssue] = []
     function_by_name = {item.name: item for item in functions}
     for claim in claims:
-        if claim.kind == "integral_equality":
-            issue = _check_integral_claim(claim)
-        elif claim.kind == "average_value":
-            issue = _check_average_value_claim(claim)
-        elif claim.kind == "continuity_integrability":
-            issue = _check_continuity_claim(claim, function_by_name)
-        elif claim.kind == "bounded_inequality":
-            issue = _check_bounded_inequality_claim(claim)
-        else:
+        try:
+            issue = _check_claim(claim, function_by_name)
+        except Exception:
+            # Real papers contain LaTeX the parser/prober can't handle
+            # (\alpha_i, \sum, ...). A claim we can't analyze must stay
+            # silent — it must never crash the whole lane.
             issue = None
         if issue is not None:
             issues.append(issue)
     return issues
+
+
+def _check_claim(
+    claim: MathClaim,
+    function_by_name: dict[str, FunctionDefinition],
+) -> MathIssue | None:
+    if claim.kind == "integral_equality":
+        return _check_integral_claim(claim)
+    if claim.kind == "average_value":
+        return _check_average_value_claim(claim)
+    if claim.kind == "continuity_integrability":
+        return _check_continuity_claim(claim, function_by_name)
+    if claim.kind == "bounded_inequality":
+        return _check_bounded_inequality_claim(claim)
+    return None
 
 
 def analyze_blueprints(
@@ -236,7 +248,8 @@ def _check_bounded_inequality_claim(claim: MathClaim) -> MathIssue | None:
             fix="No change needed.",
             evidence=(
                 f"The minimum of the inequality gap over [{lower}, {upper}] is "
-                f"non-negative, and grid sampling found no counterexample."
+                f"{'positive' if relation in ('<', '>') else 'non-negative'}, "
+                f"and grid sampling found no counterexample."
             ),
         )
     # Sampling found nothing and the symbolic proof is inconclusive —

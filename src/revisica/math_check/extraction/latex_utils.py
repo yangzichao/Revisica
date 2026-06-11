@@ -42,6 +42,11 @@ def parse_expr(text: str, variable_names: list[str]) -> sp.Expr:
     normalized = normalized.replace("\\sqrt", "sqrt")
     normalized = normalized.replace("\\pi", "pi")
     normalized = normalized.replace("\\infty", "oo")
+    # Common LaTeX function commands: dropping the backslash gives the
+    # sympy name (the implicit-multiplication retry handles "sin x").
+    for function_name in ("sinh", "cosh", "tanh", "sin", "cos", "tan", "exp", "log"):
+        normalized = normalized.replace("\\" + function_name, function_name)
+    normalized = normalized.replace("\\ln", "log")
     locals_map: dict[str, object] = {
         "sqrt": sp.sqrt,
         "pi": sp.pi,

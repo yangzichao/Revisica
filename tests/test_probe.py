@@ -112,3 +112,27 @@ An unquantified bound like $x \le x^2$ appears here without an interval.
         assert "left side is" in refuted.evidence
         verified = by_status["machine-verified"]
         assert verified.title == "Inequality verified on the stated interval"
+
+
+class TestRobustnessAgainstRealWorldLatex:
+    def test_latex_trig_function_claim_is_verified(self):
+        doc = r"It is well known that $\sin x \le x$ for all $x \in [0, 3]$."
+        claims = extract_math_claims(doc, [])
+        assert len(claims) == 1
+        issues = analyze_claims(claims, [])
+        assert len(issues) == 1
+        assert issues[0].status == "machine-verified"
+
+    def test_unparseable_claim_does_not_crash_the_lane(self):
+        # \alpha_i is beyond the parser; the claim must be skipped
+        # silently, never raised out of analyze_claims.
+        doc = (
+            r"We assume $\alpha_i \le \beta_i$ for all $x \in [0, 1]$."
+            "\n"
+            r"We claim that \[ x^3 \le x \quad \text{for all } x \in [0, 2]. \]"
+        )
+        claims = extract_math_claims(doc, [])
+        assert len(claims) == 2
+        issues = analyze_claims(claims, [])
+        # The parseable claim is still refuted; the unparseable one is silent.
+        assert [issue.status for issue in issues] == ["machine-refuted"]

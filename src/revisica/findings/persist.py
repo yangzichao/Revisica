@@ -52,7 +52,10 @@ def load_findings_payload(run_dir: Path) -> dict[str, object] | None:
         return None
     if not isinstance(payload, dict):
         return None
-    document_path = run_dir / str(payload.get("document_file") or DOCUMENT_FILENAME)
+    # Basename only — the artifact pair always lives in the run directory,
+    # and the API serves this payload, so never follow a path component.
+    document_name = Path(str(payload.get("document_file") or DOCUMENT_FILENAME)).name
+    document_path = run_dir / document_name
     document_text = ""
     if document_path.exists():
         try:

@@ -25,7 +25,7 @@ import sympy as sp
 # thirds, quarters...).
 SAMPLE_COUNT = 60
 
-# Relative tolerance for the fast numeric pre-filter; candidates are
+# Absolute tolerance for the fast numeric pre-filter; candidates are
 # confirmed exactly before being reported.
 NUMERIC_TOLERANCE = 1e-9
 
