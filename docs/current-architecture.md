@@ -156,11 +156,14 @@ If someone wants to connect this explanation back to the code:
   - `markdown_parser.py`, `mineru_parser.py`, `mathpix_parser.py`, `pandoc_parser.py`, `tex_parser.py`, `marker_parser.py`
   - `normalize.py`: raw Markdown → sections + metadata
 - `unified_review.py`: top-level combined workflow
-- `writing_review.py`: writing review orchestration
+- `writing/`: writing review lane (entry, types, reviewer_resolution, agent_tasks, findings, self_check, judge, artifacts)
 - `math_review.py`: math review orchestration
-- `review.py`: shared provider execution layer
 - `math_check/`: pure math pipeline (types, extraction, deterministic analysis, artifact rendering)
 - `math_llm/`: LLM-based proof review (review, task, parse modules)
+- `graphs/`: LangGraph orchestration (writing, unified, polish graphs + node functions)
+- `providers/`: provider registry; `providers/execution.py` is the single LLM call point (`run_provider_agent`)
+- `agents/definitions/`: static agent system prompts (dynamic task prompts live in lane code)
+- `bootstrap_assets.py`, `venue_profiles.py`: bootstrap asset templates and venue profile list
 - `eval/`: benchmarking and evaluation framework (math, writing, refine, HF dataset adapters)
 - `api.py`: FastAPI server (`/api/ingest`, `/api/review`, `/api/providers`, etc.)
 - `core_types.py`, `adjudication_policy.py`: shared infrastructure

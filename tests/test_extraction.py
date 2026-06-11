@@ -20,7 +20,7 @@ from revisica.math_check.extraction.latex_utils import (
     strip_group,
 )
 from revisica.math_check.extraction.claims import (
-    extract_claims,
+    extract_math_claims,
     nearest_function_before,
 )
 from revisica.math_check.extraction.structures import (
@@ -39,7 +39,7 @@ from revisica.math_check.extraction.blueprints import (
     split_proof_text,
 )
 from revisica.math_check.extraction import (
-    extract_claims as extract_claims_reexport,
+    extract_math_claims as extract_math_claims_reexport,
     parse_expr as parse_expr_reexport,
     compact_text as compact_text_reexport,
 )
@@ -261,7 +261,7 @@ class TestExtractIntegralClaims:
             \int_0^1 x^2 \, dx = \frac{1}{3}
             \]
         """)
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 1
         claim = integral_claims[0]
@@ -275,7 +275,7 @@ class TestExtractIntegralClaims:
             \int_0^1 x^2 \, dx = \frac{1}{2}
             \]
         """)
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         assert len(claims) == 1
         assert claims[0].kind == "integral_equality"
         assert "1" in claims[0].details["rhs"]
@@ -286,7 +286,7 @@ class TestExtractIntegralClaims:
             \int_{-1}^{1} x^3 \, dx = 0
             \]
         """)
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 1
         assert integral_claims[0].details["a"] == "-1"
@@ -298,7 +298,7 @@ class TestExtractIntegralClaims:
             x^2 + y^2 = 1
             \]
         """)
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 0
 
@@ -311,7 +311,7 @@ class TestExtractIntegralClaims:
             \int_0^2 x \, dx = 2
             \]
         """)
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 2
 
@@ -319,7 +319,7 @@ class TestExtractIntegralClaims:
 class TestExtractAverageValueClaims:
     def test_basic_average(self):
         content = "The average value of $x^2$ on $[0,1]$ is $\\frac{1}{3}$."
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         avg_claims = [c for c in claims if c.kind == "average_value"]
         assert len(avg_claims) == 1
         assert avg_claims[0].details["a"] == "0"
@@ -327,13 +327,13 @@ class TestExtractAverageValueClaims:
 
     def test_average_with_also(self):
         content = "The average value of $f(x)$ on $[0,2]$ is also $4$."
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         avg_claims = [c for c in claims if c.kind == "average_value"]
         assert len(avg_claims) == 1
 
     def test_no_average_claims(self):
         content = "The maximum value of f on [0,1] is 5."
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         avg_claims = [c for c in claims if c.kind == "average_value"]
         assert len(avg_claims) == 0
 
@@ -346,7 +346,7 @@ class TestExtractContinuityClaims:
             This function is continuous on $[0,1]$ so we can safely integrate it on this interval.
         """)
         functions = extract_functions(content)
-        claims = extract_claims(content, functions)
+        claims = extract_math_claims(content, functions)
         cont_claims = [c for c in claims if c.kind == "continuity_integrability"]
         assert len(cont_claims) == 1
         assert cont_claims[0].details["function_name"] == "f"
@@ -355,7 +355,7 @@ class TestExtractContinuityClaims:
 
     def test_no_function_before(self):
         content = "This function is continuous on $[0,1]$ so we can safely integrate it on this interval."
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         cont_claims = [c for c in claims if c.kind == "continuity_integrability"]
         assert len(cont_claims) == 0
 
@@ -753,8 +753,8 @@ class TestReexports:
     def test_parse_expr_reexport(self):
         assert parse_expr_reexport is parse_expr
 
-    def test_extract_claims_reexport(self):
-        assert extract_claims_reexport is extract_claims
+    def test_extract_math_claims_reexport(self):
+        assert extract_math_claims_reexport is extract_math_claims
 
     def test_compact_text_reexport(self):
         assert compact_text_reexport is compact_text
@@ -825,13 +825,13 @@ class TestFullDocument:
     """)
 
     def test_correct_integral_claims(self):
-        claims = extract_claims(self.PAPER_CORRECT_INTEGRAL, [])
+        claims = extract_math_claims(self.PAPER_CORRECT_INTEGRAL, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 1
         assert integral_claims[0].details["variable"] == "x"
 
     def test_wrong_integral_claims(self):
-        claims = extract_claims(self.PAPER_WRONG_INTEGRAL, [])
+        claims = extract_math_claims(self.PAPER_WRONG_INTEGRAL, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 1
 
@@ -855,7 +855,7 @@ class TestFullDocument:
         functions = extract_functions(content)
         assert len(functions) == 1
         assert functions[0].name == "f"
-        claims = extract_claims(content, functions)
+        claims = extract_math_claims(content, functions)
         cont_claims = [c for c in claims if c.kind == "continuity_integrability"]
         assert len(cont_claims) == 1
         assert cont_claims[0].details["function_name"] == "f"
@@ -908,7 +908,7 @@ class TestFullDocument:
         assert len(blueprints) == 2
         assert all(bp.proof is not None for bp in blueprints)
 
-        claims = extract_claims(content, functions)
+        claims = extract_math_claims(content, functions)
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) >= 1
 
@@ -1002,7 +1002,7 @@ class TestIntegralClaimVariants:
     )
     def test_extraction(self, body: str, a: str, b: str, var: str):
         content = f"\\[\n{body}\n\\]"
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 1, f"Expected 1 integral claim, got {len(integral_claims)}"
         claim = integral_claims[0]
@@ -1013,7 +1013,7 @@ class TestIntegralClaimVariants:
     def test_inline_math_not_matched(self):
         """Integral claims only come from display math \\[...\\]."""
         content = r"We know $\int_0^1 x \, dx = \frac{1}{2}$ is true."
-        claims = extract_claims(content, [])
+        claims = extract_math_claims(content, [])
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         assert len(integral_claims) == 0
 
@@ -1203,7 +1203,7 @@ class TestEdgeCases:
         assert extract_functions("") == []
         assert extract_theorem_blocks("") == []
         assert extract_proof_blocks("") == []
-        assert extract_claims("", []) == []
+        assert extract_math_claims("", []) == []
 
     def test_only_preamble_no_body(self):
         content = textwrap.dedent(r"""
@@ -1370,7 +1370,7 @@ class TestRealisticDocuments:
         content = self.REAL_ANALYSIS_EXCERPT
         functions = extract_functions(content)
         assert any(f.name == "f" for f in functions)
-        claims = extract_claims(content, functions)
+        claims = extract_math_claims(content, functions)
         integral_claims = [c for c in claims if c.kind == "integral_equality"]
         # There are multiple \int display blocks.
         assert len(integral_claims) >= 1
@@ -1595,7 +1595,7 @@ class TestAverageValueClaimVariants:
         ],
     )
     def test_matched(self, sentence: str):
-        claims = extract_claims(sentence, [])
+        claims = extract_math_claims(sentence, [])
         avg_claims = [c for c in claims if c.kind == "average_value"]
         assert len(avg_claims) == 1
 
@@ -1608,7 +1608,7 @@ class TestAverageValueClaimVariants:
         ],
     )
     def test_not_matched(self, sentence: str):
-        claims = extract_claims(sentence, [])
+        claims = extract_math_claims(sentence, [])
         avg_claims = [c for c in claims if c.kind == "average_value"]
         assert len(avg_claims) == 0
 

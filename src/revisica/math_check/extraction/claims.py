@@ -6,7 +6,7 @@ from ..types import FunctionDefinition, MathClaim
 from .latex_utils import line_number, normalize_latex, strip_group
 
 
-def extract_claims(content: str, functions: list[FunctionDefinition]) -> list[MathClaim]:
+def extract_math_claims(content: str, functions: list[FunctionDefinition]) -> list[MathClaim]:
     claims: list[MathClaim] = []
     claims.extend(_extract_integral_claims(content))
     claims.extend(_extract_average_value_claims(content))

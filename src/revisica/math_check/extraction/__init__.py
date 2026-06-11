@@ -11,7 +11,7 @@ from .blueprints import (
     split_proof_text,
 )
 from .claims import (
-    extract_claims,
+    extract_math_claims,
     nearest_function_before,
 )
 from .latex_utils import (
@@ -41,7 +41,7 @@ __all__ = [
     "replace_latex_fractions",
     "strip_group",
     # claims
-    "extract_claims",
+    "extract_math_claims",
     "nearest_function_before",
     # structures
     "extract_functions",

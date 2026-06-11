@@ -64,24 +64,11 @@ Completed: `math_review.py` reduced from ~800 to 127 lines (pure orchestrator). 
 
 Public API `review_math_file()` unchanged.
 
-### Priority 4: Replace benchmark branch sprawl
+### Priority 4: Replace benchmark branch sprawl — DONE
 
-Targets in `benchmark_framework.py`:
-
-- suite loader in `run_benchmark()`
-- mode dispatcher in `_run_case()`
-- suite metrics logic in `_compute_suite_metrics()`
-
-Recommended direction:
-
-- Introduce a suite registry abstraction with per-suite loaders and metric computation.
-- Replace mode branching with a mode-keyed dispatch table.
-- Make `"all"` explicit rather than an implicit `else` fallback.
-
-Definition of done:
-
-- Adding a new suite does not require touching multiple existing `if/elif` ladders.
-- Adding a new mode touches one dispatch structure, not a long conditional chain.
+Completed: `eval/framework.py` uses dispatch tables — `_SUITE_LOADERS`,
+`_MODE_RUNNERS`, and `_SUITE_METRIC_COMPUTERS` (with a default-metrics
+fallback). Adding a suite or mode touches one dispatch structure.
 
 ### Priority 5: Externalize static agent instructions — DONE
 
@@ -108,14 +95,26 @@ Definition of done:
 
 - Either the framework is explicitly named as math/proof benchmark infrastructure, or its result model becomes truly general.
 
+## Completed in the June 2026 cleanup pass
+
+- Deleted dead code: `graphs/math.py`, `graphs/focus.py`, `MathState`, the
+  legacy `review.py` prompt chain, and the dead builders in `templates.py`.
+  The only live survivor, `run_provider_agent()`, moved to
+  `providers/execution.py`; live assets moved to `bootstrap_assets.py` and
+  `venue_profiles.py`.
+- Decomposed `writing_review.py` into the `writing/` subpackage
+  (`entry`, `types`, `reviewer_resolution`, `agent_tasks`, `findings`,
+  `self_check`, `judge`, `artifacts`).
+- Math engine clarity: degraded paths in `math_llm/review.py` now append
+  run warnings; `extract_claims` naming clash resolved
+  (`extract_math_claims` vs `extract_paragraph_claims`); adjudication
+  preference is configurable via `REVISICA_PREFERRED_ADJUDICATOR` and
+  defaults to `claude` (see ADR 0003).
+
 ## Remaining Work
 
-Next session should tackle:
-
-1. **Priority 4:** Refactor `eval/framework.py` — introduce suite registry and mode dispatch table.
-2. **Priority 8:** Clarify benchmark scope naming (low priority, can defer further).
+1. **Priority 8:** Clarify benchmark scope naming (low priority, can defer further).
 
 Blocked on other work:
 
-- Decompose `writing_review.py` (806 lines) — depends on LangGraph graph decomposition.
 - Remove `agents/translators.py` bridge — depends on provider interface refactor to accept `AgentDefinition` directly.

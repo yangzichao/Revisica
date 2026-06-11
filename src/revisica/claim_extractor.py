@@ -87,7 +87,7 @@ def _has_claim_signal(text: str) -> bool:
 # ── claim extraction ─────────────────────────────────────────────────
 
 
-def extract_claims(content: str) -> list[ExtractedClaim]:
+def extract_paragraph_claims(content: str) -> list[ExtractedClaim]:
     """Extract verifiable mathematical claims from paper content.
 
     Scans:

@@ -7,7 +7,7 @@ from pathlib import Path
 from .core_types import ProviderModelSpec
 from .math_review import MathReviewRun
 from .run_dir_helpers import copy_source_into_run_dir
-from .writing_review import WritingReviewRun
+from .writing import WritingReviewRun
 
 
 @dataclass

@@ -20,7 +20,6 @@ import json
 from pathlib import Path
 import subprocess
 
-from .. import templates as tpl
 from ..core_types import ProviderModelSpec
 
 
@@ -36,17 +35,19 @@ class GitInfo:
 
 @dataclass
 class PromptHashes:
-    """Content hashes for each prompt template function.
+    """Content hashes for each live prompt source.
 
     If a hash changes between runs the prompt was modified, which may
-    explain score differences.
+    explain score differences. Writing hashes cover the agent definition
+    modules in ``agents/definitions/``; the math hash covers the proof
+    task builders plus installed agent assets.
     """
     basic_writing: str
     structure_writing: str
     venue_style_writing: str
-    writing_adjudication: str
+    writing_judge: str
+    writing_self_check: str
     math_proof_review: str
-    review_generic: str
 
 
 @dataclass
@@ -90,34 +91,36 @@ def capture_git_info() -> GitInfo:
 def capture_prompt_hashes() -> PromptHashes:
     """Hash the active prompt/task sources that benchmarks depend on.
 
-    We hash the function source via inspect so any change to the prompt
-    template is reflected in the hash, even if the function signature
-    stays the same.
+    Writing prompts live as agent definition modules under
+    ``agents/definitions/``, so we hash each module's file content; any
+    edit to the system prompt changes the hash.
     """
-    import inspect
-
-    def _hash_fn(fn: object) -> str:
-        try:
-            src = inspect.getsource(fn)  # type: ignore[arg-type]
-        except (OSError, TypeError):
-            src = ""
-        return hashlib.sha256(src.encode()).hexdigest()[:12]
-
     return PromptHashes(
-        basic_writing=_hash_fn(tpl.build_basic_writing_review_prompt),
-        structure_writing=_hash_fn(tpl.build_structure_writing_review_prompt),
-        venue_style_writing=_hash_fn(tpl.build_venue_style_review_prompt),
-        writing_adjudication=_hash_fn(tpl.build_writing_adjudication_prompt),
-        # Keep the field name stable in the registry, but hash the current
-        # math-review prompt/task path rather than removed legacy builders.
+        basic_writing=_hash_definition_module("writing_basic"),
+        structure_writing=_hash_definition_module("writing_structure"),
+        venue_style_writing=_hash_definition_module("writing_venue"),
+        writing_judge=_hash_definition_module("writing_judge"),
+        writing_self_check=_hash_definition_module("writing_self_checker"),
         math_proof_review=_hash_math_review_prompt_sources(),
-        review_generic=_hash_fn(tpl.build_review_prompt),
     )
 
 
+def _hash_definition_module(module_name: str) -> str:
+    path = (
+        Path(__file__).resolve().parent.parent
+        / "agents" / "definitions" / f"{module_name}.py"
+    )
+    try:
+        source = path.read_text(encoding="utf-8")
+    except OSError:
+        source = ""
+    return hashlib.sha256(source.encode()).hexdigest()[:12]
+
+
 def _hash_math_review_prompt_sources() -> str:
-    repo_root = Path(__file__).resolve().parent.parent.parent
-    llm_review_path = repo_root / "src" / "revisica" / "math_llm" / "task.py"
+    package_root = Path(__file__).resolve().parent.parent
+    repo_root = package_root.parent.parent
+    llm_review_path = package_root / "math_llm" / "task.py"
     if not llm_review_path.exists():
         return ""
 

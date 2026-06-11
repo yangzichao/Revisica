@@ -10,7 +10,7 @@ from .provenance import (
     append_to_registry,
     build_provenance,
 )
-from ..writing_review import WritingReviewRun, review_writing_file
+from ..writing import WritingReviewRun, review_writing_file
 
 
 @dataclass

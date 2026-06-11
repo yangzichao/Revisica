@@ -1,7 +1,7 @@
 """Writing review node functions for LangGraph.
 
 Each function reads from WritingState and returns a partial dict update.
-Helper functions are imported from writing_review.py (the library).
+Helper functions are imported from the ``writing`` subpackage (the library).
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from ...agents import get_agent, to_agent_spec
 from ...bootstrap import detect_platforms, bootstrap
 from ...claim_extractor import (
     build_claim_verification_task,
-    extract_claims,
+    extract_paragraph_claims,
 )
 from ...core_types import ProviderModelSpec
 from ...model_router import resolve_model_for_role
@@ -23,24 +23,27 @@ from ...section_combiner import (
     extract_sections,
     generate_combinations,
 )
-from ...templates import SUPPORTED_VENUE_PROFILES
-from ...writing_review import (
-    WRITING_ROLES,
+from ...venue_profiles import SUPPORTED_VENUE_PROFILES
+from ...writing.agent_tasks import (
+    build_agent_spec,
+    build_agent_task,
+    find_codex_file,
+    run_single_role_task,
+)
+from ...writing.artifacts import (
+    write_final_report,
+    write_role_artifact,
+    write_summary,
+)
+from ...writing.judge import generate_final_report_agent
+from ...writing.reviewer_resolution import make_output_dir, resolve_reviewer_specs
+from ...writing.self_check import run_writing_self_checks
+from ...writing.types import (
     MATH_VERIFICATION_ROLES,
-    WritingRoleArtifact,
+    MAX_PARALLEL_WORKERS,
+    WRITING_ROLES,
     WritingReviewRun,
-    _MAX_PARALLEL_WORKERS,
-    _resolve_reviewer_specs,
-    _make_output_dir,
-    _find_codex_file,
-    _build_agent_spec,
-    _build_agent_task,
-    _run_single_role_task,
-    _run_writing_self_checks,
-    _generate_final_report_agent,
-    _write_role_artifact,
-    _write_final_report,
-    _write_summary,
+    WritingRoleArtifact,
 )
 from ..state import WritingState
 
@@ -69,7 +72,7 @@ def bootstrap_and_extract(state: WritingState) -> dict:
 
     platforms = detect_platforms()
     detected = [name for name, p in platforms.items() if p.available]
-    selected_specs, warnings = _resolve_reviewer_specs(platforms, reviewer_specs)
+    selected_specs, warnings = resolve_reviewer_specs(platforms, reviewer_specs)
     mode = "cross-check" if len(selected_specs) >= 2 else "single-provider"
 
     # Bootstrap missing assets
@@ -91,15 +94,15 @@ def bootstrap_and_extract(state: WritingState) -> dict:
 
     content = source.read_text(encoding="utf-8")
     run_dir_str = state.get("run_dir", "")
-    run_dir = _make_output_dir(source, run_dir_str or None)
+    run_dir = make_output_dir(source, run_dir_str or None)
     copy_source_into_run_dir(source, run_dir)
     working_dir = str(source.parent)
-    schema_path = _find_codex_file("findings.schema.json")
+    schema_path = find_codex_file("findings.schema.json")
 
     # Extract sections, combinations, and claims
     sections = extract_sections(content)
     section_combos = generate_combinations(sections)
-    extracted_claims = extract_claims(content)
+    extracted_claims = extract_paragraph_claims(content)
 
     return {
         "source_path": str(source),
@@ -139,17 +142,17 @@ def run_parallel_roles(state: WritingState) -> dict:
     warnings: list[str] = []
     all_roles = list(WRITING_ROLES) + list(MATH_VERIFICATION_ROLES)
 
-    with ThreadPoolExecutor(max_workers=_MAX_PARALLEL_WORKERS) as pool:
+    with ThreadPoolExecutor(max_workers=MAX_PARALLEL_WORKERS) as pool:
         futures: dict[object, tuple[str, str]] = {}
 
         # Submit all standard role × provider tasks
         for role in all_roles:
-            agent_spec = _build_agent_spec(role, schema_path)
-            task_prompt = _build_agent_task(role, source_path, venue_profile)
+            agent_spec = build_agent_spec(role, schema_path)
+            task_prompt = build_agent_task(role, source_path, venue_profile)
             for spec in selected_specs:
                 routed_spec = resolve_model_for_role(spec, role)
                 future = pool.submit(
-                    _run_single_role_task,
+                    run_single_role_task,
                     role=role,
                     spec=routed_spec,
                     task_prompt=task_prompt,
@@ -171,7 +174,7 @@ def run_parallel_roles(state: WritingState) -> dict:
                     routed_spec = resolve_model_for_role(spec, "section-cross-checker")
                     combo_role = f"section-xcheck-{combo_idx}"
                     future = pool.submit(
-                        _run_single_role_task,
+                        run_single_role_task,
                         role=combo_role,
                         spec=routed_spec,
                         task_prompt=combo_task,
@@ -193,7 +196,7 @@ def run_parallel_roles(state: WritingState) -> dict:
                     routed_spec = resolve_model_for_role(spec, "math-claim-verifier")
                     claim_role = f"claim-verify-{claim.claim_id}"
                     future = pool.submit(
-                        _run_single_role_task,
+                        run_single_role_task,
                         role=claim_role,
                         spec=routed_spec,
                         task_prompt=claim_task,
@@ -210,7 +213,7 @@ def run_parallel_roles(state: WritingState) -> dict:
             try:
                 artifact = future.result()
                 artifacts.append(artifact)
-                _write_role_artifact(run_dir, artifact)
+                write_role_artifact(run_dir, artifact)
                 if not artifact.result.success:
                     warnings.append(f"Role `{role}` failed for provider `{spec_label}`.")
             except Exception as exc:
@@ -234,10 +237,10 @@ def run_self_checks(state: WritingState) -> dict:
     timeout_seconds = config.timeout_seconds if config else 120
     codex_reasoning_effort = config.codex_reasoning_effort if config else None
 
-    # _run_writing_self_checks mutates its own warnings list;
+    # run_writing_self_checks mutates its own warnings list;
     # we pass a local list and return it via the reducer.
     local_warnings: list[str] = []
-    checked = _run_writing_self_checks(
+    checked = run_writing_self_checks(
         source=source,
         artifacts=artifacts,
         platforms=platforms,
@@ -268,7 +271,7 @@ def run_judge(state: WritingState) -> dict:
     codex_reasoning_effort = config.codex_reasoning_effort if config else None
 
     local_warnings: list[str] = []
-    final_report = _generate_final_report_agent(
+    final_report = generate_final_report_agent(
         source=source,
         run_dir=run_dir,
         venue_profile=venue_profile,
@@ -281,7 +284,7 @@ def run_judge(state: WritingState) -> dict:
         codex_reasoning_effort=codex_reasoning_effort,
     )
     if final_report is not None:
-        _write_final_report(run_dir, final_report)
+        write_final_report(run_dir, final_report)
 
     return {
         "final_report": final_report,
@@ -302,7 +305,7 @@ def write_summary(state: WritingState) -> dict:
     final_report = state.get("final_report")
     warnings = state.get("warnings", [])
 
-    _write_summary(
+    write_summary(
         run_dir=run_dir,
         source=source,
         venue_profile=venue_profile,

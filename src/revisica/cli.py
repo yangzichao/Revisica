@@ -18,9 +18,9 @@ from .eval.proofnet_adapter import benchmark_proofnet, import_proofnet_cases
 from .ingestion import parse_document
 from .math_review import review_math_file
 from .profiles import ReviewMode
-from .templates import SUPPORTED_VENUE_PROFILES
+from .venue_profiles import SUPPORTED_VENUE_PROFILES
 from .unified_review import review_unified
-from .writing_review import review_writing_file
+from .writing import review_writing_file
 
 
 # ── helpers ──────────────────────────────────────────────────────────

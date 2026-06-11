@@ -16,7 +16,7 @@ from ..agents import get_agent, to_agent_spec
 from ..bootstrap import detect_platforms
 from ..core_types import ProviderModelSpec
 from ..model_router import resolve_model_for_role
-from ..review import _run_provider_agent
+from ..providers.execution import run_provider_agent
 from .state import PolishState
 
 
@@ -65,7 +65,7 @@ def run_polish_agent(state: PolishState) -> dict:
     if config.custom_instructions:
         task_prompt += f"\n\nAdditional instructions: {config.custom_instructions}"
 
-    result = _run_provider_agent(
+    result = run_provider_agent(
         provider_name=provider_spec.provider,
         task_prompt=task_prompt,
         agent_spec=agent_spec,

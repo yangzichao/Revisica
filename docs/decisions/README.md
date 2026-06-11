@@ -76,3 +76,5 @@ If an ADR grows past ~2 pages, it probably contains a design. Split: ADR stays f
 | # | Title | Status | Date |
 |---|---|---|---|
 | 0001 | [Use MinerU as default PDF parser](0001-pdf-parser-mineru.md) | Accepted | 2026-04-17 |
+| 0002 | [Freeze the Python backend with PyInstaller `--onedir`](0002-pyinstaller-onedir-python-backend.md) | Accepted | 2026-04-17 |
+| 0003 | [Prefer Claude as default adjudicator and judge](0003-claude-default-adjudicator.md) | Accepted | 2026-06-10 |

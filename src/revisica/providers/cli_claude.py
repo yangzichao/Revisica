@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 from ..core_types import AgentSpec, ReviewResult
-from ..templates import CLAUDE_AGENT_NAME
+from ..bootstrap_assets import CLAUDE_AGENT_NAME
 from .base import BaseProvider
 from .subprocess_env import subprocess_env
 

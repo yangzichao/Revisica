@@ -8,7 +8,7 @@ from .artifacts import render_math_report, render_summary, write_math_artifacts
 from .deterministic import analyze_blueprints, analyze_claims, issue_sort_key
 from .extraction import (
     build_proof_blueprints,
-    extract_claims,
+    extract_math_claims,
     extract_functions,
     extract_proof_blocks,
     extract_theorem_blocks,
@@ -42,7 +42,7 @@ __all__ = [
     "TheoremBlock",
     # extraction
     "build_proof_blueprints",
-    "extract_claims",
+    "extract_math_claims",
     "extract_functions",
     "extract_proof_blocks",
     "extract_theorem_blocks",

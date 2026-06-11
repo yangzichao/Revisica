@@ -74,15 +74,19 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `cli.py` | Command dispatch (thin) |
 | `ingestion/` | **Subpackage:** multi-format parsers (markdown, MinerU, Mathpix, Pandoc, tex-basic, Marker) + normalize → `RevisicaDocument` |
 | `unified_review.py` | Concurrent writing + math orchestration |
-| `writing_review.py` | Writing lane orchestration |
+| `writing/` | **Subpackage:** writing lane (entry, types, reviewer_resolution, agent_tasks, findings, self_check, judge, artifacts) |
 | `math_review.py` | Math lane orchestrator |
 | `math_llm/` | **Subpackage:** LLM proof review orchestration, task building, result parsing |
 | `math_check/` | **Subpackage:** types, extraction, deterministic analysis, artifact rendering (pure SymPy, no LLM deps) |
-| `review.py` | Shared provider execution; delegates to `providers/` registry |
-| `templates.py` | All prompt templates and venue profile definitions |
+| `providers/` | Provider registry; `providers/execution.py:run_provider_agent()` is the single LLM call point |
+| `agents/definitions/` | Static agent system prompts (dynamic task prompts live in lane code) |
+| `graphs/` | LangGraph orchestration (writing, unified, polish graphs + node functions) |
+| `bootstrap_assets.py` | Plugin/skill/agent asset templates for `revisica bootstrap` |
+| `venue_profiles.py` | `SUPPORTED_VENUE_PROFILES` list |
 | `model_router.py` | Task-type -> provider/model selection |
 | `core_types.py` | `ProviderModelSpec`, `ReviewResult`, `AgentSpec` dataclasses |
-| `adjudication_policy.py` | Provider preference logic for adjudication |
+| `adjudication_policy.py` | Provider preference for adjudication/judging (default `claude`, see ADR 0003) |
+| `jobs/` | **Subpackage:** job persistence, registry, crash recovery (desktop API runs) |
 | `section_combiner.py` | Section extraction and combination generation |
 | `claim_extractor.py` | Per-paragraph/footnote claim extraction and verification tasks |
 | `eval/` | **Subpackage:** benchmark framework, math/writing/refine benchmarks, provenance, HF dataset adapters |
@@ -96,6 +100,8 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | `REVISICA_CODEX_HOME` | Override Codex config home (default: `~/.codex`) |
 | `REVISICA_CLAUDE_HOME` | Override Claude config home (default: `~/.claude`) |
 | `REVISICA_RUNTIME_HOME` | Override `$HOME` for subprocess execution |
+| `REVISICA_PREFERRED_ADJUDICATOR` | Provider preferred for adjudication/judging (default: `claude`) |
+| `REVISICA_JOBS_DIR` | Override job snapshot directory (default: `~/.revisica/jobs`) |
 
 ## Output Structure
 
@@ -113,6 +119,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | Feature specs | `docs/specs/` (Design Docs — see `README.md` for playbook) |
 | Experiment learnings | `docs/learning/` (see `README.md` for index) |
 | Architecture details | `docs/current-architecture.md` |
+| Code conventions | `docs/conventions.md` |
 | Refactoring plan | `docs/architecture-refactor-todo.md` |
 | Benchmark reports | `benchmarks/reports/` |
 | Agent definitions | `.claude/agents/` |

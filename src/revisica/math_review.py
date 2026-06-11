@@ -1,3 +1,21 @@
+"""Math review lane orchestrator.
+
+The math engine has two layers, run in sequence over the same document:
+
+1. **Deterministic checks** (``math_check/``, pure SymPy, no LLM):
+   extract function definitions and computable claims (integrals,
+   average values, continuity), evaluate them symbolically, and refute
+   or verify each one. Also performs structural checks on theorem/proof
+   blueprints (e.g. proofs without theorems, empty proofs).
+2. **LLM proof review** (``math_llm/``, optional via ``--llm-proof-review``):
+   sends each theorem/proof blueprint to one or more provider agents
+   and post-processes their findings according to ``proof_review_mode``
+   (see ``math_llm.review`` for the mode ladder).
+
+Both layers emit ``MathIssue`` records that are merged, sorted, and
+written to the run directory by ``write_math_artifacts``.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -18,7 +36,7 @@ from .math_check import (
     analyze_blueprints,
     analyze_claims,
     build_proof_blueprints,
-    extract_claims,
+    extract_math_claims,
     extract_functions,
     extract_proof_blocks,
     extract_theorem_blocks,
@@ -62,7 +80,7 @@ def review_math_file(
     run_dir = _make_output_dir(source, output_dir)
     copy_source_into_run_dir(source, run_dir)
     functions = extract_functions(content)
-    claims = extract_claims(content, functions)
+    claims = extract_math_claims(content, functions)
     theorems = extract_theorem_blocks(content)
     proofs = extract_proof_blocks(content)
     blueprints = build_proof_blueprints(theorems, proofs)

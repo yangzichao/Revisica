@@ -1,3 +1,22 @@
+"""LLM proof review orchestration for the math lane.
+
+``run_llm_proof_review`` fans theorem/proof blueprints out to provider
+agents and consolidates their findings according to ``proof_review_mode``:
+
+- ``single-agent``: take the first successful reviewer's findings as-is.
+- ``single-agent-self-check``: a second pass re-verifies the reviewer's
+  findings to filter false positives; on failure, falls back to the
+  unchecked first-pass findings (with a warning).
+- ``multi-agent-cross-check``: when ≥2 providers produced structured
+  findings for a theorem, an adjudicator merges them; with <2 providers
+  the cross-check degrades to raw findings (with a warning).
+- ``auto`` resolves to ``multi-agent-cross-check`` when ≥2 providers are
+  selected, else ``single-agent``.
+
+Every degraded path appends to the run's ``warnings`` list so the final
+summary makes the loss of rigor visible.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -15,7 +34,7 @@ from ..math_check import (
     MathIssue,
     ProofBlueprint,
 )
-from ..review import _run_provider_agent
+from ..providers.execution import run_provider_agent
 from .task import (
     build_adjudication_task,
     build_math_agent_spec,
@@ -99,7 +118,7 @@ def run_llm_proof_review(
                 agent_spec = build_math_agent_spec("proof-reviewer", schema_path, agent_version)
                 task_prompt = build_proof_review_task(str(source), blueprint)
                 future = pool.submit(
-                    _run_provider_agent,
+                    run_provider_agent,
                     routed_spec.provider,
                     task_prompt,
                     agent_spec,
@@ -277,6 +296,10 @@ def _finalize_llm_reviews(
                         "Math self-check failed for theorem L%s — using unchecked findings",
                         theorem_line_number, exc_info=True,
                     )
+                    warnings.append(
+                        f"Math proof self-check raised an exception on theorem line {theorem_line_number}; "
+                        "falling back to the unchecked first-pass findings."
+                    )
                     issues.extend(parse_llm_math_issues(artifact.findings, artifact.provider, artifact.model, blueprint))
                     continue
                 self_checks.append(self_check)
@@ -309,6 +332,11 @@ def _finalize_llm_reviews(
             needs_adjudication.append((theorem_line_number, theorem_artifacts))
         else:
             blueprint = blueprint_by_theorem[theorem_line_number]
+            warnings.append(
+                f"Cross-check degraded on theorem line {theorem_line_number}: only "
+                f"{len(successful_providers)} provider(s) produced structured findings, "
+                "so results are used without adjudication."
+            )
             for artifact in theorem_artifacts:
                 issues.extend(parse_llm_math_issues(artifact.findings, artifact.provider, artifact.model, blueprint))
 
@@ -338,6 +366,10 @@ def _finalize_llm_reviews(
                     logging.getLogger(__name__).warning(
                         "Math adjudication failed for theorem L%s — using raw findings",
                         theorem_line_number, exc_info=True,
+                    )
+                    warnings.append(
+                        f"Math proof adjudication raised an exception on theorem line {theorem_line_number}; "
+                        "falling back to raw provider findings."
                     )
                     for artifact in theorem_artifacts:
                         issues.extend(parse_llm_math_issues(artifact.findings, artifact.provider, artifact.model, blueprint))
@@ -389,7 +421,7 @@ def _run_math_adjudication(
     schema_path = find_codex_file("findings.schema.json")
     agent_spec = build_math_agent_spec("adjudicator", schema_path)
     task_prompt = build_adjudication_task(str(source), blueprint, provider_artifacts)
-    result = _run_provider_agent(
+    result = run_provider_agent(
         routed.provider,
         task_prompt,
         agent_spec,
@@ -431,7 +463,7 @@ def _run_math_self_check(
         reviewer_artifact.model,
         reviewer_artifact.findings or [],
     )
-    result = _run_provider_agent(
+    result = run_provider_agent(
         routed.provider,
         task_prompt,
         agent_spec,

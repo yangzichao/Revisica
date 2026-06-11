@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import shutil
 
-from .templates import (
+from .bootstrap_assets import (
     PLUGIN_NAME,
     claude_agent_definition_json,
     claude_plugin_manifest,

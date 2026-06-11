@@ -31,12 +31,8 @@ from .provenance import (
 from ..bootstrap import detect_platforms
 from ..core_types import AgentSpec, ProviderModelSpec, ReviewResult
 from ..model_router import resolve_model_for_task, TASK_WRITING_JUDGE
-from ..review import _run_provider_agent
-from ..writing_review import (
-    WritingReviewRun,
-    review_writing_file,
-    _extract_findings_payload,
-)
+from ..providers.execution import run_provider_agent
+from ..writing import WritingReviewRun, review_writing_file
 
 
 # ── data structures ──────────────────────────────────────────────────
@@ -446,7 +442,7 @@ def _evaluate_with_llm_judge(
     agent_spec = to_agent_spec(get_agent("refine-eval-judge"))
 
     try:
-        result = _run_provider_agent(
+        result = run_provider_agent(
             llm_judge_spec.provider,
             task_prompt,
             agent_spec,

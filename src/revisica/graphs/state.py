@@ -79,36 +79,6 @@ class WritingState(TypedDict, total=False):
     warnings: Annotated[list[str], operator.add]
 
 
-class MathState(TypedDict, total=False):
-    """State for the math review subgraph."""
-
-    source_path: str
-    content: str
-    run_dir: str
-    config: ReviewConfig
-
-    # After extraction
-    functions: list[Any]
-    claims: list[Any]
-    blueprints: list[Any]
-    _theorems: list[Any]
-    _proofs: list[Any]
-
-    # After deterministic checks
-    issues: list[Any]
-
-    # After LLM review
-    llm_provider_results: list[Any]
-    llm_self_check_results: list[Any]
-    llm_adjudication_results: list[Any]
-
-    # HITL (future)
-    user_feedback: dict[str, Any] | None
-
-    # Accumulator (reducer: appends across nodes)
-    warnings: Annotated[list[str], operator.add]
-
-
 class PolishState(TypedDict, total=False):
     """State for the lightweight polish subgraph."""
 
