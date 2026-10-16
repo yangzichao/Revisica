@@ -25,11 +25,31 @@ def strip_group(text: str) -> str:
     return text
 
 
+# A display-math block in either LaTeX (``\[ ... \]``) or Markdown
+# (``$$ ... $$``) form. Every parser that turns a .tex or PDF into Markdown
+# (Pandoc, tex-basic, MinerU) writes display math as ``$$``.
+DISPLAY_MATH_PATTERN = re.compile(r"\\\[\s*(?P<body>.*?)\s*\\\]|\$\$\s*(?P<dollar_body>.+?)\s*\$\$", re.DOTALL)
+
+# The head of a function definition, ``f(x) =`` or ``g (x) =`` (MinerU
+# puts a space between the name and the parenthesis).
+FUNCTION_DEFINITION_PATTERN = re.compile(r"([A-Za-z]+)\s*\(\s*([A-Za-z])\s*\)\s*=\s*(.+)")
+
+
+def display_math_body(match: re.Match[str]) -> str:
+    body = match.group("body")
+    return body if body is not None else match.group("dollar_body")
+
+
 def normalize_latex(text: str) -> str:
     normalized = text
     for needle in ("\\,", "\\!", "\\left", "\\right", "\n"):
         normalized = normalized.replace(needle, " ")
-    return re.sub(r"\s+", " ", normalized).strip()
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    # PDF parsers space out LaTeX tokens: \frac {1}{2}, x ^ {2},
+    # \int_ {0} ^ {1}. Close those gaps so the claim patterns match.
+    normalized = re.sub(r"(\\[A-Za-z]+) (?=\{)", r"\1", normalized)
+    normalized = re.sub(r" ?([_^]) ?", r"\1", normalized)
+    return normalized
 
 
 def parse_expr(text: str, variable_names: list[str]) -> sp.Expr:
@@ -70,7 +90,7 @@ def parse_expr(text: str, variable_names: list[str]) -> sp.Expr:
 
 
 def replace_latex_fractions(text: str) -> str:
-    pattern = re.compile(r"\\(?:d?frac|tfrac)\{([^{}]+)\}\{([^{}]+)\}")
+    pattern = re.compile(r"\\(?:d?frac|tfrac)\s*\{([^{}]+)\}\s*\{([^{}]+)\}")
     previous = None
     current = text
     while previous != current:

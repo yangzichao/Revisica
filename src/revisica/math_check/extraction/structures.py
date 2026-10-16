@@ -4,7 +4,7 @@ import logging
 import re
 
 from ..types import FunctionDefinition, ProofBlock, TheoremBlock
-from .latex_utils import extract_math_segments, line_number, parse_expr
+from .latex_utils import FUNCTION_DEFINITION_PATTERN, extract_math_segments, line_number, parse_expr
 from .structures_markdown import (
     extract_functions_markdown,
     extract_proof_blocks_markdown,
@@ -38,7 +38,7 @@ def _extract_functions_latex(content: str) -> list[FunctionDefinition]:
     functions: list[FunctionDefinition] = []
     math_segments = extract_math_segments(content)
     for segment in math_segments:
-        match = re.search(r"([A-Za-z]+)\(([A-Za-z])\)\s*=\s*(.+)", segment["text"])
+        match = FUNCTION_DEFINITION_PATTERN.search(segment["text"])
         if not match:
             continue
         name = match.group(1)
