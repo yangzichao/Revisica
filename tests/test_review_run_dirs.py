@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from revisica.run_dir_helpers import REVIEWS_DIR_ENV_VAR, create_review_run_dir
-from revisica.unified_review import review_unified
+from revisica.unified_review import _make_output_dir as make_unified_run_dir
 
 
 def test_reviews_dir_env_var_wins_over_cwd(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -43,15 +43,9 @@ def test_runs_started_in_the_same_second_get_separate_dirs(tmp_path: Path, monke
 
 
 def test_unified_review_uses_the_reviews_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import revisica.graphs.unified as unified
-
     monkeypatch.setenv(REVIEWS_DIR_ENV_VAR, str(tmp_path / "reviews-home"))
-    monkeypatch.setattr(unified, "run_writing_lane", lambda state: {"writing_result": None, "warnings": []})
-    monkeypatch.setattr(unified, "run_math_lane", lambda state: {"math_result": None, "warnings": []})
-    paper = tmp_path / "paper.md"
-    paper.write_text("# Title\n\nText.\n", encoding="utf-8")
 
-    run = review_unified(str(paper))
+    run_dir = make_unified_run_dir(tmp_path / "paper.tex", None)
 
-    assert run.run_dir.parent == tmp_path / "reviews-home"
-    assert run.run_dir.name.startswith("paper-unified-")
+    assert run_dir.parent == tmp_path / "reviews-home"
+    assert run_dir.name.startswith("paper-unified-")
