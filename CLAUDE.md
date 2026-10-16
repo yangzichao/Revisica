@@ -10,7 +10,7 @@ python -m pip install .
 revisica bootstrap
 ```
 
-Only runtime dependency is `sympy>=1.13`. No Makefile — all development commands go through the `revisica` CLI (entry point: `src/revisica/cli.py`).
+Runtime dependencies are `sympy`, `langgraph`, `pypdf`, and `pypdfium2` (see `pyproject.toml`; the `api` extra adds the `anthropic`/`openai` SDKs). No Makefile — all development commands go through the `revisica` CLI (entry point: `src/revisica/cli.py`).
 
 ## Running the Tool
 
@@ -20,11 +20,11 @@ revisica review examples/minimal_paper.tex
 revisica review examples/minimal_paper.tex --venue-profile econ-top5 --llm-proof-review
 
 # Individual lanes
-revisica writing-review examples/minimal_paper.tex --reviewer-a codex:gpt-5 --reviewer-b claude:sonnet
+revisica writing-review examples/minimal_paper.tex --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet
 revisica math-review examples/minimal_paper.tex --llm-proof-review --targets codex claude
 ```
 
-Role arguments use the `provider[:model]` format, e.g. `codex:gpt-5` or `claude:sonnet`. When no model is specified, `model_router.py` auto-selects based on task type (math reasoning -> opus/gpt-5, writing -> sonnet/gpt-5).
+Role arguments use the `provider[:model]` format, e.g. `codex:gpt-6.1-sol` or `claude:sonnet`. When no model is specified, `model_router.py` auto-selects based on task type (math reasoning -> opus/gpt-6.1-sol, writing -> sonnet/gpt-6.1-sol; the `anthropic-api` provider maps these to `claude-opus-5-5`/`claude-sonnet-5-5`).
 
 Supported venue profiles: `general-academic`, `econ-general-top`, `econ-top5`, `econ-theory`, `econ-empirical`, `econ-applied`.
 
@@ -38,7 +38,7 @@ revisica benchmark-writing
 # Unified runner (suites: math-cases, proofnet, proofbench, processbench, all)
 # Modes: deterministic-only, single-agent, single-agent-self-check, multi-agent-cross-check, hybrid-single, hybrid-cross
 revisica benchmark-run --suite math-cases --mode deterministic-only
-revisica benchmark-run --suite proofnet --mode single-agent --limit 1 --reviewer codex:gpt-5
+revisica benchmark-run --suite proofnet --mode single-agent --limit 1 --reviewer codex:gpt-6.1-sol
 
 # Refine.ink benchmark (primary eval for recall against paper comments)
 revisica benchmark-refine
@@ -55,7 +55,7 @@ revisica benchmark-history
 
 Quickest sanity check after a change: `revisica benchmark-run --suite math-cases --mode deterministic-only`
 
-Unit tests: `pytest tests/test_ingestion.py` (29 tests). Ingestion benchmark: `pytest tests/test_ingestion_benchmark.py -v -s` (24 arXiv papers, 65.1% with Pandoc). For end-to-end correctness: `revisica benchmark-run --suite math-cases --mode deterministic-only`.
+Unit tests: `pytest tests/` (ingestion only: `pytest tests/test_ingestion.py`). Ingestion benchmark: `pytest tests/test_ingestion_benchmark.py -v -s` (24 arXiv papers, 65.1% with Pandoc). For end-to-end correctness: `revisica benchmark-run --suite math-cases --mode deterministic-only`.
 
 ## Architecture
 

@@ -49,7 +49,7 @@ revisica bootstrap
 revisica math-review examples/minimal_paper.tex
 revisica math-review examples/proof_blueprint_demo.tex --llm-proof-review --targets codex
 revisica writing-review examples/minimal_paper.tex
-revisica writing-review examples/minimal_paper.tex --venue-profile econ-top5 --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
+revisica writing-review examples/minimal_paper.tex --venue-profile econ-top5 --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet
 revisica review examples/minimal_paper.tex
 revisica review examples/minimal_paper.tex --venue-profile econ-top5 --llm-proof-review
 revisica benchmark-math
@@ -58,8 +58,8 @@ revisica import-proofnet --split test --limit 5
 revisica benchmark-proofnet --split test --limit 5
 revisica benchmark-proofnet --split test --limit 3 --llm-proof-review --targets codex claude
 revisica benchmark-run --suite math-cases --mode deterministic-only
-revisica benchmark-run --suite proofnet --mode single-agent-self-check --limit 1 --reviewer codex:gpt-5.4 --self-checker codex:gpt-5.4-mini
-revisica benchmark-run --suite proofnet --mode multi-agent-cross-check --limit 1 --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
+revisica benchmark-run --suite proofnet --mode single-agent-self-check --limit 1 --reviewer codex:gpt-6.1-sol --self-checker codex:gpt-6-luna
+revisica benchmark-run --suite proofnet --mode multi-agent-cross-check --limit 1 --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet
 revisica benchmark-run --suite proofbench --mode deterministic-only --limit 5
 revisica benchmark-run --suite processbench --mode deterministic-only --split math --limit 5
 ```
@@ -72,10 +72,10 @@ revisica bootstrap --targets codex
 revisica review path/to/paper.tex
 revisica review path/to/paper.tex --venue-profile econ-top5
 revisica review path/to/paper.tex --llm-proof-review --targets codex claude
-revisica review path/to/paper.tex --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --judge codex:gpt-5.4
+revisica review path/to/paper.tex --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet --judge codex:gpt-6.1-sol
 revisica writing-review path/to/paper.tex
 revisica writing-review path/to/paper.tex --venue-profile econ-top5
-revisica writing-review path/to/paper.tex --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --judge codex:gpt-5.4
+revisica writing-review path/to/paper.tex --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet --judge codex:gpt-6.1-sol
 revisica math-review path/to/paper.tex
 revisica math-review path/to/paper.tex --llm-proof-review --targets codex claude
 revisica benchmark-math
@@ -86,11 +86,11 @@ revisica benchmark-proofnet --split test --limit 10
 revisica benchmark-proofnet --split test --limit 3 --llm-proof-review --targets codex claude
 revisica benchmark-run --suite math-cases --mode deterministic-only
 revisica benchmark-run --suite proofnet --mode single-agent
-revisica benchmark-run --suite proofnet --mode single-agent-self-check --reviewer codex:gpt-5.4 --self-checker codex:gpt-5.4-mini
-revisica benchmark-run --suite proofnet --mode multi-agent-cross-check --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet
-revisica benchmark-run --suite proofnet --mode hybrid-cross --reviewer-a codex:gpt-5.4 --reviewer-b claude:sonnet --adjudicator codex:gpt-5.4
-revisica benchmark-run --suite proofbench --mode hybrid-single --reviewer codex:gpt-5.4
-revisica benchmark-run --suite processbench --mode single-agent --split math --reviewer codex:gpt-5.4-mini
+revisica benchmark-run --suite proofnet --mode single-agent-self-check --reviewer codex:gpt-6.1-sol --self-checker codex:gpt-6-luna
+revisica benchmark-run --suite proofnet --mode multi-agent-cross-check --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet
+revisica benchmark-run --suite proofnet --mode hybrid-cross --reviewer-a codex:gpt-6.1-sol --reviewer-b claude:sonnet --adjudicator codex:gpt-6.1-sol
+revisica benchmark-run --suite proofbench --mode hybrid-single --reviewer codex:gpt-6.1-sol
+revisica benchmark-run --suite processbench --mode single-agent --split math --reviewer codex:gpt-6-luna
 revisica benchmark-history
 revisica benchmark-history --suite writing --limit 10
 revisica benchmark-history --output benchmarks/history.md
@@ -105,7 +105,7 @@ Supported unified benchmark modes:
 - `hybrid-single`
 - `hybrid-cross`
 
-Role arguments accept `provider[:model]`, for example `codex:gpt-5.4` or `claude:sonnet`.
+Role arguments accept `provider[:model]`, for example `codex:gpt-6.1-sol` or `claude:sonnet`.
 
 Supported unified benchmark suites:
 
