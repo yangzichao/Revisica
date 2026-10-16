@@ -1,0 +1,36 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    # Same platform and Python as build-dmg.yml (the app ships as an arm64
+    # DMG); the suite has been verified on macOS arm64 only.
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+
+      - name: Install revisica with test extras
+        # `bundle` brings pypandoc-binary, the same pandoc the DMG ships, so
+        # the ingestion tests do not depend on a system pandoc.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,serve,bundle]"
+
+      # Includes tests/test_math_cases_benchmark.py, the deterministic
+      # math-cases suite (the benchmark CLI itself always exits 0).
+      - name: Run tests
+        run: pytest -q
