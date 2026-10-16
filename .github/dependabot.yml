@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # Workflow actions are pinned to commit SHAs; Dependabot bumps the SHA and
+  # its version comment together.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Let a new release age a week before proposing it, so a compromised
+    # release is likely caught upstream first.
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ['*']
+
+  # Desktop app. Minor and patch bumps arrive as one grouped PR; each major
+  # bump (Electron ships one every few months) gets its own PR.
+  - package-ecosystem: npm
+    directory: /desktop
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      desktop-minor-and-patch:
+        update-types: [minor, patch]
+
+  # Python dependencies are lower-bound ranges with no lockfile, so routine
+  # version PRs would only raise floors. Security alerts and security update
+  # PRs still cover them (enabled in the repository settings).
