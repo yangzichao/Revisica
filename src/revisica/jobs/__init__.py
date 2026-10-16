@@ -1,11 +1,14 @@
 """Job tracking: run state, on-disk persistence, registry, crash recovery."""
 
+from .child_processes import terminate_child_processes
 from .job_store import (
     JOBS_DIR_ENV_VAR,
     delete_run_snapshot,
     jobs_root,
     load_all_run_snapshots,
     persist_run_snapshot,
+    resume_snapshot_writes,
+    stop_snapshot_writes,
 )
 from .recovery import INTERRUPTED_ERROR_MESSAGE, recover_runs_from_disk
 from .registry import (
@@ -33,4 +36,7 @@ __all__ = [
     "register_run",
     "remove_run",
     "reset_registry_for_tests",
+    "resume_snapshot_writes",
+    "stop_snapshot_writes",
+    "terminate_child_processes",
 ]

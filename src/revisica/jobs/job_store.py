@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import re
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,20 @@ JOBS_DIR_NAME = "jobs"
 # Run ids are uuid4 prefixes today, but they end up as filenames, so gate
 # every lookup the same way parsed-document ids are gated.
 _SAFE_RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+
+# Set when the API server starts shutting down. The child processes of
+# jobs still running are stopped then, and what those jobs record next
+# ("exit -15" from every agent) is not their outcome. Their snapshots stay
+# "running", so recovery marks them interrupted on the next start.
+_snapshot_writes_stopped = threading.Event()
+
+
+def stop_snapshot_writes() -> None:
+    _snapshot_writes_stopped.set()
+
+
+def resume_snapshot_writes() -> None:
+    _snapshot_writes_stopped.clear()
 
 
 def jobs_root() -> Path:
@@ -50,6 +65,8 @@ def _run_snapshot_path(run_id: str) -> Path:
 
 def persist_run_snapshot(snapshot: dict[str, Any]) -> None:
     """Atomically write one run's snapshot. Never raises."""
+    if _snapshot_writes_stopped.is_set():
+        return
     try:
         path = _run_snapshot_path(str(snapshot.get("run_id") or ""))
         temp_path = path.with_suffix(".json.tmp")

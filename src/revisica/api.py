@@ -43,6 +43,9 @@ from .jobs import (
     recover_runs_from_disk,
     register_run,
     remove_run,
+    resume_snapshot_writes,
+    stop_snapshot_writes,
+    terminate_child_processes,
 )
 from .providers import get_registry
 from .providers.provider_config import load_config, load_saved_config, save_config
@@ -132,8 +135,13 @@ async def _lifespan(app: FastAPI):
     this the Jobs page would lose all history (and queued parses would be
     silently dropped) on every relaunch.
     """
+    resume_snapshot_writes()
     _recover_persisted_jobs()
     yield
+    # The desktop app quits by SIGTERM to this process; CLI runs and
+    # parses still in flight would otherwise outlive it.
+    stop_snapshot_writes()
+    terminate_child_processes()
 
 
 app = FastAPI(title="Revisica API", version=__version__, lifespan=_lifespan)
