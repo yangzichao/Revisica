@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 
 from ..bootstrap import PlatformStatus
 from ..core_types import ProviderModelSpec
 from ..providers.availability import default_runnable_specs, split_runnable_specs
+from ..run_dir_helpers import create_review_run_dir
 
 
 def resolve_reviewer_specs(
@@ -38,10 +38,8 @@ def resolve_reviewer_specs(
 
 
 def make_output_dir(source: Path, output_dir: str | None) -> Path:
-    if output_dir:
-        target = Path(output_dir).expanduser().resolve()
-    else:
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
-        target = Path.cwd() / "reviews" / f"{source.stem}-writing-{stamp}"
+    if not output_dir:
+        return create_review_run_dir(f"{source.stem}-writing")
+    target = Path(output_dir).expanduser().resolve()
     target.mkdir(parents=True, exist_ok=True)
     return target

@@ -46,6 +46,7 @@ from .jobs import (
 )
 from .providers import get_registry
 from .providers.provider_config import load_config, save_config
+from .run_dir_helpers import create_review_run_dir
 from .unified_review import review_unified
 
 logger = logging.getLogger(__name__)
@@ -914,8 +915,7 @@ def _resolve_review_source(request: ReviewRequest) -> dict[str, Optional[str]]:
                 f"Normalized markdown missing for parse {request.parsed_document_id!r}"
             )
         original_stem = Path(manifest.get("source_path") or "document").stem or "document"
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        output_dir = str(Path.cwd() / "reviews" / f"{original_stem}-unified-{stamp}")
+        output_dir = str(create_review_run_dir(f"{original_stem}-unified"))
         return {
             "file_path": str(normalized_path),
             "parser": "markdown",
