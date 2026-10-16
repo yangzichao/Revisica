@@ -36,3 +36,15 @@
 **Commit:** `9cdf0ef` (P0.5)
 **Was:** `platform: PlatformStatus` parameter accepted but ignored in `_run_provider()` and `_run_provider_agent()`.
 **Fix:** Removed dead parameter and updated all call sites.
+
+### 6. Claude CLI runs load the operator's CLAUDE.md and auto-memory — FIXED
+
+**Fixed:** 2026-10-15
+**Was:** `claude -p` loads `~/.claude/CLAUDE.md`, any `CLAUDE.md` in the working directory, and the project's auto-memory `MEMORY.md`, on top of the `--agents` prompt. On a machine whose `CLAUDE.md` says "reply in mixed Chinese + English", an English paper's polish report and writing final report came back in Chinese. Benchmark runs inherit the same instructions, so results depend on whose machine ran them.
+**Fix:** `providers/cli_claude.py` sets `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` for every Claude CLI subprocess. Probed with Claude Code 2.1.301: with both set, the model sees none of those files. Settings files still load, so OAuth, `apiKeyHelper` and proxy config keep working (`--setting-sources` or `--bare` would have dropped them).
+
+### 7. Codex CLI runs load the operator's `~/.codex/AGENTS.md` — OPEN
+
+**Found:** 2026-10-15 (codex-cli 0.162.0-alpha.17.2)
+**Problem:** Same class as #6. `codex exec` puts `$CODEX_HOME/AGENTS.md` in front of Revisica's prompt. Neither `-c project_doc_max_bytes=0` nor `-c instructions=""` stops it; both were probed against a phrase that appears only in the global file.
+**Possible fix:** Run Codex with `CODEX_HOME` set to a Revisica-owned directory without `AGENTS.md`. That directory still needs the user's `auth.json` and `config.toml`, so this means deciding how Revisica handles Codex credentials. Not done yet.
