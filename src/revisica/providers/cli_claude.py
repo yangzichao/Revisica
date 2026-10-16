@@ -12,6 +12,23 @@ from ..bootstrap_assets import CLAUDE_AGENT_NAME
 from .base import BaseProvider
 from .subprocess_env import subprocess_env
 
+# Every agent's instructions travel in the --agents payload. Keep the
+# operator's CLAUDE.md files (~/.claude, and any in the paper's directory)
+# and auto-memory out of the run: they would otherwise set the report's
+# language and style, and make benchmark results depend on whose machine
+# ran them. Settings files still load, so auth and proxy config keep working.
+_CLAUDE_INSTRUCTION_ISOLATION_ENV = {
+    "CLAUDE_CODE_DISABLE_CLAUDE_MDS": "1",
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+}
+
+
+def claude_subprocess_env() -> dict[str, str]:
+    """Subprocess env for the Claude CLI, without the operator's instructions."""
+    env = subprocess_env()
+    env.update(_CLAUDE_INSTRUCTION_ISOLATION_ENV)
+    return env
+
 
 class ClaudeCliProvider(BaseProvider):
     """Access Claude models via the Claude Code CLI (requires subscription)."""
@@ -73,7 +90,7 @@ class ClaudeCliProvider(BaseProvider):
                 capture_output=True,
                 check=False,
                 timeout=timeout_seconds,
-                env=subprocess_env(),
+                env=claude_subprocess_env(),
             )
             return ReviewResult(
                 provider="claude",
@@ -141,7 +158,7 @@ class ClaudeCliProvider(BaseProvider):
                     check=False,
                     timeout=timeout_seconds,
                     cwd=working_dir,
-                    env=subprocess_env(),
+                    env=claude_subprocess_env(),
                 )
                 # Check for rate limiting (exit code 1 with rate limit text)
                 is_rate_limited = (
