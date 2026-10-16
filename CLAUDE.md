@@ -116,6 +116,7 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | What | Where |
 |---|---|
 | Task priorities | `docs/todo.md` |
+| Release process, version locations | `docs/releasing.md` |
 | Architecture decisions | `docs/decisions/` (ADRs — see `README.md` for playbook) |
 | Feature specs | `docs/specs/` (Design Docs — see `README.md` for playbook) |
 | Experiment learnings | `docs/learning/` (see `README.md` for index) |

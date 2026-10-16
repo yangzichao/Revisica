@@ -38,6 +38,12 @@ Current scope:
    - Supports venue profiles such as `general-academic` and `econ-top5`.
    - Produces one writing-focused `final_report.md` after a judge/adjudicator merges role outputs.
 
+## Install
+
+Download the macOS app (Apple Silicon) or the CLI wheel from [Releases](https://github.com/yangzichao/Revisica/releases). The app is not notarized yet; the release notes explain how to open it.
+
+To run from source, follow the Quick Start below.
+
 ## Quick Start
 
 ```bash
@@ -208,3 +214,5 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 ## License
 
 Revisica is free software under the [GNU General Public License v3.0 or later](LICENSE). The desktop app also bundles Pandoc (GPL-2.0-or-later); see `desktop/resources/LICENSES/`.
+
+Security issues: see [SECURITY.md](SECURITY.md). Release process: see [docs/releasing.md](docs/releasing.md).
