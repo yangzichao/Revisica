@@ -129,7 +129,13 @@ class CodexCliProvider(BaseProvider):
 
         command = [
             cli_path, "exec",
-            "--full-auto",
+            # Papers usually live outside a git repo; without this flag
+            # Codex refuses to start ("Not inside a trusted directory").
+            "--skip-git-repo-check",
+            # Headless run: never block on an approval prompt. This used to
+            # come from `--full-auto`, which newer CLIs reject (0.162 does);
+            # `exec` also has no `--ask-for-approval`, so set the config key.
+            "-c", 'approval_policy="never"',
             "--sandbox", agent_spec.codex_sandbox,
             "--color", "never",
             "--output-last-message", str(output_path),
