@@ -64,6 +64,8 @@ echo "▶ installing revisica[all,bundle] + pyinstaller"
 # `.[all]` pulls the api + serve extras; `.[bundle]` adds pypandoc-binary.
 pip install --quiet -e ".[all,bundle]"
 pip install --quiet "pyinstaller>=6.5"
+# pypandoc-binary's arm64 wheel ships an x86_64 pandoc; swap in a real one.
+bash "${REPO_ROOT}/scripts/pyinstaller/install-arm64-pandoc.sh"
 
 # ── 2. Clean previous build artifacts ────────────────────────────────────
 echo "▶ cleaning previous outputs"
@@ -95,11 +97,17 @@ cp -R "$DIST_DIR" "$OUTPUT_DIR"
 bundle_size=$(du -sh "$OUTPUT_DIR" | awk '{print $1}')
 echo "▶ bundle size: $bundle_size"
 
-if find "$OUTPUT_DIR" -name "pandoc*" -print -quit | grep -q .; then
-  echo "▶ bundled pandoc: present"
-else
-  echo "⚠ bundled pandoc: NOT FOUND — re-check pypandoc_binary collect_data_files" >&2
+bundled_pandoc="$OUTPUT_DIR/_internal/pypandoc/files/pandoc"
+if [[ ! -x "$bundled_pandoc" ]]; then
+  echo "ERROR: bundled pandoc not found at $bundled_pandoc — re-check pypandoc_binary collect_data_files" >&2
+  exit 1
 fi
+bundled_pandoc_archs=$(lipo -archs "$bundled_pandoc")
+if [[ "$bundled_pandoc_archs" != *arm64* ]]; then
+  echo "ERROR: bundled pandoc is $bundled_pandoc_archs, not arm64" >&2
+  exit 1
+fi
+echo "▶ bundled pandoc: $bundled_pandoc_archs"
 
 echo "✔ frozen backend ready at $OUTPUT_DIR"
 echo "  next: bash scripts/smoke-test-python-backend.sh"
