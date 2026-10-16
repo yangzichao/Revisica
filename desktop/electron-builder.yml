@@ -12,11 +12,14 @@ files:
 #   - python-backend/          PyInstaller --onedir output (~120 MB)
 #   - LICENSES/pandoc-GPL2.txt Required by Pandoc's GPL-2 license
 # Populated before packaging by `scripts/build-python-backend.sh`.
+# Revisica's own GPL-3.0 text ships as `Contents/Resources/LICENSE`.
 extraResources:
   - from: resources/
     to: resources/
     filter:
       - '**/*'
+  - from: ../LICENSE
+    to: LICENSE
 asar: true
 # The frozen backend lives under `extraResources:` above, which copies to
 # `Contents/Resources/resources/` *outside* app.asar already — no
