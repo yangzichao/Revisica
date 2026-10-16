@@ -9,6 +9,12 @@ from pathlib import Path
 
 from ..core_types import AgentSpec, ReviewResult
 from .base import BaseProvider
+from .rate_limit_retry import (
+    codex_error_lines,
+    mentions_rate_limit,
+    run_with_rate_limit_retry,
+    timeout_stream_text,
+)
 from .subprocess_env import subprocess_env
 
 
@@ -70,36 +76,9 @@ class CodexCliProvider(BaseProvider):
                 timeout=timeout_seconds,
                 env=subprocess_env(),
             )
-            output = (
-                output_path.read_text(encoding="utf-8")
-                if output_path.exists()
-                else completed.stdout
-            )
-            return ReviewResult(
-                provider="codex",
-                model=model,
-                command=command,
-                returncode=completed.returncode,
-                output=output,
-                stderr=completed.stderr,
-            )
+            return _completed_result(command, model, completed, output_path)
         except subprocess.TimeoutExpired as error:
-            output = (
-                output_path.read_text(encoding="utf-8")
-                if output_path.exists()
-                else ""
-            )
-            stderr = f"Timed out after {timeout_seconds} seconds."
-            if error.stderr:
-                stderr = f"{stderr}\n{error.stderr}"
-            return ReviewResult(
-                provider="codex",
-                model=model,
-                command=command,
-                returncode=124,
-                output=output,
-                stderr=stderr,
-            )
+            return _timed_out_result(command, model, timeout_seconds, error, output_path)
         finally:
             output_path.unlink(missing_ok=True)
 
@@ -150,81 +129,74 @@ class CodexCliProvider(BaseProvider):
         if model:
             command.extend(["--model", model])
 
-        max_retries = 20
-        retry_wait = 600  # 10 minutes between retries on rate limit
+        def run_once() -> subprocess.CompletedProcess:
+            return subprocess.run(
+                command,
+                input=full_prompt,
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=timeout_seconds,
+                env=subprocess_env(),
+            )
 
         try:
-            for attempt in range(max_retries + 1):
-                try:
-                    completed = subprocess.run(
-                        command,
-                        input=full_prompt,
-                        text=True,
-                        capture_output=True,
-                        check=False,
-                        timeout=timeout_seconds,
-                        env=subprocess_env(),
-                    )
-                    is_rate_limited = (
-                        completed.returncode != 0
-                        and ("rate" in completed.stderr.lower() or "overloaded" in completed.stderr.lower())
-                    )
-                    if is_rate_limited and attempt < max_retries:
-                        import logging
-                        import time
-                        logging.getLogger(__name__).warning(
-                            "Codex CLI rate-limited (attempt %d/%d), waiting %ds before retry...",
-                            attempt + 1, max_retries, retry_wait,
-                        )
-                        time.sleep(retry_wait)
-                        continue
-
-                    output = (
-                        output_path.read_text(encoding="utf-8")
-                        if output_path.exists()
-                        else completed.stdout
-                    )
-                    return ReviewResult(
-                        provider="codex",
-                        model=model,
-                        command=command,
-                        returncode=completed.returncode,
-                        output=output,
-                        stderr=completed.stderr,
-                    )
-                except subprocess.TimeoutExpired as error:
-                    if attempt < max_retries:
-                        import logging
-                        import time
-                        logging.getLogger(__name__).warning(
-                            "Codex CLI timed out after %ds (attempt %d/%d), waiting %ds before retry...",
-                            timeout_seconds, attempt + 1, max_retries, retry_wait,
-                        )
-                        time.sleep(retry_wait)
-                        continue
-                    output = (
-                        output_path.read_text(encoding="utf-8")
-                        if output_path.exists()
-                        else ""
-                    )
-                    stderr = f"Timed out after {timeout_seconds} seconds ({max_retries + 1} attempts)."
-                    if error.stderr:
-                        stderr = f"{stderr}\n{error.stderr}"
-                    return ReviewResult(
-                        provider="codex",
-                        model=model,
-                        command=command,
-                        returncode=124,
-                        output=output,
-                        stderr=stderr,
-                    )
-            # All retries exhausted without timeout or rate limit
-            return ReviewResult(
-                provider="codex", model=model, command=command,
-                returncode=1, output="", stderr="All retries exhausted.",
-            )
+            completed = run_with_rate_limit_retry(run_once, _is_rate_limited, "Codex CLI")
+            return _completed_result(command, model, completed, output_path)
+        except subprocess.TimeoutExpired as error:
+            return _timed_out_result(command, model, timeout_seconds, error, output_path)
         finally:
             output_path.unlink(missing_ok=True)
+
+
+def _is_rate_limited(completed: subprocess.CompletedProcess) -> bool:
+    # stderr also carries the banner and the whole prompt echo; only the
+    # ERROR lines are the failure.
+    return mentions_rate_limit(codex_error_lines(completed.stderr))
+
+
+def _last_message(output_path: Path, fallback: str) -> str:
+    # The temp file exists from the start; it stays empty when Codex fails
+    # before writing its last message.
+    last_message = output_path.read_text(encoding="utf-8") if output_path.exists() else ""
+    return last_message if last_message.strip() else fallback
+
+
+def _completed_result(
+    command: list[str],
+    model: str | None,
+    completed: subprocess.CompletedProcess,
+    output_path: Path,
+) -> ReviewResult:
+    return ReviewResult(
+        provider="codex",
+        model=model,
+        command=command,
+        returncode=completed.returncode,
+        output=_last_message(output_path, completed.stdout),
+        stderr=completed.stderr,
+    )
+
+
+def _timed_out_result(
+    command: list[str],
+    model: str | None,
+    timeout_seconds: int,
+    error: subprocess.TimeoutExpired,
+    output_path: Path,
+) -> ReviewResult:
+    stderr = f"Timed out after {timeout_seconds} seconds."
+    captured_stderr = timeout_stream_text(error.stderr)
+    if captured_stderr:
+        stderr = f"{stderr}\n{captured_stderr}"
+    return ReviewResult(
+        provider="codex",
+        model=model,
+        command=command,
+        returncode=124,
+        output=_last_message(output_path, ""),
+        stderr=stderr,
+    )
 
 
 _VALID_REASONING_EFFORTS = {"none", "minimal", "low", "medium", "high", "xhigh"}

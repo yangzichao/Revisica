@@ -10,6 +10,7 @@ from pathlib import Path
 from ..core_types import AgentSpec, ReviewResult
 from ..bootstrap_assets import CLAUDE_AGENT_NAME
 from .base import BaseProvider
+from .rate_limit_retry import mentions_rate_limit, run_with_rate_limit_retry, timeout_stream_text
 from .subprocess_env import subprocess_env
 
 # Every agent's instructions travel in the --agents payload. Keep the
@@ -101,17 +102,7 @@ class ClaudeCliProvider(BaseProvider):
                 stderr=completed.stderr,
             )
         except subprocess.TimeoutExpired as error:
-            stderr = f"Timed out after {timeout_seconds} seconds."
-            if error.stderr:
-                stderr = f"{stderr}\n{error.stderr}"
-            return ReviewResult(
-                provider="claude",
-                model=model,
-                command=command,
-                returncode=124,
-                output=error.stdout or "",
-                stderr=stderr,
-            )
+            return _timed_out_result(command, model, timeout_seconds, error)
 
     def run_agent(
         self,
@@ -145,67 +136,54 @@ class ClaudeCliProvider(BaseProvider):
         if model:
             command.extend(["--model", model])
 
-        max_retries = 20
-        retry_wait = 600  # 10 minutes between retries on rate limit
+        def run_once() -> subprocess.CompletedProcess:
+            return subprocess.run(
+                command,
+                input=task_prompt,
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=timeout_seconds,
+                cwd=working_dir,
+                env=claude_subprocess_env(),
+            )
 
-        for attempt in range(max_retries + 1):
-            try:
-                completed = subprocess.run(
-                    command,
-                    input=task_prompt,
-                    text=True,
-                    capture_output=True,
-                    check=False,
-                    timeout=timeout_seconds,
-                    cwd=working_dir,
-                    env=claude_subprocess_env(),
-                )
-                # Check for rate limiting (exit code 1 with rate limit text)
-                is_rate_limited = (
-                    completed.returncode != 0
-                    and ("rate" in completed.stderr.lower() or "overloaded" in completed.stderr.lower())
-                )
-                if is_rate_limited and attempt < max_retries:
-                    import logging
-                    import time
-                    logging.getLogger(__name__).warning(
-                        "Claude CLI rate-limited (attempt %d/%d), waiting %ds before retry...",
-                        attempt + 1, max_retries, retry_wait,
-                    )
-                    time.sleep(retry_wait)
-                    continue
-
-                return ReviewResult(
-                    provider="claude",
-                    model=model,
-                    command=command,
-                    returncode=completed.returncode,
-                    output=completed.stdout,
-                    stderr=completed.stderr,
-                )
-            except subprocess.TimeoutExpired as error:
-                if attempt < max_retries:
-                    import logging
-                    import time
-                    logging.getLogger(__name__).warning(
-                        "Claude CLI timed out after %ds (attempt %d/%d), waiting %ds before retry...",
-                        timeout_seconds, attempt + 1, max_retries, retry_wait,
-                    )
-                    time.sleep(retry_wait)
-                    continue
-                stderr = f"Timed out after {timeout_seconds} seconds ({max_retries + 1} attempts)."
-                if error.stderr:
-                    stderr = f"{stderr}\n{error.stderr}"
-                return ReviewResult(
-                    provider="claude",
-                    model=model,
-                    command=command,
-                    returncode=124,
-                    output=error.stdout or "",
-                    stderr=stderr,
-                )
-        # Should not reach here, but just in case
+        try:
+            completed = run_with_rate_limit_retry(run_once, _is_rate_limited, "Claude CLI")
+        except subprocess.TimeoutExpired as error:
+            return _timed_out_result(command, model, timeout_seconds, error)
         return ReviewResult(
-            provider="claude", model=model, command=command,
-            returncode=1, output="", stderr="All retries exhausted.",
+            provider="claude",
+            model=model,
+            command=command,
+            returncode=completed.returncode,
+            output=completed.stdout,
+            stderr=completed.stderr,
         )
+
+
+def _is_rate_limited(completed: subprocess.CompletedProcess) -> bool:
+    # In print mode the CLI prints the user-facing error ("API Error: 429
+    # ...", "usage limit reached") on stdout and a tag on stderr; it never
+    # echoes the prompt.
+    return mentions_rate_limit(f"{completed.stdout}\n{completed.stderr}")
+
+
+def _timed_out_result(
+    command: list[str],
+    model: str | None,
+    timeout_seconds: int,
+    error: subprocess.TimeoutExpired,
+) -> ReviewResult:
+    stderr = f"Timed out after {timeout_seconds} seconds."
+    captured_stderr = timeout_stream_text(error.stderr)
+    if captured_stderr:
+        stderr = f"{stderr}\n{captured_stderr}"
+    return ReviewResult(
+        provider="claude",
+        model=model,
+        command=command,
+        returncode=124,
+        output=timeout_stream_text(error.stdout),
+        stderr=stderr,
+    )
