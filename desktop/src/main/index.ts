@@ -27,6 +27,13 @@ function getParsedDocumentsDir(): string {
   return join(app.getPath('userData'), 'parsed-documents')
 }
 
+// Review run directories, for the same reason. The backend's cwd is the
+// bundle's Resources dir in production, so its <cwd>/reviews default put
+// reviews inside the .app. Read via REVISICA_REVIEWS_DIR.
+function getReviewsDir(): string {
+  return join(app.getPath('userData'), 'reviews')
+}
+
 // One-shot migration for users on builds that wrote into <cwd>/parsed-documents:
 //   - dev: <projectRoot>/parsed-documents
 //   - older prod: <process.resourcesPath>/parsed-documents
@@ -141,7 +148,8 @@ function startPythonBackend(): Promise<void> {
       env: {
         ...process.env,
         REVISICA_API_TOKEN: API_TOKEN,
-        REVISICA_PARSED_DOCUMENTS_DIR: getParsedDocumentsDir()
+        REVISICA_PARSED_DOCUMENTS_DIR: getParsedDocumentsDir(),
+        REVISICA_REVIEWS_DIR: getReviewsDir()
       }
     })
 

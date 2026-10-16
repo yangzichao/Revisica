@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 
 from .core_types import ProviderModelSpec
 from .math_review import MathReviewRun
-from .run_dir_helpers import copy_source_into_run_dir
+from .run_dir_helpers import copy_source_into_run_dir, create_review_run_dir
 from .writing import WritingReviewRun
 
 
@@ -99,10 +98,8 @@ def review_unified(
 
 
 def _make_output_dir(source: Path, output_dir: str | None) -> Path:
-    if output_dir:
-        run_dir = Path(output_dir).expanduser().resolve()
-    else:
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        run_dir = Path.cwd() / "reviews" / f"{source.stem}-unified-{stamp}"
+    if not output_dir:
+        return create_review_run_dir(f"{source.stem}-unified")
+    run_dir = Path(output_dir).expanduser().resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
     return run_dir
