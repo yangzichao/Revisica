@@ -20,6 +20,8 @@ extraResources:
       - '**/*'
   - from: ../LICENSE
     to: LICENSE
+# Ad-hoc signs the app so unsigned builds still pass `codesign --verify`.
+afterPack: build/adhoc-sign-mac-app.cjs
 asar: true
 # The frozen backend lives under `extraResources:` above, which copies to
 # `Contents/Resources/resources/` *outside* app.asar already — no

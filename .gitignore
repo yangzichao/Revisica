@@ -6,6 +6,9 @@
 .pycache/
 *.egg-info/
 build/
+# electron-builder's buildResources (entitlements, packaging hooks) are
+# source, not build output.
+!desktop/build/
 dist/
 __pycache__/
 *.pyc
