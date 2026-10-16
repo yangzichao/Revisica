@@ -94,6 +94,13 @@ def review_math_file(
     llm_adjudication_results: list[LLMAdjudicationArtifact] = []
     warnings: list[str] = []
     if llm_proof_review:
+        llm_review_source = source
+        if content_override is not None:
+            # Blueprint line numbers index into the ingested text, so the
+            # agents must read that text, not the original file (where the
+            # theorem sits on another line, or which is a PDF).
+            llm_review_source = run_dir / f"{source.stem}.normalized.md"
+            llm_review_source.write_text(content, encoding="utf-8")
         (
             llm_issues,
             llm_provider_results,
@@ -101,7 +108,7 @@ def review_math_file(
             llm_adjudication_results,
             llm_warnings,
         ) = run_llm_proof_review(
-            source=source,
+            source=llm_review_source,
             blueprints=blueprints,
             targets=targets,
             proof_review_mode=proof_review_mode,
