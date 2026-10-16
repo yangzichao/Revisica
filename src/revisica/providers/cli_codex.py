@@ -15,7 +15,14 @@ from .rate_limit_retry import (
     run_with_rate_limit_retry,
     timeout_stream_text,
 )
-from .subprocess_env import subprocess_env
+from .codex_home import codex_subprocess_env
+
+
+# Codex memories summarize past sessions and feed them into later ones,
+# so one review would carry over into the next. `--disable <name>` exits
+# with "Unknown feature flag" on a CLI without that feature; the `-c`
+# form does not (checked on codex-cli 0.162).
+_NO_MEMORIES = ("-c", "features.memories=false")
 
 
 class CodexCliProvider(BaseProvider):
@@ -59,6 +66,7 @@ class CodexCliProvider(BaseProvider):
         command = [
             cli_path, "exec",
             "--skip-git-repo-check",
+            *_NO_MEMORIES,
             "--color", "never",
             "--output-last-message", str(output_path),
         ]
@@ -74,7 +82,7 @@ class CodexCliProvider(BaseProvider):
                 capture_output=True,
                 check=False,
                 timeout=timeout_seconds,
-                env=subprocess_env(),
+                env=codex_subprocess_env(),
             )
             return _completed_result(command, model, completed, output_path)
         except subprocess.TimeoutExpired as error:
@@ -111,6 +119,7 @@ class CodexCliProvider(BaseProvider):
             # Papers usually live outside a git repo; without this flag
             # Codex refuses to start ("Not inside a trusted directory").
             "--skip-git-repo-check",
+            *_NO_MEMORIES,
             # Headless run: never block on an approval prompt. This used to
             # come from `--full-auto`, which newer CLIs reject (0.162 does);
             # `exec` also has no `--ask-for-approval`, so set the config key.
@@ -137,7 +146,7 @@ class CodexCliProvider(BaseProvider):
                 capture_output=True,
                 check=False,
                 timeout=timeout_seconds,
-                env=subprocess_env(),
+                env=codex_subprocess_env(),
             )
 
         try:
