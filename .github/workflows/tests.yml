@@ -4,28 +4,41 @@ on:
   push:
     branches: [main]
   pull_request:
+  # release.yml runs the suite against the tagged commit before publishing.
+  workflow_call:
 
 permissions:
   contents: read
+
+concurrency:
+  # Literal prefix: inside a reusable workflow `github.workflow` is the
+  # caller's name, and sharing a group with the caller deadlocks the run.
+  group: tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   pytest:
     # Same platform and Python as build-dmg.yml (the app ships as an arm64
     # DMG); the suite has been verified on macOS arm64 only.
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-          cache: 'pip'
+          # No cache on tag builds, so a release never restores a cache
+          # written by another ref.
+          cache: ${{ github.ref_type != 'tag' && 'pip' || '' }}
           cache-dependency-path: pyproject.toml
 
       - name: Install revisica with test extras
-        # `bundle` brings pypandoc-binary, the same pandoc the DMG ships, so
-        # the ingestion tests do not depend on a system pandoc.
+        # `bundle` brings pypandoc-binary, the same Python dependency set the
+        # DMG freezes. (The DMG then swaps in an arm64 pandoc binary; see
+        # scripts/pyinstaller/install-arm64-pandoc.sh.)
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[test,serve,bundle]"
