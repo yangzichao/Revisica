@@ -33,7 +33,7 @@ from ...writing.agent_tasks import (
 from ...writing.artifacts import (
     write_final_report,
     write_role_artifact,
-    write_summary,
+    write_summary as write_writing_summary_file,
 )
 from ...writing.judge import generate_final_report_agent
 from ...writing.reviewer_resolution import make_output_dir, resolve_reviewer_specs
@@ -305,7 +305,8 @@ def write_summary(state: WritingState) -> dict:
     final_report = state.get("final_report")
     warnings = state.get("warnings", [])
 
-    write_summary(
+    # The node shares its name with the artifacts helper, hence the alias.
+    write_writing_summary_file(
         run_dir=run_dir,
         source=source,
         venue_profile=venue_profile,
