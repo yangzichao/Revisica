@@ -25,7 +25,7 @@ def codex_plugin_manifest() -> str:
         },
         "homepage": "https://github.com/yangzichao/Revisica",
         "repository": "https://github.com/yangzichao/Revisica",
-        "license": "MIT",
+        "license": "GPL-3.0-or-later",
         "keywords": ["codex", "claude-code", "latex", "paper-review", "math"],
         "interface": {
             "displayName": "Revisica",
@@ -52,7 +52,7 @@ def claude_plugin_manifest() -> str:
         "description": "LaTeX-first paper review plugin focused on writing quality and mathematical correctness.",
         "version": "0.1.0",
         "author": {"name": "Zichao Yang"},
-        "license": "MIT",
+        "license": "GPL-3.0-or-later",
         "keywords": ["claude-code", "codex", "latex", "paper-review", "math"],
     }
     return json.dumps(manifest, indent=2, ensure_ascii=True) + "\n"

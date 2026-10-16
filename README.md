@@ -204,3 +204,7 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 - `ProcessBench` is currently used as a step-verification benchmark, comparing the earliest flagged `Step n` against the dataset's labeled first wrong step.
 - The writing-review lane currently uses prompt-specialized multi-agent coordination rather than a deterministic parser. It is designed to surface revision priorities, not to rewrite a paper automatically.
 - Word (`.docx`) input is not supported.
+
+## License
+
+Revisica is free software under the [GNU General Public License v3.0 or later](LICENSE). The desktop app also bundles Pandoc (GPL-2.0-or-later); see `desktop/resources/LICENSES/`.
