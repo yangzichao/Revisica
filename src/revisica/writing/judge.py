@@ -12,7 +12,7 @@ from ..bootstrap import PlatformStatus
 from ..core_types import ProviderModelSpec, ReviewResult
 from ..model_router import resolve_model_for_role
 from ..providers.execution import run_provider_agent
-from .artifacts import artifact_label
+from .artifacts import artifact_file_stem
 from .types import WritingRoleArtifact
 
 
@@ -32,7 +32,15 @@ def generate_final_report_agent(
     usable = [a for a in artifacts if a.result.success and a.findings is not None]
     if not usable:
         warnings.append("No writing-review role produced a usable structured output.")
-        return None
+        # Still write a final report, marked failed, that says why.
+        return ReviewResult(
+            provider="revisica",
+            model=None,
+            command=[],
+            returncode=1,
+            output=no_usable_output_report(artifacts),
+            stderr="",
+        )
 
     judge = judge_spec or default_judge_spec(usable)
     judge = resolve_model_for_role(judge, "judge")
@@ -40,8 +48,7 @@ def generate_final_report_agent(
     # Build file list for the judge to read
     findings_files = []
     for artifact in usable:
-        base = f"{artifact.role}_{artifact_label(artifact.provider, artifact.model)}"
-        json_path = run_dir / f"{base}.json"
+        json_path = run_dir / f"{artifact_file_stem(artifact)}.json"
         if json_path.exists():
             findings_files.append(str(json_path))
 
@@ -135,3 +142,27 @@ def fallback_final_report(artifacts: list[WritingRoleArtifact], venue_profile: s
         sections.append("```")
         sections.append("")
     return "\n".join(sections).strip() + "\n"
+
+
+def no_usable_output_report(artifacts: list[WritingRoleArtifact]) -> str:
+    lines = [
+        "# Writing review failed",
+        "",
+        f"None of the {len(artifacts)} writing-review role runs produced usable findings, "
+        "so there is nothing to report. Each run and the end of its error output:",
+        "",
+    ]
+    for artifact in artifacts:
+        label = artifact.provider if not artifact.model else f"{artifact.provider}:{artifact.model}"
+        if artifact.result.success:
+            reason = "output had no findings JSON"
+        else:
+            # The Claude CLI prints its user-facing error on stdout.
+            error_text = artifact.result.stderr.strip() or artifact.result.output.strip()
+            error_lines = [line for line in error_text.splitlines() if line.strip()]
+            reason = error_lines[-1].strip() if error_lines else "no error output"
+            reason = f"exit {artifact.result.returncode}: {reason[:300]}"
+        lines.append(f"- `{artifact.role}` via `{label}`: {reason}")
+    if not artifacts:
+        lines.append("- No role runs were started (no reviewer provider was available).")
+    return "\n".join(lines) + "\n"

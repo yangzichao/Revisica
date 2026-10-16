@@ -21,6 +21,10 @@ class WritingRoleArtifact:
     model: str | None
     result: ReviewResult
     findings: list[dict[str, object]] | None
+    # Base name of this run's files in the run dir. Set when two reviewers
+    # share a provider and model, so their files do not overwrite each
+    # other; empty means the default ``<role>_<provider>_<model>``.
+    file_stem: str = ""
 
 
 @dataclass
