@@ -144,14 +144,9 @@ def fallback_final_report(artifacts: list[WritingRoleArtifact], venue_profile: s
     return "\n".join(sections).strip() + "\n"
 
 
-def no_usable_output_report(artifacts: list[WritingRoleArtifact]) -> str:
-    lines = [
-        "# Writing review failed",
-        "",
-        f"None of the {len(artifacts)} writing-review role runs produced usable findings, "
-        "so there is nothing to report. Each run and the end of its error output:",
-        "",
-    ]
+def role_failure_reasons(artifacts: list[WritingRoleArtifact]) -> list[str]:
+    """One "`role` via `provider:model`: why it gave no findings" per run."""
+    reasons: list[str] = []
     for artifact in artifacts:
         label = artifact.provider if not artifact.model else f"{artifact.provider}:{artifact.model}"
         if artifact.result.success:
@@ -162,7 +157,19 @@ def no_usable_output_report(artifacts: list[WritingRoleArtifact]) -> str:
             error_lines = [line for line in error_text.splitlines() if line.strip()]
             reason = error_lines[-1].strip() if error_lines else "no error output"
             reason = f"exit {artifact.result.returncode}: {reason[:300]}"
-        lines.append(f"- `{artifact.role}` via `{label}`: {reason}")
+        reasons.append(f"`{artifact.role}` via `{label}`: {reason}")
+    return reasons
+
+
+def no_usable_output_report(artifacts: list[WritingRoleArtifact]) -> str:
+    lines = [
+        "# Writing review failed",
+        "",
+        f"None of the {len(artifacts)} writing-review role runs produced usable findings, "
+        "so there is nothing to report. Each run and the end of its error output:",
+        "",
+    ]
+    lines.extend(f"- {reason}" for reason in role_failure_reasons(artifacts))
     if not artifacts:
         lines.append("- No role runs were started (no reviewer provider was available).")
     return "\n".join(lines) + "\n"

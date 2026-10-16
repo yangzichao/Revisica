@@ -22,7 +22,8 @@ from langgraph.graph import END, StateGraph
 from ..ingestion import parse_document
 from ..math_review import MathReviewRun, review_math_file
 from ..profiles.config import ReviewConfig, ReviewMode
-from ..unified_review import UnifiedReviewRun
+from ..unified_review import UnifiedReviewRun, describe_failure
+from ..writing.judge import role_failure_reasons
 from ..writing.types import MATH_VERIFICATION_ROLES, WRITING_ROLES
 from .state import UnifiedState
 
@@ -171,6 +172,7 @@ def run_polish(state: UnifiedState) -> dict:
     document = state.get("document")
 
     polish_warnings: list[str] = []
+    failure: str | None = None
     try:
         polish_source_path = prepare_writing_source(source_path, document, Path(run_dir))
         polish_graph = compile_polish_graph()
@@ -181,8 +183,10 @@ def run_polish(state: UnifiedState) -> dict:
             "warnings": [],
         })
         polish_warnings.extend(polish_result.get("warnings", []))
+        failure = polish_result.get("failure")
     except Exception as error:
-        polish_warnings.append(f"Polish lane failed: {error}")
+        failure = f"Polish lane failed: {error}"
+        polish_warnings.append(failure)
 
     run = UnifiedReviewRun(
         source=Path(source_path).expanduser().resolve(),
@@ -190,6 +194,7 @@ def run_polish(state: UnifiedState) -> dict:
         writing=None,
         math=None,
         warnings=list(polish_warnings),
+        failure=failure,
     )
     return {
         "unified_review_run": run,
@@ -220,6 +225,7 @@ def write_unified_summary(state: UnifiedState) -> dict:
         writing=writing_result,
         math=math_result,
         warnings=warnings,
+        failure=_writing_lane_failure(writing_result, warnings),
     )
     return {"unified_review_run": run}
 
@@ -261,12 +267,36 @@ def _write_findings(
 # ── summary writer ─────────────────────────────────────────────────
 
 
-def _writing_lane_status(writing: Any) -> str:
-    role_runs = len(writing.artifacts)
-    usable_artifacts = [
+def _usable_writing_artifacts(writing: Any) -> list[Any]:
+    return [
         artifact for artifact in writing.artifacts
         if artifact.result.success and artifact.findings is not None
     ]
+
+
+def _writing_lane_failure(writing: Any, warnings: list[str]) -> str | None:
+    """Why the writing lane produced nothing usable, or None if it did.
+
+    The math lane alone does not make a review: its deterministic checks
+    cover a few claim shapes, so a run whose writing lane produced nothing
+    is reported as failed even when the math lane finished.
+    """
+    if writing is None:
+        writing_warnings = [warning for warning in warnings if warning.startswith("Writing")]
+        return describe_failure("Writing review failed.", writing_warnings)
+    if not _usable_writing_artifacts(writing):
+        role_runs = len(writing.artifacts)
+        return describe_failure(
+            f"Writing review failed: none of {role_runs} role runs produced usable output.",
+            role_failure_reasons(writing.artifacts),
+            details_location="writing/final_report.md",
+        )
+    return None
+
+
+def _writing_lane_status(writing: Any) -> str:
+    role_runs = len(writing.artifacts)
+    usable_artifacts = _usable_writing_artifacts(writing)
     if not usable_artifacts:
         return f"failed (none of {role_runs} role runs produced usable output; see warnings)"
     finding_count = sum(len(artifact.findings) for artifact in usable_artifacts)

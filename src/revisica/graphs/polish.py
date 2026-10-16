@@ -42,17 +42,13 @@ def run_polish_agent(state: PolishState) -> dict:
         requested_spec = config.providers[0]
         selected_spec = runnable_spec(requested_spec, platforms)
         if selected_spec is None:
-            return {
-                "report": "",
-                "warnings": [f"Provider '{requested_spec.provider}' not available."],
-            }
+            failure = f"Provider '{requested_spec.provider}' not available."
+            return {"report": "", "failure": failure, "warnings": [failure]}
     else:
         default_specs = default_runnable_specs(platforms)
         if not default_specs:
-            return {
-                "report": "",
-                "warnings": ["No provider available for polish."],
-            }
+            failure = "No provider available for polish."
+            return {"report": "", "failure": failure, "warnings": [failure]}
         selected_spec = default_specs[0]
     provider_spec = resolve_model_for_role(selected_spec, "polish")
 
@@ -72,10 +68,8 @@ def run_polish_agent(state: PolishState) -> dict:
 
     if result.success:
         return {"report": result.output}
-    return {
-        "report": result.output or "",
-        "warnings": [f"Polish agent failed: {_format_agent_failure(result)}"],
-    }
+    failure = f"Polish agent failed: {_format_agent_failure(result)}"
+    return {"report": "", "failure": failure, "warnings": [failure]}
 
 
 def _format_agent_failure(result) -> str:
@@ -107,7 +101,12 @@ def write_polish_report(state: PolishState) -> dict:
     run_dir.mkdir(parents=True, exist_ok=True)
 
     report_content = state.get("report", "")
-    if not report_content:
+    failure = state.get("failure")
+    if failure:
+        # Not the agent's stdout: on a failed Claude CLI run that is the
+        # CLI's error message, which read like a polish report.
+        report_content = f"# Polish failed\n\n{failure}\n"
+    elif not report_content:
         report_content = "No polish suggestions generated."
 
     (run_dir / "polish_report.md").write_text(report_content, encoding="utf-8")
