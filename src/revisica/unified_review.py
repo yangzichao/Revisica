@@ -44,6 +44,8 @@ def review_unified(
     # new: Codex reasoning effort override
     # (none|minimal|low|medium|high|xhigh; None = agent default).
     codex_reasoning_effort: str | None = None,
+    # Extra instructions appended to the polish agent's task.
+    custom_instructions: str | None = None,
 ) -> UnifiedReviewRun:
     """Run unified review via LangGraph."""
     from .graphs.unified import compile_unified_graph
@@ -72,6 +74,7 @@ def review_unified(
         self_check_spec=self_check_spec,
         adjudicator_spec=adjudicator_spec,
         codex_reasoning_effort=codex_reasoning_effort,
+        custom_instructions=custom_instructions,
     )
 
     graph = compile_unified_graph()
