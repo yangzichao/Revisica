@@ -115,9 +115,7 @@ class OpenAiApiProvider(BaseProvider):
         effective_effort = codex_reasoning_effort or agent_spec.codex_reasoning_effort
         reasoning = _build_reasoning_param(resolved_model, effective_effort)
 
-        system_message = ""
-        if agent_spec.claude_agent_def:
-            system_message = agent_spec.claude_agent_def.get("instructions", "")
+        system_message = agent_spec.system_prompt
 
         openai_tools = _build_openai_tools(agent_spec)
 
@@ -190,9 +188,7 @@ class OpenAiApiProvider(BaseProvider):
 
 def _build_openai_tools(agent_spec: AgentSpec) -> list[dict]:
     """Convert abstract tool definitions to Responses API function tools."""
-    requested_tools = set()
-    if agent_spec.claude_agent_def:
-        requested_tools = set(agent_spec.claude_agent_def.get("tools", []))
+    requested_tools = set(agent_spec.tools)
 
     source_tools = TOOL_DEFINITIONS
     if requested_tools:

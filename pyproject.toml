@@ -58,3 +58,8 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+# Codex `--output-schema` files; read at runtime via
+# revisica.agents.output_schema, so they must ship with the package.
+"revisica.agents" = ["output_schemas/*.json"]

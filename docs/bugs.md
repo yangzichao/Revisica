@@ -19,20 +19,11 @@
 
 ## Open
 
-### 2. Three redundant agent definition locations
+### 2. Three redundant agent definition locations — FIXED
 
-**Severity:** MEDIUM — maintenance burden, confusion about source of truth
-**Status:** Partially addressed by `src/revisica/agents/definitions/` (new unified system)
-
-Two active locations remain (`.claude/agents/` deleted in P4, `agent_assets.py` deleted):
-
-| Location | Format | Files | Status |
-|---|---|---|---|
-| `agents/claude/*.json` | JSON | 12 | Active — loaded by unified agent registry |
-| `agents/codex/*.md` | Markdown | 13 | Active — used by Codex CLI |
-| `src/revisica/agents/definitions/*.py` | Python | 11 | **New** — unified definitions (not yet wired) |
-
-**Plan:** Once `agents/translators/` is implemented, the `agents/claude/` and `agents/codex/` directories become generated output. The unified definitions in `src/revisica/agents/definitions/` become the single source of truth.
+**Fixed:** 2026-10-15
+**Was:** Codex CLI read its system prompt from `agents/codex/*.md`, which had drifted far from `src/revisica/agents/definitions/*.py` (difflib similarity 0.20 for `math-proof-reviewer`), and versioned agents (`math-proof-reviewer-vN`) had no `.md` at all, so Codex ran them without a system prompt. `agents/` sat outside the package, so the frozen DMG had neither the prompts nor `findings.schema.json`. Claude CLI separately sent `{"instructions": ...}` to `--agents`; Claude Code 2.1.301 rejects that with `Invalid --agents configuration` (it requires `description` + `prompt`).
+**Fix:** `AgentSpec` now carries `system_prompt` / `description` / `tools`, and all four providers read them. `agents/claude/` and `agents/codex/` are deleted; the schema moved to `src/revisica/agents/output_schemas/` (shipped as package data). Benchmark provenance now hashes the Python proof-agent modules, so `math_proof_review` hashes differ from older registry rows.
 
 ### 4. Silent exception swallowing — no logging on failure — FIXED
 

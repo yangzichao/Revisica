@@ -1,22 +1,10 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from ..agents import get_agent, to_agent_spec
 from ..core_types import AgentSpec
 from ..math_check import LLMProofReviewArtifact, ProofBlueprint
-
-
-def find_codex_file(filename: str) -> str | None:
-    candidates = [
-        Path.cwd() / "agents" / "codex" / filename,
-        Path(__file__).resolve().parent.parent.parent.parent / "agents" / "codex" / filename,
-    ]
-    for path in candidates:
-        if path.exists():
-            return str(path)
-    return None
 
 
 _MATH_ROLE_TO_AGENT_NAME = {
