@@ -98,15 +98,16 @@ For detailed architecture documentation, see `docs/current-architecture.md`.
 | Variable | Purpose |
 |---|---|
 | `REVISICA_BACKEND_MODE` | Provider backend: `cli` (DMG/subscription), `api` (App Store/key), `auto` (default) |
-| `REVISICA_CODEX_HOME` | Override Codex config home (default: `~/.codex`) |
+| `REVISICA_CODEX_HOME` | The user's Codex home that Revisica links `auth.json`/`config.toml` from (default: `$CODEX_HOME`, then `~/.codex`). Codex runs themselves use `~/.revisica/codex-home` |
 | `REVISICA_CLAUDE_HOME` | Override Claude config home (default: `~/.claude`) |
 | `REVISICA_RUNTIME_HOME` | Override `$HOME` for subprocess execution |
 | `REVISICA_PREFERRED_ADJUDICATOR` | Provider preferred for adjudication/judging (default: `claude`) |
 | `REVISICA_JOBS_DIR` | Override job snapshot directory (default: `~/.revisica/jobs`) |
+| `REVISICA_REVIEWS_DIR` | Root for review runs created without an output dir (default: `<cwd>/reviews`; the desktop app sets `<userData>/reviews`) |
 
 ## Output Structure
 
-- Reviews: `reviews/<stem>-unified-<timestamp>/summary.md` (+ `writing/`, `math/` subdirs)
+- Reviews: `reviews/<stem>-unified-<timestamp>/summary.md` (+ `writing/`, `math/` subdirs); root is `$REVISICA_REVIEWS_DIR` when set
 - Benchmarks: `benchmarks/runs/<suite>-<mode>-<timestamp>/benchmark_summary.md` (framework runs), `benchmarks/<suite>/runs/` (per-suite runs)
 - Provenance registry: `benchmarks/registry.jsonl`
 - Curated reports: `benchmarks/reports/`
