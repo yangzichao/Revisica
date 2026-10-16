@@ -33,7 +33,7 @@
     "autoprefixer": "^10.4.27",
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
-    "electron-vite": "^2.3.0",
+    "electron-vite": "^5.0.0",
     "github-slugger": "^2.0.0",
     "katex": "^0.16.45",
     "postcss": "^8.5.9",
