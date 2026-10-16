@@ -16,6 +16,21 @@ class UnifiedReviewRun:
     writing: WritingReviewRun | None
     math: MathReviewRun | None
     warnings: list[str]
+    # Why the run produced nothing usable (every writing role failed, or
+    # the polish agent did not run); None when it produced results.
+    failure: str | None = None
+
+
+FAILURE_DETAIL_LIMIT = 3
+
+
+def describe_failure(reason: str, details: list[str], details_location: str = "summary.md") -> str:
+    """``reason`` followed by the first few details that explain it."""
+    lines = [reason, *details[:FAILURE_DETAIL_LIMIT]]
+    hidden_detail_count = len(details) - FAILURE_DETAIL_LIMIT
+    if hidden_detail_count > 0:
+        lines.append(f"(+{hidden_detail_count} more in {details_location})")
+    return "\n".join(lines)
 
 
 def review_unified(
@@ -89,13 +104,14 @@ def review_unified(
 
     run = final_state.get("unified_review_run")
     if run is None:
-        warnings = final_state.get("warnings", [])
+        warnings = list(final_state.get("warnings", []))
         return UnifiedReviewRun(
             source=source,
             run_dir=run_dir,
             writing=None,
             math=None,
-            warnings=list(warnings),
+            warnings=warnings,
+            failure=describe_failure("The review produced no result.", warnings),
         )
     return run
 

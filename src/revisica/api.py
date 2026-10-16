@@ -1062,6 +1062,18 @@ def _execute_review(run_id: str, request: ReviewRequest) -> None:
             custom_instructions=request.custom_instructions,
         )
 
+        if review_result.failure:
+            # The run finished but produced nothing usable (every writing
+            # role failed, no provider for polish). Reporting it as
+            # completed showed an empty review with no reason.
+            run_state.update(
+                run_dir=str(review_result.run_dir),
+                state="failed",
+                error=review_result.failure,
+                completed_at=datetime.now().isoformat(),
+                tasks=[{"name": "review", "status": "failed", "detail": review_result.failure[:200]}],
+            )
+            return
         run_state.update(
             run_dir=str(review_result.run_dir),
             state="completed",

@@ -87,4 +87,6 @@ class PolishState(TypedDict, total=False):
     run_dir: str
     config: ReviewConfig
     report: str
+    # Set when the polish agent did not run successfully.
+    failure: str
     warnings: Annotated[list[str], operator.add]
