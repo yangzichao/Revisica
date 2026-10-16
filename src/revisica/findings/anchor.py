@@ -6,10 +6,14 @@ unreliable; verbatim quotes are not). Tiers, strongest first:
 
 1. ``exact``      — the quote (or its longest usable line) matched; the
                     anchor gets char offsets, a line number, and a section.
-2. ``line``       — no quote match, but the lane reported a line number
+2. ``loose``      — the quote matched only with whitespace, LaTeX
+                    spacing and math delimiters ignored, or through its
+                    verbatim fragments (ellipsis-stitched or label-wrapped
+                    quotes); same anchor fields as ``exact``.
+3. ``line``       — no quote match, but the lane reported a line number
                     that exists in the document (deterministic math checks
                     always do); the anchor covers that whole line.
-3. ``unresolved`` — nothing usable; the finding is shown without an
+4. ``unresolved`` — nothing usable; the finding is shown without an
                     in-document highlight.
 """
 
@@ -17,9 +21,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .loose_quote_match import LooseDocumentIndex, match_quote_loosely
 from .types import (
     RESOLUTION_EXACT,
     RESOLUTION_LINE,
+    RESOLUTION_LOOSE,
     RESOLUTION_UNRESOLVED,
     UnifiedFinding,
     severity_rank,
@@ -45,11 +51,14 @@ def resolve_anchors(
     annotation in the document.
     """
     normalized_doc, offset_map = _normalize_with_offset_map(document_text)
+    loose_index = LooseDocumentIndex(document_text)
     line_starts = _line_start_offsets(document_text)
     flat_sections = _flatten_sections(sections or [])
 
     for finding in findings:
-        _resolve_one(finding, document_text, normalized_doc, offset_map, line_starts)
+        _resolve_one(
+            finding, document_text, normalized_doc, offset_map, loose_index, line_starts
+        )
         _attach_section(finding, flat_sections)
 
     findings.sort(key=_document_order_key)
@@ -62,16 +71,21 @@ def _resolve_one(
     document_text: str,
     normalized_doc: str,
     offset_map: list[int],
+    loose_index: LooseDocumentIndex,
     line_starts: list[int],
 ) -> None:
     anchor = finding.anchor
     span = _match_quote(
         anchor.quote, normalized_doc, offset_map, anchor.line_number, document_text
     )
+    resolution = RESOLUTION_EXACT
+    if span is None and anchor.quote:
+        span = match_quote_loosely(anchor.quote, loose_index, anchor.line_number)
+        resolution = RESOLUTION_LOOSE
     if span is not None:
         anchor.start_offset, anchor.end_offset = span
         anchor.line_number = _offset_to_line(document_text, anchor.start_offset)
-        anchor.resolution = RESOLUTION_EXACT
+        anchor.resolution = resolution
         return
     if anchor.line_number is not None and 1 <= anchor.line_number <= len(line_starts):
         start = line_starts[anchor.line_number - 1]

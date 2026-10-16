@@ -3,6 +3,7 @@
 - ``types``   — :class:`UnifiedFinding` / :class:`FindingAnchor` records
 - ``collect`` — convert writing-role dicts + math issues into findings
 - ``anchor``  — quote-first anchor resolution against the document text
+- ``loose_quote_match`` — fallback matching for quotes that are not verbatim
 - ``persist`` — ``findings.json`` + ``document.md`` in the run directory
 """
 

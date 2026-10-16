@@ -36,9 +36,21 @@ anchor resolver works in tiers:
    is matched whitespace-insensitively against the document text; the
    anchor gets char offsets + line number + section id. Repeated matches
    pick the occurrence nearest the hinted line.
-2. **line** — no quote match but the lane reported a valid line number
+2. **loose** — added 2026-10-15 (`findings/loose_quote_match.py`). The
+   quote matches once whitespace, LaTeX spacing (`\,` `\;` …) and math
+   delimiters (`$`, `\[ \]`, `\( \)`) are dropped on both sides. Failing
+   that, it matches through its verbatim fragments: display-math blocks
+   and the text between `...`, quote marks, ` / ` and label colons. The
+   first fragment that matches is anchored, and it extends over later
+   fragments only if they follow within 300 chars with no heading in
+   between. Same anchor fields as **exact**, but the app marks only the
+   block, because the quote is not verbatim in the document. On four real
+   runs this anchored 21 of the 21 findings that had fallen back to line
+   or unresolved, mostly because agents stitch quotes with `...` or
+   re-space LaTeX.
+3. **line** — no quote match but the lane reported a valid line number
    (deterministic math checks always do); the anchor covers that line.
-3. **unresolved** — shown in the sidebar without an in-document mark.
+4. **unresolved** — shown in the sidebar without an in-document mark.
 
 The anchored text is the *normalized markdown the review ran against*
 (`document.markdown` from ingestion, the raw file as fallback), persisted
