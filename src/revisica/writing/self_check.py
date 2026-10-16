@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import replace
 from pathlib import Path
 
 from ..agents import get_agent, to_agent_spec
@@ -89,13 +90,7 @@ def run_writing_self_checks(
                                 f"Self-check filtered {original_count - filtered_count} "
                                 f"false positive(s) from `{original.role}` ({original.provider})."
                             )
-                        result_artifacts[idx] = WritingRoleArtifact(
-                            role=original.role,
-                            provider=original.provider,
-                            model=original.model,
-                            result=original.result,
-                            findings=checked_findings,
-                        )
+                        result_artifacts[idx] = replace(original, findings=checked_findings)
             except Exception:
                 logger.warning(
                     "Writing self-check failed for %s/%s — keeping original findings",

@@ -23,6 +23,7 @@ from ..ingestion import parse_document
 from ..math_review import MathReviewRun, review_math_file
 from ..profiles.config import ReviewConfig, ReviewMode
 from ..unified_review import UnifiedReviewRun
+from ..writing.types import MATH_VERIFICATION_ROLES, WRITING_ROLES
 from .state import UnifiedState
 
 logger = logging.getLogger(__name__)
@@ -103,6 +104,8 @@ def run_writing_lane(state: UnifiedState) -> dict:
             "warnings": [],
         })
         writing_result = final_state.get("writing_review_run")
+        if writing_result is not None:
+            warnings.extend(f"Writing: {warning}" for warning in writing_result.warnings)
     except Exception as error:
         warnings.append(f"Writing review lane failed: {error}")
         writing_result = None
@@ -146,6 +149,7 @@ def run_math_lane(state: UnifiedState) -> dict:
             codex_reasoning_effort=config.codex_reasoning_effort if config else None,
             content_override=content_override,
         )
+        warnings.extend(f"Math: {warning}" for warning in math_result.warnings)
     except Exception as error:
         warnings.append(f"Math review lane failed: {error}")
         math_result = None
@@ -257,6 +261,41 @@ def _write_findings(
 # ── summary writer ─────────────────────────────────────────────────
 
 
+def _writing_lane_status(writing: Any) -> str:
+    role_runs = len(writing.artifacts)
+    usable_artifacts = [
+        artifact for artifact in writing.artifacts
+        if artifact.result.success and artifact.findings is not None
+    ]
+    if not usable_artifacts:
+        return f"failed (none of {role_runs} role runs produced usable output; see warnings)"
+    finding_count = sum(len(artifact.findings) for artifact in usable_artifacts)
+    return f"completed ({finding_count} findings from {len(usable_artifacts)} of {role_runs} role runs)"
+
+
+def _writing_findings_by_role(writing: Any) -> str:
+    """``basic=2, structure=1, ..., section cross-check=3`` over every role."""
+    counts: dict[str, int] = {}
+    for artifact in writing.artifacts:
+        if artifact.findings is None:
+            continue
+        if artifact.role.startswith("section-xcheck-"):
+            role_group = "section cross-check"
+        elif artifact.role.startswith("claim-verify-"):
+            role_group = "claim verification"
+        else:
+            role_group = artifact.role
+        counts[role_group] = counts.get(role_group, 0) + len(artifact.findings)
+    if not counts:
+        return "none"
+    display_order = [*WRITING_ROLES, *MATH_VERIFICATION_ROLES, "section cross-check", "claim verification"]
+    ordered_groups = sorted(
+        counts,
+        key=lambda group: (display_order.index(group) if group in display_order else len(display_order), group),
+    )
+    return ", ".join(f"{group}={counts[group]}" for group in ordered_groups)
+
+
 def _write_summary(
     run_dir: Path,
     source: Path,
@@ -275,19 +314,8 @@ def _write_summary(
     ]
 
     if writing is not None:
-        basic = sum(
-            len(a.findings) for a in writing.artifacts
-            if a.findings is not None and a.role == "basic"
-        )
-        structure = sum(
-            len(a.findings) for a in writing.artifacts
-            if a.findings is not None and a.role == "structure"
-        )
-        venue = sum(
-            len(a.findings) for a in writing.artifacts
-            if a.findings is not None and a.role == "venue"
-        )
-        lines.append(f"- Writing: completed (basic={basic}, structure={structure}, venue={venue})")
+        lines.append(f"- Writing: {_writing_lane_status(writing)}")
+        lines.append(f"  - Findings by role: {_writing_findings_by_role(writing)}")
         lines.append(f"  - Venue profile: `{writing.venue_profile}`")
         lines.append(f"  - Mode: `{writing.mode}`")
         lines.append(f"  - Artifacts dir: `{writing.run_dir}`")

@@ -7,6 +7,7 @@ Helper functions are imported from the ``writing`` subpackage (the library).
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import replace
 from pathlib import Path
 
 from ...agents import findings_schema_path, get_agent, to_agent_spec
@@ -30,6 +31,7 @@ from ...writing.agent_tasks import (
     run_single_role_task,
 )
 from ...writing.artifacts import (
+    allocate_artifact_stem,
     write_final_report,
     write_role_artifact,
     write_summary as write_writing_summary_file,
@@ -147,9 +149,12 @@ def run_parallel_roles(state: WritingState) -> dict:
     artifacts: list[WritingRoleArtifact] = []
     warnings: list[str] = []
     all_roles = list(WRITING_ROLES) + list(MATH_VERIFICATION_ROLES)
+    # File stems are allocated at submit time so that two reviewers with the
+    # same provider:model get stable, distinct files.
+    used_stems: set[str] = set()
 
     with ThreadPoolExecutor(max_workers=MAX_PARALLEL_WORKERS) as pool:
-        futures: dict[object, tuple[str, str]] = {}
+        futures: dict[object, tuple[str, str, str]] = {}
 
         # Submit all standard role × provider tasks
         for role in all_roles:
@@ -167,7 +172,9 @@ def run_parallel_roles(state: WritingState) -> dict:
                     working_dir=working_dir,
                     codex_reasoning_effort=codex_reasoning_effort,
                 )
-                futures[future] = (role, routed_spec.label)
+                futures[future] = (
+                    role, routed_spec.label, allocate_artifact_stem(role, routed_spec, used_stems),
+                )
 
         # Submit section-combination cross-check tasks
         if section_combos:
@@ -189,7 +196,9 @@ def run_parallel_roles(state: WritingState) -> dict:
                         working_dir=working_dir,
                         codex_reasoning_effort=codex_reasoning_effort,
                     )
-                    futures[future] = (combo_role, routed_spec.label)
+                    futures[future] = (
+                        combo_role, routed_spec.label, allocate_artifact_stem(combo_role, routed_spec, used_stems),
+                    )
 
         # Submit per-claim verification tasks
         if extracted_claims:
@@ -211,13 +220,15 @@ def run_parallel_roles(state: WritingState) -> dict:
                         working_dir=working_dir,
                         codex_reasoning_effort=codex_reasoning_effort,
                     )
-                    futures[future] = (claim_role, routed_spec.label)
+                    futures[future] = (
+                        claim_role, routed_spec.label, allocate_artifact_stem(claim_role, routed_spec, used_stems),
+                    )
 
         # Collect results as they complete
         for future in as_completed(futures):
-            role, spec_label = futures[future]
+            role, spec_label, file_stem = futures[future]
             try:
-                artifact = future.result()
+                artifact = replace(future.result(), file_stem=file_stem)
                 artifacts.append(artifact)
                 write_role_artifact(run_dir, artifact)
                 if not artifact.result.success:
@@ -257,6 +268,12 @@ def run_self_checks(state: WritingState) -> dict:
         warnings=local_warnings,
         codex_reasoning_effort=codex_reasoning_effort,
     )
+    # The judge reads the role files, not this state: rewrite the ones
+    # self-check changed so the final report sees the filtered findings.
+    run_dir = Path(state["run_dir"])
+    for original, checked_artifact in zip(artifacts, checked):
+        if checked_artifact is not original:
+            write_role_artifact(run_dir, checked_artifact)
     return {
         "artifacts": checked,
         "warnings": local_warnings,

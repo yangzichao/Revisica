@@ -18,8 +18,28 @@ def artifact_label(provider: str, model: str | None) -> str:
     return f"{provider}_{cleaned}" if cleaned else provider
 
 
+def default_artifact_stem(role: str, provider: str, model: str | None) -> str:
+    return f"{role}_{artifact_label(provider, model)}"
+
+
+def artifact_file_stem(artifact: WritingRoleArtifact) -> str:
+    return artifact.file_stem or default_artifact_stem(artifact.role, artifact.provider, artifact.model)
+
+
+def allocate_artifact_stem(role: str, spec: ProviderModelSpec, used_stems: set[str]) -> str:
+    """A file stem no other run in this review uses (``basic_claude_sonnet_2``)."""
+    base = default_artifact_stem(role, spec.provider, spec.model)
+    stem = base
+    suffix = 2
+    while stem in used_stems:
+        stem = f"{base}_{suffix}"
+        suffix += 1
+    used_stems.add(stem)
+    return stem
+
+
 def write_role_artifact(run_dir: Path, artifact: WritingRoleArtifact) -> None:
-    base = f"{artifact.role}_{artifact_label(artifact.provider, artifact.model)}"
+    base = artifact_file_stem(artifact)
     (run_dir / f"{base}.md").write_text(artifact.result.output, encoding="utf-8")
     metadata = {
         "role": artifact.role,
@@ -111,7 +131,7 @@ def write_summary(
             lines.append(f"- {warning}")
     lines.extend(["", "## Files", ""])
     for artifact in artifacts:
-        base = f"{artifact.role}_{artifact_label(artifact.provider, artifact.model)}"
+        base = artifact_file_stem(artifact)
         lines.append(f"- `{base}.md`")
         lines.append(f"- `{base}.json`")
         if artifact.result.stderr.strip():
