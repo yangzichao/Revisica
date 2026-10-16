@@ -122,6 +122,8 @@ Supported unified benchmark suites:
 
 ## Output
 
+Runs without `--output-dir` go under `reviews/` in the current directory, or under `$REVISICA_REVIEWS_DIR` when it is set (the desktop app sets it to `<userData>/reviews`). A second run of the same paper in the same second gets a `-2` suffix instead of sharing the directory.
+
 Each unified review run creates:
 
 - `reviews/<stem>-unified-<timestamp>/summary.md` — top-level summary linking both lanes
@@ -131,21 +133,21 @@ Each unified review run creates:
 
 Each standalone math review run creates:
 
-- `reviews/<timestamp>/summary.md`
-- `reviews/<timestamp>/math_report.md`
-- `reviews/<timestamp>/math_report.json`
+- `reviews/<stem>-math-<timestamp>/summary.md`
+- `reviews/<stem>-math-<timestamp>/math_report.md`
+- `reviews/<stem>-math-<timestamp>/math_report.json`
 - optional `llm_proof_review_<n>_<provider>.md` files when proof-obligation review is enabled
 - optional `llm_proof_adjudication_<n>_<provider>.md` files when multi-provider proof review is enabled
 
 Each standalone writing review run creates:
 
-- `reviews/<timestamp>/summary.md`
-- `reviews/<timestamp>/final_report.md`
-- `reviews/<timestamp>/final_report.json`
-- `reviews/<timestamp>/basic_<provider>.md`
-- `reviews/<timestamp>/structure_<provider>.md`
-- `reviews/<timestamp>/venue_<provider>.md`
-- matching `.json` metadata files for each role output
+- `reviews/<stem>-writing-<timestamp>/summary.md`
+- `reviews/<stem>-writing-<timestamp>/final_report.md`
+- `reviews/<stem>-writing-<timestamp>/final_report.json`
+- `reviews/<stem>-writing-<timestamp>/basic_<provider>_<model>.md`
+- `reviews/<stem>-writing-<timestamp>/structure_<provider>_<model>.md`
+- `reviews/<stem>-writing-<timestamp>/venue_<provider>_<model>.md`
+- matching `.json` metadata files for each role output (a reviewer listed twice gets `_2`)
 
 The local writing benchmark suite creates:
 
@@ -198,7 +200,7 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 ## Notes
 
 - Agents get the path of the draft and read it with their own file tools; the content is not piped in. For a PDF, writing-lane and polish agents get the ingested `<stem>.normalized.md` in the run directory instead.
-- Claude CLI runs do not load the operator's `CLAUDE.md` files or auto-memory, so a reviewer's personal instructions cannot change the report's language or style. Codex still loads `~/.codex/AGENTS.md` (see `docs/bugs.md` #7).
+- Claude CLI runs do not load the operator's `CLAUDE.md` files or auto-memory, so a reviewer's personal instructions cannot change the report's language or style. Codex CLI runs use `~/.revisica/codex-home`, which links to the user's `auth.json` and `config.toml` but not `AGENTS.md`, and run with Codex memories off (see `docs/bugs.md` #7).
 - The review rubric emphasizes writing issues first, then mathematical errors, then notation and LaTeX hygiene.
 - The writing-review lane is intentionally layered: basic language hygiene, structure/logic, and venue-style alignment are reviewed separately before final adjudication.
 - The deterministic math lane is intentionally narrow. It currently targets simple function definitions, definite integrals, average-value claims, and obvious continuity failures.
