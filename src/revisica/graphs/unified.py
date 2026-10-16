@@ -1,8 +1,11 @@
 """Unified review graph — top-level orchestrator.
 
-Routes by mode:
+ingest → routes by mode:
 - POLISH → polish subgraph
-- REVIEW → ingest → writing lane → math lane → summary
+- REVIEW → writing lane ‖ math lane (in parallel) → summary
+
+Every mode ingests first, so each downstream node reviews text (a PDF's
+normalized markdown) rather than the raw source bytes.
 """
 
 from __future__ import annotations
@@ -28,12 +31,16 @@ logger = logging.getLogger(__name__)
 # ── node functions ──────────────────────────────────────────────────
 
 
-def route_by_mode(state: UnifiedState) -> str:
-    """Route to the correct subgraph based on review mode."""
+def route_by_mode(state: UnifiedState) -> str | list[str]:
+    """Route the ingested document to polish, or fan out to both lanes.
+
+    The two lanes are independent (separate run subdirectories, and
+    ``warnings`` has an append reducer), so they run concurrently.
+    """
     config = state.get("config")
     if config and config.mode == ReviewMode.POLISH:
         return "run_polish"
-    return "ingest_document"
+    return ["run_writing_lane", "run_math_lane"]
 
 
 def ingest_document(state: UnifiedState) -> dict:
@@ -82,6 +89,7 @@ def run_writing_lane(state: UnifiedState) -> dict:
         judge_spec=config.judge_spec if config else None,
         force_bootstrap=config.force_bootstrap if config else False,
         timeout_seconds=config.timeout_seconds if config else 120,
+        codex_reasoning_effort=config.codex_reasoning_effort if config else None,
     )
 
     warnings: list[str] = []
@@ -135,6 +143,7 @@ def run_math_lane(state: UnifiedState) -> dict:
             force_bootstrap=config.force_bootstrap if config else False,
             timeout_seconds=config.timeout_seconds if config else 120,
             agent_version=config.agent_version if config else None,
+            codex_reasoning_effort=config.codex_reasoning_effort if config else None,
             content_override=content_override,
         )
     except Exception as error:
@@ -148,18 +157,21 @@ def run_math_lane(state: UnifiedState) -> dict:
 
 
 def run_polish(state: UnifiedState) -> dict:
-    """Run polish mode (lightweight, writing only)."""
+    """Run polish mode (lightweight, writing only) on the ingested text."""
+    from ..writing.review_source import prepare_writing_source
     from .polish import compile_polish_graph
 
     source_path = state["source_path"]
     run_dir = state["run_dir"]
     config = state.get("config")
+    document = state.get("document")
 
     polish_warnings: list[str] = []
     try:
+        polish_source_path = prepare_writing_source(source_path, document, Path(run_dir))
         polish_graph = compile_polish_graph()
         polish_result = polish_graph.invoke({
-            "source_path": source_path,
+            "source_path": polish_source_path,
             "run_dir": run_dir,
             "config": config,
             "warnings": [],
@@ -332,17 +344,15 @@ def build_unified_graph() -> StateGraph:
     builder.add_node("write_unified_summary", write_unified_summary)
     builder.add_node("run_polish", run_polish)
 
-    builder.set_conditional_entry_point(
+    builder.set_entry_point("ingest_document")
+    builder.add_conditional_edges(
+        "ingest_document",
         route_by_mode,
-        {
-            "run_polish": "run_polish",
-            "ingest_document": "ingest_document",
-        },
+        ["run_polish", "run_writing_lane", "run_math_lane"],
     )
     builder.add_edge("run_polish", END)
-    builder.add_edge("ingest_document", "run_writing_lane")
-    builder.add_edge("run_writing_lane", "run_math_lane")
-    builder.add_edge("run_math_lane", "write_unified_summary")
+    # Join: the summary runs once, after both lanes have finished.
+    builder.add_edge(["run_writing_lane", "run_math_lane"], "write_unified_summary")
     builder.add_edge("write_unified_summary", END)
 
     return builder
