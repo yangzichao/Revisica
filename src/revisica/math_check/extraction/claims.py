@@ -3,7 +3,15 @@ from __future__ import annotations
 import re
 
 from ..types import FunctionDefinition, MathClaim
-from .latex_utils import line_number, normalize_latex, strip_group
+from .latex_utils import (
+    DISPLAY_MATH_PATTERN,
+    FUNCTION_DEFINITION_PATTERN,
+    display_math_body,
+    extract_math_segments,
+    line_number,
+    normalize_latex,
+    strip_group,
+)
 
 
 def extract_math_claims(content: str, functions: list[FunctionDefinition]) -> list[MathClaim]:
@@ -27,12 +35,11 @@ def nearest_function_before(
 
 def _extract_integral_claims(content: str) -> list[MathClaim]:
     claims: list[MathClaim] = []
-    pattern = re.compile(r"\\\[\s*(?P<body>.*?)\s*\\\]", re.DOTALL)
-    for match in pattern.finditer(content):
-        body = match.group("body").strip()
+    for match in DISPLAY_MATH_PATTERN.finditer(content):
+        body = display_math_body(match).strip()
         normalized = normalize_latex(body)
         integral_match = re.search(
-            r"\\int_(?P<a>\{[^}]+\}|[^\s^]+)\^(?P<b>\{[^}]+\}|[^\s]+)\s*(?P<integrand>.*?)\s*d(?P<var>[A-Za-z])\s*=\s*(?P<rhs>.+)",
+            r"\\int_(?P<a>\{[^}]+\}|[^\s^]+)\^(?P<b>\{[^}]+\}|[^\s]+)\s*(?P<integrand>.*?)\s*d\s?(?P<var>[A-Za-z])\s*=\s*(?P<rhs>.+)",
             normalized,
             re.DOTALL,
         )
@@ -109,9 +116,8 @@ _INLINE_INEQUALITY_PATTERN = re.compile(
 
 def _extract_bounded_inequality_claims(content: str) -> list[MathClaim]:
     claims: list[MathClaim] = []
-    display_pattern = re.compile(r"\\\[\s*(?P<body>.*?)\s*\\\]", re.DOTALL)
-    for match in display_pattern.finditer(content):
-        body = normalize_latex(match.group("body"))
+    for match in DISPLAY_MATH_PATTERN.finditer(content):
+        body = normalize_latex(display_math_body(match))
         inequality = _DISPLAY_INEQUALITY_PATTERN.search(body)
         if not inequality:
             continue
@@ -160,10 +166,16 @@ def _extract_continuity_claims(
         re.IGNORECASE,
     )
     sorted_functions = sorted(functions, key=lambda item: item.line_number)
+    definition_lines = _function_definition_lines(content)
     for match in pattern.finditer(content):
         claim_line_number = line_number(content, match.start())
         function = nearest_function_before(sorted_functions, claim_line_number)
         if function is None:
+            continue
+        # "This function" is the latest one defined. If that definition
+        # could not be parsed, an earlier function is the wrong subject:
+        # binding to it "verified" f = x^2 for a claim about 1/(x-1).
+        if any(function.line_number < line <= claim_line_number for line in definition_lines):
             continue
         interval = match.group("interval").replace("$", "")
         interval_match = re.match(r"\[(?P<a>[^,]+),(?P<b>[^\]]+)\]", interval)
@@ -184,3 +196,12 @@ def _extract_continuity_claims(
             )
         )
     return claims
+
+
+def _function_definition_lines(content: str) -> list[int]:
+    """Lines of every ``f(x) = ...`` in math, parseable or not."""
+    return [
+        int(segment["line_number"])
+        for segment in extract_math_segments(content)
+        if FUNCTION_DEFINITION_PATTERN.search(str(segment["text"]))
+    ]
