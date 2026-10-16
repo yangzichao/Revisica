@@ -1,6 +1,6 @@
 # Revisica — TODO
 
-**Last updated:** 2026-04-11 (session 2)
+**Last updated:** 2026-10-15 (checkboxes below re-verified against the code; older narrative sections unchanged)
 
 Spec: `docs/specs/desktop-app.md`
 Bugs: `docs/bugs.md`
@@ -32,7 +32,7 @@ Learning: `docs/learning/`
 - [x] **Fix Python 3.9 compat** — `api.py` type syntax (`str | None` → `Optional[str]`), `langgraph` moved to optional dep.
 - [x] **API server verified** — health + providers endpoints respond correctly.
 - [x] **Electron build verified** — `electron-vite build` compiles. Full GUI test: `cd desktop && npm run dev`.
-- [ ] **Settings page (React)** — Provider config UI: API key input for `api` mode, provider status badges. Lower priority if user only uses `cli` mode (subscription).
+- [x] **Settings page (React)** — `pages/Settings.tsx`; provider auth moved there in `e7e404f`. Provider config UI: API key input for `api` mode, provider status badges. Lower priority if user only uses `cli` mode (subscription).
 - [x] **PDF parsers** — `ingestion/mineru_parser.py` (MinerU CLI, local), `ingestion/mathpix_parser.py` (Mathpix API, cloud), `ingestion/markdown_parser.py` (passthrough). Local-first auto-detection. 29 tests.
 - [ ] **Refactor `bootstrap.py`** — Replace `detect_platforms()` with `ProviderRegistry.list_available()` across writing_review.py, math_llm_review.py.
 
@@ -43,20 +43,20 @@ Learning: `docs/learning/`
 - [ ] **SSE streaming endpoint** — FastAPI SSE consuming `graph.astream_events()`.
 - [ ] **Focus API endpoint** — `POST /api/focus/{run_id}` sends FocusRequest, resumes interrupted graph.
 - [ ] **Decompose `graphs/writing.py`** — Break into parallel fan-out nodes (roles, section combos, claims). Currently wraps `review_writing_file()` as one node.
-- [ ] **Decompose `graphs/unified.py`** — True parallel branches for writing + math lanes.
+- [x] **Decompose `graphs/unified.py`** — True parallel branches for writing + math lanes (ingest → writing ‖ math → summary).
 
 ### P3: Desktop app polish
 
-- [ ] **Paper rendering** — `RevisicaDocument.markdown` → HTML + MathJax math formulas.
-- [ ] **Annotation overlay** — Findings as right-side margin notes anchored to sections.
+- [x] **Paper rendering** — `RevisicaDocument.markdown` → HTML with KaTeX math (Library preview, `124a57d`).
+- [x] **Annotation overlay** — Anchored findings + in-app annotated review view (`185c82f`).
 - [ ] **"深挖" (Focus) button** — Per-section deep-dive trigger in Results page.
-- [ ] **Bundle Pandoc** — Download arm64+x86_64 static binaries (~25 MB each) from GitHub releases. Option A: `pypandoc-binary` in Python venv (PyInstaller picks it up). Option B: `electron-builder extraResources` to `Contents/Resources/bin/pandoc`. GPL-2 OK via subprocess (include license text + source link).
+- [x] **Bundle Pandoc** — Done via Option A: `pypandoc-binary` in the `bundle` extra. Download arm64+x86_64 static binaries (~25 MB each) from GitHub releases. Option A: `pypandoc-binary` in Python venv (PyInstaller picks it up). Option B: `electron-builder extraResources` to `Contents/Resources/bin/pandoc`. GPL-2 OK via subprocess (include license text + source link).
 - [ ] **Bundle Marker** — `pip install marker-pdf` (~300 MB with models, no GPU needed). Provides local PDF parsing out of the box. PyInstaller should bundle it with the Python backend.
 - [ ] **MinerU — user-installed optional** — Too heavy to bundle (~2+ GB, PyTorch + GPU/MLX). Document as optional: `pip install 'mineru[all]'` (Mac → MLX, Linux → vLLM, Windows → lmdeploy; plain `mineru` falls back to slow CPU Transformers for VLM). App detects via `shutil.which("mineru")` at runtime.
-- [ ] **Mathpix — API key only** — No binary to bundle. User provides `MATHPIX_APP_ID` + `MATHPIX_APP_KEY` via Settings page.
-- [ ] **PyInstaller packaging** — Freeze Python backend (+ bundled Pandoc + Marker) to `desktop/resources/python-backend`.
-- [ ] **electron-builder macOS** — DMG output, code signing (including bundled binaries), notarization.
-- [ ] **GitHub Actions CI** — Build → sign → notarize → upload DMG.
+- [x] **Mathpix — API key only** — No binary to bundle. User provides `MATHPIX_APP_ID` + `MATHPIX_APP_KEY` in the New Job import step (`MathpixSetupPanel`).
+- [x] **PyInstaller packaging** — Freeze Python backend (+ bundled Pandoc) to `desktop/resources/python-backend` (`ea5f40b`). Marker is not bundled.
+- [ ] **electron-builder macOS** — Unsigned DMG output works (`ea5f40b`); code signing (including bundled binaries) and notarization still open.
+- [ ] **GitHub Actions CI** — `build-dmg.yml` builds + uploads an unsigned DMG; `tests.yml` runs pytest on push/PR. Sign → notarize still open.
 
 ### P4: Cleanup + module extraction
 
@@ -64,7 +64,7 @@ Learning: `docs/learning/`
 - [x] **`math_check/` package** — Extracted `math_types`, `math_extraction`, `math_deterministic`, `math_artifacts` into `src/revisica/math_check/`. Pure SymPy, no LLM deps.
 - [x] **`eval/` package** — Extracted 6 `benchmark_*.py` + 3 adapters + `hf_datasets.py` into `src/revisica/eval/`.
 - [ ] **Unify prompt docs** — Document that dynamic task builders stay in templates.py, static system prompts in agents/definitions/.
-- [ ] **Decompose `writing_review.py`** — 800 lines → smaller files as LangGraph nodes take over.
+- [x] **Decompose `writing_review.py`** — Split into the `writing/` package (`e3c0e44`).
 
 ### P5: Math Agent Benchmark + Optimization
 
