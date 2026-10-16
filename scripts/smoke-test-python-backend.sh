@@ -48,20 +48,68 @@ trap cleanup EXIT
 # the bearer header.
 AUTH=(-H "Authorization: Bearer smoke-test-token")
 
-# ── 1. Health check within 5 s ────────────────────────────────────────────
+# ── 1. Health check within 30 s ───────────────────────────────────────────
+# Warm starts take 1-2 s. The first launch of a freshly built bundle has
+# taken longer than 5 s locally, so the budget leaves room for that.
 echo "▶ waiting for $BASE/api/health"
-for attempt in $(seq 1 10); do
+for attempt in $(seq 1 60); do
   if curl -sf "${AUTH[@]}" "$BASE/api/health" >/dev/null 2>&1; then
-    echo "  ok ($((attempt * 500)) ms)"
+    echo "  ok (~$((attempt * 500)) ms)"
     break
   fi
   sleep 0.5
-  if [[ "$attempt" -eq 10 ]]; then
-    echo "ERROR: backend did not come up. Log:" >&2
+  if [[ "$attempt" -eq 60 ]]; then
+    echo "ERROR: backend did not come up within 30 s. Log:" >&2
     cat "$LOG" >&2
     exit 1
   fi
 done
+
+# Ingest is asynchronous: POST /api/ingest returns a run_id, a worker thread
+# parses the file, and /api/results/{run_id} serves the parsed document once
+# /api/status/{run_id} reports "completed". The `|| true` on each lookup
+# keeps `set -e` from exiting on a failed request before the explicit error
+# messages below can report it.
+json_field() {
+  python3 -c 'import json, sys; print(json.load(sys.stdin).get(sys.argv[1], ""))' "$1"
+}
+
+ingest_and_expect_parser() {
+  local fixture="$1"
+  local expected_parser="$2"
+  local run_id run_state parser_used
+
+  run_id=$(curl -sf "${AUTH[@]}" -X POST "$BASE/api/ingest" \
+    -H 'Content-Type: application/json' \
+    -d "{\"file_path\": \"$fixture\"}" | json_field run_id) || true
+  if [[ -z "$run_id" ]]; then
+    echo "ERROR: /api/ingest returned no run_id for $fixture" >&2
+    exit 1
+  fi
+
+  run_state=""
+  for _ in $(seq 1 120); do
+    run_state=$(curl -sf "${AUTH[@]}" "$BASE/api/status/$run_id" | json_field state) || true
+    if [[ "$run_state" == "completed" || "$run_state" == "failed" ]]; then
+      break
+    fi
+    sleep 0.5
+  done
+  if [[ "$run_state" != "completed" ]]; then
+    echo "ERROR: parse run $run_id for $fixture ended as '${run_state:-unknown}'" >&2
+    curl -s "${AUTH[@]}" "$BASE/api/status/$run_id" >&2 || true
+    echo >&2
+    tail -50 "$LOG" >&2
+    exit 1
+  fi
+
+  parser_used=$(curl -sf "${AUTH[@]}" "$BASE/api/results/$run_id" | json_field parser_used) || true
+  if [[ "$parser_used" != "$expected_parser" ]]; then
+    echo "ERROR: $fixture parsed with '$parser_used', expected '$expected_parser'" >&2
+    exit 1
+  fi
+  echo "  ok (parser_used=$parser_used)"
+}
 
 # ── 2. Ingest a .md fixture ──────────────────────────────────────────────
 # Request schema: `{"file_path": "...", "parser": "auto"}` — see IngestRequest
@@ -70,30 +118,14 @@ done
 MD_FIXTURE="${REPO_ROOT}/tests/fixtures/sample_paper.md"
 if [[ -f "$MD_FIXTURE" ]]; then
   echo "▶ ingest .md"
-  resp=$(curl -sf "${AUTH[@]}" -X POST "$BASE/api/ingest" \
-    -H 'Content-Type: application/json' \
-    -d "{\"file_path\": \"$MD_FIXTURE\"}")
-  if echo "$resp" | grep -q '"parser_used"[[:space:]]*:[[:space:]]*"markdown"'; then
-    echo "  ok (parser_used=markdown)"
-  else
-    echo "ERROR: markdown ingest returned unexpected payload: $resp" >&2
-    exit 1
-  fi
+  ingest_and_expect_parser "$MD_FIXTURE" markdown
 fi
 
 # ── 3. Ingest a .tex fixture — exercises bundled pandoc ──────────────────
 TEX_FIXTURE="${REPO_ROOT}/examples/minimal_paper.tex"
 if [[ -f "$TEX_FIXTURE" ]]; then
   echo "▶ ingest .tex (pandoc path)"
-  resp=$(curl -sf "${AUTH[@]}" -X POST "$BASE/api/ingest" \
-    -H 'Content-Type: application/json' \
-    -d "{\"file_path\": \"$TEX_FIXTURE\"}")
-  if echo "$resp" | grep -q '"parser_used"[[:space:]]*:[[:space:]]*"pandoc"'; then
-    echo "  ok (parser_used=pandoc)"
-  else
-    echo "ERROR: pandoc ingest returned unexpected payload: $resp" >&2
-    exit 1
-  fi
+  ingest_and_expect_parser "$TEX_FIXTURE" pandoc
 fi
 
 # ── 4. Kick off a review — must not crash with ModuleNotFoundError ───────
