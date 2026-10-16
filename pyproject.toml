@@ -39,6 +39,8 @@ serve = [
 test = [
   "pytest>=7",
   "hypothesis>=6.80",
+  # fastapi.testclient.TestClient imports httpx at runtime.
+  "httpx>=0.27",
 ]
 all = [
   "revisica[api,serve]",
