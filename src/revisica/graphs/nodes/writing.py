@@ -57,6 +57,14 @@ def bootstrap_and_extract(state: WritingState) -> dict:
         raise FileNotFoundError(f"Input file does not exist: {source}")
     if not source.is_file():
         raise IsADirectoryError(f"Input path is not a file: {source}")
+    try:
+        content = source.read_text(encoding="utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(
+            f"Writing review needs a plain-text source (.tex or .md), but "
+            f"'{source.name}' is binary. Use `revisica review`, which parses "
+            f"PDFs before reviewing them."
+        ) from error
 
     venue_profile = config.venue_profile if config else "general-academic"
     if venue_profile not in SUPPORTED_VENUE_PROFILES:
@@ -91,7 +99,6 @@ def bootstrap_and_extract(state: WritingState) -> dict:
         bootstrap(missing_assets, force=force_bootstrap)
         platforms = detect_platforms()
 
-    content = source.read_text(encoding="utf-8")
     run_dir_str = state.get("run_dir", "")
     run_dir = make_output_dir(source, run_dir_str or None)
     copy_source_into_run_dir(source, run_dir)

@@ -61,14 +61,20 @@ def ingest_document(state: UnifiedState) -> dict:
 
 
 def run_writing_lane(state: UnifiedState) -> dict:
-    """Run the writing review subgraph."""
+    """Run the writing review subgraph.
+
+    Like the math lane, this reuses the ingested document: a PDF is
+    reviewed through its normalized markdown instead of the raw bytes.
+    """
+    from ..writing.review_source import prepare_writing_source
     from .writing import compile_writing_graph
 
     source_path = state["source_path"]
     run_dir_base = state["run_dir"]
     config = state.get("config")
+    document = state.get("document")
 
-    writing_dir = str(Path(run_dir_base) / "writing")
+    writing_dir = Path(run_dir_base) / "writing"
     writing_config = ReviewConfig(
         mode=ReviewMode.REVIEW,
         venue_profile=config.venue_profile if config else "general-academic",
@@ -80,10 +86,11 @@ def run_writing_lane(state: UnifiedState) -> dict:
 
     warnings: list[str] = []
     try:
+        writing_source_path = prepare_writing_source(source_path, document, writing_dir)
         graph = compile_writing_graph()
         final_state = graph.invoke({
-            "source_path": source_path,
-            "run_dir": writing_dir,
+            "source_path": writing_source_path,
+            "run_dir": str(writing_dir),
             "config": writing_config,
             "warnings": [],
         })
