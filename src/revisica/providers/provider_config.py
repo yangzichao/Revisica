@@ -36,8 +36,14 @@ def _default_config() -> dict:
     }
 
 
-def load_config() -> dict:
-    """Load provider config from disk, merging with env vars."""
+def load_saved_config() -> dict:
+    """Load provider config as saved on disk, without env var overrides.
+
+    Start from this when changing a setting and calling ``save_config``.
+    Starting from ``load_config`` wrote env-only secrets
+    (``ANTHROPIC_API_KEY``, ...) and the env backend mode into
+    config.json in plain text, where they outlived the env var.
+    """
     if CONFIG_PATH.exists():
         raw = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     else:
@@ -45,6 +51,12 @@ def load_config() -> dict:
 
     # Ensure backend_mode always present
     raw.setdefault("backend_mode", "auto")
+    return raw
+
+
+def load_config() -> dict:
+    """Load provider config from disk, merging with env vars."""
+    raw = load_saved_config()
 
     providers = raw.get("providers", {})
 
