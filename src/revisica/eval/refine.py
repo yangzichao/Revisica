@@ -30,6 +30,7 @@ from .provenance import (
 )
 from ..bootstrap import detect_platforms
 from ..core_types import AgentSpec, ProviderModelSpec, ReviewResult
+from ..llm_output import extract_json_object
 from ..model_router import resolve_model_for_task, TASK_WRITING_JUDGE
 from ..providers.execution import run_provider_agent
 from ..writing import WritingReviewRun, review_writing_file
@@ -510,48 +511,10 @@ def _evaluate_with_llm_judge(
 
 def _parse_judge_output(output: str) -> list[dict[str, object]] | None:
     """Parse the LLM judge's JSON output."""
-    text = output.strip()
-    if not text:
+    payload = extract_json_object(output, "evaluations", list)
+    if payload is None:
         return None
-
-    # Try direct parse
-    try:
-        data = json.loads(text)
-        if isinstance(data, dict) and "evaluations" in data:
-            return data["evaluations"]
-    except json.JSONDecodeError:
-        pass
-
-    # Try fenced code block
-    for match in re.finditer(r"```(?:json)?\s*\n(.*?)```", text, re.DOTALL):
-        try:
-            data = json.loads(match.group(1).strip())
-            if isinstance(data, dict) and "evaluations" in data:
-                return data["evaluations"]
-        except json.JSONDecodeError:
-            continue
-
-    # Try scanning for {"evaluations"
-    start = text.find('"evaluations"')
-    if start != -1:
-        brace_start = text.rfind("{", 0, start)
-        if brace_start != -1:
-            depth = 0
-            for i in range(brace_start, len(text)):
-                if text[i] == "{":
-                    depth += 1
-                elif text[i] == "}":
-                    depth -= 1
-                    if depth == 0:
-                        try:
-                            data = json.loads(text[brace_start : i + 1])
-                            if "evaluations" in data:
-                                return data["evaluations"]
-                        except json.JSONDecodeError:
-                            pass
-                        break
-
-    return None
+    return [evaluation for evaluation in payload["evaluations"] if isinstance(evaluation, dict)]
 
 
 # ── reporting ────────────────────────────────────────────────────────
