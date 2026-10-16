@@ -114,14 +114,13 @@ class CodexCliProvider(BaseProvider):
     ) -> ReviewResult:
         cli_path = self._cli_path()
 
+        # `codex exec` has no system-prompt flag, so the agent's system
+        # prompt is prepended to the task. It is the same text Claude gets.
         full_prompt = task_prompt
-        if agent_spec.codex_instructions_path:
-            instructions_path = Path(agent_spec.codex_instructions_path)
-            if instructions_path.exists():
-                instructions = instructions_path.read_text(encoding="utf-8")
-                full_prompt = (
-                    f"{instructions}\n\n---\n\n## Task\n\n{task_prompt}"
-                )
+        if agent_spec.system_prompt:
+            full_prompt = (
+                f"{agent_spec.system_prompt}\n\n---\n\n## Task\n\n{task_prompt}"
+            )
 
         with tempfile.NamedTemporaryFile(
             prefix="revisica-codex-", suffix=".md", delete=False,

@@ -106,20 +106,23 @@ def capture_prompt_hashes() -> PromptHashes:
 
 
 def _hash_definition_module(module_name: str) -> str:
+    source = _read_definition_module(module_name)
+    return hashlib.sha256(source.encode()).hexdigest()[:12]
+
+
+def _read_definition_module(module_name: str) -> str:
     path = (
         Path(__file__).resolve().parent.parent
         / "agents" / "definitions" / f"{module_name}.py"
     )
     try:
-        source = path.read_text(encoding="utf-8")
+        return path.read_text(encoding="utf-8")
     except OSError:
-        source = ""
-    return hashlib.sha256(source.encode()).hexdigest()[:12]
+        return ""
 
 
 def _hash_math_review_prompt_sources() -> str:
     package_root = Path(__file__).resolve().parent.parent
-    repo_root = package_root.parent.parent
     llm_review_path = package_root / "math_llm" / "task.py"
     if not llm_review_path.exists():
         return ""
@@ -140,23 +143,9 @@ def _hash_math_review_prompt_sources() -> str:
         if segment:
             segments.append(segment)
 
-    for filename in (
-        "math-proof-reviewer.json",
-        "math-self-checker.json",
-        "math-adjudicator.json",
-    ):
-        agent_path = repo_root / "agents" / "claude" / filename
-        if agent_path.exists():
-            segments.append(agent_path.read_text(encoding="utf-8"))
-
-    for filename in (
-        "math-proof-reviewer.md",
-        "math-self-checker.md",
-        "math-adjudicator.md",
-    ):
-        agent_path = repo_root / "agents" / "codex" / filename
-        if agent_path.exists():
-            segments.append(agent_path.read_text(encoding="utf-8"))
+    # System prompts shared by every provider (see agents/translators.py).
+    for module_name in ("proof_reviewer", "proof_self_checker", "proof_adjudicator"):
+        segments.append(_read_definition_module(module_name))
 
     return hashlib.sha256("\n\n".join(segments).encode()).hexdigest()[:12]
 

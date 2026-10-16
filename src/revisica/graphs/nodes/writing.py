@@ -9,7 +9,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from ...agents import get_agent, to_agent_spec
+from ...agents import findings_schema_path, get_agent, to_agent_spec
 from ...bootstrap import detect_platforms, bootstrap
 from ...claim_extractor import (
     build_claim_verification_task,
@@ -27,7 +27,6 @@ from ...venue_profiles import SUPPORTED_VENUE_PROFILES
 from ...writing.agent_tasks import (
     build_agent_spec,
     build_agent_task,
-    find_codex_file,
     run_single_role_task,
 )
 from ...writing.artifacts import (
@@ -97,7 +96,7 @@ def bootstrap_and_extract(state: WritingState) -> dict:
     run_dir = make_output_dir(source, run_dir_str or None)
     copy_source_into_run_dir(source, run_dir)
     working_dir = str(source.parent)
-    schema_path = find_codex_file("findings.schema.json")
+    schema_path = findings_schema_path()
 
     # Extract sections, combinations, and claims
     sections = extract_sections(content)

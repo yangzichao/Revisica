@@ -108,7 +108,14 @@ class ClaudeCliProvider(BaseProvider):
         del codex_reasoning_effort  # Codex-specific; no-op for Claude.
         cli_path = self._cli_path()
 
-        agent_def = agent_spec.claude_agent_def or {}
+        # Claude Code's --agents schema requires "description" and "prompt";
+        # it rejects the whole invocation when either is missing.
+        agent_def: dict[str, object] = {
+            "description": agent_spec.description or agent_spec.name,
+            "prompt": agent_spec.system_prompt,
+        }
+        if agent_spec.tools:
+            agent_def["tools"] = agent_spec.tools
         agents_json = json.dumps({agent_spec.name: agent_def})
 
         command = [

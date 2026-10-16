@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -37,11 +37,17 @@ class ProviderModelSpec:
 
 @dataclass
 class AgentSpec:
-    """Defines a real agent invocation with tool access."""
+    """Defines a real agent invocation with tool access.
+
+    ``system_prompt`` is the single prompt every provider sends, so a
+    Claude run and a Codex run of the same agent are directly comparable.
+    """
 
     name: str
-    claude_agent_def: dict[str, object] | None = None
-    codex_instructions_path: str | None = None
+    description: str = ""
+    system_prompt: str = ""
+    # Abstract tool names, e.g. ["Read", "Glob", "Grep", "Bash"].
+    tools: list[str] = field(default_factory=list)
     codex_output_schema: str | None = None
     codex_sandbox: str = "read-only"
     # Optional Codex reasoning effort. Accepted values:

@@ -24,6 +24,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from ..adjudication_policy import pick_preferred_item
+from ..agents import findings_schema_path
 from ..bootstrap import PlatformStatus, bootstrap, detect_platforms
 from ..core_types import ProviderModelSpec
 from ..model_router import resolve_model_for_role
@@ -40,7 +41,6 @@ from .task import (
     build_math_agent_spec,
     build_proof_review_task,
     build_self_check_task,
-    find_codex_file,
 )
 from .parse import (
     extract_findings_payload,
@@ -107,7 +107,7 @@ def run_llm_proof_review(
         bootstrap(missing_assets, force=force_bootstrap)
         platforms = detect_platforms()
 
-    schema_path = find_codex_file("findings.schema.json")
+    schema_path = findings_schema_path()
     artifacts: list[LLMProofReviewArtifact] = []
 
     with ThreadPoolExecutor(max_workers=_MAX_PARALLEL_WORKERS) as pool:
@@ -418,7 +418,7 @@ def _run_math_adjudication(
     codex_reasoning_effort: str | None = None,
 ) -> LLMAdjudicationArtifact:
     routed = resolve_model_for_role(adjudicator_spec, "adjudicator")
-    schema_path = find_codex_file("findings.schema.json")
+    schema_path = findings_schema_path()
     agent_spec = build_math_agent_spec("adjudicator", schema_path)
     task_prompt = build_adjudication_task(str(source), blueprint, provider_artifacts)
     result = run_provider_agent(
@@ -454,7 +454,7 @@ def _run_math_self_check(
         model=reviewer_artifact.model,
     )
     routed = resolve_model_for_role(checker, "self-checker")
-    schema_path = find_codex_file("findings.schema.json")
+    schema_path = findings_schema_path()
     agent_spec = build_math_agent_spec("self-checker", schema_path)
     task_prompt = build_self_check_task(
         str(source),

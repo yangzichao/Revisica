@@ -118,9 +118,7 @@ class AnthropicApiProvider(BaseProvider):
         client = _get_anthropic_client()
         resolved_model = model or _DEFAULT_MODEL
 
-        system_prompt = ""
-        if agent_spec.claude_agent_def:
-            system_prompt = agent_spec.claude_agent_def.get("instructions", "")
+        system_prompt = agent_spec.system_prompt
 
         # Build Anthropic tool definitions from our abstract tool list
         anthropic_tools = _build_anthropic_tools(agent_spec)
@@ -200,9 +198,7 @@ class AnthropicApiProvider(BaseProvider):
 
 def _build_anthropic_tools(agent_spec: AgentSpec) -> list[dict]:
     """Convert abstract tool names to Anthropic tool definitions."""
-    requested_tools = set()
-    if agent_spec.claude_agent_def:
-        requested_tools = set(agent_spec.claude_agent_def.get("tools", []))
+    requested_tools = set(agent_spec.tools)
 
     if not requested_tools:
         # Default: give all tools
