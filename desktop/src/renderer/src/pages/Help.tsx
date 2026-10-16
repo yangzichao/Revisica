@@ -68,7 +68,7 @@ export default function Help(): JSX.Element {
           <h2 className="font-serif text-base font-semibold text-ink mb-2">
             About
           </h2>
-          <p className="text-sm text-ink-faint">Version 0.1.0</p>
+          <p className="text-sm text-ink-faint">Version {__APP_VERSION__}</p>
         </section>
       </div>
     </div>

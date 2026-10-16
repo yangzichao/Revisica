@@ -23,6 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from . import __version__
 from .core_types import ProviderModelSpec
 from .findings import load_findings_payload
 from .ingestion import parse_document_with_assets
@@ -134,7 +135,7 @@ async def _lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Revisica API", version="0.1.0", lifespan=_lifespan)
+app = FastAPI(title="Revisica API", version=__version__, lifespan=_lifespan)
 
 # Token auth is the primary defense against CSRF from the user's browser;
 # CORS is also tightened so cross-origin preflights are refused outright.
