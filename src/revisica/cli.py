@@ -19,7 +19,7 @@ from .ingestion import parse_document
 from .math_review import review_math_file
 from .profiles import ReviewMode
 from .venue_profiles import SUPPORTED_VENUE_PROFILES
-from .unified_review import review_unified
+from .unified_review import UnifiedReviewRun, review_unified
 from .writing import review_writing_file
 
 
@@ -376,6 +376,7 @@ def _add_benchmark_ingestion_parser(sub: argparse._SubParsersAction) -> None:
 
 
 def _handle_review(args: argparse.Namespace) -> None:
+    mode = getattr(args, "mode", "review")
     run = review_unified(
         file_path=args.file,
         output_dir=args.output_dir,
@@ -386,9 +387,12 @@ def _handle_review(args: argparse.Namespace) -> None:
         targets=args.targets,
         force_bootstrap=args.force_bootstrap,
         timeout_seconds=args.timeout_seconds,
-        mode=getattr(args, "mode", "review"),
+        mode=mode,
         codex_reasoning_effort=getattr(args, "codex_reasoning", None),
     )
+    if mode == ReviewMode.POLISH.value:
+        _print_polish_run(run)
+        return
     print("environment check: unified review (writing + math)")
     print(f"unified artifacts: {run.run_dir}")
     for warning in run.warnings:
@@ -409,6 +413,17 @@ def _handle_review(args: argparse.Namespace) -> None:
         print(f"math report: {m.run_dir / 'math_report.md'}")
     else:
         print("math lane: failed")
+    print(f"summary: {run.run_dir / 'summary.md'}")
+
+
+def _print_polish_run(run: UnifiedReviewRun) -> None:
+    # Polish runs neither lane, so run.writing and run.math are always None.
+    # Agent failures arrive as warnings ("Polish agent failed: ...").
+    print("environment check: polish (writing only)")
+    print(f"polish artifacts: {run.run_dir}")
+    for warning in run.warnings:
+        print(f"warning: {warning}")
+    print(f"polish report: {run.run_dir / 'polish_report.md'}")
     print(f"summary: {run.run_dir / 'summary.md'}")
 
 
