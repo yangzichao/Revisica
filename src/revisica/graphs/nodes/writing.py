@@ -18,6 +18,7 @@ from ...claim_extractor import (
 )
 from ...core_types import ProviderModelSpec
 from ...model_router import resolve_model_for_role
+from ...providers.availability import default_runnable_specs, runnable_spec
 from ...run_dir_helpers import copy_source_into_run_dir
 from ...section_combiner import (
     build_section_combo_task,
@@ -80,9 +81,16 @@ def bootstrap_and_extract(state: WritingState) -> dict:
     timeout_seconds = config.timeout_seconds if config else 120
 
     platforms = detect_platforms()
-    detected = [name for name, p in platforms.items() if p.available]
+    detected = [spec.provider for spec in default_runnable_specs(platforms)]
     selected_specs, warnings = resolve_reviewer_specs(platforms, reviewer_specs)
     mode = "cross-check" if len(selected_specs) >= 2 else "single-provider"
+    if judge_spec is not None:
+        runnable_judge_spec = runnable_spec(judge_spec, platforms)
+        if runnable_judge_spec is None:
+            warnings.append(
+                f"Requested judge `{judge_spec.label}` is not available; picking the judge from the reviewers."
+            )
+        judge_spec = runnable_judge_spec
 
     # Bootstrap missing assets
     required = list(selected_specs)

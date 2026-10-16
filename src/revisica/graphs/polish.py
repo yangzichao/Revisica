@@ -14,8 +14,8 @@ from langgraph.graph import END, StateGraph
 
 from ..agents import get_agent, to_agent_spec
 from ..bootstrap import detect_platforms
-from ..core_types import ProviderModelSpec
 from ..model_router import resolve_model_for_role
+from ..providers.availability import default_runnable_specs, runnable_spec
 from ..providers.execution import run_provider_agent
 from .state import PolishState
 
@@ -37,29 +37,24 @@ def run_polish_agent(state: PolishState) -> dict:
 
     agent_spec = to_agent_spec(get_agent("polish-agent"))
 
-    # Select provider and model
-    providers = config.providers
-    if not providers:
-        platforms = detect_platforms()
-        available_providers = [
-            name for name, platform in platforms.items() if platform.available
-        ]
-        if not available_providers:
+    platforms = detect_platforms()
+    if config.providers:
+        requested_spec = config.providers[0]
+        selected_spec = runnable_spec(requested_spec, platforms)
+        if selected_spec is None:
+            return {
+                "report": "",
+                "warnings": [f"Provider '{requested_spec.provider}' not available."],
+            }
+    else:
+        default_specs = default_runnable_specs(platforms)
+        if not default_specs:
             return {
                 "report": "",
                 "warnings": ["No provider available for polish."],
             }
-        providers = [ProviderModelSpec(provider=available_providers[0])]
-
-    provider_spec = resolve_model_for_role(providers[0], "polish")
-    platforms = detect_platforms()
-    platform = platforms.get(provider_spec.provider)
-
-    if platform is None or not platform.available:
-        return {
-            "report": "",
-            "warnings": [f"Provider '{provider_spec.provider}' not available."],
-        }
+        selected_spec = default_specs[0]
+    provider_spec = resolve_model_for_role(selected_spec, "polish")
 
     task_prompt = f"Polish the academic draft at `{source_path}`. Read the file and suggest writing improvements."
     if config.custom_instructions:

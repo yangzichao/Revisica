@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ..bootstrap import PlatformStatus
 from ..core_types import ProviderModelSpec
+from ..providers.availability import default_runnable_specs, split_runnable_specs
 
 
 def resolve_reviewer_specs(
@@ -15,22 +16,18 @@ def resolve_reviewer_specs(
 ) -> tuple[list[ProviderModelSpec], list[str]]:
     warnings: list[str] = []
     if reviewer_specs:
-        selected = [spec for spec in reviewer_specs if platforms[spec.provider].available]
-        missing = [spec.label for spec in reviewer_specs if not platforms[spec.provider].available]
-        if missing:
+        selected, unavailable = split_runnable_specs(reviewer_specs, platforms)
+        if unavailable:
             warnings.append(
-                "Requested writing-review provider(s) not installed: " + ", ".join(missing) + "."
+                "Requested writing-review provider(s) not available: " + ", ".join(unavailable) + "."
             )
     else:
-        selected = [
-            ProviderModelSpec(provider=name)
-            for name, platform in platforms.items()
-            if platform.available
-        ]
+        selected = default_runnable_specs(platforms)
     if not selected:
         raise RuntimeError(
             "No supported provider detected in the current environment. "
-            "Install codex and/or claude first, then run `revisica bootstrap`."
+            "Install codex and/or claude and run `revisica bootstrap`, or configure an "
+            "Anthropic/OpenAI API key."
         )
     if len(selected) == 1:
         warnings.append(

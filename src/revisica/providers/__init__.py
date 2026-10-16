@@ -140,12 +140,18 @@ _registry_lock = threading.Lock()
 
 
 def get_registry() -> ProviderRegistry:
-    """Get the global provider registry (lazy, thread-safe singleton)."""
+    """Get the global provider registry (lazy, thread-safe singleton).
+
+    Rebuilt when the backend mode changes (the desktop app switches it at
+    runtime via ``PUT /api/config/backend-mode``); otherwise names kept
+    resolving under the mode the process started with.
+    """
     global _registry
-    if _registry is None:
+    mode = get_backend_mode()
+    if _registry is None or _registry.mode != mode:
         with _registry_lock:
-            if _registry is None:
-                _registry = ProviderRegistry()
+            if _registry is None or _registry.mode != mode:
+                _registry = ProviderRegistry(mode)
     return _registry
 
 

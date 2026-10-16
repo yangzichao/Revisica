@@ -190,7 +190,8 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 
 ## Fallback Behavior
 
-- If neither `codex` nor `claude` is installed, `revisica review` exits with an explicit environment error.
+- If neither `codex` nor `claude` is installed and no Anthropic/OpenAI API key is configured, `revisica review` exits with an explicit environment error.
+- `REVISICA_BACKEND_MODE` picks the backend: `cli` uses only the CLIs, `api` only the API keys, and `auto` (default) prefers each CLI and falls back to its API (`claude` → `anthropic-api`, `codex` → `openai-api`). Reviewers can also be named directly, e.g. `--reviewer-a anthropic-api:claude-sonnet-5-5`.
 - If only one provider is available, Revisica prints a warning and switches to `single-provider-self-verify` mode.
 - If the final adjudication step fails, Revisica falls back to a merged single report instead of leaving the user with no final artifact.
 

@@ -35,6 +35,7 @@ from ..math_check import (
     MathIssue,
     ProofBlueprint,
 )
+from ..providers.availability import default_runnable_specs, runnable_spec, split_runnable_specs
 from ..providers.execution import run_provider_agent
 from .task import (
     build_adjudication_task,
@@ -80,6 +81,8 @@ def run_llm_proof_review(
     platforms = detect_platforms()
     selected_specs, selection_warnings = _resolve_math_reviewer_specs(platforms, targets, reviewer_specs)
     warnings.extend(selection_warnings)
+    self_check_spec = _runnable_optional_spec(self_check_spec, "self-checker", platforms, warnings)
+    adjudicator_spec = _runnable_optional_spec(adjudicator_spec, "adjudicator", platforms, warnings)
     if not selected_specs:
         warnings.append(
             "LLM proof review was requested, but no supported provider is available. "
@@ -176,23 +179,30 @@ def _resolve_math_reviewer_specs(
     reviewer_specs: list[ProviderModelSpec] | None,
 ) -> tuple[list[ProviderModelSpec], list[str]]:
     warnings: list[str] = []
-    if reviewer_specs:
-        selected = [spec for spec in reviewer_specs if platforms[spec.provider].available]
-        missing = [spec.label for spec in reviewer_specs if not platforms[spec.provider].available]
-        if missing:
-            warnings.append(f"Requested math-review provider(s) not installed: {', '.join(missing)}.")
-        return selected, warnings
-    if targets:
-        selected = [ProviderModelSpec(provider=name) for name in targets if platforms[name].available]
-        missing = [name for name in targets if not platforms[name].available]
-        if missing:
-            warnings.append(f"Requested math-review provider(s) not installed: {', '.join(missing)}.")
-        return selected, warnings
-    return [
-        ProviderModelSpec(provider=name)
-        for name, platform in platforms.items()
-        if platform.available
-    ], warnings
+    requested_specs = reviewer_specs or [ProviderModelSpec(provider=name) for name in targets or []]
+    if not requested_specs:
+        return default_runnable_specs(platforms), warnings
+    selected, unavailable = split_runnable_specs(requested_specs, platforms)
+    if unavailable:
+        warnings.append(f"Requested math-review provider(s) not available: {', '.join(unavailable)}.")
+    return selected, warnings
+
+
+def _runnable_optional_spec(
+    spec: ProviderModelSpec | None,
+    role_name: str,
+    platforms: dict[str, PlatformStatus],
+    warnings: list[str],
+) -> ProviderModelSpec | None:
+    """An explicitly requested self-checker/adjudicator, if it can run now."""
+    if spec is None:
+        return None
+    resolved = runnable_spec(spec, platforms)
+    if resolved is None:
+        warnings.append(
+            f"Requested math {role_name} `{spec.label}` is not available; picking one from the reviewers."
+        )
+    return resolved
 
 
 def _normalize_proof_review_mode(
