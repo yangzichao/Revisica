@@ -11,6 +11,14 @@ from .tools import TOOL_DEFINITIONS, execute_tool
 
 _MAX_TOOL_OUTPUT_CHARS = 50000
 
+# Used only when the caller did not resolve a model via model_router.
+_DEFAULT_MODEL = "claude-opus-5-5"
+
+# Claude 5.5 models think by default and thinking tokens count against
+# max_tokens, so 8192 could cut off the visible answer. 16000 is the
+# recommended ceiling for non-streaming requests (avoids SDK HTTP timeouts).
+_MAX_OUTPUT_TOKENS = 16000
+
 
 def _get_anthropic_client():
     """Lazy import and create Anthropic client."""
@@ -60,12 +68,12 @@ class AnthropicApiProvider(BaseProvider):
     ) -> ReviewResult:
         del codex_reasoning_effort  # Codex-specific; no-op for Anthropic.
         client = _get_anthropic_client()
-        resolved_model = model or "claude-sonnet-4-20250514"
+        resolved_model = model or _DEFAULT_MODEL
 
         try:
             response = client.messages.create(
                 model=resolved_model,
-                max_tokens=8192,
+                max_tokens=_MAX_OUTPUT_TOKENS,
                 messages=[{"role": "user", "content": prompt}],
                 timeout=timeout_seconds,
             )
@@ -108,7 +116,7 @@ class AnthropicApiProvider(BaseProvider):
         back.  Repeats until the model returns a final text response.
         """
         client = _get_anthropic_client()
-        resolved_model = model or "claude-sonnet-4-20250514"
+        resolved_model = model or _DEFAULT_MODEL
 
         system_prompt = ""
         if agent_spec.claude_agent_def:
@@ -125,7 +133,7 @@ class AnthropicApiProvider(BaseProvider):
             for _ in range(max_iterations):
                 create_kwargs = {
                     "model": resolved_model,
-                    "max_tokens": 8192,
+                    "max_tokens": _MAX_OUTPUT_TOKENS,
                     "messages": messages,
                     "timeout": timeout_seconds,
                 }

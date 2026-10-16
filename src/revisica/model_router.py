@@ -53,27 +53,29 @@ ROLE_TASK_MAP: dict[str, str] = {
 #
 # For Codex, route to models that are both strong and broadly supported by
 # the current account setup. We intentionally avoid older unsupported routes
-# like `o3` and `gpt-4.1`, which caused real benchmark runs to fail.
+# like `o3`, `gpt-4.1`, `gpt-5` and `gpt-5.4`, which Codex rejects on ChatGPT
+# accounts ("model is not supported when using Codex with a ChatGPT account").
 #
 # These are suggestions. Users can still override them explicitly.
 
+_CODEX_DEFAULT_MODEL = "gpt-6.1-sol"
+
 _GPT_ROUTES: dict[str, str] = {
-    TASK_MATH_REASONING: "gpt-5",
-    TASK_MATH_SELF_CHECK: "gpt-5",
-    TASK_MATH_ADJUDICATION: "gpt-5",
-    TASK_MATH_CLAIM_VERIFY: "gpt-5",
-    TASK_WRITING_BASIC: "gpt-5",
-    TASK_WRITING_STRUCTURE: "gpt-5",
-    TASK_WRITING_VENUE: "gpt-5",
-    TASK_WRITING_SELF_CHECK: "gpt-5",
-    TASK_WRITING_JUDGE: "gpt-5",
-    TASK_NOTATION_TRACK: "gpt-5",
-    TASK_FORMULA_CROSS_CHECK: "gpt-5",
-    TASK_SECTION_CROSS_CHECK: "gpt-5",
+    TASK_MATH_REASONING: _CODEX_DEFAULT_MODEL,
+    TASK_MATH_SELF_CHECK: _CODEX_DEFAULT_MODEL,
+    TASK_MATH_ADJUDICATION: _CODEX_DEFAULT_MODEL,
+    TASK_MATH_CLAIM_VERIFY: _CODEX_DEFAULT_MODEL,
+    TASK_WRITING_BASIC: _CODEX_DEFAULT_MODEL,
+    TASK_WRITING_STRUCTURE: _CODEX_DEFAULT_MODEL,
+    TASK_WRITING_VENUE: _CODEX_DEFAULT_MODEL,
+    TASK_WRITING_SELF_CHECK: _CODEX_DEFAULT_MODEL,
+    TASK_WRITING_JUDGE: _CODEX_DEFAULT_MODEL,
+    TASK_NOTATION_TRACK: _CODEX_DEFAULT_MODEL,
+    TASK_FORMULA_CROSS_CHECK: _CODEX_DEFAULT_MODEL,
+    TASK_SECTION_CROSS_CHECK: _CODEX_DEFAULT_MODEL,
     # Polish: no hard-coded default — let Codex use the user's config default.
-    # Rationale: gpt-5 is not available on all Codex accounts (e.g. ChatGPT
-    # subscription accounts only expose gpt-5.4), and polish is tolerant of
-    # any modern model.
+    # Rationale: the model menu differs across Codex account types, and
+    # polish is tolerant of any modern model.
 }
 
 _CLAUDE_ROUTES: dict[str, str] = {
@@ -95,22 +97,21 @@ _CLAUDE_ROUTES: dict[str, str] = {
     TASK_POLISH: "sonnet",
 }
 
-_ANTHROPIC_API_ROUTES: dict[str, str] = {
-    TASK_MATH_REASONING: "claude-sonnet-4-20250514",
-    TASK_MATH_SELF_CHECK: "claude-sonnet-4-20250514",
-    TASK_MATH_ADJUDICATION: "claude-sonnet-4-20250514",
-    TASK_MATH_CLAIM_VERIFY: "claude-sonnet-4-20250514",
-    TASK_WRITING_BASIC: "claude-sonnet-4-20250514",
-    TASK_WRITING_STRUCTURE: "claude-sonnet-4-20250514",
-    TASK_WRITING_VENUE: "claude-sonnet-4-20250514",
-    TASK_WRITING_SELF_CHECK: "claude-sonnet-4-20250514",
-    TASK_WRITING_JUDGE: "claude-sonnet-4-20250514",
-    TASK_NOTATION_TRACK: "claude-sonnet-4-20250514",
-    TASK_FORMULA_CROSS_CHECK: "claude-sonnet-4-20250514",
-    TASK_SECTION_CROSS_CHECK: "claude-sonnet-4-20250514",
-    TASK_POLISH: "claude-sonnet-4-20250514",
+# The Anthropic API needs full model IDs instead of the CLI's "opus"/"sonnet"
+# aliases. Derived from _CLAUDE_ROUTES so the two tables cannot drift apart.
+_CLAUDE_ALIAS_TO_API_MODEL_ID: dict[str, str] = {
+    "opus": "claude-opus-5-5",
+    "sonnet": "claude-sonnet-5-5",
 }
 
+_ANTHROPIC_API_ROUTES: dict[str, str] = {
+    task_type: _CLAUDE_ALIAS_TO_API_MODEL_ID[cli_alias]
+    for task_type, cli_alias in _CLAUDE_ROUTES.items()
+}
+
+# Kept on gpt-4o on purpose: GPT-6 models do not support tool calling on Chat
+# Completions, which api_openai.py's agent loop uses. Moving past gpt-4o
+# requires porting that provider to the Responses API first.
 _OPENAI_API_ROUTES: dict[str, str] = {
     TASK_MATH_REASONING: "gpt-4o",
     TASK_MATH_SELF_CHECK: "gpt-4o",
