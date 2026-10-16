@@ -225,7 +225,7 @@ class ReviewRequest(BaseModel):
     parsed_document_id: Optional[str] = None
     mode: str = "review"
     venue_profile: str = "general-academic"
-    custom_instructions: Optional[str] = None
+    custom_instructions: Optional[str] = None  # appended to the polish task (polish mode only)
     llm_proof_review: bool = False
     timeout_seconds: int = 120
     parser: str = "auto"
@@ -1059,6 +1059,7 @@ def _execute_review(run_id: str, request: ReviewRequest) -> None:
             mineru_backend=resolved["mineru_backend"],
             reviewer_specs=[writing_spec] if writing_spec else None,
             math_reviewer_specs=[math_spec] if math_spec else None,
+            custom_instructions=request.custom_instructions,
         )
 
         run_state.update(
