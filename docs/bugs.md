@@ -1,7 +1,7 @@
 # Bugs & Cleanup
 
 **Filed:** 2026-04-11
-**Last verified:** 2026-10-15 (commit `a0dbe05`)
+**Last verified:** 2026-10-15 (commit `96fa76d`)
 
 ## Open
 
@@ -106,3 +106,9 @@ None as of 2026-10-15.
 **Fixed:** `a0dbe05`
 **Was:** `_execute_review` marked a job completed whenever `review_unified` returned. With every agent failing, review and polish jobs both ended completed with no error. The desktop showed an empty review, or a polish report reading "No polish suggestions generated.", and offered no Retry.
 **Fix:** `UnifiedReviewRun.failure` is set when no writing role produced usable output or the polish agent did not run. The job is then marked failed with that reason and the first role errors.
+
+### 17. CLI agent runs outlived the desktop backend — FIXED
+
+**Fixed:** `96fa76d`
+**Was:** The desktop app quits by sending SIGTERM to the backend's pid. Claude/Codex CLI runs in flight kept going, reparented to launchd (with a fake `claude` that sleeps, 9 of 9 outlived the backend), and the job was recorded as failed with "exit -15" from every agent.
+**Fix:** `jobs/child_processes.py` stops the server's whole process tree on lifespan shutdown, including agents started during shutdown, and SIGKILLs what is left after 3s. Snapshot writes stop first, so cut-off jobs are recovered as interrupted on the next start.
