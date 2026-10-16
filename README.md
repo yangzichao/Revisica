@@ -1,29 +1,28 @@
 # Revisica
 
-Revisica is a minimal POC for reviewing LaTeX-first academic drafts with Codex and Claude.
+Revisica reviews academic drafts with Codex and Claude.
 
 Current scope:
 
-- Focus on `.tex` files first.
+- Accept `.tex`, `.pdf`, `.md`, and `.mmd` drafts. Every input is first ingested into one normalized document: Pandoc (or a built-in TeX parser) for LaTeX, and MinerU or Marker locally for PDF, with Mathpix as an opt-in cloud parser.
 - Support a deterministic `math-review` lane for symbolic math checks.
 - Detect whether `codex` and `claude` CLIs are installed.
 - Auto-install local review assets when they are missing.
-- Run one or both providers against the same LaTeX draft.
+- Run one or both providers against the same draft.
 - Always try to produce one user-facing `final_report.md`.
 
-This POC assumes "Cloud" in the original idea means `Claude`.
-
-## What the POC does
+## What it does
 
 1. `bootstrap`
    - Detects `codex` and `claude`.
    - Installs a local `revisica` plugin and `latex-paper-review` skill for each platform.
    - Installs a lightweight local agent profile used by the Python runner.
 2. `review` (unified)
-   - Runs writing-review and math-review concurrently as independent lanes.
+   - Ingests the draft, then runs writing-review and math-review concurrently as independent lanes.
    - Each lane produces its own report in a subdirectory (`writing/`, `math/`).
    - A top-level `summary.md` links both lane outputs.
    - Accepts options for both lanes (venue profile, LLM proof review, etc.).
+   - `--mode polish` skips both lanes and runs a single prose-polish agent instead, writing `polish_report.md`.
 3. `math-review`
    - Extracts simple mathematical claims from the LaTeX source.
    - Uses SymPy to check definite integrals and average-value claims.
@@ -191,7 +190,8 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 
 ## Notes
 
-- The POC sends the LaTeX content directly to each CLI through stdin instead of asking the model to read files from disk. This keeps the first end-to-end path simpler and more deterministic.
+- Agents get the path of the draft and read it with their own file tools; the content is not piped in. For a PDF, writing-lane and polish agents get the ingested `<stem>.normalized.md` in the run directory instead.
+- Claude CLI runs do not load the operator's `CLAUDE.md` files or auto-memory, so a reviewer's personal instructions cannot change the report's language or style. Codex still loads `~/.codex/AGENTS.md` (see `docs/bugs.md` #7).
 - The review rubric emphasizes writing issues first, then mathematical errors, then notation and LaTeX hygiene.
 - The writing-review lane is intentionally layered: basic language hygiene, structure/logic, and venue-style alignment are reviewed separately before final adjudication.
 - The deterministic math lane is intentionally narrow. It currently targets simple function definitions, definite integrals, average-value claims, and obvious continuity failures.
@@ -203,4 +203,4 @@ Every `benchmark-math` and `benchmark-writing` run also appends a provenance ent
 - `ProofBench` is currently used as a proof-review benchmark with expert-rating metadata preserved; the first metric is issue-score aggregation rather than a full grading model.
 - `ProcessBench` is currently used as a step-verification benchmark, comparing the earliest flagged `Step n` against the dataset's labeled first wrong step.
 - The writing-review lane currently uses prompt-specialized multi-agent coordination rather than a deterministic parser. It is designed to surface revision priorities, not to rewrite a paper automatically.
-- Word support is intentionally out of scope for this initial POC.
+- Word (`.docx`) input is not supported.
