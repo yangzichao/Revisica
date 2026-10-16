@@ -1,42 +1,16 @@
 from __future__ import annotations
 
-import json
-import logging
 import re
 
+from ..llm_output import extract_json_object
 from ..math_check import MathIssue, ProofBlueprint, ProofObligation
 
 
-def extract_json_payload(text: str) -> dict[str, object] | None:
-    stripped = text.strip()
-    candidates = [stripped]
-    fence_match = re.search(r"```json\s*(\{.*?\})\s*```", stripped, re.DOTALL)
-    if fence_match:
-        candidates.insert(0, fence_match.group(1))
-    brace_match = re.search(r"(\{.*\})", stripped, re.DOTALL)
-    if brace_match:
-        candidates.append(brace_match.group(1))
-    for candidate in candidates:
-        try:
-            parsed = json.loads(candidate)
-        except Exception:
-            logging.getLogger(__name__).debug("JSON parse attempt failed for candidate: %.120s", candidate)
-            continue
-        if isinstance(parsed, dict):
-            return parsed
-    return None
-
-
 def extract_findings_payload(text: str) -> list[dict[str, object]] | None:
-    payload = extract_json_payload(text)
+    payload = extract_json_object(text, "findings", list)
     if payload is None:
         return None
-    if "findings" not in payload:
-        return None
-    findings = payload.get("findings")
-    if isinstance(findings, list):
-        return findings
-    return None
+    return payload["findings"]
 
 
 def _safe_step_index(finding: dict[str, object]) -> int | None:
