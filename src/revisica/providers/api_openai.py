@@ -1,4 +1,8 @@
-"""OpenAI API provider — direct API access with function calling support."""
+"""OpenAI API provider — direct API access with function calling support.
+
+Uses the Responses API. OpenAI recommends it for function calling on GPT-6
+models, and gpt-6.1-sol only supports tool calling there.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +12,9 @@ from ..core_types import AgentSpec, ReviewResult
 from .base import BaseProvider
 from .provider_config import get_provider_config
 from .tools import TOOL_DEFINITIONS, execute_tool
+
+# Used only when the caller did not resolve a model via model_router.
+_DEFAULT_MODEL = "gpt-6.1-sol"
 
 
 def _get_openai_client():
@@ -31,7 +38,7 @@ def _get_openai_client():
 
 
 class OpenAiApiProvider(BaseProvider):
-    """Access GPT models via the OpenAI Chat Completions API (requires API key)."""
+    """Access GPT models via the OpenAI Responses API (requires API key)."""
 
     @property
     def name(self) -> str:
@@ -57,28 +64,27 @@ class OpenAiApiProvider(BaseProvider):
         codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
         client = _get_openai_client()
-        resolved_model = model or "gpt-4o"
+        resolved_model = model or _DEFAULT_MODEL
 
         create_kwargs: dict[str, object] = {
             "model": resolved_model,
-            "messages": [{"role": "user", "content": prompt}],
+            "input": prompt,
+            # Responses are stored server-side by default; manuscripts under
+            # review should not be.
+            "store": False,
             "timeout": timeout_seconds,
         }
-        if codex_reasoning_effort and _supports_reasoning_effort(resolved_model):
-            # OpenAI API accepts "minimal|low|medium|high" on reasoning models;
-            # Codex's extra values ("none", "xhigh") aren't universally accepted,
-            # so map conservatively.
-            mapped = _map_effort_to_openai(codex_reasoning_effort)
-            if mapped:
-                create_kwargs["reasoning_effort"] = mapped
+        reasoning = _build_reasoning_param(resolved_model, codex_reasoning_effort)
+        if reasoning:
+            create_kwargs["reasoning"] = reasoning
 
         try:
-            response = client.chat.completions.create(**create_kwargs)
-            output_text = response.choices[0].message.content or ""
+            response = client.responses.create(**create_kwargs)
+            output_text = response.output_text
             return ReviewResult(
                 provider="openai-api",
                 model=resolved_model,
-                command=[f"openai.chat.completions.create(model={resolved_model})"],
+                command=[f"openai.responses.create(model={resolved_model})"],
                 returncode=0 if output_text.strip() else 1,
                 output=output_text,
                 stderr="",
@@ -87,7 +93,7 @@ class OpenAiApiProvider(BaseProvider):
             return ReviewResult(
                 provider="openai-api",
                 model=resolved_model,
-                command=[f"openai.chat.completions.create(model={resolved_model})"],
+                command=[f"openai.responses.create(model={resolved_model})"],
                 returncode=1,
                 output="",
                 stderr=str(error),
@@ -102,11 +108,12 @@ class OpenAiApiProvider(BaseProvider):
         working_dir: str | None = None,
         codex_reasoning_effort: str | None = None,
     ) -> ReviewResult:
-        """Run a function-calling agent loop using the OpenAI Chat API."""
+        """Run a function-calling agent loop using the OpenAI Responses API."""
         client = _get_openai_client()
-        resolved_model = model or "gpt-4o"
+        resolved_model = model or _DEFAULT_MODEL
 
         effective_effort = codex_reasoning_effort or agent_spec.codex_reasoning_effort
+        reasoning = _build_reasoning_param(resolved_model, effective_effort)
 
         system_message = ""
         if agent_spec.claude_agent_def:
@@ -114,59 +121,58 @@ class OpenAiApiProvider(BaseProvider):
 
         openai_tools = _build_openai_tools(agent_spec)
 
-        messages = []
-        if system_message:
-            messages.append({"role": "system", "content": system_message})
-        messages.append({"role": "user", "content": task_prompt})
+        input_items: list[object] = [{"role": "user", "content": task_prompt}]
 
         max_iterations = 20
         accumulated_text = ""
 
         try:
             for _ in range(max_iterations):
-                create_kwargs = {
+                create_kwargs: dict[str, object] = {
                     "model": resolved_model,
-                    "messages": messages,
+                    "input": input_items,
+                    # See run_prompt: keep manuscripts out of server-side storage.
+                    "store": False,
                     "timeout": timeout_seconds,
                 }
+                if system_message:
+                    create_kwargs["instructions"] = system_message
                 if openai_tools:
                     create_kwargs["tools"] = openai_tools
-                if effective_effort and _supports_reasoning_effort(resolved_model):
-                    mapped = _map_effort_to_openai(effective_effort)
-                    if mapped:
-                        create_kwargs["reasoning_effort"] = mapped
+                if reasoning:
+                    create_kwargs["reasoning"] = reasoning
 
-                response = client.chat.completions.create(**create_kwargs)
-                choice = response.choices[0]
+                response = client.responses.create(**create_kwargs)
+                accumulated_text += response.output_text
 
-                if choice.message.content:
-                    accumulated_text += choice.message.content
-
-                tool_calls = choice.message.tool_calls
-                if not tool_calls:
+                function_calls = [
+                    output_item for output_item in response.output
+                    if output_item.type == "function_call"
+                ]
+                if not function_calls:
                     break
 
-                # Add assistant message with tool calls
-                messages.append(choice.message)
+                # With store=False the API keeps no history, so replay every
+                # output item. Reasoning items must come back alongside the
+                # function call outputs or the model loses its reasoning.
+                input_items.extend(response.output)
 
-                # Execute each tool call and add results
-                for tool_call in tool_calls:
-                    function_name = tool_call.function.name
+                for function_call in function_calls:
                     try:
-                        function_args = json.loads(tool_call.function.arguments)
+                        function_args = json.loads(function_call.arguments)
                     except json.JSONDecodeError:
                         function_args = {}
-                    result_text = execute_tool(function_name, function_args)
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": result_text[:50000],
+                    result_text = execute_tool(function_call.name, function_args)
+                    input_items.append({
+                        "type": "function_call_output",
+                        "call_id": function_call.call_id,
+                        "output": result_text[:50000],
                     })
 
             return ReviewResult(
                 provider="openai-api",
                 model=resolved_model,
-                command=[f"openai.chat.completions.create(model={resolved_model}, tools={len(openai_tools)})"],
+                command=[f"openai.responses.create(model={resolved_model}, tools={len(openai_tools)})"],
                 returncode=0 if accumulated_text.strip() else 1,
                 output=accumulated_text,
                 stderr="",
@@ -175,7 +181,7 @@ class OpenAiApiProvider(BaseProvider):
             return ReviewResult(
                 provider="openai-api",
                 model=resolved_model,
-                command=[f"openai.chat.completions.create(model={resolved_model})"],
+                command=[f"openai.responses.create(model={resolved_model})"],
                 returncode=1,
                 output=accumulated_text,
                 stderr=str(error),
@@ -183,7 +189,7 @@ class OpenAiApiProvider(BaseProvider):
 
 
 def _build_openai_tools(agent_spec: AgentSpec) -> list[dict]:
-    """Convert abstract tool definitions to OpenAI function calling format."""
+    """Convert abstract tool definitions to Responses API function tools."""
     requested_tools = set()
     if agent_spec.claude_agent_def:
         requested_tools = set(agent_spec.claude_agent_def.get("tools", []))
@@ -198,20 +204,31 @@ def _build_openai_tools(agent_spec: AgentSpec) -> list[dict]:
     return [
         {
             "type": "function",
-            "function": {
-                "name": tool_def["name"],
-                "description": tool_def["description"],
-                "parameters": tool_def["input_schema"],
-            },
+            "name": tool_def["name"],
+            "description": tool_def["description"],
+            "parameters": tool_def["input_schema"],
+            # Strict mode (the API default) requires every property to be
+            # required; our schemas have optional ones (e.g. Glob's `path`).
+            "strict": False,
         }
         for tool_def in source_tools
     ]
 
 
-# Codex accepts: none|minimal|low|medium|high|xhigh.
-# OpenAI Chat Completions accepts: minimal|low|medium|high (per API docs, 2026-04).
-# We fold xhigh→high and drop "none" since the API has no equivalent.
-_OPENAI_EFFORT_MAP = {
+# Codex accepts: none|minimal|low|medium|high|xhigh. What the API accepts
+# depends on the model generation (per OpenAI model docs, 2026-10):
+#   gpt-6-*: low|medium|high|xhigh|max (gpt-6-luna also takes none)
+#   older reasoning models (o-series, gpt-5): minimal|low|medium|high
+_GPT6_EFFORT_MAP = {
+    "none": "low",
+    "minimal": "low",
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "xhigh": "xhigh",
+}
+
+_LEGACY_REASONING_EFFORT_MAP = {
     "minimal": "minimal",
     "low": "low",
     "medium": "medium",
@@ -220,11 +237,19 @@ _OPENAI_EFFORT_MAP = {
 }
 
 
-def _map_effort_to_openai(codex_effort: str) -> str | None:
-    return _OPENAI_EFFORT_MAP.get(codex_effort)
+def _build_reasoning_param(model: str, codex_effort: str | None) -> dict[str, str] | None:
+    """Translate a Codex effort level into the Responses API `reasoning` param.
 
-
-def _supports_reasoning_effort(model: str) -> bool:
-    """Heuristic: o-series and gpt-5-series accept reasoning_effort."""
-    lowered = model.lower()
-    return lowered.startswith(("o1", "o3", "o4", "gpt-5"))
+    Returns None when no effort was requested or the model is not a
+    reasoning model (e.g. gpt-4o rejects the parameter).
+    """
+    if not codex_effort:
+        return None
+    lowered_model = model.lower()
+    if lowered_model.startswith("gpt-6"):
+        effort = _GPT6_EFFORT_MAP.get(codex_effort)
+    elif lowered_model.startswith(("o1", "o3", "o4", "gpt-5")):
+        effort = _LEGACY_REASONING_EFFORT_MAP.get(codex_effort)
+    else:
+        return None
+    return {"effort": effort} if effort else None
