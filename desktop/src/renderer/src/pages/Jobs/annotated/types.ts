@@ -3,7 +3,10 @@
 
 export type FindingSeverity = 'critical' | 'major' | 'minor' | 'info'
 
-export type AnchorResolution = 'exact' | 'line' | 'unresolved'
+// 'loose': matched only with whitespace / LaTeX spacing / math delimiters
+// ignored, or via the quote's fragments. The quote is not verbatim in the
+// document, so only the block (by line_number) is marked.
+export type AnchorResolution = 'exact' | 'loose' | 'line' | 'unresolved'
 
 export interface FindingAnchor {
   quote: string

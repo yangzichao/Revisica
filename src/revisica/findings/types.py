@@ -16,6 +16,9 @@ _SEVERITY_RANK = {level: rank for rank, level in enumerate(SEVERITY_LEVELS)}
 
 # How an anchor was resolved against the document text, strongest first.
 RESOLUTION_EXACT = "exact"  # quote matched verbatim (whitespace-insensitive)
+# quote matched once whitespace and LaTeX spacing are ignored, or via its
+# ellipsis-/quote-separated fragments (see loose_quote_match)
+RESOLUTION_LOOSE = "loose"
 RESOLUTION_LINE = "line"  # only the reported line number could be trusted
 RESOLUTION_UNRESOLVED = "unresolved"  # no usable location
 
