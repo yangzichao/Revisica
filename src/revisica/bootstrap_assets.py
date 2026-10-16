@@ -10,13 +10,15 @@ from __future__ import annotations
 
 import json
 
+from . import __version__
+
 PLUGIN_NAME = "revisica"
 SKILL_NAME = "latex-paper-review"
 CLAUDE_AGENT_NAME = "latex_reviewer"
 def codex_plugin_manifest() -> str:
     manifest = {
         "name": PLUGIN_NAME,
-        "version": "0.1.0",
+        "version": __version__,
         "description": "LaTeX-first paper review plugin focused on writing quality and mathematical correctness.",
         "skills": "./skills/",
         "author": {
@@ -50,7 +52,7 @@ def claude_plugin_manifest() -> str:
     manifest = {
         "name": PLUGIN_NAME,
         "description": "LaTeX-first paper review plugin focused on writing quality and mathematical correctness.",
-        "version": "0.1.0",
+        "version": __version__,
         "author": {"name": "Zichao Yang"},
         "license": "GPL-3.0-or-later",
         "keywords": ["claude-code", "codex", "latex", "paper-review", "math"],

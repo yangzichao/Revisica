@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "revisica"
-version = "0.1.0"
+# Read from src/revisica/__init__.py; see docs/releasing.md.
+dynamic = ["version"]
 description = "Academic paper revision agent powered by Codex and Claude"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -59,6 +60,9 @@ revisica = "revisica.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+
+[tool.setuptools.dynamic]
+version = {attr = "revisica.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
