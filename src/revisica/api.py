@@ -45,7 +45,7 @@ from .jobs import (
     remove_run,
 )
 from .providers import get_registry
-from .providers.provider_config import load_config, save_config
+from .providers.provider_config import load_config, load_saved_config, save_config
 from .run_dir_helpers import create_review_run_dir
 from .unified_review import review_unified
 
@@ -289,7 +289,7 @@ def list_providers():
 
 @app.put("/api/providers/{provider_name}/config", dependencies=AUTH)
 def update_provider_config(provider_name: str, update: ProviderConfigUpdate):
-    config = load_config()
+    config = load_saved_config()
     provider_section = config.setdefault("providers", {}).setdefault(provider_name, {})
     if update.api_key is not None:
         provider_section["api_key"] = update.api_key
@@ -335,7 +335,7 @@ def set_backend_mode_endpoint(update: BackendModeUpdate):
             status_code=400,
             detail="backend_mode must be one of 'cli', 'api', 'auto'.",
         )
-    config = load_config()
+    config = load_saved_config()
     config["backend_mode"] = update.backend_mode
     save_config(config)
     return {"status": "updated", "backend_mode": update.backend_mode}
@@ -498,7 +498,7 @@ def set_mathpix_credentials(update: MathpixCredentialsUpdate):
             status_code=400,
             detail="Both app_id and app_key are required.",
         )
-    config = load_config()
+    config = load_saved_config()
     mathpix_section = config.setdefault("providers", {}).setdefault("mathpix", {})
     mathpix_section["app_id"] = update.app_id.strip()
     mathpix_section["app_key"] = update.app_key.strip()
